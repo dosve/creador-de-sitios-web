@@ -20,6 +20,10 @@ class BlogPost extends Model
         'meta_data',
         'is_published',
         'published_at',
+        'is_product',
+        'price',
+        'stock',
+        'sku',
     ];
 
     protected function casts(): array
@@ -28,6 +32,8 @@ class BlogPost extends Model
             'meta_data' => 'array',
             'is_published' => 'boolean',
             'published_at' => 'datetime',
+            'is_product' => 'boolean',
+            'price' => 'decimal:2',
         ];
     }
 
@@ -47,6 +53,21 @@ class BlogPost extends Model
         return $this->belongsToMany(Tag::class, 'blog_post_tags');
     }
 
+    public function forms()
+    {
+        return $this->hasMany(Form::class);
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
     // Scopes
     public function scopePublished($query)
     {
@@ -63,5 +84,10 @@ class BlogPost extends Model
         return $query->whereHas('tags', function($q) use ($tagId) {
             $q->where('tag_id', $tagId);
         });
+    }
+
+    public function scopeProducts($query)
+    {
+        return $query->where('is_product', true);
     }
 }

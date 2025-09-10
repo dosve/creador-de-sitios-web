@@ -34,6 +34,6 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('creator.dashboard');
+        return redirect()->route('creator.select-website');
     }
 }

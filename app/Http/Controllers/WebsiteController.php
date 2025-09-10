@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Website;
 use App\Models\Page;
+use App\Models\Template;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class WebsiteController extends Controller
 {
+    use AuthorizesRequests;
     public function index()
     {
         $websites = Auth::user()->websites()->latest()->get();
@@ -18,7 +21,8 @@ class WebsiteController extends Controller
 
     public function create()
     {
-        return view('creator.websites.create');
+        $templates = Template::active()->get();
+        return view('creator.websites.create', compact('templates'));
     }
 
     public function store(Request $request)
@@ -26,12 +30,21 @@ class WebsiteController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'template_id' => 'nullable|exists:templates,id',
         ]);
+
+        // Obtener plantilla por defecto si no se especifica una
+        $templateId = $request->template_id;
+        if (!$templateId) {
+            $defaultTemplate = Template::active()->first();
+            $templateId = $defaultTemplate ? $defaultTemplate->id : null;
+        }
 
         $website = Auth::user()->websites()->create([
             'name' => $request->name,
             'description' => $request->description,
             'slug' => Str::slug($request->name),
+            'template_id' => $templateId,
             'is_published' => false,
         ]);
 

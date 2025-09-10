@@ -72,6 +72,16 @@ class Website extends Model
         return $this->hasMany(SharedComponent::class);
     }
 
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function customers()
+    {
+        return $this->hasMany(Customer::class);
+    }
+
     // Métodos de utilidad para componentes
     public function getHeaderComponent()
     {
@@ -96,6 +106,21 @@ class Website extends Model
     public function seoSettings()
     {
         return $this->hasOne(SeoSettings::class);
+    }
+
+    public function domains()
+    {
+        return $this->hasMany(Domain::class);
+    }
+
+    public function forms()
+    {
+        return $this->hasMany(Form::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
     }
 
     // Métodos de utilidad para SEO

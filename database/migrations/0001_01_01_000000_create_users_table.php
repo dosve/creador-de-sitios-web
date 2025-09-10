@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('role', ['admin', 'creator'])->default('creator');
-            $table->foreignId('plan_id')->nullable()->constrained()->onDelete('set null');
+            $table->unsignedBigInteger('plan_id')->nullable();
             $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamps();
