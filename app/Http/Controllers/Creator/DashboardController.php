@@ -9,9 +9,10 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+        $selectedWebsite = $request->get('selected_website');
         $websites = $user->websites()->latest()->get();
         
         $stats = [
@@ -25,6 +26,6 @@ class DashboardController extends Controller
             }),
         ];
 
-        return view('creator.dashboard', compact('websites', 'stats', 'user'));
+        return view('creator.dashboard', compact('websites', 'stats', 'user', 'selectedWebsite'));
     }
 }

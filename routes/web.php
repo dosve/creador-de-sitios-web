@@ -142,17 +142,23 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
 // Rutas para usuarios creadores
 Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')->group(function () {
-    Route::get('/dashboard', [CreatorDashboard::class, 'index'])->name('dashboard');
+    // Selección de sitio web (sin middleware de sitio seleccionado)
+    Route::get('/select-website', [App\Http\Controllers\Creator\SelectWebsiteController::class, 'index'])->name('select-website');
+    Route::post('/select-website', [App\Http\Controllers\Creator\SelectWebsiteController::class, 'store'])->name('select-website');
+    
+    // Rutas que requieren sitio web seleccionado
+    Route::middleware(['require.selected.website'])->group(function () {
+        Route::get('/dashboard', [CreatorDashboard::class, 'index'])->name('dashboard');
     Route::resource('websites', WebsiteController::class);
 
     // Rutas de páginas
-    Route::get('websites/{website}/pages', [PageController::class, 'index'])->name('pages.index');
-    Route::get('websites/{website}/pages/create', [PageController::class, 'create'])->name('pages.create');
-    Route::post('websites/{website}/pages', [PageController::class, 'store'])->name('pages.store');
-    Route::get('websites/{website}/pages/{page}', [PageController::class, 'show'])->name('pages.show');
-    Route::get('websites/{website}/pages/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
-    Route::put('websites/{website}/pages/{page}', [PageController::class, 'update'])->name('pages.update');
-    Route::delete('websites/{website}/pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
+    Route::get('websites/{website}/pages', [App\Http\Controllers\Creator\PageController::class, 'index'])->name('pages.index');
+    Route::get('websites/{website}/pages/create', [App\Http\Controllers\Creator\PageController::class, 'create'])->name('pages.create');
+    Route::post('websites/{website}/pages', [App\Http\Controllers\Creator\PageController::class, 'store'])->name('pages.store');
+    Route::get('websites/{website}/pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'show'])->name('pages.show');
+    Route::get('websites/{website}/pages/{page}/edit', [App\Http\Controllers\Creator\PageController::class, 'edit'])->name('pages.edit');
+    Route::put('websites/{website}/pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'update'])->name('pages.update');
+    Route::delete('websites/{website}/pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'destroy'])->name('pages.destroy');
     Route::get('websites/{website}/pages/{page}/editor', [PageController::class, 'editor'])->name('pages.editor');
     Route::post('websites/{website}/pages/{page}/save', [PageController::class, 'saveContent'])->name('pages.save');
 
@@ -169,26 +175,26 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
     Route::post('websites/{website}/templates/{template}/apply', [TemplateController::class, 'apply'])->name('templates.apply');
 
     // Rutas del blog
-    Route::get('websites/{website}/blog', [BlogPostController::class, 'index'])->name('blog.index');
-    Route::get('websites/{website}/blog/create', [BlogPostController::class, 'create'])->name('blog.create');
-    Route::post('websites/{website}/blog', [BlogPostController::class, 'store'])->name('blog.store');
-    Route::get('websites/{website}/blog/{blogPost}', [BlogPostController::class, 'show'])->name('blog.show');
-    Route::get('websites/{website}/blog/{blogPost}/edit', [BlogPostController::class, 'edit'])->name('blog.edit');
-    Route::put('websites/{website}/blog/{blogPost}', [BlogPostController::class, 'update'])->name('blog.update');
-    Route::delete('websites/{website}/blog/{blogPost}', [BlogPostController::class, 'destroy'])->name('blog.destroy');
+    Route::get('websites/{website}/blog', [App\Http\Controllers\Creator\BlogPostController::class, 'index'])->name('blog.index');
+    Route::get('websites/{website}/blog/create', [App\Http\Controllers\Creator\BlogPostController::class, 'create'])->name('blog.create');
+    Route::post('websites/{website}/blog', [App\Http\Controllers\Creator\BlogPostController::class, 'store'])->name('blog.store');
+    Route::get('websites/{website}/blog/{blogPost}', [App\Http\Controllers\Creator\BlogPostController::class, 'show'])->name('blog.show');
+    Route::get('websites/{website}/blog/{blogPost}/edit', [App\Http\Controllers\Creator\BlogPostController::class, 'edit'])->name('blog.edit');
+    Route::put('websites/{website}/blog/{blogPost}', [App\Http\Controllers\Creator\BlogPostController::class, 'update'])->name('blog.update');
+    Route::delete('websites/{website}/blog/{blogPost}', [App\Http\Controllers\Creator\BlogPostController::class, 'destroy'])->name('blog.destroy');
 
     // Rutas de categorías
-    Route::get('websites/{website}/categories', [CategoryController::class, 'index'])->name('categories.index');
-    Route::get('websites/{website}/categories/create', [CategoryController::class, 'create'])->name('categories.create');
-    Route::post('websites/{website}/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('websites/{website}/categories', [App\Http\Controllers\Creator\CategoryController::class, 'index'])->name('categories.index');
+    Route::get('websites/{website}/categories/create', [App\Http\Controllers\Creator\CategoryController::class, 'create'])->name('categories.create');
+    Route::post('websites/{website}/categories', [App\Http\Controllers\Creator\CategoryController::class, 'store'])->name('categories.store');
     Route::get('websites/{website}/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
     Route::put('websites/{website}/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('websites/{website}/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
     // Rutas de etiquetas
-    Route::get('websites/{website}/tags', [TagController::class, 'index'])->name('tags.index');
-    Route::get('websites/{website}/tags/create', [TagController::class, 'create'])->name('tags.create');
-    Route::post('websites/{website}/tags', [TagController::class, 'store'])->name('tags.store');
+    Route::get('websites/{website}/tags', [App\Http\Controllers\Creator\TagController::class, 'index'])->name('tags.index');
+    Route::get('websites/{website}/tags/create', [App\Http\Controllers\Creator\TagController::class, 'create'])->name('tags.create');
+    Route::post('websites/{website}/tags', [App\Http\Controllers\Creator\TagController::class, 'store'])->name('tags.store');
     Route::get('websites/{website}/tags/{tag}/edit', [TagController::class, 'edit'])->name('tags.edit');
     Route::put('websites/{website}/tags/{tag}', [TagController::class, 'update'])->name('tags.update');
     Route::delete('websites/{website}/tags/{tag}', [TagController::class, 'destroy'])->name('tags.destroy');
@@ -207,21 +213,81 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
     Route::post('websites/{website}/components/{component}/save', [SharedComponentController::class, 'saveContent'])->name('components.save');
 
     // Rutas de biblioteca multimedia
-    Route::get('websites/{website}/media', [MediaFileController::class, 'index'])->name('media.index');
-    Route::post('websites/{website}/media', [MediaFileController::class, 'store'])->name('media.store');
-    Route::get('websites/{website}/media/{mediaFile}', [MediaFileController::class, 'show'])->name('media.show');
-    Route::put('websites/{website}/media/{mediaFile}', [MediaFileController::class, 'update'])->name('media.update');
-    Route::delete('websites/{website}/media/{mediaFile}', [MediaFileController::class, 'destroy'])->name('media.destroy');
-    Route::get('websites/{website}/media/{mediaFile}/url', [MediaFileController::class, 'getFileUrl'])->name('media.url');
+    Route::get('websites/{website}/media', [App\Http\Controllers\Creator\MediaFileController::class, 'index'])->name('media.index');
+    Route::post('websites/{website}/media', [App\Http\Controllers\Creator\MediaFileController::class, 'store'])->name('media.store');
+    Route::delete('websites/{website}/media/{mediaFile}', [App\Http\Controllers\Creator\MediaFileController::class, 'destroy'])->name('media.destroy');
+    Route::get('websites/{website}/media/{mediaFile}/url', [App\Http\Controllers\Creator\MediaFileController::class, 'getFileUrl'])->name('media.url');
 
     // Rutas de SEO
-    Route::get('websites/{website}/seo', [SeoController::class, 'index'])->name('seo.index');
-    Route::get('websites/{website}/seo/edit', [SeoController::class, 'edit'])->name('seo.edit');
-    Route::put('websites/{website}/seo', [SeoController::class, 'update'])->name('seo.update');
+    Route::get('websites/{website}/seo', [App\Http\Controllers\Creator\SeoController::class, 'index'])->name('seo.index');
+    Route::get('websites/{website}/seo/edit', [App\Http\Controllers\Creator\SeoController::class, 'edit'])->name('seo.edit');
+    Route::put('websites/{website}/seo', [App\Http\Controllers\Creator\SeoController::class, 'update'])->name('seo.update');
     Route::get('websites/{website}/seo/sitemap', [SeoController::class, 'sitemap'])->name('seo.sitemap');
     Route::get('websites/{website}/seo/robots', [SeoController::class, 'robots'])->name('seo.robots');
     Route::post('websites/{website}/seo/generate-sitemap', [SeoController::class, 'generateSitemap'])->name('seo.generate-sitemap');
     Route::get('websites/{website}/seo/preview/{page?}', [SeoController::class, 'preview'])->name('seo.preview');
+
+    // Rutas de formularios
+    Route::get('websites/{website}/forms', [App\Http\Controllers\Creator\FormController::class, 'index'])->name('forms.index');
+    Route::get('websites/{website}/forms/create', [App\Http\Controllers\Creator\FormController::class, 'create'])->name('forms.create');
+    Route::post('websites/{website}/forms', [App\Http\Controllers\Creator\FormController::class, 'store'])->name('forms.store');
+            Route::get('websites/{website}/forms/{form}/edit', [App\Http\Controllers\Creator\FormController::class, 'edit'])->name('forms.edit');
+            Route::get('websites/{website}/forms/{form}/builder', [App\Http\Controllers\Creator\FormController::class, 'builder'])->name('forms.builder');
+    Route::get('websites/{website}/forms/{form}/submissions', [App\Http\Controllers\Creator\FormController::class, 'submissions'])->name('forms.submissions');
+    Route::get('websites/{website}/forms/{form}/submissions/{submission}', [App\Http\Controllers\Creator\FormController::class, 'showSubmission'])->name('forms.show-submission');
+    Route::put('websites/{website}/forms/{form}', [App\Http\Controllers\Creator\FormController::class, 'update'])->name('forms.update');
+            Route::delete('websites/{website}/forms/{form}', [App\Http\Controllers\Creator\FormController::class, 'destroy'])->name('forms.destroy');
+
+            // Rutas de vista previa
+            Route::get('websites/{website}/preview', [App\Http\Controllers\Creator\PreviewController::class, 'index'])->name('preview.index');
+            Route::get('websites/{website}/preview/pages/{page}', [App\Http\Controllers\Creator\PreviewController::class, 'page'])->name('preview.page');
+            Route::get('websites/{website}/preview/blog', [App\Http\Controllers\Creator\PreviewController::class, 'blog'])->name('preview.blog');
+            Route::get('websites/{website}/preview/blog/{blogPost}', [App\Http\Controllers\Creator\PreviewController::class, 'blogPost'])->name('preview.blog-post');
+            Route::get('websites/{website}/preview/contact', [App\Http\Controllers\Creator\PreviewController::class, 'contact'])->name('preview.contact');
+
+            // Rutas de comentarios
+            Route::get('websites/{website}/comments', [App\Http\Controllers\Creator\CommentController::class, 'index'])->name('comments.index');
+            Route::get('websites/{website}/comments/{comment}', [App\Http\Controllers\Creator\CommentController::class, 'show'])->name('comments.show');
+            Route::post('websites/{website}/comments/{comment}/approve', [App\Http\Controllers\Creator\CommentController::class, 'approve'])->name('comments.approve');
+            Route::post('websites/{website}/comments/{comment}/unapprove', [App\Http\Controllers\Creator\CommentController::class, 'unapprove'])->name('comments.unapprove');
+            Route::post('websites/{website}/comments/{comment}/mark-spam', [App\Http\Controllers\Creator\CommentController::class, 'markAsSpam'])->name('comments.mark-spam');
+            Route::post('websites/{website}/comments/{comment}/mark-not-spam', [App\Http\Controllers\Creator\CommentController::class, 'markAsNotSpam'])->name('comments.mark-not-spam');
+            Route::delete('websites/{website}/comments/{comment}', [App\Http\Controllers\Creator\CommentController::class, 'destroy'])->name('comments.destroy');
+            Route::post('websites/{website}/comments/bulk-approve', [App\Http\Controllers\Creator\CommentController::class, 'bulkApprove'])->name('comments.bulk-approve');
+            Route::post('websites/{website}/comments/bulk-delete', [App\Http\Controllers\Creator\CommentController::class, 'bulkDelete'])->name('comments.bulk-delete');
+
+    // Rutas de formularios para blog
+    Route::get('websites/{website}/blog/{blogPost}/forms', [App\Http\Controllers\Creator\FormController::class, 'blogIndex'])->name('forms.blog-index');
+    Route::get('websites/{website}/blog/{blogPost}/forms/create', [App\Http\Controllers\Creator\FormController::class, 'create'])->name('forms.blog-create');
+    Route::get('websites/{website}/blog/{blogPost}/forms/{form}/builder', [App\Http\Controllers\Creator\FormController::class, 'blogBuilder'])->name('forms.blog-builder');
+
+    // Rutas de configuración de dominios
+    Route::get('websites/{website}/config/domain', [App\Http\Controllers\Creator\DomainConfigController::class, 'index'])->name('config.domain');
+    Route::post('websites/{website}/config/domain', [App\Http\Controllers\Creator\DomainConfigController::class, 'store'])->name('config.domain.store');
+    Route::put('websites/{website}/config/domain/{domain}', [App\Http\Controllers\Creator\DomainConfigController::class, 'update'])->name('config.domain.update');
+    Route::delete('websites/{website}/config/domain/{domain}', [App\Http\Controllers\Creator\DomainConfigController::class, 'destroy'])->name('config.domain.destroy');
+    Route::post('websites/{website}/config/domain/{domain}/verify', [App\Http\Controllers\Creator\DomainConfigController::class, 'verify'])->name('config.domain.verify');
+
+    // Rutas de configuración de seguridad
+    Route::get('websites/{website}/config/security', [App\Http\Controllers\Creator\SecurityConfigController::class, 'index'])->name('config.security');
+    Route::post('websites/{website}/config/security/ssl', [App\Http\Controllers\Creator\SecurityConfigController::class, 'updateSsl'])->name('config.security.ssl');
+    Route::post('websites/{website}/config/security/generate-ssl', [App\Http\Controllers\Creator\SecurityConfigController::class, 'generateSsl'])->name('config.security.generate-ssl');
+    Route::post('websites/{website}/config/security/update', [App\Http\Controllers\Creator\SecurityConfigController::class, 'updateSecurity'])->name('config.security.update');
+
+    // Rutas de tienda en línea
+    Route::get('websites/{website}/store/products', [App\Http\Controllers\Creator\StoreController::class, 'products'])->name('store.products');
+    Route::get('websites/{website}/store/categories', [App\Http\Controllers\Creator\StoreController::class, 'categories'])->name('store.categories');
+    Route::get('websites/{website}/store/orders', [App\Http\Controllers\Creator\StoreController::class, 'orders'])->name('store.orders');
+
+    // Rutas de usuarios
+    Route::get('websites/{website}/users', [App\Http\Controllers\Creator\UserController::class, 'index'])->name('users.index');
+
+    // Rutas de integraciones
+    Route::get('websites/{website}/integrations/epayco', [App\Http\Controllers\Creator\IntegrationController::class, 'epayco'])->name('integrations.epayco');
+    Route::post('websites/{website}/integrations/epayco', [App\Http\Controllers\Creator\IntegrationController::class, 'epaycoStore'])->name('integrations.epayco.store');
+    Route::get('websites/{website}/integrations/admin-negocios', [App\Http\Controllers\Creator\IntegrationController::class, 'adminNegocios'])->name('integrations.admin-negocios');
+    Route::post('websites/{website}/integrations/admin-negocios', [App\Http\Controllers\Creator\IntegrationController::class, 'adminNegociosStore'])->name('integrations.admin-negocios.store');
+    });
 });
 
 // Redirección después del login
@@ -229,5 +295,5 @@ Route::get('/home', function () {
     if (auth()->check() && auth()->user()->isAdmin()) {
         return redirect()->route('admin.dashboard');
     }
-    return redirect()->route('creator.dashboard');
+    return redirect()->route('creator.select-website');
 })->middleware('auth');

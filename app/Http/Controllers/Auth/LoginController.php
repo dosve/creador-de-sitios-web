@@ -28,7 +28,7 @@ class LoginController extends Controller
             if (Auth::user()->isAdmin()) {
                 return redirect()->route('admin.dashboard');
             }
-            return redirect()->route('creator.dashboard');
+            return redirect()->route('creator.select-website');
         }
 
         throw ValidationException::withMessages([
