@@ -4,10 +4,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Editor - {{ $page->title }} - {{ $website->name }}</title>
     @vite('resources/js/app.js')
     <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
     <style>
+
+      :root{
+        --gjs-primary: #2563eb;          /* botones/acentos */
+        --gjs-secondary: #111827;        /* texto principal */
+        --gjs-tertiary: #6b7280;         /* texto suave */
+        --gjs-quaternary: #e5e7eb;       /* bordes suaves */
+        --gjs-bg: #ffffff;               /* fondo paneles */
+        --gjs-font-size: 13px;
+        }
+
+        /* Fallback para versiones viejas (clases “one/two/three/four”) */
+        .gjs-one-bg{ background:#ffffff; }
+        .gjs-two-color{ color:#111827; }
+        .gjs-three-bg{ background:#f3f4f6; }   /* barras/paneles secundarios */
+        .gjs-four-color{ color:#374151; }
+
+        /* Paneles y botones */
+        .gjs-pn-panel,
+        .gjs-pn-views,
+        .gjs-pn-options,
+        .gjs-pn-commands{ background:#ffffff; border-color:#e5e7eb; }
+        .gjs-pn-btn{ color:#374151; }
+        .gjs-pn-btn.gjs-pn-active,
+        .gjs-pn-btn:hover{ background:#e5effe; color:#1d4ed8; }
+
+        /* Contenedores de bloques/estilos/capas */
+        .gjs-blocks-c,
+        .gjs-layer-manager,
+        .gjs-sm-sectors{ background:#f8fafc; color:#111827; }
+        .gjs-block, .gjs-block-label{ color:#111827; }
+        .gjs-field{ background:#ffffff; color:#111827; border-color:#e5e7eb; }
+
+        /* Canvas alrededor del lienzo (fuera del iframe) */
+        .gjs-editor-cont, .gjs-cv-canvas{ background:#f3f4f6; }
+
+        /* Resaltados y selección (más visibles) */
+        .gjs-selected{ outline:2px solid #2563eb !important; }
+        .gjs-resizer-h{ border-color:#2563eb !important; }
+
         .gjs-pn-panel {
             background: #f8f9fa;
         }
@@ -118,7 +158,7 @@
       <div class="flex flex-col border-r border-gray-200 w-80 bg-gray-50">
                 <!-- Panel Tabs -->
                 <div class="border-b border-gray-200">
-          <nav class="flex px-4 space-x-8" aria-label="Tabs">
+          <nav class="flex items-center gap-4 px-3 overflow-x-auto whitespace-nowrap" aria-label="Tabs">
             <button class="px-1 py-3 text-sm font-medium text-center text-blue-600 border-b-2 border-blue-500 tab-button active" data-panel="blocks">
                             Bloques
                         </button>
@@ -740,7 +780,8 @@
                 appendTo: '.styles-container'
         }
         , styleManager: {
-          sectors: [{
+          appendTo: '.styles-container'
+          , sectors: [{
               name: 'General'
               , open: false
               , buildProps: ['float', 'display', 'position', 'top', 'right', 'left', 'bottom']
@@ -827,7 +868,13 @@
       }
 
       // Botón de guardar
-      document.getElementById('save-btn').addEventListener('click', function() {
+      const saveBtn = document.getElementById('save-btn');
+      if (!saveBtn) {
+        console.error('Botón de guardar no encontrado');
+        return;
+      }
+      
+      saveBtn.addEventListener('click', function() {
         showSaveLoading();
 
         const htmlContent = editor.getHtml();
@@ -837,7 +884,7 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
           },
           body: JSON.stringify({
             html_content: htmlContent,
@@ -857,6 +904,29 @@
           hideSaveLoading();
           console.error('Error:', error);
           showNotification('Error al guardar la página', 'error');
+        });
+      });
+
+      // Funcionalidad de paneles laterales
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', function() {
+          const panel = this.dataset.panel;
+
+          // Actualizar tabs activos
+          document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active', 'border-blue-500', 'text-blue-600');
+            btn.classList.add('border-transparent', 'text-gray-500');
+          });
+
+          this.classList.add('active', 'border-blue-500', 'text-blue-600');
+          this.classList.remove('border-transparent', 'text-gray-500');
+
+          // Mostrar panel correspondiente
+          document.querySelectorAll('.panel-content').forEach(panel => {
+            panel.classList.add('hidden');
+          });
+
+          document.getElementById(panel + '-panel').classList.remove('hidden');
         });
       });
 

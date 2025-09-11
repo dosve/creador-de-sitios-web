@@ -7,6 +7,44 @@
     @vite('resources/js/app.js')
     <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
     <style>
+        :root{
+        --gjs-primary: #2563eb;          /* botones/acentos */
+        --gjs-secondary: #111827;        /* texto principal */
+        --gjs-tertiary: #6b7280;         /* texto suave */
+        --gjs-quaternary: #e5e7eb;       /* bordes suaves */
+        --gjs-bg: #ffffff;               /* fondo paneles */
+        --gjs-font-size: 13px;
+        }
+
+        /* Fallback para versiones viejas (clases “one/two/three/four”) */
+        .gjs-one-bg{ background:#ffffff; }
+        .gjs-two-color{ color:#111827; }
+        .gjs-three-bg{ background:#f3f4f6; }   /* barras/paneles secundarios */
+        .gjs-four-color{ color:#374151; }
+
+        /* Paneles y botones */
+        .gjs-pn-panel,
+        .gjs-pn-views,
+        .gjs-pn-options,
+        .gjs-pn-commands{ background:#ffffff; border-color:#e5e7eb; }
+        .gjs-pn-btn{ color:#374151; }
+        .gjs-pn-btn.gjs-pn-active,
+        .gjs-pn-btn:hover{ background:#e5effe; color:#1d4ed8; }
+
+        /* Contenedores de bloques/estilos/capas */
+        .gjs-blocks-c,
+        .gjs-layer-manager,
+        .gjs-sm-sectors{ background:#f8fafc; color:#111827; }
+        .gjs-block, .gjs-block-label{ color:#111827; }
+        .gjs-field{ background:#ffffff; color:#111827; border-color:#e5e7eb; }
+
+        /* Canvas alrededor del lienzo (fuera del iframe) */
+        .gjs-editor-cont, .gjs-cv-canvas{ background:#f3f4f6; }
+
+        /* Resaltados y selección (más visibles) */
+        .gjs-selected{ outline:2px solid #2563eb !important; }
+        .gjs-resizer-h{ border-color:#2563eb !important; }
+
         .gjs-pn-panel {
             background: #f8f9fa;
         }
