@@ -106,9 +106,14 @@
                                             <p class="text-xs text-gray-500">{{ $page->updated_at->format('d/m/Y H:i') }}</p>
                                         </div>
                                     </div>
-                                    <a href="{{ route('creator.pages.edit', [$selectedWebsite, $page]) }}" class="text-blue-600 hover:text-blue-800 text-sm">
-                                        Editar
-                                    </a>
+                                    <div class="flex space-x-2">
+                                        <a href="{{ route('creator.pages.edit', [$selectedWebsite, $page]) }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                                            Editar
+                                        </a>
+                                        <a href="{{ route('creator.pages.editor', [$selectedWebsite, $page]) }}" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                            Editor Visual
+                                        </a>
+                                    </div>
                                 </div>
                                 @endforeach
                             </div>

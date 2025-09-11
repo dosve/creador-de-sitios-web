@@ -18,6 +18,7 @@ class Page extends Model
         'css_content',
         'grapesjs_data',
         'is_published',
+        'is_home',
         'sort_order',
     ];
 
@@ -25,6 +26,7 @@ class Page extends Model
     {
         return [
             'is_published' => 'boolean',
+            'is_home' => 'boolean',
             'grapesjs_data' => 'array',
         ];
     }

@@ -23,11 +23,16 @@ class PreviewController extends Controller
         // Obtener páginas del sitio web
         $pages = $website->pages()->where('is_published', true)->orderBy('sort_order')->get();
         
-        // Obtener posts del blog
-        $blogPosts = $website->blogPosts()->where('is_published', true)->latest()->take(5)->get();
-        
         // Obtener la página de inicio
-        $homePage = $pages->where('is_home', true)->first();
+        $homePage = $pages->where('is_home', true)->first() ?? $pages->first();
+        
+        // Si el sitio web no tiene plantilla (página en blanco) y tiene contenido personalizado
+        if (!$website->template_id && $homePage && $homePage->html_content) {
+            return view('creator.preview.blank', compact('website', 'homePage'));
+        }
+        
+        // Si tiene plantilla o no tiene contenido personalizado, usar el layout con navbar/footer
+        $blogPosts = $website->blogPosts()->where('is_published', true)->latest()->take(5)->get();
         
         return view('creator.preview.index', compact('website', 'pages', 'blogPosts', 'homePage'));
     }
@@ -44,7 +49,12 @@ class PreviewController extends Controller
             abort(403);
         }
         
-        // Obtener páginas para el menú de navegación
+        // Si el sitio web no tiene plantilla (página en blanco), usar vista sin navbar/footer
+        if (!$website->template_id) {
+            return view('creator.preview.blank-page', compact('website', 'page'));
+        }
+        
+        // Si tiene plantilla, usar el layout con navbar/footer
         $pages = $website->pages()->where('is_published', true)->orderBy('sort_order')->get();
         
         return view('creator.preview.page', compact('website', 'page', 'pages'));

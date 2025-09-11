@@ -16,10 +16,8 @@ return new class extends Migration
             $table->foreign('plan_id')->references('id')->on('plans')->onDelete('set null');
         });
 
-        Schema::table('blog_posts', function (Blueprint $table) {
-            // Agregar la clave foránea a la tabla categories
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
-        });
+        // La clave foránea category_id ya existe en la tabla blog_posts
+        // No es necesario agregarla nuevamente
     }
 
     /**
@@ -32,9 +30,6 @@ return new class extends Migration
             $table->dropForeign(['plan_id']);
         });
 
-        Schema::table('blog_posts', function (Blueprint $table) {
-            // Eliminar la clave foránea
-            $table->dropForeign(['category_id']);
-        });
+        // No hay clave foránea category_id para eliminar
     }
 };

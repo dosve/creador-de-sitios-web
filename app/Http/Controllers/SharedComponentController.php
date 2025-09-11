@@ -6,9 +6,11 @@ use App\Models\Website;
 use App\Models\SharedComponent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class SharedComponentController extends Controller
 {
+    use AuthorizesRequests;
     public function index(Website $website)
     {
         $this->authorize('view', $website);

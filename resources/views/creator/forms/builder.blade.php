@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="md:flex md:items-center md:justify-between">
             <div class="flex-1 min-w-0">
@@ -13,7 +13,7 @@
                         <li>
                             <div>
                                 <a href="{{ route('creator.forms.index', $website) }}" class="text-gray-400 hover:text-gray-500">
-                                    <svg class="flex-shrink-0 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="flex-shrink-0 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
                                     </svg>
                                     <span class="sr-only">Formularios</span>
@@ -22,7 +22,7 @@
                         </li>
                         <li>
                             <div class="flex items-center">
-                                <svg class="flex-shrink-0 h-5 w-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="flex-shrink-0 w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
                                 </svg>
                                 <span class="ml-4 text-sm font-medium text-gray-500">Constructor</span>
@@ -34,18 +34,18 @@
                     Constructor: {{ $form->name }}
                 </h2>
             </div>
-            <div class="mt-4 flex md:mt-0 md:ml-4">
+            <div class="flex mt-4 md:mt-0 md:ml-4">
                 <button type="button" 
-                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                     </svg>
                     Vista Previa
                 </button>
                 <button type="button" 
-                        class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
                     Guardar Cambios
@@ -54,17 +54,17 @@
         </div>
 
         <!-- Builder Interface -->
-        <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 gap-6 mt-8 lg:grid-cols-3">
             <!-- Sidebar - Field Types -->
             <div class="lg:col-span-1">
-                <div class="bg-white shadow rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Elementos del Formulario</h3>
+                <div class="p-6 bg-white rounded-lg shadow">
+                    <h3 class="mb-4 text-lg font-medium text-gray-900">Elementos del Formulario</h3>
                     
                     <div class="space-y-3">
                         <!-- Text Input -->
-                        <div class="border border-gray-200 rounded-lg p-3 cursor-move hover:bg-gray-50" draggable="true" data-field-type="text">
+                        <div class="p-3 border border-gray-200 rounded-lg cursor-move hover:bg-gray-50" draggable="true" data-field-type="text">
                             <div class="flex items-center">
-                                <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
                                 </svg>
                                 <span class="text-sm font-medium text-gray-700">Campo de Texto</span>
@@ -72,9 +72,9 @@
                         </div>
 
                         <!-- Email Input -->
-                        <div class="border border-gray-200 rounded-lg p-3 cursor-move hover:bg-gray-50" draggable="true" data-field-type="email">
+                        <div class="p-3 border border-gray-200 rounded-lg cursor-move hover:bg-gray-50" draggable="true" data-field-type="email">
                             <div class="flex items-center">
-                                <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                 </svg>
                                 <span class="text-sm font-medium text-gray-700">Email</span>
@@ -82,9 +82,9 @@
                         </div>
 
                         <!-- Textarea -->
-                        <div class="border border-gray-200 rounded-lg p-3 cursor-move hover:bg-gray-50" draggable="true" data-field-type="textarea">
+                        <div class="p-3 border border-gray-200 rounded-lg cursor-move hover:bg-gray-50" draggable="true" data-field-type="textarea">
                             <div class="flex items-center">
-                                <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
                                 </svg>
                                 <span class="text-sm font-medium text-gray-700">Área de Texto</span>
@@ -92,9 +92,9 @@
                         </div>
 
                         <!-- Select -->
-                        <div class="border border-gray-200 rounded-lg p-3 cursor-move hover:bg-gray-50" draggable="true" data-field-type="select">
+                        <div class="p-3 border border-gray-200 rounded-lg cursor-move hover:bg-gray-50" draggable="true" data-field-type="select">
                             <div class="flex items-center">
-                                <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
                                 </svg>
                                 <span class="text-sm font-medium text-gray-700">Lista Desplegable</span>
@@ -102,9 +102,9 @@
                         </div>
 
                         <!-- Checkbox -->
-                        <div class="border border-gray-200 rounded-lg p-3 cursor-move hover:bg-gray-50" draggable="true" data-field-type="checkbox">
+                        <div class="p-3 border border-gray-200 rounded-lg cursor-move hover:bg-gray-50" draggable="true" data-field-type="checkbox">
                             <div class="flex items-center">
-                                <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <span class="text-sm font-medium text-gray-700">Casilla de Verificación</span>
@@ -112,9 +112,9 @@
                         </div>
 
                         <!-- Radio -->
-                        <div class="border border-gray-200 rounded-lg p-3 cursor-move hover:bg-gray-50" draggable="true" data-field-type="radio">
+                        <div class="p-3 border border-gray-200 rounded-lg cursor-move hover:bg-gray-50" draggable="true" data-field-type="radio">
                             <div class="flex items-center">
-                                <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"></path>
                                 </svg>
                                 <span class="text-sm font-medium text-gray-700">Botones de Opción</span>
@@ -126,7 +126,7 @@
 
             <!-- Main Area - Form Builder -->
             <div class="lg:col-span-2">
-                <div class="bg-white shadow rounded-lg">
+                <div class="bg-white rounded-lg shadow">
                     <!-- Form Header -->
                     <div class="px-6 py-4 border-b border-gray-200">
                         <h3 class="text-lg font-medium text-gray-900">Diseñador de Formulario</h3>
@@ -135,10 +135,10 @@
 
                     <!-- Form Canvas -->
                     <div class="p-6">
-                        <div id="form-canvas" class="min-h-96 border-2 border-dashed border-gray-300 rounded-lg p-4">
+                        <div id="form-canvas" class="p-4 border-2 border-gray-300 border-dashed rounded-lg min-h-96">
                             @if($form->fields->count() > 0)
                                 @foreach($form->fields as $field)
-                                    <div class="form-field mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50" data-field-id="{{ $field->id }}">
+                                    <div class="p-4 mb-4 border border-gray-200 rounded-lg form-field bg-gray-50" data-field-id="{{ $field->id }}">
                                         <div class="flex items-center justify-between mb-2">
                                             <span class="text-sm font-medium text-gray-700">{{ $field->label ?: $field->name }}</span>
                                             <div class="flex space-x-2">
@@ -170,17 +170,17 @@
                                             </select>
                                         @elseif($field->type === 'checkbox')
                                             <div class="flex items-center">
-                                                <input type="checkbox" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded" disabled>
+                                                <input type="checkbox" class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500" disabled>
                                                 <label class="ml-2 text-sm text-gray-700">{{ $field->label ?: 'Opción' }}</label>
                                             </div>
                                         @elseif($field->type === 'radio')
                                             <div class="space-y-2">
                                                 <div class="flex items-center">
-                                                    <input type="radio" name="radio_{{ $field->id }}" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300" disabled>
+                                                    <input type="radio" name="radio_{{ $field->id }}" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500" disabled>
                                                     <label class="ml-2 text-sm text-gray-700">Opción 1</label>
                                                 </div>
                                                 <div class="flex items-center">
-                                                    <input type="radio" name="radio_{{ $field->id }}" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300" disabled>
+                                                    <input type="radio" name="radio_{{ $field->id }}" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500" disabled>
                                                     <label class="ml-2 text-sm text-gray-700">Opción 2</label>
                                                 </div>
                                             </div>
@@ -188,8 +188,8 @@
                                     </div>
                                 @endforeach
                             @else
-                                <div class="text-center py-12">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="py-12 text-center">
+                                    <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                     <h3 class="mt-2 text-sm font-medium text-gray-900">Formulario vacío</h3>

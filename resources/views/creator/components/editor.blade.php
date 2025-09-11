@@ -32,9 +32,9 @@
     </style>
 </head>
 <body>
-    <div class="min-h-screen flex flex-col">
+    <div class="flex flex-col min-h-screen">
         <!-- Header -->
-        <header class="bg-white shadow-sm border-b flex-shrink-0">
+        <header class="flex-shrink-0 bg-white border-b shadow-sm">
             <div class="px-4 py-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
@@ -49,10 +49,10 @@
                         </div>
                     </div>
                     <div class="flex items-center space-x-3">
-                        <button id="save-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                        <button id="save-btn" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
                             Guardar
                         </button>
-                        <a href="{{ route('creator.components.show', [$website, $component]) }}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm">
+                        <a href="{{ route('creator.components.show', [$website, $component]) }}" class="px-4 py-2 text-sm text-white bg-gray-600 rounded-md hover:bg-gray-700">
                             Vista Previa
                         </a>
                     </div>
@@ -61,22 +61,22 @@
         </header>
 
         <!-- Editor -->
-        <div class="flex-1 flex">
+        <div class="flex flex-1">
             <!-- Sidebar con paneles -->
-            <div class="w-80 bg-gray-50 border-r border-gray-200 flex flex-col">
+            <div class="flex flex-col border-r border-gray-200 w-80 bg-gray-50">
                 <!-- Panel Tabs -->
                 <div class="border-b border-gray-200">
-                    <nav class="flex space-x-8 px-4" aria-label="Tabs">
-                        <button class="tab-button active border-b-2 border-blue-500 py-3 px-1 text-center border-b-2 font-medium text-sm text-blue-600" data-panel="blocks">
+                    <nav class="flex px-4 space-x-8" aria-label="Tabs">
+                        <button class="px-1 py-3 text-sm font-medium text-center text-blue-600 border-b-2 border-blue-500 tab-button active" data-panel="blocks">
                             Bloques
                         </button>
-                        <button class="tab-button border-b-2 border-transparent py-3 px-1 text-center border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700" data-panel="layers">
+                        <button class="px-1 py-3 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent tab-button hover:text-gray-700" data-panel="layers">
                             Capas
                         </button>
-                        <button class="tab-button border-b-2 border-transparent py-3 px-1 text-center border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700" data-panel="styles">
+                        <button class="px-1 py-3 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent tab-button hover:text-gray-700" data-panel="styles">
                             Estilos
                         </button>
-                        <button class="tab-button border-b-2 border-transparent py-3 px-1 text-center border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700" data-panel="traits">
+                        <button class="px-1 py-3 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent tab-button hover:text-gray-700" data-panel="traits">
                             Propiedades
                         </button>
                     </nav>
@@ -84,25 +84,25 @@
                 
                 <!-- Panel Content -->
                 <div class="flex-1 overflow-auto">
-                    <div id="blocks-panel" class="panel-content p-4">
+                    <div id="blocks-panel" class="p-4 panel-content">
                         <div id="gjs-blocks" class="gjs-blocks-container"></div>
                     </div>
-                    <div id="layers-panel" class="panel-content p-4 hidden">
+                    <div id="layers-panel" class="hidden p-4 panel-content">
                         <div class="layers-container"></div>
                     </div>
-                    <div id="styles-panel" class="panel-content p-4 hidden">
+                    <div id="styles-panel" class="hidden p-4 panel-content">
                         <div class="styles-container"></div>
                     </div>
-                    <div id="traits-panel" class="panel-content p-4 hidden">
+                    <div id="traits-panel" class="hidden p-4 panel-content">
                         <div class="traits-container"></div>
                     </div>
                 </div>
             </div>
             
             <!-- Main Editor Canvas -->
-            <div class="flex-1 flex flex-col">
+            <div class="flex flex-col flex-1">
                 <!-- Component Type Info -->
-                <div class="bg-blue-50 border-b border-blue-200 px-4 py-2">
+                <div class="px-4 py-2 border-b border-blue-200 bg-blue-50">
                     <div class="flex items-center justify-center">
                         <div class="text-center">
                             <p class="text-sm text-blue-800">
@@ -162,7 +162,7 @@
                     {
                         id: 'paragraph',
                         label: 'Párrafo',
-                        content: '<p class="text-gray-700 leading-relaxed">Este es un párrafo de ejemplo.</p>',
+                        content: '<p class="leading-relaxed text-gray-700">Este es un párrafo de ejemplo.</p>',
                     },
                     {
                         id: 'image',
@@ -174,22 +174,22 @@
                     {
                         id: 'button',
                         label: 'Botón',
-                        content: '<button class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">Botón</button>',
+                        content: '<button class="px-6 py-2 text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700">Botón</button>',
                     },
                     {
                         id: 'link',
                         label: 'Enlace',
-                        content: '<a href="#" class="text-blue-600 hover:text-blue-800 underline">Enlace de ejemplo</a>',
+                        content: '<a href="#" class="text-blue-600 underline hover:text-blue-800">Enlace de ejemplo</a>',
                     },
                     {
                         id: 'divider',
                         label: 'Divisor',
-                        content: '<hr class="border-gray-300 my-8">',
+                        content: '<hr class="my-8 border-gray-300">',
                     },
                     {
                         id: 'container',
                         label: 'Contenedor',
-                        content: '<div class="container mx-auto px-4"></div>',
+                        content: '<div class="container px-4 mx-auto"></div>',
                     },
                     {
                         id: 'flex-row',

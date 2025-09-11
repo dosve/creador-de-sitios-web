@@ -8,9 +8,11 @@ use App\Models\PageVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class PageController extends Controller
 {
+    use AuthorizesRequests;
     public function index(Website $website)
     {
         $this->authorize('view', $website);
@@ -27,7 +29,7 @@ class PageController extends Controller
     public function store(Request $request, Website $website)
     {
         $this->authorize('update', $website);
-        
+
         $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:pages,slug,NULL,id,website_id,' . $website->id,
@@ -70,7 +72,7 @@ class PageController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('update', $page);
-        
+
         $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:pages,slug,' . $page->id . ',id,website_id,' . $website->id,
@@ -99,9 +101,9 @@ class PageController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('delete', $page);
-        
+
         $page->delete();
-        
+
         return redirect()->route('creator.pages.index', $website)
             ->with('success', 'Página eliminada exitosamente');
     }
@@ -117,7 +119,7 @@ class PageController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('update', $page);
-        
+
         $request->validate([
             'html_content' => 'required|string',
             'css_content' => 'nullable|string',
@@ -137,9 +139,9 @@ class PageController extends Controller
     {
         $this->authorize('view', $website);
         $this->authorize('view', $page);
-        
+
         $versions = $page->versions()->with('user')->paginate(10);
-        
+
         return view('creator.pages.versions', compact('website', 'page', 'versions'));
     }
 
@@ -147,7 +149,7 @@ class PageController extends Controller
     {
         $this->authorize('view', $website);
         $this->authorize('view', $page);
-        
+
         return view('creator.pages.version-show', compact('website', 'page', 'version'));
     }
 
@@ -155,7 +157,7 @@ class PageController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('update', $page);
-        
+
         $request->validate([
             'change_description' => 'nullable|string|max:255',
         ]);
@@ -170,7 +172,7 @@ class PageController extends Controller
     {
         $this->authorize('view', $website);
         $this->authorize('view', $page);
-        
+
         return view('creator.pages.compare-versions', compact('website', 'page', 'version1', 'version2'));
     }
 }

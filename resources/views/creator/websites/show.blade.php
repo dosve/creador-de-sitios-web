@@ -164,14 +164,19 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
                                         </div>
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-900">{{ $page->title }}</p>
-                                            <p class="text-xs text-gray-500">{{ $page->updated_at->format('d/m/Y H:i') }}</p>
-                                        </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">{{ $page->title }}</p>
+                                        <p class="text-xs text-gray-500">{{ $page->updated_at->format('d/m/Y H:i') }}</p>
                                     </div>
+                                </div>
+                                <div class="flex space-x-2">
                                     <a href="{{ route('creator.pages.edit', [$website, $page]) }}" class="text-blue-600 hover:text-blue-800 text-sm">
                                         Editar
                                     </a>
+                                    <a href="{{ route('creator.pages.editor', [$website, $page]) }}" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                        Editor Visual
+                                    </a>
+                                </div>
                                 </div>
                                 @endforeach
                             </div>

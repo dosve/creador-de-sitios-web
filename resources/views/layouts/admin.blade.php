@@ -13,21 +13,28 @@
 <body class="bg-gray-100">
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div id="sidebar" class="hidden md:flex md:w-64 md:flex-col md:relative md:translate-x-0 transition-transform duration-300 ease-in-out">
+        <div id="sidebar" class="hidden md:flex md:w-64 md:flex-col md:relative md:translate-x-0 transition-all duration-300 ease-in-out">
             <div class="flex flex-col flex-grow pt-5 bg-white overflow-y-auto border-r border-gray-200">
                 <!-- Logo -->
-                <div class="flex items-center flex-shrink-0 px-4">
+                <div class="flex items-center justify-between flex-shrink-0 px-4">
                     <div class="flex items-center">
                         <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                             </svg>
                         </div>
-                        <div class="ml-3">
+                        <div class="ml-3 sidebar-text">
                             <h1 class="text-lg font-semibold text-gray-900">Creador Web</h1>
                             <p class="text-xs text-gray-500">Panel Admin</p>
                         </div>
                     </div>
+                    <!-- Desktop sidebar toggle button -->
+                    <button type="button" id="desktop-sidebar-toggle" class="hidden md:block p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+                        <span class="sr-only">Ocultar sidebar</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
                 </div>
 
                 <!-- Navigation -->
@@ -175,6 +182,14 @@
                             </svg>
                         </button>
 
+                        <!-- Desktop sidebar toggle button -->
+                        <button type="button" id="desktop-sidebar-toggle-header" class="hidden md:block -ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                            <span class="sr-only">Mostrar sidebar</span>
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+
                         <h1 class="text-2xl font-semibold text-gray-900">@yield('page-title', 'Panel de Administración')</h1>
                     </div>
 
@@ -227,14 +242,78 @@
     @stack('scripts')
 
     <script>
-        // Mobile sidebar toggle
+        // Sidebar toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
             const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const desktopToggleButton = document.getElementById('desktop-sidebar-toggle');
+            const desktopToggleHeaderButton = document.getElementById('desktop-sidebar-toggle-header');
             const sidebar = document.getElementById('sidebar');
+            const sidebarText = document.querySelectorAll('.sidebar-text');
 
+            // Check if sidebar is collapsed (stored in localStorage)
+            const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+            if (isCollapsed) {
+                collapseSidebar();
+            }
+
+            // Desktop toggle functionality
+            function toggleSidebar() {
+                if (window.innerWidth >= 768) { // Desktop only
+                    if (sidebar.classList.contains('collapsed')) {
+                        expandSidebar();
+                    } else {
+                        collapseSidebar();
+                    }
+                }
+            }
+
+            function collapseSidebar() {
+                if (window.innerWidth >= 768) {
+                    sidebar.classList.add('collapsed');
+                    sidebar.classList.remove('md:w-64');
+                    sidebar.classList.add('md:w-16');
+                    sidebarText.forEach(el => el.classList.add('hidden'));
+                    
+                    // Update toggle button icon
+                    const toggleIcon = desktopToggleButton.querySelector('svg path');
+                    if (toggleIcon) {
+                        toggleIcon.setAttribute('d', 'M9 5l7 7-7 7');
+                    }
+                    
+                    // Update header toggle button visibility
+                    if (desktopToggleHeaderButton) {
+                        desktopToggleHeaderButton.classList.remove('hidden');
+                    }
+                    
+                    localStorage.setItem('sidebar-collapsed', 'true');
+                }
+            }
+
+            function expandSidebar() {
+                if (window.innerWidth >= 768) {
+                    sidebar.classList.remove('collapsed');
+                    sidebar.classList.remove('md:w-16');
+                    sidebar.classList.add('md:w-64');
+                    sidebarText.forEach(el => el.classList.remove('hidden'));
+                    
+                    // Update toggle button icon
+                    const toggleIcon = desktopToggleButton.querySelector('svg path');
+                    if (toggleIcon) {
+                        toggleIcon.setAttribute('d', 'M15 19l-7-7 7-7');
+                    }
+                    
+                    // Hide header toggle button
+                    if (desktopToggleHeaderButton) {
+                        desktopToggleHeaderButton.classList.add('hidden');
+                    }
+                    
+                    localStorage.setItem('sidebar-collapsed', 'false');
+                }
+            }
+
+            // Mobile sidebar toggle
             if (mobileMenuButton && sidebar) {
                 mobileMenuButton.addEventListener('click', function() {
-                    // Toggle sidebar visibility
                     if (sidebar.classList.contains('hidden')) {
                         // Show sidebar
                         sidebar.classList.remove('hidden');
@@ -256,6 +335,35 @@
                     }
                 });
             }
+
+            // Desktop toggle buttons
+            if (desktopToggleButton) {
+                desktopToggleButton.addEventListener('click', toggleSidebar);
+            }
+
+            if (desktopToggleHeaderButton) {
+                desktopToggleHeaderButton.addEventListener('click', function() {
+                    expandSidebar();
+                });
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth < 768) {
+                    // Mobile: reset sidebar to normal state
+                    sidebar.classList.remove('collapsed', 'md:w-16');
+                    sidebar.classList.add('md:w-64');
+                    sidebarText.forEach(el => el.classList.remove('hidden'));
+                    if (desktopToggleHeaderButton) {
+                        desktopToggleHeaderButton.classList.add('hidden');
+                    }
+                } else {
+                    // Desktop: restore collapsed state if needed
+                    if (localStorage.getItem('sidebar-collapsed') === 'true') {
+                        collapseSidebar();
+                    }
+                }
+            });
         });
     </script>
 </body>
