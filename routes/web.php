@@ -274,6 +274,11 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
     Route::post('websites/{website}/config/security/generate-ssl', [App\Http\Controllers\Creator\SecurityConfigController::class, 'generateSsl'])->name('config.security.generate-ssl');
     Route::post('websites/{website}/config/security/update', [App\Http\Controllers\Creator\SecurityConfigController::class, 'updateSecurity'])->name('config.security.update');
 
+    // Rutas de configuración de API
+    Route::get('websites/{website}/config/api', [App\Http\Controllers\Creator\ApiConfigController::class, 'show'])->name('config.api');
+    Route::put('websites/{website}/config/api', [App\Http\Controllers\Creator\ApiConfigController::class, 'update'])->name('config.api.update');
+    Route::post('websites/{website}/config/api/test', [App\Http\Controllers\Creator\ApiConfigController::class, 'test'])->name('config.api.test');
+
     // Rutas de tienda en línea
     Route::get('websites/{website}/store/products', [App\Http\Controllers\Creator\StoreController::class, 'products'])->name('store.products');
     Route::get('websites/{website}/store/categories', [App\Http\Controllers\Creator\StoreController::class, 'categories'])->name('store.categories');

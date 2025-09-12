@@ -20,6 +20,8 @@ class Website extends Model
         'settings',
         'seo_settings',
         'template_id',
+        'api_key',
+        'api_base_url',
     ];
 
     protected function casts(): array
