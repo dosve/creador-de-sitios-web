@@ -75,5 +75,181 @@
     </main>
 
     @yield('scripts')
+    
+    <!-- Script para cargar productos reales en la vista previa -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 Vista previa cargada, buscando productos...');
+            
+            // Función para cargar productos reales
+            function loadRealProductsInPreview() {
+                console.log('🚀 Iniciando carga de productos en vista previa...');
+                
+                // Buscar contenedores de productos de múltiples formas
+                let productsContainers = document.querySelectorAll('#products-container');
+                console.log('📦 Contenedores por ID encontrados:', productsContainers.length);
+                
+                // Si no encuentra por ID, buscar por atributo data
+                if (productsContainers.length === 0) {
+                    productsContainers = document.querySelectorAll('[data-dynamic-products="true"] .grid');
+                    console.log('📦 Contenedores por atributo data encontrados:', productsContainers.length);
+                }
+                
+                // Si aún no encuentra, buscar por clase
+                if (productsContainers.length === 0) {
+                    productsContainers = document.querySelectorAll('.products-list .grid');
+                    console.log('📦 Contenedores por clase .products-list .grid:', productsContainers.length);
+                }
+                
+                // Si aún no encuentra, buscar cualquier grid que contenga productos de ejemplo
+                if (productsContainers.length === 0) {
+                    const allGrids = document.querySelectorAll('.grid');
+                    productsContainers = Array.from(allGrids).filter(grid => 
+                        grid.innerHTML.includes('Producto de Ejemplo') || 
+                        grid.innerHTML.includes('products-container')
+                    );
+                    console.log('📦 Contenedores por contenido encontrados:', productsContainers.length);
+                }
+                
+                if (productsContainers.length === 0) {
+                    console.log('❌ No se encontraron contenedores de productos en la vista previa');
+                    return;
+                }
+                
+                console.log('✅ Cargando productos reales en la vista previa...');
+                
+                productsContainers.forEach((container, index) => {
+                    console.log(`🔄 Procesando contenedor ${index + 1}`);
+                    
+                    // Mostrar loading
+                    container.innerHTML = `
+                        <div class="flex items-center justify-center py-12 col-span-full">
+                            <div class="text-center">
+                                <div class="w-12 h-12 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin"></div>
+                                <p class="text-gray-600">Cargando productos...</p>
+                            </div>
+                        </div>
+                    `;
+
+                    // Hacer petición a la API
+                    const apiUrl = '{{ route("creator.store.products", $website) }}?per_page=6';
+                    console.log('🔍 Haciendo petición a:', apiUrl);
+                    
+                    fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        console.log('📡 Respuesta recibida:', response.status, response.statusText);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('📦 Datos recibidos:', data);
+                        console.log('✅ Success:', data.success);
+                        console.log('📋 Products:', data.products);
+                        console.log('🔢 Products count:', data.products ? data.products.length : 0);
+                        
+                        if (data.success && data.products && data.products.length > 0) {
+                            console.log('✅ Renderizando productos reales...');
+                            renderRealProducts(container, data.products);
+                        } else {
+                            console.log('❌ No hay productos o error en la respuesta');
+                            showNoProductsMessage(container);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('💥 Error al cargar productos:', error);
+                        showErrorLoadingProducts(container);
+                    });
+                });
+            }
+
+            // Función para renderizar productos reales
+            function renderRealProducts(container, products) {
+                const productsHtml = products.map(product => {
+                    const isExternal = product.producto !== undefined;
+                    const title = isExternal ? product.producto : product.title;
+                    const description = isExternal ? product.descripcion : product.content;
+                    const price = isExternal ? product.precio : product.price;
+                    const image = isExternal ? product.img : (product.featured_image ? `/storage/${product.featured_image}` : null);
+                    const category = isExternal ? product.categoria : product.category;
+                    
+                    return `
+                        <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                            ${image ? 
+                                `<div class="mb-4 aspect-w-16 aspect-h-9">
+                                    <img src="${image}" alt="${title}" class="object-cover w-full h-48 rounded-lg">
+                                </div>` :
+                                `<div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
+                                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>`
+                            }
+                            <h3 class="mb-2 text-lg font-semibold text-gray-900">${title}</h3>
+                            ${category ? 
+                                `<span class="inline-block px-2 py-1 mb-2 text-xs text-blue-800 bg-blue-100 rounded-full">${isExternal ? category.categoria : category.name}</span>` : ''
+                            }
+                            <p class="mb-4 text-sm text-gray-600 line-clamp-2">${description ? (isExternal ? description : description.replace(/<[^>]*>/g, '')) : 'Sin descripción'}</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-bold text-green-600">$${price || '0.00'}</span>
+                                <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                    Ver Producto
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Agregar el botón "Ver más" después de los productos
+                const seeMoreButton = `
+                    <div class="mt-12 text-center col-span-full">
+                        <a href="{{ route('creator.store.products', $website) }}" class="inline-flex items-center px-8 py-3 text-base font-medium text-white transition-colors bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Ver más productos
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </a>
+                    </div>
+                `;
+
+                container.innerHTML = productsHtml + seeMoreButton;
+            }
+
+            // Función para mostrar mensaje cuando no hay productos
+            function showNoProductsMessage(container) {
+                container.innerHTML = `
+                    <div class="py-12 text-center col-span-full">
+                        <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                        <h3 class="mb-2 text-lg font-medium text-gray-900">No hay productos disponibles</h3>
+                        <p class="text-gray-600">Los productos aparecerán aquí cuando estén disponibles.</p>
+                    </div>
+                `;
+            }
+
+            // Función para mostrar error al cargar productos
+            function showErrorLoadingProducts(container) {
+                container.innerHTML = `
+                    <div class="py-12 text-center col-span-full">
+                        <svg class="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="mb-2 text-lg font-medium text-gray-900">Error al cargar productos</h3>
+                        <p class="text-gray-600">No se pudieron cargar los productos. Verifica la configuración de la API.</p>
+                    </div>
+                `;
+            }
+
+            // Cargar productos después de un breve delay
+            setTimeout(() => {
+                loadRealProductsInPreview();
+            }, 500);
+        });
+    </script>
 </body>
 </html>

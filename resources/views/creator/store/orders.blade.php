@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-8">
             <div class="flex items-center justify-between">
@@ -13,7 +13,7 @@
                     <p class="mt-2 text-gray-600">Gestiona los pedidos de tu tienda</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <select class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select class="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Todos los estados</option>
                         <option value="pending">Pendiente</option>
                         <option value="processing">Procesando</option>
@@ -25,39 +25,39 @@
             </div>
         </div>
 
-        <!-- Controles de paginación -->
+        <!-- Paginación superior -->
         @if($useExternalApi && $pagination)
-            <div class="mb-6 flex justify-end">
-                <x-per-page-selector label="Pedidos por página:" />
+            <div class="mb-4">
+                <x-pagination :pagination="$pagination" :showPerPageSelector="true" label="pedidos" />
             </div>
         @endif
 
         <!-- Orders Table -->
         @if($useExternalApi && count($externalOrders) > 0)
-            <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+            <div class="overflow-hidden bg-white rounded-lg shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Pedido
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Cliente
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Productos
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Total
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Estado
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Fecha
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Acciones
                                 </th>
                             </tr>
@@ -107,10 +107,10 @@
                                             {{ $statusLabels[$order['estado']] ?? ucfirst($order['estado']) }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                                         {{ \Carbon\Carbon::parse($order['created_at'])->format('d/m/Y H:i') }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                         <div class="flex items-center space-x-2">
                                             <button onclick="viewOrder({{ $order['id'] }})" 
                                                     class="text-blue-600 hover:text-blue-900">
@@ -125,30 +125,30 @@
                 </div>
             </div>
         @elseif(!$useExternalApi && $orders->count() > 0)
-            <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+            <div class="overflow-hidden bg-white rounded-lg shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Pedido
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Cliente
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Productos
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Total
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Estado
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Fecha
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Acciones
                                 </th>
                             </tr>
@@ -200,10 +200,10 @@
                                             {{ $statusLabels[$order->status] ?? ucfirst($order->status) }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                                         {{ $order->created_at->format('d/m/Y H:i') }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                         <div class="flex items-center space-x-2">
                                             <button onclick="viewOrder({{ $order->id }})" 
                                                     class="text-blue-600 hover:text-blue-900">
@@ -223,8 +223,8 @@
                 </div>
             </div>
         @else
-            <div class="text-center py-12">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="py-12 text-center">
+                <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
                 <h3 class="mt-2 text-sm font-medium text-gray-900">No hay pedidos</h3>
@@ -240,16 +240,16 @@
 
         <!-- Paginación -->
         @if($useExternalApi && $pagination)
-            <x-pagination :pagination="$pagination" :showPerPageSelector="false" />
+            <x-pagination :pagination="$pagination" :showPerPageSelector="true" label="pedidos" />
         @endif
     </div>
 </div>
 
 <!-- Order Details Modal -->
-<div id="orderModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+<div id="orderModal" class="fixed inset-0 hidden w-full h-full overflow-y-auto bg-gray-600 bg-opacity-50">
+    <div class="relative w-11/12 max-w-4xl p-5 mx-auto bg-white border rounded-md shadow-lg top-10">
         <div class="mt-3">
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-medium text-gray-900">Detalles del Pedido</h3>
                 <button onclick="closeOrderModal()" class="text-gray-400 hover:text-gray-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -14,39 +14,39 @@ class SharedComponentController extends Controller
     public function index(Website $website)
     {
         $this->authorize('view', $website);
-        
+
         $components = $website->sharedComponents()
             ->ordered()
             ->paginate(15);
-        
+
         $componentTypes = [
             'header' => 'Encabezados',
             'footer' => 'Pies de página',
             'menu' => 'Menús',
             'block' => 'Bloques reutilizables'
         ];
-        
+
         return view('creator.components.index', compact('website', 'components', 'componentTypes'));
     }
 
     public function create(Website $website)
     {
         $this->authorize('update', $website);
-        
+
         $componentTypes = [
             'header' => 'Encabezado',
             'footer' => 'Pie de página',
             'menu' => 'Menú de navegación',
             'block' => 'Bloque reutilizable'
         ];
-        
+
         return view('creator.components.create', compact('website', 'componentTypes'));
     }
 
     public function store(Request $request, Website $website)
     {
         $this->authorize('update', $website);
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:header,footer,menu,block',
@@ -78,7 +78,7 @@ class SharedComponentController extends Controller
     {
         $this->authorize('view', $website);
         $this->authorize('view', $component);
-        
+
         return view('creator.components.show', compact('website', 'component'));
     }
 
@@ -86,14 +86,14 @@ class SharedComponentController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('update', $component);
-        
+
         $componentTypes = [
             'header' => 'Encabezado',
             'footer' => 'Pie de página',
             'menu' => 'Menú de navegación',
             'block' => 'Bloque reutilizable'
         ];
-        
+
         return view('creator.components.edit', compact('website', 'component', 'componentTypes'));
     }
 
@@ -101,7 +101,7 @@ class SharedComponentController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('update', $component);
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:header,footer,menu,block',
@@ -132,9 +132,9 @@ class SharedComponentController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('delete', $component);
-        
+
         $component->delete();
-        
+
         return redirect()->route('creator.components.index', $website)
             ->with('success', 'Componente eliminado exitosamente');
     }
@@ -143,9 +143,9 @@ class SharedComponentController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('view', $component);
-        
+
         $duplicate = $component->duplicate();
-        
+
         return redirect()->route('creator.components.show', [$website, $duplicate])
             ->with('success', 'Componente duplicado exitosamente');
     }
@@ -154,9 +154,9 @@ class SharedComponentController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('update', $component);
-        
+
         $component->update(['is_active' => !$component->is_active]);
-        
+
         $status = $component->is_active ? 'activado' : 'desactivado';
         return redirect()->route('creator.components.index', $website)
             ->with('success', "Componente {$status} exitosamente");
@@ -166,15 +166,20 @@ class SharedComponentController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('update', $component);
-        
-        return view('creator.components.editor', compact('website', 'component'));
+
+        return view('creator.pages.editor', [
+            'website' => $website,
+            'editable' => $component,
+            'editableType' => 'component',
+            'saveRoute' => route('creator.components.save', [$website, $component])
+        ]);
     }
 
     public function saveContent(Request $request, Website $website, SharedComponent $component)
     {
         $this->authorize('update', $website);
         $this->authorize('update', $component);
-        
+
         $request->validate([
             'html_content' => 'required|string',
             'css_content' => 'nullable|string',

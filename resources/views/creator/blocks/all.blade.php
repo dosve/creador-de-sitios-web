@@ -1,0 +1,20 @@
+{{-- Incluir todos los bloques --}}
+@include('creator.blocks.basic')
+,
+@include('creator.blocks.layout')
+,
+@include('creator.blocks.multimedia')
+,
+@include('creator.blocks.forms')
+,
+@include('creator.blocks.pricing')
+,
+@include('creator.blocks.navigation')
+,
+@include('creator.blocks.social')
+,
+@include('creator.blocks.products')
+,
+@include('creator.blocks.ecommerce')
+,
+@include('creator.blocks.footer')

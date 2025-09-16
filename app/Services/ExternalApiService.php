@@ -140,15 +140,15 @@ class ExternalApiService
     }
 
     /**
-     * Obtiene categorías
+     * Obtiene categorías con filtros opcionales
      */
-    public function getCategories()
+    public function getCategories($filters = [])
     {
         try {
             $response = Http::withHeaders([
                 'X-API-Key' => $this->apiKey,
                 'Content-Type' => 'application/json'
-            ])->get($this->baseUrl . '/api-key/categories');
+            ])->get($this->baseUrl . '/api-key/categories', $filters);
 
             if ($response->successful()) {
                 return $response->json();
@@ -156,13 +156,15 @@ class ExternalApiService
 
             Log::error('Error al obtener categorías', [
                 'status' => $response->status(),
-                'response' => $response->body()
+                'response' => $response->body(),
+                'filters' => $filters
             ]);
 
             return null;
         } catch (\Exception $e) {
             Log::error('Excepción al obtener categorías', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'filters' => $filters
             ]);
             return null;
         }

@@ -292,6 +292,7 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
     Route::post('websites/{website}/integrations/epayco', [App\Http\Controllers\Creator\IntegrationController::class, 'epaycoStore'])->name('integrations.epayco.store');
     Route::get('websites/{website}/integrations/admin-negocios', [App\Http\Controllers\Creator\IntegrationController::class, 'adminNegocios'])->name('integrations.admin-negocios');
     Route::post('websites/{website}/integrations/admin-negocios', [App\Http\Controllers\Creator\IntegrationController::class, 'adminNegociosStore'])->name('integrations.admin-negocios.store');
+    Route::post('websites/{website}/integrations/admin-negocios/test-api', [App\Http\Controllers\Creator\IntegrationController::class, 'testApiConnection'])->name('integrations.admin-negocios.test-api');
     });
 });
 
@@ -302,3 +303,4 @@ Route::get('/home', function () {
     }
     return redirect()->route('creator.select-website');
 })->middleware('auth');
+

@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Editor - {{ $page->title }} - {{ $website->name }}</title>
+    @vite('resources/js/app.js')
+    <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
+    <style>
+
+      :root{
+        --gjs-primary: #2563eb;          /* botones/acentos */
+        --gjs-secondary: #111827;        /* texto principal */
+        --gjs-tertiary: #6b7280;         /* texto suave */
+        --gjs-quaternary: #e5e7eb;       /* bordes suaves */
+        --gjs-bg: #ffffff;               /* fondo paneles */
+        --gjs-font-size: 13px;
+        }
+
+        /* Fallback para versiones viejas (clases “one/two/three/four”) */
+        .gjs-one-bg{ background:#ffffff; }
+        .gjs-two-color{ color:#111827; }
+        .gjs-three-bg{ background:#f3f4f6; }   /* barras/paneles secundarios */
+        .gjs-four-color{ color:#374151; }
+
+        .gjs-cv-canvas {
+            width: 100% !important;
+        }
+
+        /* Paneles y botones */
+        .gjs-pn-panel,
+        .gjs-pn-views,
+        .gjs-pn-options,
+        .gjs-pn-commands{ background:#ffffff; border-color:#e5e7eb; }
+        .gjs-pn-btn{ color:#374151; }
+        .gjs-pn-btn.gjs-pn-active,
+        .gjs-pn-btn:hover{ background:#e5effe; color:#1d4ed8; }
+
+        /* Contenedores de bloques/estilos/capas */
+        .gjs-blocks-c,
+        .gjs-layer-manager,
+        .gjs-sm-sectors{ background:#f8fafc; color:#111827; }
+        .gjs-block, .gjs-block-label{ color:#111827; }
+        .gjs-field{ background:#ffffff; color:#111827; border-color:#e5e7eb; }
+
+        /* Canvas alrededor del lienzo (fuera del iframe) */
+        .gjs-editor-cont, .gjs-cv-canvas{ background:#f3f4f6; }
+
+        /* Resaltados y selección (más visibles) */
+        .gjs-selected{ outline:2px solid #2563eb !important; }
+        .gjs-resizer-h{ border-color:#2563eb !important; }
+
+        .gjs-pn-panel {
+            background: #f8f9fa;
+        }
+
+        .gjs-block {
+            width: auto;
+            height: auto;
+            min-height: auto;
+            padding: 10px;
+            margin: 5px;
+        }
+
+        .gjs-block-section {
+            background: #e3f2fd;
+            border: 2px dashed #2196f3;
+        }
+
+        .gjs-block-text {
+            background: #f3e5f5;
+            border: 2px dashed #9c27b0;
+        }
+
+        .gjs-block-image {
+            background: #e8f5e8;
+            border: 2px dashed #4caf50;
+        }
+
+        .gjs-block-video {
+            background: #fff3e0;
+            border: 2px dashed #ff9800;
+        }
+
+        .gjs-block-form {
+            background: #fce4ec;
+            border: 2px dashed #e91e63;
+        }
+
+        .gjs-block-gallery {
+            background: #f1f8e9;
+            border: 2px dashed #8bc34a;
+        }
+
+        .gjs-block-testimonial {
+            background: #e0f2f1;
+            border: 2px dashed #009688;
+        }
+
+        .gjs-block-pricing {
+            background: #fff8e1;
+            border: 2px dashed #ffc107;
+        }
+
+        .gjs-block-contact {
+            background: #e8eaf6;
+            border: 2px dashed #3f51b5;
+        }
+
+        .gjs-block-newsletter {
+            background: #f3e5f5;
+            border: 2px dashed #9c27b0;
+        }
+
+        .gjs-block-map {
+            background: #e0f7fa;
+            border: 2px dashed #00bcd4;
+        }
+
+        .gjs-block-social {
+            background: #f9fbe7;
+            border: 2px dashed #827717;
+        }
+
+    </style>
+</head>
+
+<body>
+  <div class="flex flex-col min-h-screen">
+        <!-- Header -->
+    <header class="flex-shrink-0 bg-white border-b shadow-sm">
+            <div class="px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ route('creator.websites.show', $website) }}" class="text-gray-600 hover:text-gray-900">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </a>
+                        <div>
+                            <h1 class="text-lg font-medium text-gray-900">{{ $page->title }}</h1>
+                            <p class="text-sm text-gray-500">{{ $website->name }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                         <button id="save-btn" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                            Guardar
+                        </button>
+                        <a href="{{ route('creator.preview.page', [$website, $page]) }}" target="_blank" class="px-4 py-2 text-sm text-white bg-gray-600 rounded-md hover:bg-gray-700">
+                            Vista Previa
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Editor -->
+    <div class="flex flex-1">
+            <!-- Sidebar con paneles -->
+      <div class="flex flex-col border-r border-gray-200 w-80 bg-gray-50">
+                <!-- Panel Tabs -->
+                <div class="border-b border-gray-200">
+          <nav class="flex items-center gap-4 px-3 overflow-x-auto whitespace-nowrap" aria-label="Tabs">
+            <button class="px-1 py-3 text-sm font-medium text-center text-blue-600 border-b-2 border-blue-500 tab-button active" data-panel="blocks">
+                            Bloques
+                        </button>
+            <button class="px-1 py-3 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent tab-button hover:text-gray-700" data-panel="layers">
+                            Capas
+                        </button>
+            <button class="px-1 py-3 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent tab-button hover:text-gray-700" data-panel="styles">
+                            Estilos
+                        </button>
+            <button class="px-1 py-3 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent tab-button hover:text-gray-700" data-panel="traits">
+                            Propiedades
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Panel Content -->
+                <div class="flex-1 overflow-auto">
+          <div id="blocks-panel" class="p-4 panel-content">
+                        <div id="gjs-blocks" class="gjs-blocks-container"></div>
+                    </div>
+          <div id="layers-panel" class="hidden p-4 panel-content">
+                        <div class="layers-container"></div>
+                    </div>
+          <div id="styles-panel" class="hidden p-4 panel-content">
+                        <div class="styles-container"></div>
+                    </div>
+          <div id="traits-panel" class="hidden p-4 panel-content">
+                        <div class="traits-container"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Editor Canvas -->
+      <div class="flex flex-col flex-1">
+
+                <!-- Canvas -->
+                <div class="flex-1">
+                    <div id="gjs" style="height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/grapesjs"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM cargado, iniciando GrapesJS...');
+
+      // Verificar que GrapesJS esté disponible
+      if (typeof grapesjs === 'undefined') {
+        console.error('GrapesJS no se ha cargado correctamente');
+        alert('Error: El editor no se pudo cargar. Por favor, recarga la página.');
+        return;
+      }
+
+        console.log('GrapesJS disponible:', grapesjs);
+
+
+      const editor = grapesjs.init({
+        container: '#gjs'
+        , height: '100%'
+        , width: '100%'
+        , storageManager: false
+        , plugins: []
+        , pluginsOpts: {}
+        , showOffsets: true
+        , noticeOnUnload: true
+        , colorPrimary: '#3B82F6'
+        , colorSecondary: '#6B7280'
+        , colorTertiary: '#10B981'
+        , panels: { defaults: [] }
+        , colorQuaternary: '#F59E0B'
+        , canvas: {
+                styles: [
+                    'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css'
+                ]
+        }
+        , blockManager: {
+          appendTo: '#gjs-blocks'
+          , blocks: [
+                    @include('creator.blocks.all')
+              , attributes: {
+                            class: 'gjs-block-section'
+              }
+              , content: `<section class="p-8 bg-gray-100">
+                            <h1 class="text-3xl font-bold text-center">Título de la Sección</h1>
+                            <p class="mt-4 text-center text-gray-600">Contenido de la sección...</p>
+                        </section>`
+            , }
+            , {
+              id: 'text'
+              , label: 'Texto'
+              , content: '<div data-gjs-type="text" class="p-4">Haz clic para editar este texto</div>'
+            , }
+            , {
+              id: 'heading'
+              , label: 'Título'
+              , content: '<h2 class="text-2xl font-bold text-gray-900">Título Principal</h2>'
+            , }
+            , {
+              id: 'paragraph'
+              , label: 'Párrafo'
+              , content: '<p class="leading-relaxed text-gray-700">Este es un párrafo de ejemplo. Puedes editarlo haciendo clic en él.</p>'
+            , }
+            , {
+              id: 'image'
+              , label: 'Imagen'
+              , select: true
+              , content: {
+                            type: 'image'
+              }
+              , activate: true
+            , }
+            , {
+              id: 'button'
+              , label: 'Botón'
+              , content: '<button class="px-6 py-2 text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700">Botón</button>'
+            , }
+            , {
+              id: 'link'
+              , label: 'Enlace'
+              , content: '<a href="#" class="text-blue-600 underline hover:text-blue-800">Enlace de ejemplo</a>'
+            , }
+            , {
+              id: 'divider'
+              , label: 'Divisor'
+              , content: '<hr class="my-8 border-gray-300">'
+            , }
+            , {
+              id: 'hero'
+              , label: 'Hero'
+              , content: `<section class="py-20 text-white bg-gradient-to-r from-blue-600 to-purple-600">
+                            <div class="container mx-auto text-center">
+                                <h1 class="mb-4 text-5xl font-bold">Tu Título Aquí</h1>
+                                <p class="mb-8 text-xl">Descripción de tu producto o servicio</p>
+                                <button class="px-8 py-3 font-semibold text-blue-600 bg-white rounded-lg hover:bg-gray-100">Call to Action</button>
+                            </div>
+                        </section>`
+            , }
+            , {
+              id: 'features'
+              , label: 'Características'
+              , content: `<section class="py-16 bg-white">
+                            <div class="container px-4 mx-auto">
+                                <h2 class="mb-12 text-3xl font-bold text-center">Nuestras Características</h2>
+                                <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+                                    <div class="text-center">
+                                        <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full">
+                                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                            </svg>
+                                        </div>
+                                        <h3 class="mb-2 text-xl font-semibold">Rápido</h3>
+                                        <p class="text-gray-600">Descripción de la característica</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full">
+                                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <h3 class="mb-2 text-xl font-semibold">Confiable</h3>
+                                        <p class="text-gray-600">Descripción de la característica</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full">
+                                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <h3 class="mb-2 text-xl font-semibold">Fácil</h3>
+                                        <p class="text-gray-600">Descripción de la característica</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>`
+            , },
+                    // Nuevos bloques multimedia
+                    {
+              id: 'video'
+              , label: 'Video'
+              , attributes: {
+                            class: 'gjs-block-video'
+              }
+              , content: `<div class="mb-8 video-container">
+                            <video controls class="w-full rounded-lg shadow-lg">
+                                <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                                Tu navegador no soporta video HTML5.
+                            </video>
+                        </div>`
+            , }
+            , {
+              id: 'youtube'
+              , label: 'YouTube'
+              , attributes: {
+                            class: 'gjs-block-video'
+              }
+              , content: `<div class="mb-8 youtube-container">
+                            <div class="relative h-0 overflow-hidden pb-9/16">
+                                <iframe class="absolute top-0 left-0 w-full h-full rounded-lg" 
+                                        src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                                        frameborder="0" 
+                                        allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>`
+            , }
+            , {
+              id: 'gallery'
+              , label: 'Galería'
+              , attributes: {
+                            class: 'gjs-block-gallery'
+              }
+              , content: `<section class="py-16 gallery">
+                            <div class="container px-4 mx-auto">
+                                <h2 class="mb-12 text-3xl font-bold text-center">Galería de Imágenes</h2>
+                                <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                                    <img src="https://via.placeholder.com/300x300" alt="Imagen 1" class="object-cover w-full h-48 transition-transform rounded-lg hover:scale-105">
+                                    <img src="https://via.placeholder.com/300x300" alt="Imagen 2" class="object-cover w-full h-48 transition-transform rounded-lg hover:scale-105">
+                                    <img src="https://via.placeholder.com/300x300" alt="Imagen 3" class="object-cover w-full h-48 transition-transform rounded-lg hover:scale-105">
+                                    <img src="https://via.placeholder.com/300x300" alt="Imagen 4" class="object-cover w-full h-48 transition-transform rounded-lg hover:scale-105">
+                                </div>
+                            </div>
+                        </section>`
+            , },
+                    // Bloques de formulario
+                    {
+              id: 'form-contact'
+              , label: 'Formulario de Contacto'
+              , attributes: {
+                            class: 'gjs-block-form'
+              }
+              , content: `<section class="py-16 contact-form bg-gray-50">
+                            <div class="container max-w-2xl px-4 mx-auto">
+                                <h2 class="mb-8 text-3xl font-bold text-center">Contáctanos</h2>
+                                <form class="space-y-6">
+                                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                        <input type="text" placeholder="Nombre" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <input type="email" placeholder="Email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <input type="text" placeholder="Asunto" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <textarea placeholder="Mensaje" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                                    <button type="submit" class="w-full py-3 font-semibold text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">Enviar Mensaje</button>
+                                </form>
+                            </div>
+                        </section>`
+            , }
+            , {
+              id: 'newsletter'
+              , label: 'Newsletter'
+              , attributes: {
+                            class: 'gjs-block-newsletter'
+              }
+              , content: `<section class="py-16 text-white bg-blue-600 newsletter">
+                            <div class="container px-4 mx-auto text-center">
+                                <h2 class="mb-4 text-3xl font-bold">Suscríbete a nuestro Newsletter</h2>
+                                <p class="max-w-2xl mx-auto mb-8 text-blue-100">Recibe las últimas noticias y actualizaciones directamente en tu bandeja de entrada.</p>
+                                <form class="flex flex-col max-w-md gap-4 mx-auto md:flex-row">
+                                    <input type="email" placeholder="Tu email" class="flex-1 px-4 py-3 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-white">
+                                    <button type="submit" class="px-6 py-3 font-semibold text-blue-600 transition-colors bg-white rounded-lg hover:bg-gray-100">Suscribirse</button>
+                                </form>
+                            </div>
+                        </section>`
+            , },
+                    // Bloques de testimonios
+                    {
+              id: 'testimonials'
+              , label: 'Testimonios'
+              , attributes: {
+                            class: 'gjs-block-testimonial'
+              }
+              , content: `<section class="py-16 testimonials bg-gray-50">
+                            <div class="container px-4 mx-auto">
+                                <h2 class="mb-12 text-3xl font-bold text-center">Lo que dicen nuestros clientes</h2>
+                                <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+                                    <div class="p-6 bg-white rounded-lg shadow-lg">
+                                        <div class="flex items-center mb-4">
+                                            <img src="https://via.placeholder.com/60x60" alt="Cliente" class="w-12 h-12 mr-4 rounded-full">
+                                            <div>
+                                                <h4 class="font-semibold">María García</h4>
+                                                <p class="text-sm text-gray-600">CEO, Empresa XYZ</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-700">"Excelente servicio, muy recomendable. La atención al cliente es excepcional."</p>
+                                        <div class="flex mt-4 text-yellow-400">
+                                            ★★★★★
+                                        </div>
+                                    </div>
+                                    <div class="p-6 bg-white rounded-lg shadow-lg">
+                                        <div class="flex items-center mb-4">
+                                            <img src="https://via.placeholder.com/60x60" alt="Cliente" class="w-12 h-12 mr-4 rounded-full">
+                                            <div>
+                                                <h4 class="font-semibold">Juan Pérez</h4>
+                                                <p class="text-sm text-gray-600">Director, ABC Corp</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-700">"Los resultados superaron nuestras expectativas. Muy profesionales."</p>
+                                        <div class="flex mt-4 text-yellow-400">
+                                            ★★★★★
+                                        </div>
+                                    </div>
+                                    <div class="p-6 bg-white rounded-lg shadow-lg">
+                                        <div class="flex items-center mb-4">
+                                            <img src="https://via.placeholder.com/60x60" alt="Cliente" class="w-12 h-12 mr-4 rounded-full">
+                                            <div>
+                                                <h4 class="font-semibold">Ana López</h4>
+                                                <p class="text-sm text-gray-600">Fundadora, StartupABC</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-700">"Una experiencia increíble. Sin duda volveríamos a trabajar con ellos."</p>
+                                        <div class="flex mt-4 text-yellow-400">
+                                            ★★★★★
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>`
+            , },
+                    // Bloques de pricing
+                    {
+              id: 'pricing'
+              , label: 'Precios'
+              , attributes: {
+                            class: 'gjs-block-pricing'
+              }
+              , content: `<section class="py-16 pricing">
+                            <div class="container px-4 mx-auto">
+                                <h2 class="mb-12 text-3xl font-bold text-center">Planes y Precios</h2>
+                                <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+                                    <div class="p-8 bg-white border-2 border-gray-200 rounded-lg shadow-lg">
+                                        <h3 class="mb-4 text-xl font-bold">Básico</h3>
+                                        <div class="mb-6 text-4xl font-bold text-blue-600">$19<span class="text-lg text-gray-600">/mes</span></div>
+                                        <ul class="mb-8 space-y-3">
+                                            <li class="flex items-center"><span class="mr-2 text-green-500">✓</span> Hasta 5 páginas</li>
+                                            <li class="flex items-center"><span class="mr-2 text-green-500">✓</span> Soporte básico</li>
+                                            <li class="flex items-center"><span class="mr-2 text-green-500">✓</span> SSL incluido</li>
+                                        </ul>
+                                        <button class="w-full py-3 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">Elegir Plan</button>
+                                    </div>
+                                    <div class="relative p-8 bg-white border-2 border-blue-500 rounded-lg shadow-lg">
+                                        <div class="absolute px-4 py-1 text-sm text-white transform -translate-x-1/2 bg-blue-500 rounded-full -top-4 left-1/2">Más Popular</div>
+                                        <h3 class="mb-4 text-xl font-bold">Pro</h3>
+                                        <div class="mb-6 text-4xl font-bold text-blue-600">$49<span class="text-lg text-gray-600">/mes</span></div>
+                                        <ul class="mb-8 space-y-3">
+                                            <li class="flex items-center"><span class="mr-2 text-green-500">✓</span> Páginas ilimitadas</li>
+                                            <li class="flex items-center"><span class="mr-2 text-green-500">✓</span> Soporte prioritario</li>
+                                            <li class="flex items-center"><span class="mr-2 text-green-500">✓</span> SSL incluido</li>
+                                            <li class="flex items-center"><span class="mr-2 text-green-500">✓</span> Analytics avanzados</li>
+                                        </ul>
+                                        <button class="w-full py-3 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">Elegir Plan</button>
+                                    </div>
+                                    <div class="p-8 bg-white border-2 border-gray-200 rounded-lg shadow-lg">
+                                        <h3 class="mb-4 text-xl font-bold">Enterprise</h3>
+                                        <div class="mb-6 text-4xl font-bold text-blue-600">$99<span class="text-lg text-gray-600">/mes</span></div>
+                                        <ul class="mb-8 space-y-3">
+                                            <li class="flex items-center"><span class="mr-2 text-green-500">✓</span> Todo incluido</li>
+                                            <li class="flex items-center"><span class="mr-2 text-green-500">✓</span> Soporte 24/7</li>
+                                            <li class="flex items-center"><span class="mr-2 text-green-500">✓</span> Dominio personalizado</li>
+                                            <li class="flex items-center"><span class="mr-2 text-green-500">✓</span> Integración API</li>
+                                        </ul>
+                                        <button class="w-full py-3 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">Elegir Plan</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>`
+            , },
+                    // Bloques de navegación y utilidad
+                    {
+              id: 'breadcrumbs'
+              , label: 'Migas de pan'
+              , content: `<nav class="py-4 text-sm breadcrumbs">
+                            <div class="container px-4 mx-auto">
+                                <a href="#" class="text-blue-600 hover:text-blue-800">Inicio</a>
+                                <span class="mx-2 text-gray-500">/</span>
+                                <a href="#" class="text-blue-600 hover:text-blue-800">Categoría</a>
+                                <span class="mx-2 text-gray-500">/</span>
+                                <span class="text-gray-700">Página actual</span>
+                            </div>
+                        </nav>`
+            , }
+            , {
+              id: 'tabs'
+              , label: 'Pestañas'
+              , content: `<div class="py-8 tabs-container">
+                            <div class="container px-4 mx-auto">
+                                <div class="border-b border-gray-200">
+                                    <nav class="flex -mb-px space-x-8">
+                                        <button class="px-1 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-500">Pestaña 1</button>
+                                        <button class="px-1 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700">Pestaña 2</button>
+                                        <button class="px-1 py-2 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700">Pestaña 3</button>
+                                    </nav>
+                                </div>
+                                <div class="mt-6">
+                                    <div class="tab-content">
+                                        <h3 class="mb-4 text-lg font-medium text-gray-900">Contenido de la Pestaña 1</h3>
+                                        <p class="text-gray-600">Este es el contenido de la primera pestaña. Puedes agregar cualquier contenido aquí.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`
+            , }
+            , {
+              id: 'accordion'
+              , label: 'Acordeón'
+              , content: `<div class="py-8 accordion">
+                            <div class="container max-w-4xl px-4 mx-auto">
+                                <h2 class="mb-8 text-3xl font-bold text-center">Preguntas Frecuentes</h2>
+                                <div class="space-y-4">
+                                    <div class="border border-gray-200 rounded-lg">
+                                        <button class="flex items-center justify-between w-full px-6 py-4 font-medium text-left">
+                                            <span>¿Cómo funciona el servicio?</span>
+                                            <span>+</span>
+                                        </button>
+                                        <div class="px-6 pb-4 text-gray-600">
+                                            Nuestro servicio es muy fácil de usar. Solo necesitas registrarte y seguir los pasos del tutorial.
+                                        </div>
+                                    </div>
+                                    <div class="border border-gray-200 rounded-lg">
+                                        <button class="flex items-center justify-between w-full px-6 py-4 font-medium text-left">
+                                            <span>¿Qué métodos de pago aceptan?</span>
+                                            <span>+</span>
+                                        </button>
+                                        <div class="hidden px-6 pb-4 text-gray-600">
+                                            Aceptamos tarjetas de crédito, débito, PayPal y transferencias bancarias.
+                                        </div>
+                                    </div>
+                                    <div class="border border-gray-200 rounded-lg">
+                                        <button class="flex items-center justify-between w-full px-6 py-4 font-medium text-left">
+                                            <span>¿Puedo cancelar mi suscripción?</span>
+                                            <span>+</span>
+                                        </button>
+                                        <div class="hidden px-6 pb-4 text-gray-600">
+                                            Sí, puedes cancelar tu suscripción en cualquier momento desde tu panel de control.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`
+            , },
+                    // Bloques de redes sociales
+                    {
+              id: 'social-links'
+              , label: 'Redes Sociales'
+              , attributes: {
+                            class: 'gjs-block-social'
+              }
+              , content: `<div class="py-8 text-center social-links">
+                            <h3 class="mb-6 text-xl font-semibold">Síguenos en nuestras redes</h3>
+                            <div class="flex justify-center space-x-4">
+                                <a href="#" class="flex items-center justify-center w-12 h-12 text-white transition-colors bg-blue-600 rounded-full hover:bg-blue-700">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="flex items-center justify-center w-12 h-12 text-white transition-colors bg-blue-800 rounded-full hover:bg-blue-900">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="flex items-center justify-center w-12 h-12 text-white transition-colors bg-pink-600 rounded-full hover:bg-pink-700">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001.012 0z.001"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="flex items-center justify-center w-12 h-12 text-white transition-colors bg-red-600 rounded-full hover:bg-red-700">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>`
+            , },
+                    // Bloque de mapa
+                    {
+              id: 'map'
+              , label: 'Mapa'
+              , attributes: {
+                            class: 'gjs-block-map'
+              }
+              , content: `<section class="py-16 map">
+                            <div class="container px-4 mx-auto">
+                                <h2 class="mb-8 text-3xl font-bold text-center">Nuestra Ubicación</h2>
+                                <div class="flex items-center justify-center bg-gray-200 rounded-lg h-96">
+                                    <div class="text-center text-gray-600">
+                                        <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        <p class="text-lg font-medium">Mapa Interactivo</p>
+                                        <p class="text-sm">Integra Google Maps o cualquier otro servicio de mapas</p>
+                                    </div>
+                                </div>
+                                <div class="mt-8 text-center">
+                                    <p class="text-gray-600">📍 Calle Principal 123, Ciudad, País</p>
+                                    <p class="text-gray-600">📞 +1 234 567 8900</p>
+                                    <p class="text-gray-600">✉️ contacto@empresa.com</p>
+                                </div>
+                            </div>
+                        </section>`
+            , },
+                    // Bloque de estadísticas/contadores
+                    {
+              id: 'stats'
+              , label: 'Estadísticas'
+              , content: `<section class="py-16 text-white bg-blue-600 stats">
+                            <div class="container px-4 mx-auto">
+                                <div class="grid grid-cols-2 gap-8 text-center md:grid-cols-4">
+                                    <div>
+                                        <div class="mb-2 text-4xl font-bold">1000+</div>
+                                        <div class="text-blue-100">Clientes Satisfechos</div>
+                                    </div>
+                                    <div>
+                                        <div class="mb-2 text-4xl font-bold">50+</div>
+                                        <div class="text-blue-100">Proyectos Completados</div>
+                                    </div>
+                                    <div>
+                                        <div class="mb-2 text-4xl font-bold">24/7</div>
+                                        <div class="text-blue-100">Soporte Técnico</div>
+                                    </div>
+                                    <div>
+                                        <div class="mb-2 text-4xl font-bold">99%</div>
+                                        <div class="text-blue-100">Satisfacción</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>`
+            , }
+            , {
+              id: 'navbar'
+              , label: 'Navegación'
+              , content: `<nav class="bg-white border-b border-gray-200 shadow-sm">
+                            <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+                                <div class="flex items-center justify-between h-16">
+                                    <!-- Logo -->
+                                    <div class="flex-shrink-0">
+                                        <a href="#" class="text-xl font-bold text-gray-900">Mi Sitio Web</a>
+                                    </div>
+                                    <!-- Menú de Navegación -->
+                                    <div class="hidden md:block">
+                                        <div class="flex items-baseline ml-10 space-x-4">
+                                            <a href="#" class="px-3 py-2 text-sm font-medium text-gray-900 rounded-md hover:text-gray-700">Inicio</a>
+                                            <a href="#" class="px-3 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900">Acerca</a>
+                                            <a href="#" class="px-3 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900">Servicios</a>
+                                            <a href="#" class="px-3 py-2 text-sm font-medium text-gray-600 rounded-md hover:text-gray-900">Contacto</a>
+                                        </div>
+                                    </div>
+                                    <!-- Botón móvil -->
+                                    <div class="md:hidden">
+                                        <button type="button" class="inline-flex items-center justify-center p-2 text-gray-400 rounded-md bg-gray-50 hover:text-gray-500 hover:bg-gray-100">
+                                            <svg class="block w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </nav>`
+            , }
+            , {
+              id: 'footer'
+              , label: 'Footer'
+              , content: `<footer class="text-white bg-gray-800">
+                            <div class="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8">
+                                <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+                                    <div>
+                                        <h3 class="mb-4 text-lg font-semibold">Mi Sitio Web</h3>
+                                        <p class="text-sm text-gray-300">Descripción de tu sitio web o empresa.</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="mb-4 font-semibold text-md">Enlaces Rápidos</h4>
+                                        <ul class="space-y-2 text-sm">
+                                            <li><a href="#" class="text-gray-300 hover:text-white">Inicio</a></li>
+                                            <li><a href="#" class="text-gray-300 hover:text-white">Acerca</a></li>
+                                            <li><a href="#" class="text-gray-300 hover:text-white">Servicios</a></li>
+                                            <li><a href="#" class="text-gray-300 hover:text-white">Contacto</a></li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="mb-4 font-semibold text-md">Información</h4>
+                                        <p class="text-sm text-gray-300">Información adicional sobre tu empresa o servicios.</p>
+                                    </div>
+                                </div>
+                                <div class="pt-8 mt-8 text-center border-t border-gray-700">
+                                    <p class="text-sm text-gray-400">&copy; 2025 Mi Sitio Web. Todos los derechos reservados.</p>
+                                </div>
+                            </div>
+                        </footer>`
+            , }
+            , {
+              id: 'products-list'
+              , label: 'Lista de Productos'
+              , attributes: {
+                            class: 'gjs-block-products'
+              }
+              , content: `<section class="py-16 bg-gray-50 products-list" data-products-source="api" data-dynamic-products="true">
+                            <div class="container px-4 mx-auto">
+                                <h2 class="mb-12 text-3xl font-bold text-center text-gray-900">Nuestros Productos</h2>
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" id="products-container">
+                                    <!-- Los productos se cargarán dinámicamente aquí -->
+                                    <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                                        <div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
+                                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <h3 class="mb-2 text-lg font-semibold text-gray-900">Producto de Ejemplo</h3>
+                                        <p class="mb-4 text-sm text-gray-600">Descripción del producto de ejemplo</p>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-lg font-bold text-green-600">$99.99</span>
+                                            <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                                Ver Producto
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                                        <div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
+                                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <h3 class="mb-2 text-lg font-semibold text-gray-900">Producto de Ejemplo</h3>
+                                        <p class="mb-4 text-sm text-gray-600">Descripción del producto de ejemplo</p>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-lg font-bold text-green-600">$149.99</span>
+                                            <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                                Ver Producto
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                                        <div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
+                                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <h3 class="mb-2 text-lg font-semibold text-gray-900">Producto de Ejemplo</h3>
+                                        <p class="mb-4 text-sm text-gray-600">Descripción del producto de ejemplo</p>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-lg font-bold text-green-600">$199.99</span>
+                                            <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                                Ver Producto
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-12 text-center">
+                                    <a href="{{ route('creator.store.products', $website) }}" class="inline-flex items-center px-8 py-3 text-base font-medium text-white transition-colors bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        Ver más productos
+                                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </section>`
+            , }
+                ]
+        }
+        , layerManager: {
+                appendTo: '.layers-container'
+        }
+        , traitManager: {
+          appendTo: '.traits-container'
+        , }
+        , selectorManager: {
+                appendTo: '.styles-container'
+        }
+        , styleManager: {
+          appendTo: '.styles-container'
+          , sectors: [{
+              name: 'General'
+              , open: false
+              , buildProps: ['float', 'display', 'position', 'top', 'right', 'left', 'bottom']
+            , }
+            , {
+              name: 'Dimension'
+              , open: false
+              , buildProps: ['width', 'height', 'max-width', 'min-height', 'margin', 'padding']
+            , }
+            , {
+              name: 'Typography'
+              , open: false
+              , buildProps: ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'color', 'line-height']
+            , }
+            , {
+              name: 'Decorations'
+              , open: false
+              , buildProps: ['opacity', 'background-color', 'border-radius', 'border', 'box-shadow', 'background']
+            , }
+            , {
+              name: 'Extra'
+              , open: false
+              , buildProps: ['transition', 'perspective', 'transform']
+            }
+          ]
+        }
+      , }); 
+
+      console.log('GrapesJS Editor inicializado:', editor);
+
+        const pn = editor.Panels;
+        pn.addPanel({
+            id: 'options',
+            buttons: [
+                { id: 'preview',    command: 'preview',         label: '👁️',  attributes: { title: 'Vista previa' } },
+                { id: 'fullscreen', command: 'fullscreen',      label: '⛶',   attributes: { title: 'Pantalla completa' } },
+                { id: 'export',     command: 'export-template', label: '</', attributes: { title: 'Ver código fuente' } },
+            ],
+        });
+        pn.addPanel({
+            id: 'devices',
+            buttons: [
+                { id: 'device-desktop', label: 'Desktop', command: e => e.setDevice('Desktop'), active: true },
+                { id: 'device-tablet',  label: 'Tablet',  command: e => e.setDevice('Tablet') },
+                { id: 'device-mobile',  label: 'Mobile',  command: e => e.setDevice('Mobile portrait') },
+            ],
+        });
+
+        editor.DeviceManager.add('Desktop', { width: '1024px' });
+        editor.DeviceManager.add('Tablet', { width: '992px' });
+        editor.DeviceManager.add('Mobile portrait', { width: '768px' });
+
+      // Función para mostrar placeholder en el editor
+      function showProductsPlaceholder() {
+        console.log('🎨 Mostrando placeholder de productos en el editor...');
+        
+        // Buscar contenedores de productos en el iframe de GrapeJS
+        const iframe = document.querySelector('.gjs-cv-canvas iframe');
+        if (iframe && iframe.contentDocument) {
+          const productsContainers = iframe.contentDocument.querySelectorAll('#products-container');
+          
+          productsContainers.forEach((container, index) => {
+            console.log(`🎨 Aplicando placeholder al contenedor ${index + 1}`);
+            
+            // Mostrar placeholder estático
+            container.innerHTML = `
+              <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
+                  <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">Producto de Ejemplo</h3>
+                <p class="mb-4 text-sm text-gray-600">Los productos reales se mostrarán en la vista previa</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-lg font-bold text-green-600">$99.99</span>
+                  <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                    Ver Producto
+                  </button>
+                </div>
+              </div>
+              <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
+                  <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">Producto de Ejemplo</h3>
+                <p class="mb-4 text-sm text-gray-600">Los productos reales se mostrarán en la vista previa</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-lg font-bold text-green-600">$149.99</span>
+                  <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                    Ver Producto
+                  </button>
+                </div>
+              </div>
+              <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
+                  <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">Producto de Ejemplo</h3>
+                <p class="mb-4 text-sm text-gray-600">Los productos reales se mostrarán en la vista previa</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-lg font-bold text-green-600">$199.99</span>
+                  <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                    Ver Producto
+                  </button>
+                </div>
+              </div>
+            `;
+          });
+        }
+      }
+
+      // Función para renderizar productos
+      function renderProducts(container, products) {
+        const productsHtml = products.map(product => {
+          // Determinar si es producto externo o local
+          const isExternal = product.producto !== undefined; // Productos externos tienen 'producto', locales tienen 'title'
+          
+          const title = isExternal ? product.producto : product.title;
+          const description = isExternal ? product.descripcion : product.content;
+          const price = isExternal ? product.precio : product.price;
+          const image = isExternal ? product.img : (product.featured_image ? `/storage/${product.featured_image}` : null);
+          const category = isExternal ? product.categoria : product.category;
+          
+          return `
+            <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+              ${image ? 
+                `<div class="mb-4 aspect-w-16 aspect-h-9">
+                  <img src="${image}" alt="${title}" class="object-cover w-full h-48 rounded-lg">
+                </div>` :
+                `<div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
+                  <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>`
+              }
+              <h3 class="mb-2 text-lg font-semibold text-gray-900">${title}</h3>
+              ${category ? 
+                `<span class="inline-block px-2 py-1 mb-2 text-xs text-blue-800 bg-blue-100 rounded-full">${isExternal ? category.categoria : category.name}</span>` : ''
+              }
+              <p class="mb-4 text-sm text-gray-600 line-clamp-2">${description ? (isExternal ? description : description.replace(/<[^>]*>/g, '')) : 'Sin descripción'}</p>
+              <div class="flex items-center justify-between">
+                <span class="text-lg font-bold text-green-600">$${price || '0.00'}</span>
+                <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                  Ver Producto
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        container.innerHTML = productsHtml;
+      }
+
+      // Función para mostrar mensaje cuando no hay productos
+      function showNoProductsMessage(container) {
+        container.innerHTML = `
+          <div class="py-12 text-center col-span-full">
+            <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+            <h3 class="mb-2 text-lg font-medium text-gray-900">No hay productos disponibles</h3>
+            <p class="text-gray-600">Los productos aparecerán aquí cuando estén disponibles.</p>
+          </div>
+        `;
+      }
+
+      // Función para mostrar error al cargar productos
+      function showErrorLoadingProducts(container) {
+        container.innerHTML = `
+          <div class="py-12 text-center col-span-full">
+            <svg class="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h3 class="mb-2 text-lg font-medium text-gray-900">Error al cargar productos</h3>
+            <p class="text-gray-600">No se pudieron cargar los productos. Verifica la configuración de la API.</p>
+          </div>
+        `;
+      }
+
+      // Cargar productos cuando se agrega un bloque de productos
+      editor.on('component:add', function(component) {
+        console.log('➕ Componente agregado:', component);
+        console.log('🏷️ Tipo:', component.get('type'));
+        console.log('🎨 Clases:', component.getClasses());
+        console.log('📝 Contenido:', component.getInnerHTML().substring(0, 200));
+        
+        // Detectar bloque de productos por contenido o clases
+        const content = component.getInnerHTML();
+        const hasProductsContainer = content.includes('products-container');
+        const hasProductsListClass = component.getClasses().includes('products-list');
+        
+        console.log('🔍 Tiene products-container:', hasProductsContainer);
+        console.log('🔍 Tiene clase products-list:', hasProductsListClass);
+        
+        if (hasProductsContainer || hasProductsListClass) {
+          console.log('✅ Bloque de productos detectado, mostrando placeholder...');
+          setTimeout(() => {
+            showProductsPlaceholder();
+          }, 500);
+        }
+      });
+
+      // Mostrar placeholder de productos al inicializar
+      setTimeout(() => {
+        console.log('🔄 Mostrando placeholder de productos al inicializar...');
+        showProductsPlaceholder();
+      }, 500);
+
+
+      // Abrir panel de estilos automáticamente cuando se selecciona un elemento
+      editor.on('component:selected', function(component) {
+        // Abrir panel de estilos cuando se selecciona un elemento
+        document.querySelector('[data-panel="styles"]').click();
+      });
+
+      // Método alternativo: usar eventos de teclado para cambiar paneles
+      document.addEventListener('keydown', function(e) {
+        // Ctrl + 1 = Bloques
+        if (e.ctrlKey && e.key === '1') {
+          e.preventDefault();
+          document.querySelector('[data-panel="blocks"]').click();
+        }
+        // Ctrl + 2 = Capas
+        if (e.ctrlKey && e.key === '2') {
+          e.preventDefault();
+          document.querySelector('[data-panel="layers"]').click();
+        }
+        // Ctrl + 3 = Estilos
+        if (e.ctrlKey && e.key === '3') {
+          e.preventDefault();
+          document.querySelector('[data-panel="styles"]').click();
+        }
+        // Ctrl + 4 = Propiedades
+        if (e.ctrlKey && e.key === '4') {
+          e.preventDefault();
+          document.querySelector('[data-panel="traits"]').click();
+        }
+      });
+
+      // Verificar que el contenedor existe
+      const container = document.getElementById('gjs');
+      if (!container) {
+        console.error('Contenedor #gjs no encontrado');
+        alert('Error: Contenedor del editor no encontrado');
+        return;
+      }
+      console.log('Contenedor encontrado:', container);
+
+      // Cargar contenido existente
+      const existingHtmlContent = @json($page->html_content);
+      const existingCssContent = @json($page->css_content);
+
+      if (existingHtmlContent) {
+        editor.setComponents(existingHtmlContent);
+      }
+
+      if (existingCssContent) {
+        editor.setStyle(existingCssContent);
+      }
+
+      // Función para mostrar notificaciones
+      function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
+          type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        }`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
+      }
+
+      // Función para mostrar loading en el botón de guardar
+      function showSaveLoading() {
+        const saveBtn = document.getElementById('save-btn');
+        if (saveBtn) {
+          saveBtn.textContent = 'Guardando...';
+          saveBtn.disabled = true;
+          saveBtn.classList.add('opacity-50');
+        }
+      }
+
+      // Función para ocultar loading en el botón de guardar
+      function hideSaveLoading() {
+        const saveBtn = document.getElementById('save-btn');
+        if (saveBtn) {
+          saveBtn.textContent = 'Guardar';
+          saveBtn.disabled = false;
+          saveBtn.classList.remove('opacity-50');
+        }
+      }
+
+      // Botón de guardar
+      const saveBtn = document.getElementById('save-btn');
+      if (!saveBtn) {
+        console.error('Botón de guardar no encontrado');
+        return;
+      }
+      
+      saveBtn.addEventListener('click', function() {
+        showSaveLoading();
+
+        const htmlContent = editor.getHtml();
+        const cssContent = editor.getCss();
+
+        fetch('{{ route("creator.pages.save", [$website, $page]) }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
+          },
+          body: JSON.stringify({
+            html_content: htmlContent,
+            css_content: cssContent
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          hideSaveLoading();
+          if (data.success) {
+            showNotification('Página guardada exitosamente', 'success');
+          } else {
+            showNotification('Error al guardar la página', 'error');
+          }
+        })
+        .catch(error => {
+          hideSaveLoading();
+          console.error('Error:', error);
+          showNotification('Error al guardar la página', 'error');
+        });
+      });
+
+      // Funcionalidad de paneles laterales
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', function() {
+          const panel = this.dataset.panel;
+
+          // Actualizar tabs activos
+          document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active', 'border-blue-500', 'text-blue-600');
+            btn.classList.add('border-transparent', 'text-gray-500');
+          });
+
+          this.classList.add('active', 'border-blue-500', 'text-blue-600');
+          this.classList.remove('border-transparent', 'text-gray-500');
+
+          // Mostrar panel correspondiente
+          document.querySelectorAll('.panel-content').forEach(panel => {
+            panel.classList.add('hidden');
+          });
+
+          document.getElementById(panel + '-panel').classList.remove('hidden');
+        });
+      });
+
+
+      console.log('Editor GrapesJS mejorado inicializado correctamente');
+    }); // Cerrar DOMContentLoaded
+
+    // Script para cargar productos reales en la vista previa
+    // Este script se ejecuta siempre, pero solo actúa en vista previa
+    console.log('🎯 Script de vista previa iniciado...');
+    console.log('🔍 Verificando contexto...');
+    console.log('📄 URL actual:', window.location.href);
+    console.log('🎨 Elemento #gjs encontrado:', !!document.querySelector('#gjs'));
+    
+    // Verificar si estamos en vista previa (sin editor GrapeJS)
+    const isPreview = !document.querySelector('#gjs') || window.location.href.includes('preview');
+    console.log('👁️ Es vista previa:', isPreview);
+    
+    if (isPreview) {
+      console.log('✅ Ejecutando en modo vista previa...');
+      
+      // Función para cargar productos reales en la vista previa
+      function loadRealProductsInPreview() {
+        console.log('🚀 Iniciando carga de productos en vista previa...');
+        
+        // Buscar contenedores de productos de múltiples formas
+        let productsContainers = document.querySelectorAll('#products-container');
+        console.log('📦 Contenedores por ID encontrados:', productsContainers.length);
+        
+        // Si no encuentra por ID, buscar por atributo data
+        if (productsContainers.length === 0) {
+          productsContainers = document.querySelectorAll('[data-dynamic-products="true"] .grid');
+          console.log('📦 Contenedores por atributo data encontrados:', productsContainers.length);
+        }
+        
+        // Si aún no encuentra, buscar por clase
+        if (productsContainers.length === 0) {
+          productsContainers = document.querySelectorAll('.products-list .grid');
+          console.log('📦 Contenedores por clase .products-list .grid:', productsContainers.length);
+        }
+        
+        // Si aún no encuentra, buscar cualquier grid que contenga productos de ejemplo
+        if (productsContainers.length === 0) {
+          const allGrids = document.querySelectorAll('.grid');
+          productsContainers = Array.from(allGrids).filter(grid => 
+            grid.innerHTML.includes('Producto de Ejemplo') || 
+            grid.innerHTML.includes('products-container')
+          );
+          console.log('📦 Contenedores por contenido encontrados:', productsContainers.length);
+        }
+        
+        if (productsContainers.length === 0) {
+          console.log('❌ No se encontraron contenedores de productos en la vista previa');
+          console.log('🔍 Buscando todos los divs en la página...');
+          const allDivs = document.querySelectorAll('div');
+          console.log('📊 Total de divs encontrados:', allDivs.length);
+          
+          // Buscar por clase como alternativa
+          const gridContainers = document.querySelectorAll('.grid');
+          console.log('🔍 Contenedores con clase .grid:', gridContainers.length);
+          
+          return;
+        }
+        
+        console.log('✅ Cargando productos reales en la vista previa...');
+        
+        productsContainers.forEach((container, index) => {
+          // Mostrar loading
+          container.innerHTML = `
+            <div class="flex items-center justify-center py-12 col-span-full">
+              <div class="text-center">
+                <div class="w-12 h-12 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin"></div>
+                <p class="text-gray-600">Cargando productos...</p>
+              </div>
+            </div>
+          `;
+
+          // Hacer petición a la API
+          const apiUrl = '{{ route("creator.store.products", $website) }}?per_page=6';
+          console.log('🔍 Haciendo petición a:', apiUrl);
+          
+          fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+          .then(response => {
+            console.log('📡 Respuesta recibida en vista previa:', response.status, response.statusText);
+            return response.json();
+          })
+          .then(data => {
+            console.log('📦 Datos recibidos en vista previa:', data);
+            console.log('✅ Success:', data.success);
+            console.log('📋 Products:', data.products);
+            console.log('🔢 Products count:', data.products ? data.products.length : 0);
+            console.log('🌐 Use External API:', data.useExternalApi);
+            
+            if (data.success && data.products && data.products.length > 0) {
+              console.log('✅ Renderizando productos reales en vista previa...');
+              renderRealProducts(container, data.products);
+            } else {
+              console.log('❌ No hay productos o error en la respuesta de vista previa');
+              showNoProductsMessage(container);
+            }
+          })
+          .catch(error => {
+            console.error('💥 Error al cargar productos en vista previa:', error);
+            showErrorLoadingProducts(container);
+          });
+        });
+      }
+
+      // Función para renderizar productos reales
+      function renderRealProducts(container, products) {
+        const productsHtml = products.map(product => {
+          const isExternal = product.producto !== undefined;
+          const title = isExternal ? product.producto : product.title;
+          const description = isExternal ? product.descripcion : product.content;
+          const price = isExternal ? product.precio : product.price;
+          const image = isExternal ? product.img : (product.featured_image ? `/storage/${product.featured_image}` : null);
+          const category = isExternal ? product.categoria : product.category;
+          
+          return `
+            <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+              ${image ? 
+                `<div class="mb-4 aspect-w-16 aspect-h-9">
+                  <img src="${image}" alt="${title}" class="object-cover w-full h-48 rounded-lg">
+                </div>` :
+                `<div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
+                  <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>`
+              }
+              <h3 class="mb-2 text-lg font-semibold text-gray-900">${title}</h3>
+              ${category ? 
+                `<span class="inline-block px-2 py-1 mb-2 text-xs text-blue-800 bg-blue-100 rounded-full">${isExternal ? category.categoria : category.name}</span>` : ''
+              }
+              <p class="mb-4 text-sm text-gray-600 line-clamp-2">${description ? (isExternal ? description : description.replace(/<[^>]*>/g, '')) : 'Sin descripción'}</p>
+              <div class="flex items-center justify-between">
+                <span class="text-lg font-bold text-green-600">$${price || '0.00'}</span>
+                <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                  Ver Producto
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        container.innerHTML = productsHtml;
+      }
+
+      // Función para mostrar mensaje cuando no hay productos
+      function showNoProductsMessage(container) {
+        container.innerHTML = `
+          <div class="py-12 text-center col-span-full">
+            <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+            <h3 class="mb-2 text-lg font-medium text-gray-900">No hay productos disponibles</h3>
+            <p class="text-gray-600">Los productos aparecerán aquí cuando estén disponibles.</p>
+          </div>
+        `;
+      }
+
+      // Función para mostrar error al cargar productos
+      function showErrorLoadingProducts(container) {
+        container.innerHTML = `
+          <div class="py-12 text-center col-span-full">
+            <svg class="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h3 class="mb-2 text-lg font-medium text-gray-900">Error al cargar productos</h3>
+            <p class="text-gray-600">No se pudieron cargar los productos. Verifica la configuración de la API.</p>
+          </div>
+        `;
+      }
+
+      // Cargar productos reales cuando se carga la página de vista previa
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 DOM cargado en vista previa');
+        setTimeout(() => {
+          loadRealProductsInPreview();
+        }, 500);
+        
+        // Agregar botón de prueba temporal para vista previa
+        setTimeout(() => {
+          const testButton = document.createElement('button');
+          testButton.textContent = '🔄 Cargar Productos (Vista Previa)';
+          testButton.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 9999; background: #10B981; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer;';
+          testButton.onclick = () => {
+            console.log('🧪 Botón de vista previa clickeado');
+            loadRealProductsInPreview();
+          };
+          document.body.appendChild(testButton);
+          console.log('🧪 Botón de vista previa agregado');
+        }, 1000);
+      });
+    }
+
+    </script>
+</body>
+
+</html>

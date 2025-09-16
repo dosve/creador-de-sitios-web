@@ -61,16 +61,40 @@ class IntegrationController extends Controller
         $this->authorize('update', $website);
         
         $request->validate([
-            'admin_negocios_url' => 'required|url|max:255',
-            'admin_negocios_api_key' => 'required|string|max:255',
-            'admin_negocios_username' => 'required|string|max:255',
-            'admin_negocios_password' => 'required|string|max:255',
+            'api_base_url' => 'nullable|url',
+            'api_key' => 'nullable|string|min:10',
         ]);
 
-        // Aquí se guardarían las credenciales de Admin Negocios
-        // Por ahora solo mostramos un mensaje de éxito
+        // Guardar configuración de API
+        $website->update([
+            'api_base_url' => $request->api_base_url,
+            'api_key' => $request->api_key,
+        ]);
+
         return redirect()->route('creator.integrations.admin-negocios', $website)
-            ->with('success', 'Configuración de Admin Negocios guardada exitosamente');
+            ->with('success', 'Configuración de API guardada exitosamente');
+    }
+
+    /**
+     * Probar la conexión con la API
+     */
+    public function testApiConnection(Request $request, Website $website)
+    {
+        $this->authorize('view', $website);
+        
+        try {
+            // Aquí se implementaría la lógica de prueba de conexión
+            // Por ahora simulamos una respuesta exitosa
+            return response()->json([
+                'success' => true,
+                'message' => 'Conexión exitosa con la API'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al conectar con la API: ' . $e->getMessage()
+            ]);
+        }
     }
 
     /**

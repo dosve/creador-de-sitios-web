@@ -112,7 +112,13 @@ class PageController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('update', $page);
-        return view('creator.pages.editor', compact('website', 'page'));
+
+        return view('creator.pages.editor', [
+            'website' => $website,
+            'editable' => $page,
+            'editableType' => 'page',
+            'saveRoute' => route('creator.pages.save', [$website, $page])
+        ]);
     }
 
     public function saveContent(Request $request, Website $website, Page $page)

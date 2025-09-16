@@ -1,24 +1,28 @@
-@props(['pagination', 'showPerPageSelector' => true, 'perPageOptions' => [12, 24, 48, 96]])
+@props(['pagination', 'showPerPageSelector' => true, 'perPageOptions' => [12, 24, 48, 96], 'label' => 'elementos'])
 
 @if($pagination && $pagination['last_page'] > 1)
-    <div class="mt-8 flex items-center justify-between">
-        <div class="text-sm text-gray-700">
-            Mostrando {{ $pagination['from'] }} a {{ $pagination['to'] }} de {{ $pagination['total'] }} elementos
+    <div class="flex items-center justify-between mt-6">
+        <div class="flex items-center space-x-1">
+            <div class="text-sm text-gray-700">
+                Mostrando {{ $pagination['from'] }} a 
+            </div>
+            <!-- Selector de elementos por página integrado -->
+            @if($showPerPageSelector)
+                <select id="per_page" onchange="changePerPage(this.value)" 
+                        class="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @foreach($perPageOptions as $option)
+                        <option value="{{ $option }}" {{ request('per_page', 12) == $option ? 'selected' : '' }}>{{ $option }}</option>
+                    @endforeach
+                </select>
+            @else
+                <span class="text-sm text-gray-700">{{ $pagination['to'] }}</span>
+            @endif
+            <div class="text-sm text-gray-700">
+                de {{ $pagination['total'] }} {{ $label }}
+            </div>
         </div>
         
         <div class="flex items-center space-x-4">
-            <!-- Selector de elementos por página -->
-            @if($showPerPageSelector)
-                <div class="flex items-center space-x-2">
-                    <label for="per_page" class="text-sm text-gray-700">Por página:</label>
-                    <select id="per_page" onchange="changePerPage(this.value)" 
-                            class="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        @foreach($perPageOptions as $option)
-                            <option value="{{ $option }}" {{ request('per_page', 12) == $option ? 'selected' : '' }}>{{ $option }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            @endif
 
             <!-- Controles de paginación -->
             <div class="flex items-center space-x-2">
