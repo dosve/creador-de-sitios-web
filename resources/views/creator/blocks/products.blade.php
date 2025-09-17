@@ -20,8 +20,8 @@
           <p class="mb-4 text-sm text-gray-600">Los productos reales se mostrarán en la vista previa</p>
           <div class="flex items-center justify-between">
             <span class="text-lg font-bold text-green-600">$99.99</span>
-                                        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700" onclick="addToCart({id: 1, name: 'Producto de Ejemplo 1', price: 99.99, image: 'https://via.placeholder.com/60x60'})">
-                                            Agregar al Carrito
+                                        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                            Ver Producto
                                         </button>
           </div>
         </div>
@@ -35,8 +35,8 @@
           <p class="mb-4 text-sm text-gray-600">Los productos reales se mostrarán en la vista previa</p>
           <div class="flex items-center justify-between">
             <span class="text-lg font-bold text-green-600">$149.99</span>
-                                        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700" onclick="addToCart({id: 2, name: 'Producto de Ejemplo 2', price: 149.99, image: 'https://via.placeholder.com/60x60'})">
-                                            Agregar al Carrito
+                                        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                            Ver Producto
                                         </button>
           </div>
         </div>
@@ -50,8 +50,8 @@
           <p class="mb-4 text-sm text-gray-600">Los productos reales se mostrarán en la vista previa</p>
           <div class="flex items-center justify-between">
             <span class="text-lg font-bold text-green-600">$199.99</span>
-                                        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700" onclick="addToCart({id: 3, name: 'Producto de Ejemplo 3', price: 199.99, image: 'https://via.placeholder.com/60x60'})">
-                                            Agregar al Carrito
+                                        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                            Ver Producto
                                         </button>
           </div>
         </div>

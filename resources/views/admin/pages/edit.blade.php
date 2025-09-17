@@ -110,7 +110,7 @@
                 </a>
                 <a href="{{ route('admin.pages.editor', [$website, $page]) }}" 
                    class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-                    Editor Visual
+                    Editar
                 </a>
                 <button type="submit" 
                         class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">

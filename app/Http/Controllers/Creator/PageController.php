@@ -58,12 +58,6 @@ class PageController extends Controller
         return view('creator.pages.show', compact('website', 'page'));
     }
 
-    public function edit(Request $request, Website $website, Page $page)
-    {
-        $this->authorize('update', $website);
-
-        return view('creator.pages.edit', compact('website', 'page'));
-    }
 
     public function update(Request $request, Website $website, Page $page)
     {
@@ -89,6 +83,14 @@ class PageController extends Controller
             'is_published' => $request->boolean('is_published', false),
             'is_home' => $request->boolean('is_home', false),
         ]);
+
+        // Si es una petición AJAX/JSON, devolver respuesta JSON
+        if ($request->expectsJson() || $request->isJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Página actualizada exitosamente'
+            ]);
+        }
 
         return redirect()->route('creator.pages.index', $website)
             ->with('success', 'Página actualizada exitosamente');

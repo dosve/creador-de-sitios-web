@@ -15,7 +15,7 @@ class TagController extends Controller
             ->withCount('blogPosts')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-        
+
         return view('admin.tags.index', compact('tags'));
     }
 
@@ -48,11 +48,13 @@ class TagController extends Controller
     public function show(Tag $tag)
     {
         $tag->load(['website.user', 'blogPosts']);
+        // TODO: Crear vista admin.tags.show
         return view('admin.tags.show', compact('tag'));
     }
 
     public function edit(Tag $tag)
     {
+        // TODO: Crear vista admin.tags.edit
         return view('admin.tags.edit', compact('tag'));
     }
 
@@ -92,7 +94,7 @@ class TagController extends Controller
     public function toggleStatus(Tag $tag)
     {
         $tag->update(['is_active' => !$tag->is_active]);
-        
+
         $status = $tag->is_active ? 'activada' : 'desactivada';
         return redirect()->route('admin.tags.index')
             ->with('success', "Etiqueta {$status} exitosamente");

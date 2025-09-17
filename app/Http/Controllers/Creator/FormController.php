@@ -24,16 +24,16 @@ class FormController extends Controller
     {
         $selectedWebsiteId = session('selected_website_id');
         $website = Website::findOrFail($selectedWebsiteId);
-        
+
         $this->authorize('view', $website);
-        
+
         $forms = $website->forms()
-            ->withCount(['submissions as total_submissions', 'submissions as unread_submissions' => function($query) {
+            ->withCount(['submissions as total_submissions', 'submissions as unread_submissions' => function ($query) {
                 $query->where('is_read', false);
             }])
             ->orderBy('sort_order')
             ->get();
-        
+
         return view('creator.forms.index', compact('website', 'forms'));
     }
 
@@ -44,21 +44,22 @@ class FormController extends Controller
     {
         $selectedWebsiteId = session('selected_website_id');
         $website = Website::findOrFail($selectedWebsiteId);
-        
+
         $this->authorize('view', $website);
-        
+
         // Verificar que el blog post pertenece al sitio web
         if ($blogPost->website_id !== $website->id) {
             abort(403);
         }
-        
+
         $forms = $blogPost->forms()
-            ->withCount(['submissions as total_submissions', 'submissions as unread_submissions' => function($query) {
+            ->withCount(['submissions as total_submissions', 'submissions as unread_submissions' => function ($query) {
                 $query->where('is_read', false);
             }])
             ->orderBy('sort_order')
             ->get();
-        
+
+        // TODO: Crear vista creator.forms.blog-index
         return view('creator.forms.blog-index', compact('website', 'blogPost', 'forms'));
     }
 
@@ -69,18 +70,18 @@ class FormController extends Controller
     {
         $selectedWebsiteId = session('selected_website_id');
         $website = Website::findOrFail($selectedWebsiteId);
-        
+
         $this->authorize('update', $website);
-        
+
         $blogPostId = $request->get('blog_post_id');
         $blogPost = null;
-        
+
         if ($blogPostId) {
             $blogPost = BlogPost::where('website_id', $website->id)
                 ->where('id', $blogPostId)
                 ->firstOrFail();
         }
-        
+
         return view('creator.forms.create', compact('website', 'blogPost'));
     }
 
@@ -91,9 +92,9 @@ class FormController extends Controller
     {
         $selectedWebsiteId = session('selected_website_id');
         $website = Website::findOrFail($selectedWebsiteId);
-        
+
         $this->authorize('update', $website);
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
@@ -121,10 +122,11 @@ class FormController extends Controller
 
         while (Form::where('website_id', $website->id)
             ->where('slug', $slug)
-            ->when($blogPostId, function($query) use ($blogPostId) {
+            ->when($blogPostId, function ($query) use ($blogPostId) {
                 return $query->where('blog_post_id', $blogPostId);
             })
-            ->exists()) {
+            ->exists()
+        ) {
             $slug = $baseSlug . '-' . $counter;
             $counter++;
         }
@@ -147,7 +149,7 @@ class FormController extends Controller
             'sort_order' => $website->forms()->max('sort_order') + 1,
         ]);
 
-        $redirectRoute = $blogPostId 
+        $redirectRoute = $blogPostId
             ? route('creator.forms.blog-builder', [$website, $blogPost, $form])
             : route('creator.forms.builder', [$website, $form]);
 
@@ -161,12 +163,12 @@ class FormController extends Controller
     public function edit(Request $request, Website $website, Form $form)
     {
         $this->authorize('update', $website);
-        
+
         // Verificar que el formulario pertenece al sitio web
         if ($form->website_id !== $website->id) {
             abort(403);
         }
-        
+
         return view('creator.forms.edit', compact('website', 'form'));
     }
 
@@ -176,14 +178,14 @@ class FormController extends Controller
     public function builder(Request $request, Website $website, Form $form)
     {
         $this->authorize('view', $website);
-        
+
         // Verificar que el formulario pertenece al sitio web
         if ($form->website_id !== $website->id) {
             abort(403);
         }
-        
+
         $form->load('fields');
-        
+
         return view('creator.forms.builder', compact('website', 'form'));
     }
 
@@ -193,19 +195,20 @@ class FormController extends Controller
     public function blogBuilder(Request $request, Website $website, BlogPost $blogPost, Form $form)
     {
         $this->authorize('view', $website);
-        
+
         // Verificar que el blog post y formulario pertenecen al sitio web
         if ($blogPost->website_id !== $website->id || $form->website_id !== $website->id) {
             abort(403);
         }
-        
+
         // Verificar que el formulario pertenece al blog post
         if ($form->blog_post_id !== $blogPost->id) {
             abort(403);
         }
-        
+
         $form->load('fields');
-        
+
+        // TODO: Crear vista creator.forms.blog-builder
         return view('creator.forms.blog-builder', compact('website', 'blogPost', 'form'));
     }
 
@@ -215,16 +218,16 @@ class FormController extends Controller
     public function submissions(Request $request, Website $website, Form $form)
     {
         $this->authorize('view', $website);
-        
+
         // Verificar que el formulario pertenece al sitio web
         if ($form->website_id !== $website->id) {
             abort(403);
         }
-        
+
         $submissions = $form->submissions()
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-        
+
         return view('creator.forms.submissions', compact('website', 'form', 'submissions'));
     }
 
@@ -234,17 +237,17 @@ class FormController extends Controller
     public function showSubmission(Request $request, Website $website, Form $form, FormSubmission $submission)
     {
         $this->authorize('view', $website);
-        
+
         // Verificar que el formulario y envío pertenecen al sitio web
         if ($form->website_id !== $website->id || $submission->form_id !== $form->id) {
             abort(403);
         }
-        
+
         // Marcar como leído
         if (!$submission->is_read) {
             $submission->markAsRead();
         }
-        
+
         return view('creator.forms.show-submission', compact('website', 'form', 'submission'));
     }
 
@@ -254,12 +257,12 @@ class FormController extends Controller
     public function update(Request $request, Website $website, Form $form)
     {
         $this->authorize('update', $website);
-        
+
         // Verificar que el formulario pertenece al sitio web
         if ($form->website_id !== $website->id) {
             abort(403);
         }
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
@@ -298,15 +301,15 @@ class FormController extends Controller
     public function destroy(Request $request, Website $website, Form $form)
     {
         $this->authorize('update', $website);
-        
+
         // Verificar que el formulario pertenece al sitio web
         if ($form->website_id !== $website->id) {
             abort(403);
         }
-        
+
         $form->delete();
 
-        $redirectRoute = $form->blog_post_id 
+        $redirectRoute = $form->blog_post_id
             ? route('creator.forms.blog-index', [$website, $form->blogPost])
             : route('creator.forms.index', $website);
 

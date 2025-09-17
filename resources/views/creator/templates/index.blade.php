@@ -4,11 +4,11 @@
 @section('page-title', 'Plantillas')
 @section('content')
             <!-- Templates Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @foreach($templates->flatten() as $template)
-                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                <div class="overflow-hidden transition-shadow duration-200 bg-white border border-gray-200 rounded-lg hover:shadow-lg">
                     <!-- Template Preview -->
-                    <div class="aspect-w-16 aspect-h-9 bg-gray-100">
+                    <div class="bg-gray-100 aspect-w-16 aspect-h-9">
                         @php
                             $previewImage = null;
                             if ($template->preview_images && is_array($template->preview_images) && count($template->preview_images) > 0) {
@@ -17,7 +17,7 @@
                         @endphp
                         <img src="{{ $previewImage ? asset('storage/' . $previewImage) : 'https://via.placeholder.com/400x225?text=Preview' }}" 
                              alt="{{ $template->name }}" 
-                             class="w-full h-48 object-cover">
+                             class="object-cover w-full h-48">
                     </div>
                     
                     <!-- Template Info -->
@@ -30,10 +30,10 @@
                         </div>
                         
                         @if($template->description)
-                        <p class="text-sm text-gray-600 mb-4">{{ $template->description }}</p>
+                        <p class="mb-4 text-sm text-gray-600">{{ $template->description }}</p>
                         @endif
                         
-                        <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
+                        <div class="flex items-center justify-between mb-4 text-sm text-gray-500">
                             <span>{{ $template->category ?? 'General' }}</span>
                             <span>{{ $template->created_at->format('d/m/Y') }}</span>
                         </div>
@@ -41,11 +41,11 @@
                         <!-- Template Actions -->
                         <div class="flex space-x-2">
                             <a href="{{ route('creator.templates.preview', $template) }}" 
-                               class="flex-1 bg-gray-100 text-gray-700 text-center py-2 px-3 rounded-md hover:bg-gray-200 text-sm">
+                               class="flex-1 px-3 py-2 text-sm text-center text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
                                 Vista Previa
                             </a>
                             <a href="{{ route('creator.templates.show', $template) }}" 
-                               class="flex-1 bg-blue-600 text-white text-center py-2 px-3 rounded-md hover:bg-blue-700 text-sm">
+                               class="flex-1 px-3 py-2 text-sm text-center text-white bg-blue-600 rounded-md hover:bg-blue-700">
                                 Usar Plantilla
                             </a>
                         </div>
@@ -56,13 +56,13 @@
 
             <!-- Empty State -->
             @if($templates->flatten()->count() == 0)
-            <div class="text-center py-16">
-                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div class="py-16 text-center">
+                <div class="flex items-center justify-center w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full">
                     <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
                     </svg>
                 </div>
-                <h3 class="text-xl font-medium text-gray-900 mb-2">No hay plantillas disponibles</h3>
+                <h3 class="mb-2 text-xl font-medium text-gray-900">No hay plantillas disponibles</h3>
                 <p class="text-gray-500">Las plantillas aparecerán aquí cuando estén disponibles.</p>
             </div>
             @endif

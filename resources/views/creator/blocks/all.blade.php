@@ -15,6 +15,4 @@
 ,
 @include('creator.blocks.products')
 ,
-@include('creator.blocks.ecommerce')
-,
 @include('creator.blocks.footer')

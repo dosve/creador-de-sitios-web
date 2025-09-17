@@ -12,23 +12,23 @@ class CategoryController extends Controller
     public function index(Website $website)
     {
         $this->authorize('view', $website);
-        
+
         $categories = $website->categories()->latest()->paginate(10);
-        
+
         return view('creator.categories.index', compact('website', 'categories'));
     }
 
     public function create(Website $website)
     {
         $this->authorize('update', $website);
-        
+
         return view('creator.categories.create', compact('website'));
     }
 
     public function store(Request $request, Website $website)
     {
         $this->authorize('update', $website);
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:500',
@@ -50,7 +50,8 @@ class CategoryController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('update', $category);
-        
+
+        // TODO: Crear vista creator.categories.edit
         return view('creator.categories.edit', compact('website', 'category'));
     }
 
@@ -58,7 +59,7 @@ class CategoryController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('update', $category);
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:500',
@@ -81,15 +82,15 @@ class CategoryController extends Controller
     {
         $this->authorize('update', $website);
         $this->authorize('delete', $category);
-        
+
         // Verificar si hay posts asociados
         if ($category->blogPosts()->count() > 0) {
             return redirect()->route('creator.categories.index', $website)
                 ->with('error', 'No se puede eliminar la categoría porque tiene artículos asociados');
         }
-        
+
         $category->delete();
-        
+
         return redirect()->route('creator.categories.index', $website)
             ->with('success', 'Categoría eliminada exitosamente');
     }

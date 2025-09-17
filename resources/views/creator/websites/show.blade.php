@@ -4,18 +4,18 @@
 @section('page-title', 'Gestionar Sitio')
 @section('content')
             <!-- Website Header -->
-            <div class="bg-white shadow rounded-lg mb-6">
+            <div class="mb-6 bg-white rounded-lg shadow">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between">
                         <div>
                             <h2 class="text-lg font-medium text-gray-900">{{ $website->name }}</h2>
-                            <p class="text-sm text-gray-600 mt-1">{{ $website->description ?: 'Sin descripción' }}</p>
+                            <p class="mt-1 text-sm text-gray-600">{{ $website->description ?: 'Sin descripción' }}</p>
                         </div>
                         <div class="flex items-center space-x-3">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $website->is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
                                 {{ $website->is_published ? 'Publicado' : 'Borrador' }}
                             </span>
-                            <a href="{{ route('creator.websites.edit', $website) }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                            <a href="{{ route('creator.websites.edit', $website) }}" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
                                 Editar
                             </a>
                         </div>
@@ -24,14 +24,14 @@
             </div>
 
             <!-- Quick Actions -->
-            <div class="bg-white shadow rounded-lg mb-6">
+            <div class="mb-6 bg-white rounded-lg shadow">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h3 class="text-lg font-medium text-gray-900">Acciones Rápidas</h3>
                 </div>
                 <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <a href="{{ route('creator.pages.create', $website) }}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <a href="{{ route('creator.pages.create', $website) }}" class="flex items-center p-4 transition-colors border border-gray-200 rounded-lg hover:bg-gray-50">
+                            <div class="flex items-center justify-center w-10 h-10 mr-3 bg-blue-100 rounded-lg">
                                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -42,8 +42,8 @@
                             </div>
                         </a>
                         
-                        <a href="{{ route('creator.blog.create', $website) }}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                        <a href="{{ route('creator.blog.create', $website) }}" class="flex items-center p-4 transition-colors border border-gray-200 rounded-lg hover:bg-gray-50">
+                            <div class="flex items-center justify-center w-10 h-10 mr-3 bg-green-100 rounded-lg">
                                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
                                 </svg>
@@ -54,8 +54,8 @@
                             </div>
                         </a>
                         
-                        <a href="{{ route('creator.media.index', $website) }}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                        <a href="{{ route('creator.media.index', $website) }}" class="flex items-center p-4 transition-colors border border-gray-200 rounded-lg hover:bg-gray-50">
+                            <div class="flex items-center justify-center w-10 h-10 mr-3 bg-purple-100 rounded-lg">
                                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
@@ -66,8 +66,8 @@
                             </div>
                         </a>
                         
-                        <a href="{{ route('creator.seo.index', $website) }}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                        <a href="{{ route('creator.seo.index', $website) }}" class="flex items-center p-4 transition-colors border border-gray-200 rounded-lg hover:bg-gray-50">
+                            <div class="flex items-center justify-center w-10 h-10 mr-3 bg-yellow-100 rounded-lg">
                                 <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"></path>
                                 </svg>
@@ -82,18 +82,18 @@
             </div>
 
             <!-- Website Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-3">
+                <div class="overflow-hidden bg-white rounded-lg shadow">
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                                <div class="flex items-center justify-center w-8 h-8 bg-blue-500 rounded-md">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                 </div>
                             </div>
-                            <div class="ml-5 w-0 flex-1">
+                            <div class="flex-1 w-0 ml-5">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Páginas</dt>
                                     <dd class="text-lg font-medium text-gray-900">{{ $website->pages->count() }}</dd>
@@ -103,17 +103,17 @@
                     </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="overflow-hidden bg-white rounded-lg shadow">
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                                <div class="flex items-center justify-center w-8 h-8 bg-green-500 rounded-md">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
                                     </svg>
                                 </div>
                             </div>
-                            <div class="ml-5 w-0 flex-1">
+                            <div class="flex-1 w-0 ml-5">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Artículos</dt>
                                     <dd class="text-lg font-medium text-gray-900">{{ $website->blogPosts->count() }}</dd>
@@ -123,17 +123,17 @@
                     </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="overflow-hidden bg-white rounded-lg shadow">
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                                <div class="flex items-center justify-center w-8 h-8 bg-purple-500 rounded-md">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                     </svg>
                                 </div>
                             </div>
-                            <div class="ml-5 w-0 flex-1">
+                            <div class="flex-1 w-0 ml-5">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Archivos</dt>
                                     <dd class="text-lg font-medium text-gray-900">{{ $website->mediaFiles->count() }}</dd>
@@ -145,7 +145,7 @@
             </div>
 
             <!-- Recent Activity -->
-            <div class="bg-white shadow rounded-lg">
+            <div class="bg-white rounded-lg shadow">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h3 class="text-lg font-medium text-gray-900">Actividad Reciente</h3>
                 </div>
@@ -154,12 +154,12 @@
                         <!-- Recent Pages -->
                         @if($website->pages->count() > 0)
                         <div>
-                            <h4 class="text-sm font-medium text-gray-900 mb-2">Páginas Recientes</h4>
+                            <h4 class="mb-2 text-sm font-medium text-gray-900">Páginas Recientes</h4>
                             <div class="space-y-2">
                                 @foreach($website->pages()->latest()->take(3)->get() as $page)
-                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
                                     <div class="flex items-center">
-                                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                        <div class="flex items-center justify-center w-8 h-8 mr-3 bg-blue-100 rounded-lg">
                                             <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
@@ -170,11 +170,9 @@
                                     </div>
                                 </div>
                                 <div class="flex space-x-2">
-                                    <a href="{{ route('creator.pages.edit', [$website, $page]) }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                                  
+                                    <a href="{{ route('creator.pages.editor', [$website, $page]) }}" class="text-sm font-medium text-green-600 hover:text-green-800">
                                         Editar
-                                    </a>
-                                    <a href="{{ route('creator.pages.editor', [$website, $page]) }}" class="text-green-600 hover:text-green-800 text-sm font-medium">
-                                        Editor Visual
                                     </a>
                                 </div>
                                 </div>
@@ -186,12 +184,12 @@
                         <!-- Recent Blog Posts -->
                         @if($website->blogPosts->count() > 0)
                         <div>
-                            <h4 class="text-sm font-medium text-gray-900 mb-2">Posts Recientes</h4>
+                            <h4 class="mb-2 text-sm font-medium text-gray-900">Posts Recientes</h4>
                             <div class="space-y-2">
                                 @foreach($website->blogPosts()->latest()->take(3)->get() as $post)
-                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
                                     <div class="flex items-center">
-                                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                        <div class="flex items-center justify-center w-8 h-8 mr-3 bg-green-100 rounded-lg">
                                             <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
                                             </svg>
@@ -201,7 +199,7 @@
                                             <p class="text-xs text-gray-500">{{ $post->updated_at->format('d/m/Y H:i') }}</p>
                                         </div>
                                     </div>
-                                    <a href="{{ route('creator.blog.edit', [$website, $post]) }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <a href="{{ route('creator.blog.edit', [$website, $post]) }}" class="text-sm text-blue-600 hover:text-blue-800">
                                         Editar
                                     </a>
                                 </div>
@@ -212,19 +210,19 @@
 
                         <!-- Empty State -->
                         @if($website->pages->count() == 0 && $website->blogPosts->count() == 0)
-                        <div class="text-center py-8">
-                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div class="py-8 text-center">
+                            <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full">
                                 <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-medium text-gray-900 mb-2">¡Comienza a crear contenido!</h3>
-                            <p class="text-gray-500 mb-4">Crea tu primera página o escribe un artículo para tu blog.</p>
+                            <h3 class="mb-2 text-lg font-medium text-gray-900">¡Comienza a crear contenido!</h3>
+                            <p class="mb-4 text-gray-500">Crea tu primera página o escribe un artículo para tu blog.</p>
                             <div class="flex justify-center space-x-4">
-                                <a href="{{ route('creator.pages.create', $website) }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                                <a href="{{ route('creator.pages.create', $website) }}" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
                                     Nueva Página
                                 </a>
-                                <a href="{{ route('creator.blog.create', $website) }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm">
+                                <a href="{{ route('creator.blog.create', $website) }}" class="px-4 py-2 text-sm text-white bg-green-600 rounded-md hover:bg-green-700">
                                     Nuevo Post
                                 </a>
                             </div>

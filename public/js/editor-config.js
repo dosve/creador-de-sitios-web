@@ -1,6 +1,5 @@
 // Configuración del Editor GrapeJS
 // Este archivo contiene toda la configuración y funcionalidades del editor
-
 // Configuración principal de GrapeJS
 const editorConfig = {
   container: '#gjs',
@@ -204,207 +203,9 @@ ${htmlContent}
   }
 };
 
-// Funcionalidad del carrito de compras
-function initCart() {
-  // Variables del carrito
-  let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-  // Función para obtener elementos del DOM (tanto en el editor como en el iframe)
-  function getCartElements() {
-    // Buscar en el documento principal
-    let elements = {
-      cartToggle: document.getElementById('cart-toggle'),
-      cartClose: document.getElementById('cart-close'),
-      cartOverlay: document.getElementById('cart-overlay'),
-      cartSidebar: document.getElementById('cart-sidebar'),
-      cartItems: document.getElementById('cart-items'),
-      cartCount: document.getElementById('cart-count'),
-      cartTotal: document.getElementById('cart-total'),
-      checkoutBtn: document.getElementById('checkout-btn'),
-      emptyCart: document.getElementById('empty-cart')
-    };
-
-    // Si no se encuentran en el documento principal, buscar en el iframe
-    if (!elements.cartToggle) {
-      const iframe = document.querySelector('.gjs-cv-canvas iframe');
-      if (iframe && iframe.contentDocument) {
-        const iframeDoc = iframe.contentDocument;
-        elements = {
-          cartToggle: iframeDoc.getElementById('cart-toggle'),
-          cartClose: iframeDoc.getElementById('cart-close'),
-          cartOverlay: iframeDoc.getElementById('cart-overlay'),
-          cartSidebar: iframeDoc.getElementById('cart-sidebar'),
-          cartItems: iframeDoc.getElementById('cart-items'),
-          cartCount: iframeDoc.getElementById('cart-count'),
-          cartTotal: iframeDoc.getElementById('cart-total'),
-          checkoutBtn: iframeDoc.getElementById('checkout-btn'),
-          emptyCart: iframeDoc.getElementById('empty-cart')
-        };
-      }
-    }
-
-    return elements;
-  }
-
-  // Obtener elementos del DOM
-  const elements = getCartElements();
-
-  // Función para actualizar el carrito
-  function updateCart() {
-    const currentElements = getCartElements();
-
-    // Actualizar contador
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    if (currentElements.cartCount) {
-      currentElements.cartCount.textContent = totalItems;
-    }
-
-    // Actualizar total
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    if (currentElements.cartTotal) {
-      currentElements.cartTotal.textContent = `$${total.toFixed(2)}`;
-    }
-
-    // Habilitar/deshabilitar botón de checkout
-    if (currentElements.checkoutBtn) {
-      currentElements.checkoutBtn.disabled = cart.length === 0;
-    }
-
-    // Mostrar/ocultar carrito vacío
-    if (cart.length === 0) {
-      if (currentElements.emptyCart) {
-        currentElements.emptyCart.style.display = 'flex';
-      }
-      if (currentElements.cartItems) {
-        currentElements.cartItems.innerHTML = '<div id="empty-cart" class="flex flex-col items-center justify-center h-full text-gray-500"><svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m0 0h8M9 18a1 1 0 100 2 1 1 0 000-2zm8 0a1 1 0 100 2 1 1 0 000-2z"></path></svg><p class="text-lg font-medium">Tu carrito está vacío</p><p class="text-sm">Agrega algunos productos para comenzar</p></div>';
-      }
-    } else {
-      if (currentElements.emptyCart) {
-        currentElements.emptyCart.style.display = 'none';
-      }
-      renderCartItems();
-    }
-
-    // Guardar en localStorage
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }
-
-  // Función para renderizar los items del carrito
-  function renderCartItems() {
-    const currentElements = getCartElements();
-    if (!currentElements.cartItems) return;
-
-    const itemsHtml = cart.map((item, index) => `
-      <div class="flex items-center p-4 mb-4 space-x-4 border border-gray-200 rounded-lg">
-        <img src="${item.image || 'https://via.placeholder.com/60x60'}" alt="${item.name}" class="object-cover w-16 h-16 rounded-lg">
-        <div class="flex-1">
-          <h3 class="font-medium text-gray-900">${item.name}</h3>
-          <p class="text-sm text-gray-600">$${item.price.toFixed(2)}</p>
-          <div class="flex items-center mt-2 space-x-2">
-            <button onclick="updateQuantity(${index}, -1)" class="flex items-center justify-center w-8 h-8 border border-gray-300 rounded-md hover:bg-gray-100">-</button>
-            <span class="w-8 text-center">${item.quantity}</span>
-            <button onclick="updateQuantity(${index}, 1)" class="flex items-center justify-center w-8 h-8 border border-gray-300 rounded-md hover:bg-gray-100">+</button>
-          </div>
-        </div>
-        <button onclick="removeFromCart(${index})" class="p-2 text-red-500 hover:text-red-700">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-          </svg>
-        </button>
-      </div>
-    `).join('');
-
-    currentElements.cartItems.innerHTML = itemsHtml;
-  }
-
-  // Función para actualizar cantidad
-  window.updateQuantity = function (index, change) {
-    cart[index].quantity += change;
-    if (cart[index].quantity <= 0) {
-      cart.splice(index, 1);
-    }
-    updateCart();
-  };
-
-  // Función para remover del carrito
-  window.removeFromCart = function (index) {
-    cart.splice(index, 1);
-    updateCart();
-  };
-
-  // Función para abrir carrito
-  function openCart() {
-    const currentElements = getCartElements();
-    if (currentElements.cartSidebar) {
-      currentElements.cartSidebar.classList.remove('translate-x-full');
-    }
-    if (currentElements.cartOverlay) {
-      currentElements.cartOverlay.classList.remove('hidden');
-    }
-    document.body.style.overflow = 'hidden';
-  }
-
-  // Función para cerrar carrito
-  function closeCart() {
-    const currentElements = getCartElements();
-    if (currentElements.cartSidebar) {
-      currentElements.cartSidebar.classList.add('translate-x-full');
-    }
-    if (currentElements.cartOverlay) {
-      currentElements.cartOverlay.classList.add('hidden');
-    }
-    document.body.style.overflow = 'auto';
-  }
-
-  // Event listeners
-  function attachEventListeners() {
-    const currentElements = getCartElements();
-    if (currentElements.cartToggle) {
-      currentElements.cartToggle.addEventListener('click', openCart);
-    }
-    if (currentElements.cartClose) {
-      currentElements.cartClose.addEventListener('click', closeCart);
-    }
-    if (currentElements.cartOverlay) {
-      currentElements.cartOverlay.addEventListener('click', closeCart);
-    }
-    if (currentElements.checkoutBtn) {
-      currentElements.checkoutBtn.addEventListener('click', () => {
-        alert('Funcionalidad de checkout en desarrollo');
-      });
-    }
-  }
-
-  // Adjuntar event listeners
-  attachEventListeners();
-
-  // Función para agregar al carrito (para usar desde otros bloques)
-  window.addToCart = function (product) {
-    const existingItem = cart.find(item => item.id === product.id);
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      cart.push({
-        id: product.id || Date.now(),
-        name: product.name || 'Producto',
-        price: product.price || 0,
-        image: product.image || 'https://via.placeholder.com/60x60',
-        quantity: 1
-      });
-    }
-    updateCart();
-    openCart();
-    // Re-adjuntar event listeners por si se agregó un nuevo elemento
-    setTimeout(attachEventListeners, 100);
-  };
-
-  // Inicializar carrito
-  updateCart();
-}
 
 // Función para mostrar placeholder de productos en el editor
 function showProductsPlaceholder() {
-  console.log('🎯 Mostrando placeholder de productos en el editor...');
 
   // Buscar contenedores de productos de múltiples formas
   let productsContainers = document.querySelectorAll('#products-container');
@@ -423,15 +224,11 @@ function showProductsPlaceholder() {
     );
   }
 
-  console.log(`🔍 Encontrados ${productsContainers.length} contenedores de productos`);
-
   if (productsContainers.length === 0) {
-    console.log('❌ No se encontraron contenedores de productos en el editor');
     return;
   }
 
   productsContainers.forEach((container, index) => {
-    console.log(`🔄 Procesando contenedor ${index + 1}`);
 
     // Mostrar productos de ejemplo estáticos
     container.innerHTML = `
@@ -445,8 +242,8 @@ function showProductsPlaceholder() {
         <p class="mb-4 text-sm text-gray-600">Los productos reales se mostrarán en la vista previa</p>
         <div class="flex items-center justify-between">
           <span class="text-lg font-bold text-green-600">$99.99</span>
-          <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700" onclick="addToCart({id: 1, name: 'Producto de Ejemplo 1', price: 99.99, image: 'https://via.placeholder.com/60x60'})">
-            Agregar al Carrito
+          <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+            Ver Producto
           </button>
         </div>
       </div>
@@ -460,8 +257,8 @@ function showProductsPlaceholder() {
         <p class="mb-4 text-sm text-gray-600">Los productos reales se mostrarán en la vista previa</p>
         <div class="flex items-center justify-between">
           <span class="text-lg font-bold text-green-600">$149.99</span>
-          <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700" onclick="addToCart({id: 2, name: 'Producto de Ejemplo 2', price: 149.99, image: 'https://via.placeholder.com/60x60'})">
-            Agregar al Carrito
+          <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+            Ver Producto
           </button>
         </div>
       </div>
@@ -475,15 +272,14 @@ function showProductsPlaceholder() {
         <p class="mb-4 text-sm text-gray-600">Los productos reales se mostrarán en la vista previa</p>
         <div class="flex items-center justify-between">
           <span class="text-lg font-bold text-green-600">$199.99</span>
-          <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700" onclick="addToCart({id: 3, name: 'Producto de Ejemplo 3', price: 199.99, image: 'https://via.placeholder.com/60x60'})">
-            Agregar al Carrito
+          <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+            Ver Producto
           </button>
         </div>
       </div>
     `;
   });
 
-  console.log('✅ Placeholder de productos mostrado en el editor');
 }
 
 // Función para manejar clics en sectores del StyleManager
@@ -498,33 +294,32 @@ function handleSectorClick(e) {
       } else {
         sector.classList.add('gjs-sm-open');
       }
-      console.log('🔄 Sector toggled:', sectorTitle.textContent);
     }
   }
 }
 
+
 // Función para inicializar managers manualmente
 function initializeManagers() {
   if (!window.editor) {
-    console.warn('⚠️ Editor no disponible');
     return;
   }
 
   const editor = window.editor;
-  console.log('🔧 Inicializando managers del editor...');
-  console.log('Editor object:', editor);
-  console.log('Editor managers:', {
-    StyleManager: editor.StyleManager,
-    TraitManager: editor.TraitManager,
-    LayerManager: editor.LayerManager
-  });
+
+  // Verificar que el editor esté completamente inicializado
+  if (!editor.getComponents || !editor.getWrapper) {
+    console.warn('⚠️ Editor no completamente inicializado, reintentando en 500ms...');
+    setTimeout(initializeManagers, 500);
+    return;
+  }
+
+
 
   // Verificar que los managers estén disponibles y intentar renderizar
   if (editor.StyleManager) {
-    console.log('✅ StyleManager disponible');
     try {
       editor.StyleManager.render();
-      console.log('✅ StyleManager renderizado');
 
       // Agregar event listeners después del renderizado
       setTimeout(() => {
@@ -534,7 +329,6 @@ function initializeManagers() {
           styleContainer.removeEventListener('click', handleSectorClick);
           // Agregar nuevo listener
           styleContainer.addEventListener('click', handleSectorClick);
-          console.log('✅ Event listeners del StyleManager actualizados');
         }
       }, 100);
     } catch (error) {
@@ -546,10 +340,8 @@ function initializeManagers() {
 
 
   if (editor.TraitManager) {
-    console.log('✅ TraitManager disponible');
     try {
       editor.TraitManager.render();
-      console.log('✅ TraitManager renderizado');
     } catch (error) {
       console.error('❌ Error renderizando TraitManager:', error);
     }
@@ -558,12 +350,32 @@ function initializeManagers() {
   }
 
   if (editor.LayerManager) {
-    console.log('✅ LayerManager disponible');
     try {
+      // Verificar que el LayerManager tenga componentes válidos antes de renderizar
+      const components = editor.getComponents();
+      if (components && components.length > 0) {
+        // Limpiar componentes inválidos
+        components.forEach((component, index) => {
+          if (!component || !component.get) {
+            console.warn(`⚠️ Componente inválido en índice ${index}, removiendo...`);
+            components.remove(component);
+          }
+        });
+      }
+
       editor.LayerManager.render();
-      console.log('✅ LayerManager renderizado');
     } catch (error) {
       console.error('❌ Error renderizando LayerManager:', error);
+      // Intentar limpiar y reinicializar
+      try {
+        const components = editor.getComponents();
+        if (components) {
+          components.reset();
+        }
+        editor.LayerManager.render();
+      } catch (retryError) {
+        console.error('❌ Error persistente en LayerManager:', retryError);
+      }
     }
   } else {
     console.warn('⚠️ LayerManager no disponible');
@@ -573,18 +385,15 @@ function initializeManagers() {
   // (Comentado para evitar deselección automática de componentes seleccionados)
   // const components = editor.getComponents();
   // if (components && components.length > 0) {
-  //   console.log('🎯 Seleccionando primer componente para activar managers...');
   //   const firstComponent = components.at(0);
   //   if (firstComponent) {
   //     editor.select(firstComponent);
-  //     console.log('✅ Componente seleccionado:', firstComponent.get('type'));
   //   }
   // }
 }
 
 // Inicialización del editor
 function initializeEditor() {
-  console.log('🚀 Inicializando editor GrapeJS...');
   // Configurar bloques directamente desde los archivos Blade
   editorConfig.blockManager.blocks = window.editorBlocks || [];
 
@@ -612,45 +421,31 @@ function initializeEditor() {
 
   // Configurar eventos del editor
   editor.on('component:add', function (component) {
-    console.log('➕ Componente agregado:', component.get('type'));
-
     // Si es un bloque de productos, mostrar placeholder
     if (component.get('type') === 'products-list' ||
       component.get('attributes').class === 'gjs-block-products') {
-      console.log('🛍️ Bloque de productos detectado, mostrando placeholder...');
       setTimeout(showProductsPlaceholder, 100);
     }
 
-  // Si es un bloque de carrito, inicializar carrito
-  if (component.get('type') === 'cart-button' ||
-    component.get('attributes').class === 'gjs-block-cart') {
-    console.log('🛒 Bloque de carrito detectado, inicializando carrito...');
-    setTimeout(initCart, 500);
-  }
-  
-  // Inicializar carrito para vista previa
-  if (component.getEl && component.getEl().querySelector('#cart-toggle')) {
-    console.log('🛒 Elemento de carrito encontrado, inicializando...');
-    setTimeout(initCart, 500);
-  }
+    // Si es un bloque de navbar, verificar si la tienda virtual está habilitada
+    if (component?.attributes?.tagName === 'nav') {
+      console.log('navbar');
+    }
   });
 
   // Evento cuando se selecciona un componente
   editor.on('component:selected', function (component) {
-    console.log('🎯 Componente seleccionado:', component.get('type'));
 
     // Forzar actualización del StyleManager cuando se selecciona un componente
     setTimeout(() => {
       if (editor.StyleManager) {
         editor.StyleManager.render();
-        console.log('✅ StyleManager actualizado tras selección');
       }
     }, 100);
   });
 
   // Evento cuando se deselecciona un componente
   editor.on('component:deselected', function (component) {
-    console.log('❌ Componente deseleccionado:', component.get('type'));
   });
 
   // Cargar contenido existente si existe
@@ -658,7 +453,6 @@ function initializeEditor() {
   const existingCss = document.getElementById('page-css-content')?.value;
 
   if (existingHtml && existingCss) {
-    console.log('📄 Cargando contenido existente...');
     editor.setComponents(existingHtml);
     editor.setStyle(existingCss);
   }
@@ -672,12 +466,6 @@ function initializeEditor() {
   const layersContainer = document.querySelector('.layers-container');
   const stylesContainer = document.querySelector('.styles-container');
   const traitsContainer = document.querySelector('.traits-container');
-
-  console.log('🔍 Verificando contenedores:', {
-    layersContainer: layersContainer,
-    stylesContainer: stylesContainer,
-    traitsContainer: traitsContainer
-  });
 
   // Inicializar managers después de que el editor esté completamente cargado
   setTimeout(initializeManagers, 1500);
@@ -698,18 +486,15 @@ function initializeEditor() {
             } else {
               sector.classList.add('gjs-sm-open');
             }
-            console.log('🔄 Sector toggled:', sectorTitle.textContent);
           }
         }
       });
-      console.log('✅ Event listeners agregados para sectores del StyleManager');
     }
   }, 2000);
 
   // También intentar inicializar cuando se selecciona un componente
   // (Comentado para evitar deselección automática)
   // editor.on('component:selected', function (component) {
-  //   console.log('🎯 Componente seleccionado, reinicializando managers...');
   //   setTimeout(initializeManagers, 100);
   // });
 
@@ -717,40 +502,26 @@ function initializeEditor() {
   window.updateManagers = function () {
     if (window.editor) {
       const editor = window.editor;
-      console.log('🔄 Forzando actualización de managers...');
 
       // Verificar si los contenedores tienen contenido
       const stylesContainer = document.querySelector('.styles-container');
       const traitsContainer = document.querySelector('.traits-container');
       const layersContainer = document.querySelector('.layers-container');
 
-      console.log('🔍 Estado de contenedores:', {
-        stylesContainer: stylesContainer ? stylesContainer.innerHTML.length : 'No encontrado',
-        traitsContainer: traitsContainer ? traitsContainer.innerHTML.length : 'No encontrado',
-        layersContainer: layersContainer ? layersContainer.innerHTML.length : 'No encontrado'
-      });
 
       // Forzar renderizado de todos los managers
       if (editor.StyleManager) {
         editor.StyleManager.render();
-        console.log('✅ StyleManager actualizado');
       }
       if (editor.TraitManager) {
         editor.TraitManager.render();
-        console.log('✅ TraitManager actualizado');
       }
       if (editor.LayerManager) {
         editor.LayerManager.render();
-        console.log('✅ LayerManager actualizado');
       }
 
       // Verificar nuevamente después del renderizado
       setTimeout(() => {
-        console.log('🔍 Estado después del renderizado:', {
-          stylesContainer: stylesContainer ? stylesContainer.innerHTML.length : 'No encontrado',
-          traitsContainer: traitsContainer ? traitsContainer.innerHTML.length : 'No encontrado',
-          layersContainer: layersContainer ? layersContainer.innerHTML.length : 'No encontrado'
-        });
       }, 500);
     }
   };
@@ -760,11 +531,11 @@ function initializeEditor() {
     const htmlContent = editor.getHtml();
     const cssContent = editor.getCss();
 
-    console.log('💾 Guardando contenido...');
 
     const requestData = {
       html_content: htmlContent,
-      css_content: cssContent
+      css_content: cssContent,
+      enable_store: document.getElementById('enable-store')?.checked || false
     };
 
     // Agregar grapesjs_data si es un componente
@@ -805,16 +576,9 @@ function initializeEditor() {
       });
   });
 
-  console.log('✅ Editor completamente inicializado');
 }
-
-// Inicializar carrito cuando se carga la página
-document.addEventListener('DOMContentLoaded', function () {
-  setTimeout(initCart, 1000); // Esperar a que se cargue el editor
-});
 
 // Exportar funciones para uso global
 window.initializeEditor = initializeEditor;
-window.initCart = initCart;
 window.showProductsPlaceholder = showProductsPlaceholder;
 window.initializeManagers = initializeManagers;

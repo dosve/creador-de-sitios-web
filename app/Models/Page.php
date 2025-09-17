@@ -19,6 +19,7 @@ class Page extends Model
         'grapesjs_data',
         'is_published',
         'is_home',
+        'enable_store',
         'sort_order',
     ];
 
@@ -27,6 +28,7 @@ class Page extends Model
         return [
             'is_published' => 'boolean',
             'is_home' => 'boolean',
+            'enable_store' => 'boolean',
             'grapesjs_data' => 'array',
         ];
     }
@@ -62,7 +64,7 @@ class Page extends Model
     public function createVersion($changeDescription = null)
     {
         $versionNumber = $this->versions()->count() + 1;
-        
+
         return $this->versions()->create([
             'user_id' => auth()->id(),
             'version_number' => $versionNumber,

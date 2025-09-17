@@ -132,10 +132,6 @@
                                 </div>
                                 
                                 <div class="flex items-center space-x-2">
-                                    <a href="{{ route('creator.pages.edit', [$website, $product]) }}" 
-                                       class="text-sm font-medium text-blue-600 hover:text-blue-800">
-                                        Editar
-                                    </a>
                                     <span class="text-gray-300">|</span>
                                     <a href="{{ route('creator.pages.preview', [$website, $product]) }}" 
                                        class="text-sm font-medium text-green-600 hover:text-green-800">

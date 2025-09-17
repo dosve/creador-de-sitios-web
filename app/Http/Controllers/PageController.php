@@ -130,12 +130,14 @@ class PageController extends Controller
             'html_content' => 'required|string',
             'css_content' => 'nullable|string',
             'grapesjs_data' => 'nullable|json',
+            'enable_store' => 'nullable|boolean',
         ]);
 
         $page->update([
             'html_content' => $request->html_content,
             'css_content' => $request->css_content,
             'grapesjs_data' => $request->grapesjs_data,
+            'enable_store' => $request->boolean('enable_store', false),
         ]);
 
         return response()->json(['success' => true, 'message' => 'Contenido guardado exitosamente']);

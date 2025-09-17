@@ -145,4 +145,16 @@
     @endif
     @endif
 </div>
+
+@push('scripts')
+<script>
+    // Configurar variables globales para la API del sitio web
+    window.websiteApiKey = '{{ $website->api_key }}';
+    window.websiteApiUrl = '{{ $website->api_base_url }}';
+    console.log('🔧 Configuración de API cargada:', {
+        apiKey: window.websiteApiKey ? 'Configurada' : 'No configurada',
+        apiUrl: window.websiteApiUrl || 'No configurada'
+    });
+</script>
+@endpush
 @endsection

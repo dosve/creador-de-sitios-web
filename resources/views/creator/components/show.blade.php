@@ -9,9 +9,9 @@
 <body class="bg-gray-100">
     <div class="min-h-screen">
         <!-- Header -->
-        <header class="bg-white shadow-sm border-b">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center py-4">
+        <header class="bg-white border-b shadow-sm">
+            <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between py-4">
                     <div class="flex items-center space-x-4">
                         <a href="{{ route('creator.components.index', $website) }}" class="text-gray-600 hover:text-gray-900">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,10 +24,7 @@
                         </div>
                     </div>
                     <div class="flex items-center space-x-3">
-                        <a href="{{ route('creator.components.editor', [$website, $component]) }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm">
-                            Editor Visual
-                        </a>
-                        <a href="{{ route('creator.components.edit', [$website, $component]) }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                        <a href="{{ route('creator.components.editor', [$website, $component]) }}" class="px-4 py-2 text-sm text-white bg-green-600 rounded-md hover:bg-green-700">
                             Editar
                         </a>
                     </div>
@@ -36,10 +33,10 @@
         </header>
 
         <!-- Main Content -->
-        <main class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <main class="max-w-6xl px-4 py-8 mx-auto sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
                 <!-- Component Info -->
-                <div class="bg-white shadow rounded-lg">
+                <div class="bg-white rounded-lg shadow">
                     <div class="px-6 py-4 border-b border-gray-200">
                         <h3 class="text-lg font-medium text-gray-900">Información del Componente</h3>
                     </div>
@@ -76,12 +73,12 @@
                 </div>
 
                 <!-- Component Preview -->
-                <div class="bg-white shadow rounded-lg">
+                <div class="bg-white rounded-lg shadow">
                     <div class="px-6 py-4 border-b border-gray-200">
                         <h3 class="text-lg font-medium text-gray-900">Vista Previa</h3>
                     </div>
                     <div class="px-6 py-4">
-                        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div class="p-4 border border-gray-200 rounded-lg bg-gray-50">
                             <div class="prose max-w-none">
                                 {!! $component->html_content !!}
                             </div>
@@ -91,43 +88,39 @@
             </div>
 
             <!-- HTML Code -->
-            <div class="mt-8 bg-white shadow rounded-lg">
+            <div class="mt-8 bg-white rounded-lg shadow">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h3 class="text-lg font-medium text-gray-900">Código HTML</h3>
                 </div>
                 <div class="px-6 py-4">
-                    <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm"><code>{{ htmlspecialchars($component->html_content) }}</code></pre>
+                    <pre class="p-4 overflow-x-auto text-sm text-gray-100 bg-gray-900 rounded-lg"><code>{{ htmlspecialchars($component->html_content) }}</code></pre>
                 </div>
             </div>
 
             <!-- CSS Code -->
             @if($component->css_content)
-                <div class="mt-8 bg-white shadow rounded-lg">
+                <div class="mt-8 bg-white rounded-lg shadow">
                     <div class="px-6 py-4 border-b border-gray-200">
                         <h3 class="text-lg font-medium text-gray-900">Código CSS</h3>
                     </div>
                     <div class="px-6 py-4">
-                        <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm"><code>{{ htmlspecialchars($component->css_content) }}</code></pre>
+                        <pre class="p-4 overflow-x-auto text-sm text-gray-100 bg-gray-900 rounded-lg"><code>{{ htmlspecialchars($component->css_content) }}</code></pre>
                     </div>
                 </div>
             @endif
 
             <!-- Actions -->
-            <div class="mt-8 flex justify-center space-x-4">
+            <div class="flex justify-center mt-8 space-x-4">
                 <a href="{{ route('creator.components.index', $website) }}" 
-                   class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                   class="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     Volver a la Lista
                 </a>
-                <a href="{{ route('creator.components.edit', [$website, $component]) }}" 
-                   class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Editar
-                </a>
                 <a href="{{ route('creator.components.editor', [$website, $component]) }}" 
-                   class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    Editor Visual
+                   class="px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Editor
                 </a>
                 <a href="{{ route('creator.components.duplicate', [$website, $component]) }}" 
-                   class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                   class="px-4 py-2 text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                     Duplicar
                 </a>
             </div>

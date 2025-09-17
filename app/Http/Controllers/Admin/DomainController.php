@@ -13,18 +13,20 @@ class DomainController extends Controller
         $domains = Domain::with('website.user')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-        
+
         return view('admin.domains.index', compact('domains'));
     }
 
     public function show(Domain $domain)
     {
         $domain->load('website.user');
+        // TODO: Crear vista admin.domains.show
         return view('admin.domains.show', compact('domain'));
     }
 
     public function edit(Domain $domain)
     {
+        // TODO: Crear vista admin.domains.edit
         return view('admin.domains.edit', compact('domain'));
     }
 
@@ -57,7 +59,7 @@ class DomainController extends Controller
     public function destroy(Domain $domain)
     {
         $domain->delete();
-        
+
         return redirect()->route('admin.domains.index')
             ->with('success', 'Dominio eliminado exitosamente');
     }
@@ -66,7 +68,7 @@ class DomainController extends Controller
     {
         $newStatus = $domain->status === 'active' ? 'suspended' : 'active';
         $domain->update(['status' => $newStatus]);
-        
+
         $status = $newStatus === 'active' ? 'activado' : 'suspendido';
         return redirect()->route('admin.domains.index')
             ->with('success', "Dominio {$status} exitosamente");
@@ -79,7 +81,7 @@ class DomainController extends Controller
             'is_verified' => true,
             'status' => 'active'
         ]);
-        
+
         return redirect()->route('admin.domains.index')
             ->with('success', 'Dominio verificado exitosamente');
     }
@@ -91,7 +93,7 @@ class DomainController extends Controller
             'ssl_enabled' => true,
             'ssl_expires_at' => now()->addYear()
         ]);
-        
+
         return redirect()->route('admin.domains.index')
             ->with('success', 'SSL habilitado exitosamente');
     }

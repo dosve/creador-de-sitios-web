@@ -13,20 +13,21 @@ class ComponentController extends Controller
         $components = SharedComponent::with('website.user')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-        
+
         $componentTypes = [
             'header' => 'Encabezados',
             'footer' => 'Pies de página',
             'menu' => 'Menús',
             'block' => 'Bloques reutilizables'
         ];
-        
+
         return view('admin.components.index', compact('components', 'componentTypes'));
     }
 
     public function show(SharedComponent $component)
     {
         $component->load('website.user');
+        // TODO: Crear vista admin.components.show
         return view('admin.components.show', compact('component'));
     }
 
@@ -38,7 +39,8 @@ class ComponentController extends Controller
             'menu' => 'Menú de navegación',
             'block' => 'Bloque reutilizable'
         ];
-        
+
+        // TODO: Crear vista admin.components.edit
         return view('admin.components.edit', compact('component', 'componentTypes'));
     }
 
@@ -65,7 +67,7 @@ class ComponentController extends Controller
     public function destroy(SharedComponent $component)
     {
         $component->delete();
-        
+
         return redirect()->route('admin.components.index')
             ->with('success', 'Componente eliminado exitosamente');
     }
@@ -73,7 +75,7 @@ class ComponentController extends Controller
     public function toggleStatus(SharedComponent $component)
     {
         $component->update(['is_active' => !$component->is_active]);
-        
+
         $status = $component->is_active ? 'activado' : 'desactivado';
         return redirect()->route('admin.components.index')
             ->with('success', "Componente {$status} exitosamente");

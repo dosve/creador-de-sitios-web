@@ -95,7 +95,7 @@ class StoreController extends Controller
                 'has_api_key' => !empty($website->api_key),
                 'has_api_url' => !empty($website->api_base_url)
             ]);
-            
+
             return response()->json([
                 'success' => true,
                 'products' => $useExternalApi ? $externalProducts : $products,

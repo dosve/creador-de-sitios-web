@@ -13,18 +13,20 @@ class MediaController extends Controller
         $mediaFiles = MediaFile::with('website.user')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-        
+
         return view('admin.media.index', compact('mediaFiles'));
     }
 
     public function show(MediaFile $mediaFile)
     {
         $mediaFile->load('website.user');
+        // TODO: Crear vista admin.media.show
         return view('admin.media.show', compact('mediaFile'));
     }
 
     public function edit(MediaFile $mediaFile)
     {
+        // TODO: Crear vista admin.media.edit
         return view('admin.media.edit', compact('mediaFile'));
     }
 
@@ -52,9 +54,9 @@ class MediaController extends Controller
         if ($mediaFile->file_path && file_exists(public_path($mediaFile->file_path))) {
             unlink(public_path($mediaFile->file_path));
         }
-        
+
         $mediaFile->delete();
-        
+
         return redirect()->route('admin.media.index')
             ->with('success', 'Archivo multimedia eliminado exitosamente');
     }
@@ -62,7 +64,7 @@ class MediaController extends Controller
     public function toggleStatus(MediaFile $mediaFile)
     {
         $mediaFile->update(['is_active' => !$mediaFile->is_active]);
-        
+
         $status = $mediaFile->is_active ? 'activado' : 'desactivado';
         return redirect()->route('admin.media.index')
             ->with('success', "Archivo multimedia {$status} exitosamente");
