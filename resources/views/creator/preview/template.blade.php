@@ -203,18 +203,8 @@
                 `).join('');
 
                 // Agregar el botón "Ver más" después de los productos
-                const seeMoreButton = `
-                    <div class="mt-12 text-center col-span-full">
-                        <div class="inline-flex items-center px-8 py-3 text-base font-medium text-white transition-colors bg-blue-600 border border-transparent rounded-md">
-                            Ver más productos
-                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                            </svg>
-                        </div>
-                    </div>
-                `;
 
-                container.innerHTML = productsHtml + seeMoreButton;
+                container.innerHTML = productsHtml;
             }
             
             // Cargar productos después de un breve delay
