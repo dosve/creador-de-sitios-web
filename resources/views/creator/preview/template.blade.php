@@ -108,6 +108,18 @@
 
     @yield('scripts')
     
+    <!-- Configuración de credenciales API -->
+    <script>
+        // Configurar las credenciales API del usuario
+        window.websiteApiKey = "{{ $apiKey }}";
+        window.websiteApiUrl = "{{ $apiBaseUrl }}";
+        
+        // Configurar las credenciales de ePayco
+        window.epaycoPublicKey = "{{ $epaycoPublicKey }}";
+        window.epaycoPrivateKey = "{{ $epaycoPrivateKey }}";
+        window.epaycoCustomerId = "{{ $epaycoCustomerId }}";
+    </script>
+    
     <!-- Script para cargar productos reales en la vista previa de plantilla -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -154,9 +166,6 @@
                     `;
 
                     // Para la vista previa de plantilla, mostrar productos de ejemplo mejorados
-                    setTimeout(() => {
-                        showEnhancedExampleProducts(container);
-                    }, 1000);
                 });
             }
 

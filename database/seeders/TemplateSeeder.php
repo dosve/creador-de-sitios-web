@@ -401,9 +401,7 @@ class TemplateSeeder extends Seeder
                 if (cart.length === 0) {
                     cartItems.innerHTML = `
                         <div class="py-8 text-center text-gray-500">
-                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"></path>
-                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto mb-4 text-gray-300" viewBox="0 0 24 24"><path fill="#000000" fill-rule="evenodd" d="M1.566 4a.75.75 0 0 1 .75-.75h1.181a2.25 2.25 0 0 1 2.228 1.937l.061.435h13.965a2.25 2.25 0 0 1 2.063 3.148l-2.668 6.128a2.25 2.25 0 0 1-2.063 1.352H7.722a2.25 2.25 0 0 1-2.228-1.937L4.24 5.396a.75.75 0 0 0-.743-.646h-1.18a.75.75 0 0 1-.75-.75m4.431 3.122l.982 6.982a.75.75 0 0 0 .743.646h9.361a.75.75 0 0 0 .688-.45l2.667-6.13a.75.75 0 0 0-.687-1.048z" clip-rule="evenodd"/><path fill="currentColor" d="M6.034 19.5a1.75 1.75 0 1 1 3.5 0a1.75 1.75 0 0 1-3.5 0m10.286-1.75a1.75 1.75 0 1 0 0 3.5a1.75 1.75 0 0 0 0-3.5"/></svg>
                             <p>Tu carrito está vacío</p>
                         </div>
                     `;
@@ -520,8 +518,11 @@ class TemplateSeeder extends Seeder
                     container.innerHTML = "<div class=\\"flex items-center justify-center py-12 col-span-full\\"><div class=\\"text-center\\"><div class=\\"w-12 h-12 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin\\"></div><p class=\\"text-gray-600\\">Cargando productos...</p></div></div>";
 
                     // Hacer peticion real a la API del servidor externo
-                    const apiKey = window.websiteApiKey || "sk_sOuK4MEGf1ITPV2wT0pcreZ5ceJ2jbTzl8VU0dsr";
-                    const apiBaseUrl = window.websiteApiUrl || "http://172.18.128.1:8001";
+                    const apiKey = window.websiteApiKey || "";
+                    const apiBaseUrl = window.websiteApiUrl || "";
+                    const epaycoPublicKey = window.epaycoPublicKey || "";
+                    const epaycoPrivateKey = window.epaycoPrivateKey || "";
+                    const epaycoCustomerId = window.epaycoCustomerId || "";
                     
                     if (apiKey && apiBaseUrl) {
                         console.log("Haciendo peticion al servidor externo:", apiBaseUrl);

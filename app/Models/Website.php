@@ -22,6 +22,9 @@ class Website extends Model
         'template_id',
         'api_key',
         'api_base_url',
+        'epayco_public_key',
+        'epayco_private_key',
+        'epayco_customer_id',
     ];
 
     protected function casts(): array

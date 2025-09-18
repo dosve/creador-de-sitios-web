@@ -33,12 +33,15 @@ class IntegrationController extends Controller
             'epayco_public_key' => 'required|string|max:255',
             'epayco_private_key' => 'required|string|max:255',
             'epayco_customer_id' => 'required|string|max:255',
-            'epayco_p_key' => 'required|string|max:255',
-            'epayco_test_mode' => 'boolean',
         ]);
 
-        // Aquí se guardarían las credenciales de Epayco
-        // Por ahora solo mostramos un mensaje de éxito
+        // Guardar las credenciales de Epayco en la base de datos
+        $website->update([
+            'epayco_public_key' => $request->epayco_public_key,
+            'epayco_private_key' => $request->epayco_private_key,
+            'epayco_customer_id' => $request->epayco_customer_id,
+        ]);
+
         return redirect()->route('creator.integrations.epayco', $website)
             ->with('success', 'Configuración de Epayco guardada exitosamente');
     }

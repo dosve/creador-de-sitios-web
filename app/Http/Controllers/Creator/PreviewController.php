@@ -7,6 +7,7 @@ use App\Models\Website;
 use App\Models\Page;
 use App\Models\BlogPost;
 use App\Models\Template;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -140,6 +141,15 @@ class PreviewController extends Controller
             abort(404, 'Plantilla no disponible');
         }
 
+        // Obtener las credenciales del usuario autenticado
+        $userWebsite = Website::where('user_id', auth()->id())->first();
+
+        $apiKey = $userWebsite ? $userWebsite->api_key : '';
+        $apiBaseUrl = $userWebsite ? $userWebsite->api_base_url : '';
+        $epaycoPublicKey = $userWebsite ? $userWebsite->epayco_public_key : '';
+        $epaycoPrivateKey = $userWebsite ? $userWebsite->epayco_private_key : '';
+        $epaycoCustomerId = $userWebsite ? $userWebsite->epayco_customer_id : '';
+
         // Crear un sitio web temporal para la vista previa
         $tempWebsite = new Website([
             'name' => 'Vista Previa - ' . $template->name,
@@ -159,6 +169,6 @@ class PreviewController extends Controller
             'is_home' => true,
         ]);
 
-        return view('creator.preview.template', compact('template', 'tempWebsite', 'tempPage'));
+        return view('creator.preview.template', compact('template', 'tempWebsite', 'tempPage', 'apiKey', 'apiBaseUrl', 'epaycoPublicKey', 'epaycoPrivateKey', 'epaycoCustomerId'));
     }
 }

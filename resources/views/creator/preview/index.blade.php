@@ -151,9 +151,17 @@
     // Configurar variables globales para la API del sitio web
     window.websiteApiKey = '{{ $website->api_key }}';
     window.websiteApiUrl = '{{ $website->api_base_url }}';
+    
+    // Configurar variables globales para ePayco
+    window.epaycoPublicKey = '{{ $website->epayco_public_key }}';
+    window.epaycoPrivateKey = '{{ $website->epayco_private_key }}';
+    window.epaycoCustomerId = '{{ $website->epayco_customer_id }}';
+    
     console.log('🔧 Configuración de API cargada:', {
         apiKey: window.websiteApiKey ? 'Configurada' : 'No configurada',
-        apiUrl: window.websiteApiUrl || 'No configurada'
+        apiUrl: window.websiteApiUrl || 'No configurada',
+        epaycoPublicKey: window.epaycoPublicKey ? 'Configurada' : 'No configurada',
+        epaycoCustomerId: window.epaycoCustomerId ? 'Configurado' : 'No configurado'
     });
 </script>
 @endpush
