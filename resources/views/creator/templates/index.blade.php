@@ -41,7 +41,7 @@
                         <!-- Template Actions -->
                         <div class="flex space-x-2">
                             <a href="{{ route('creator.templates.preview', $template) }}" 
-                               class="flex-1 px-3 py-2 text-sm text-center text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+                               class="flex-1 px-3 py-2 text-sm text-center text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200" target="_blank" rel="noopener noreferrer">
                                 Vista Previa
                             </a>
                             <a href="{{ route('creator.templates.show', $template) }}" 
