@@ -75,8 +75,8 @@
         <div class="p-4 mt-8 rounded-md bg-blue-50">
             <h3 class="mb-2 text-sm font-medium text-blue-800">Usuarios de prueba:</h3>
             <div class="space-y-1 text-xs text-blue-700">
-                <p><strong>Admin:</strong> admin@creador.com / password</p>
-                <p><strong>Creador:</strong> creator@creador.com / password</p>
+                <p><strong>Admin:</strong> admin@creador.com / admin123</p>
+                <p><strong>Creador:</strong> creator@creador.com / creator123</p>
             </div>
         </div>
     </div>

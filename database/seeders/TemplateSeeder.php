@@ -570,7 +570,7 @@ class TemplateSeeder extends Seeder
                         if (apiKey && apiBaseUrl) {
                             console.log("Haciendo peticion al servidor externo:", apiBaseUrl);
                             
-                            fetch(apiBaseUrl + "/api/api-key/products?paginate=6&estado=1", {
+                            fetch(apiBaseUrl + "/api-key/products?paginate=6&estado=1", {
                                 method: "GET",
                                 headers: {
                                     "X-API-Key": apiKey,

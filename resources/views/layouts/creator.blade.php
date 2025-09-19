@@ -277,9 +277,7 @@
                                             Información General
                                         </a>
                                         <a href="{{ route('creator.config.domain', $selectedWebsite) }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ request()->routeIs('creator.config.domain*') ? 'bg-green-100 text-green-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-                                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"></path>
-                                            </svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-3" viewBox="0 0 1024 999"><path fill="currentColor" d="M858 758q31-94 39-194h127q-13 102-66 194zm0-517h100q53 92 66 194H897q-8-100-39-194M750 42q55 29 102 70h-52q-24-40-50-70M577 435V241h158q27 91 33 194zm0-435q59 30 105 112H577zM289 758q-27-91-33-194h191v194zm0-517h158v194H256q6-103 33-194M447 0v112H342Q388 30 447 0M172 112q47-41 102-70q-26 30-50 70zM0 435q13-102 66-194h100q-31 94-39 194zm166 323H66Q13 666 0 564h127q8 100 39 194m58 129q24 40 50 70q-55-29-102-70zm223 0v112q-59-31-105-112zm130-323h191q-6 103-33 194H577zm105 323q-46 81-105 112V887zm170 0q-46 41-102 70q26-30 50-70z"/></svg>
                                             Dominio Personalizado
                                         </a>
                                         <a href="{{ route('creator.config.security', $selectedWebsite) }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ request()->routeIs('creator.config.security*') ? 'bg-green-100 text-green-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
@@ -344,8 +342,8 @@
                                 @if($selectedWebsite)
                                     <div class="flex items-center mt-1">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"></path>
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
                                             {{ $selectedWebsite->name }}
                                         </span>

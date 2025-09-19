@@ -14,30 +14,34 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear usuario administrador
-        User::create([
-            'name' => 'Administrador',
-            'email' => 'admin@creador-sitios.com',
-            'password' => Hash::make('admin123'),
-            'role' => 'admin',
-            'plan_id' => null, // Los administradores no tienen plan
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
+        // Crear o actualizar usuario administrador
+        User::updateOrCreate(
+            ['email' => 'admin@creador.com'],
+            [
+                'name' => 'Administrador',
+                'password' => Hash::make('admin123'),
+                'role' => 'admin',
+                'plan_id' => null, // Los administradores no tienen plan
+                'is_active' => true,
+                'email_verified_at' => null, // No verificado
+            ]
+        );
 
-        // Crear usuario creador
-        User::create([
-            'name' => 'Usuario Creador',
-            'email' => 'creator@creador-sitios.com',
-            'password' => Hash::make('creator123'),
-            'role' => 'creator',
-            'plan_id' => 1, // Plan gratuito
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
+        // Crear o actualizar usuario creador
+        User::updateOrCreate(
+            ['email' => 'creator@creador.com'],
+            [
+                'name' => 'Usuario Creador',
+                'password' => Hash::make('creator123'),
+                'role' => 'creator',
+                'plan_id' => null, // Sin plan asignado
+                'is_active' => true,
+                'email_verified_at' => null, // No verificado
+            ]
+        );
 
         $this->command->info('Usuarios creados exitosamente:');
-        $this->command->info('👑 Administrador: admin@creador-sitios.com / admin123');
-        $this->command->info('👤 Creador: creator@creador-sitios.com / creator123');
+        $this->command->info('👑 Administrador: admin@creador.com / admin123');
+        $this->command->info('👤 Creador: creator@creador.com / creator123');
     }
 }
