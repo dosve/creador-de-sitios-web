@@ -76,6 +76,18 @@
                                     <span class="text-sm text-gray-500">
                                         Código: {{ $product['codigo'] }}
                                     </span>
+                                    <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 add-to-cart" 
+                                            data-id="{{ $product['id'] }}"
+                                            data-name="{{ $product['producto'] }}"
+                                            data-price="{{ $product['precio'] }}"
+                                            data-codigo="{{ $product['codigo'] }}"
+                                            data-descripcion="{{ $product['descripcion'] ?? '' }}"
+                                            data-iva="{{ $product['iva'] ?? '' }}"
+                                            data-descuentos="{{ $product['descuentos'] ?? '' }}"
+                                            data-existencia="{{ $product['existencia'] ?? '' }}"
+                                            data-venta-sin-existencia="{{ $product['venta_sin_existencia'] ?? '' }}">
+                                        Agregar al Carrito
+                                    </button>
                                 </div>
                             </div>
                         </div>
