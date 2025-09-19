@@ -8,17 +8,18 @@
                 @foreach($templates->flatten() as $template)
                 <div class="overflow-hidden transition-shadow duration-200 bg-white border border-gray-200 rounded-lg hover:shadow-lg">
                     <!-- Template Preview -->
-                    <div class="bg-gray-100 aspect-w-16 aspect-h-9">
-                        @php
-                            $previewImage = null;
-                            if ($template->preview_images && is_array($template->preview_images) && count($template->preview_images) > 0) {
-                                $previewImage = $template->preview_images[0];
-                            }
-                        @endphp
-                        <img src="{{ $previewImage ? asset('storage/' . $previewImage) : 'https://via.placeholder.com/400x225?text=Preview' }}" 
-                             alt="{{ $template->name }}" 
-                             class="object-cover w-full h-48">
-                    </div>
+                    @php
+                        $previewImage = null;
+                        if ($template->preview_images && is_array($template->preview_images) && count($template->preview_images) > 0) {
+                            $previewImage = asset('storage/' . $template->preview_images[0]);
+                        }
+                    @endphp
+                    {!! render_image_container(
+                        $previewImage, 
+                        $template->name, 
+                        'bg-gray-100 aspect-w-16 aspect-h-9', 
+                        'object-cover w-full h-48'
+                    ) !!}
                     
                     <!-- Template Info -->
                     <div class="p-6">

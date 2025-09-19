@@ -435,7 +435,7 @@ class TemplateSeeder extends Seeder
                         }
                         handler.open(data);
                     } else {
-                        console.log("No se encontraron credenciales de ePayco");
+                        // No se encontraron credenciales de ePayco
                     }
                 }
                 
@@ -459,6 +459,11 @@ class TemplateSeeder extends Seeder
                             <div class="flex-1">
                                 <h4 class="font-medium text-gray-900">${item.name}</h4>
                                 <p class="text-sm text-gray-600">$${item.price.toFixed(2)}</p>
+                                <div class="mt-1 text-xs text-gray-500">
+                                    <div>ID: ${item.id || "N/A"}</div>
+                                    <div>IVA: ${item.iva || "0"}%</div>
+                                    <div>Stock: ${item.existencia || "0"}</div>
+                                </div>
                             </div>
                             <div class="flex items-center space-x-2">
                                 <button onclick="updateQuantity(${index}, -1)" class="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full hover:bg-gray-300">-</button>
@@ -475,12 +480,20 @@ class TemplateSeeder extends Seeder
                 }
                 
                 // Agregar al carrito
-                function addToCart(name, price) {
-                    const existingItem = cart.find(item => item.name === name);
+                function addToCart(productData) {
+                    const existingItem = cart.find(item => item.id === productData.id);
                     if (existingItem) {
                         existingItem.quantity += 1;
                     } else {
-                        cart.push({ name, price, quantity: 1 });
+                        cart.push({
+                            id: productData.id,
+                            name: productData.name,
+                            price: productData.price,
+                            descripcion: productData.descripcion,
+                            existencia: productData.existencia,
+                            iva: productData.iva,
+                            quantity: 1
+                        });
                     }
                     updateCartCounter();
                     updateCartTotal();
@@ -515,9 +528,15 @@ class TemplateSeeder extends Seeder
                 // Agregar productos al carrito
                 addToCartButtons.forEach((button) => {
                     button.addEventListener("click", function() {
-                        const name = this.getAttribute("data-name");
-                        const price = parseFloat(this.getAttribute("data-price"));
-                        addToCart(name, price);
+                        const productData = {
+                            id: this.getAttribute("data-id"),
+                            name: this.getAttribute("data-name"),
+                            price: parseFloat(this.getAttribute("data-price")),
+                            descripcion: this.getAttribute("data-descripcion"),
+                            existencia: this.getAttribute("data-existencia"),
+                            iva: this.getAttribute("data-iva")
+                        };
+                        addToCart(productData);
                     });
                 });
                 
@@ -526,9 +545,15 @@ class TemplateSeeder extends Seeder
                     const newAddToCartButtons = document.querySelectorAll(".add-to-cart");
                     newAddToCartButtons.forEach((button) => {
                         button.addEventListener("click", function() {
-                            const name = this.getAttribute("data-name");
-                            const price = parseFloat(this.getAttribute("data-price"));
-                            addToCart(name, price);
+                            const productData = {
+                                id: this.getAttribute("data-id"),
+                                name: this.getAttribute("data-name"),
+                                price: parseFloat(this.getAttribute("data-price")),
+                                descripcion: this.getAttribute("data-descripcion"),
+                                existencia: this.getAttribute("data-existencia"),
+                                iva: this.getAttribute("data-iva")
+                            };
+                            addToCart(productData);
                         });
                     });
                 };
@@ -541,8 +566,6 @@ class TemplateSeeder extends Seeder
             
             // Script para cargar productos reales dinamicamente
             document.addEventListener("DOMContentLoaded", function() {
-                console.log("Cargando productos dinamicamente...");
-                
                 function loadRealProducts() {
                     let productsContainers = document.querySelectorAll("#products-container");
                     if (productsContainers.length === 0) {
@@ -553,7 +576,6 @@ class TemplateSeeder extends Seeder
                     }
                     
                     if (productsContainers.length === 0) {
-                        console.log("No se encontraron contenedores de productos");
                         return;
                     }
                     
@@ -565,10 +587,7 @@ class TemplateSeeder extends Seeder
                         const apiKey = window.websiteApiKey || "";
                         const apiBaseUrl = window.websiteApiUrl || "";
 
-                        console.log(apiKey, apiBaseUrl);
-                        
                         if (apiKey && apiBaseUrl) {
-                            console.log("Haciendo peticion al servidor externo:", apiBaseUrl);
                             
                             fetch(apiBaseUrl + "/api-key/products?paginate=6&estado=1", {
                                 method: "GET",
@@ -579,32 +598,31 @@ class TemplateSeeder extends Seeder
                                 }
                             })
                             .then(response => {
-                                console.log("Respuesta del servidor externo:", response.status);
                                 return response.json();
                             })
                             .then(data => {
-                                console.log("Datos recibidos del servidor externo:", data);
-                                console.log(data && data.data && Array.isArray(data.data) && data.data.length > 0)
-                                if (data && data.data && Array.isArray(data.data) && data.data.length > 0) {
-                                    console.log("Renderizando productos reales del servidor externo");
-                                    renderRealProducts(container, data.data);
-                                } else {
-                                    console.log("No hay productos en el servidor externo, mostrando ejemplos");
+                                // La API devuelve data como array, pero verificar por si acaso
+                                let products = [];
+                                
+                                if (data && data.data && Array.isArray(data.data)) {
+                                    products = data.data;
+                                } else if (data && data.data && typeof data.data === "object") {
+                                    // Fallback: convertir objeto con claves numéricas a array
+                                    products = Object.values(data.data);
+                                }
+                                
+                                if (products.length > 0) {
+                                    renderRealProducts(container, products);
                                 }
                             })
                             .catch(error => {
-                                console.error("Error al conectar con el servidor externo:", error);
-                                console.log("Mostrando productos de ejemplo como fallback");
+                                // Error al conectar con el servidor externo
                             });
-                        } else {
-                            console.log("No hay configuracion de API, mostrando productos de ejemplo");
                         }
                     });
                 }
                 
                 function renderRealProducts(container, products) {
-                    console.log("Renderizando productos reales:", products.length);
-                    
                     let productsHtml = "";
                     products.forEach(product => {
                         const title = product.producto || "Producto sin nombre";
@@ -612,6 +630,7 @@ class TemplateSeeder extends Seeder
                         const price = product.precio || "0.00";
                         const image = product.img || null;
                         const category = product.categoria ? product.categoria.categoria : null;
+                        const iva = product.iva || "0";
                         
                         let imageHtml = "<div class=\\"flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg\\"><svg class=\\"w-12 h-12 text-gray-400\\" fill=\\"none\\" stroke=\\"currentColor\\" viewBox=\\"0 0 24 24\\"><path stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\" stroke-width=\\"2\\" d=\\"M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\\"></path></svg></div>";
 
@@ -626,7 +645,7 @@ class TemplateSeeder extends Seeder
                             categoryHtml = "<span class=\\"inline-block px-2 py-1 mb-2 text-xs text-blue-800 bg-blue-100 rounded-full\\">" + category + "</span>";
                         }
                         
-                        productsHtml += "<div class=\\"p-6 bg-white border border-gray-200 rounded-lg shadow-sm\\">" + imageHtml + "<h3 class=\\"mb-2 text-lg font-semibold text-gray-900\\">" + title + "</h3>" + categoryHtml + "<p class=\\"mb-4 text-sm text-gray-600 line-clamp-2\\">" + description + "</p><div class=\\"flex items-center justify-between\\"><span class=\\"text-lg font-bold text-green-600\\">$" + price + "</span><button class=\\"px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 add-to-cart\\" data-name=\\"" + title + "\\" data-price=\\"" + price + "\\">Agregar al Carrito</button></div></div>";
+                        productsHtml += "<div class=\\"p-6 bg-white border border-gray-200 rounded-lg shadow-sm\\">" + imageHtml + "<h3 class=\\"mb-2 text-lg font-semibold text-gray-900\\">" + title + "</h3>" + categoryHtml + "<p class=\\"mb-4 text-sm text-gray-600 line-clamp-2\\">" + description + "</p><div class=\\"flex items-center justify-between\\"><span class=\\"text-lg font-bold text-green-600\\">$" + price + "</span><button class=\\"px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 add-to-cart\\" data-id=\\"" + (product.id || "") + "\\" data-name=\\"" + title + "\\" data-price=\\"" + price + "\\" data-descripcion=\\"" + (product.descripcion || "") + "\\" data-existencia=\\"" + (product.existencia || "") + "\\" data-iva=\\"" + (iva || "") + "\\">Agregar al Carrito</button></div></div>";
                     });
 
                     container.innerHTML = productsHtml;

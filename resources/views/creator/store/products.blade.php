@@ -28,22 +28,26 @@
 
         <!-- Products Grid -->
         @if($useExternalApi && count($externalProducts) > 0)
+            <div class="p-4 mb-6 border border-blue-200 rounded-lg bg-blue-50">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <h3 class="text-sm font-medium text-blue-800">Vista de Productos</h3>
+                        <p class="text-sm text-blue-600">Esta es una vista informativa de los productos. Para comprar, visita la <strong>Tienda Virtual</strong> de tu sitio web.</p>
+                    </div>
+                </div>
+            </div>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @foreach($externalProducts as $product)
                     <div class="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm">
-                        @if($product['img'])
-                            <div class="aspect-w-16 aspect-h-9">
-                                <img src="{{ $product['img'] }}" 
-                                     alt="{{ $product['producto'] }}"
-                                     class="object-cover w-full h-48">
-                            </div>
-                        @else
-                            <div class="flex items-center justify-center w-full h-48 bg-gray-200">
-                                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                            </div>
-                        @endif
+                        {!! render_image_container(
+                            $product['img'], 
+                            $product['producto'], 
+                            'aspect-w-16 aspect-h-9', 
+                            'object-cover w-full h-48'
+                        ) !!}
                         
                         <div class="p-6">
                             <div class="flex items-start justify-between">
@@ -62,32 +66,25 @@
                                 </div>
                             </div>
                             
-                            <div class="flex items-center justify-between mt-4">
+                            <div class="flex flex-col mt-4 gap-y-4">
+                                <div class="flex flex-col">
+                                    <span class="text-sm text-gray-500">
+                                        Stock: {{ $product['existencia'] }}
+                                    </span>
+                                    @if($product['codigo'] === null)
+                                        <span class="text-sm text-gray-500">
+                                            Código: N/A
+                                        </span>
+                                    @else
+                                        <span class="text-sm text-gray-500">
+                                            Código: {{ $product['codigo'] }}
+                                        </span>
+                                    @endif
+                                </div>
                                 <div class="flex items-center space-x-2">
                                     <span class="text-lg font-bold text-green-600">
                                         ${{ number_format($product['precio'], 2) }}
                                     </span>
-                                    <span class="text-sm text-gray-500">
-                                        Stock: {{ $product['existencia'] }}
-                                    </span>
-                                </div>
-                                
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-sm text-gray-500">
-                                        Código: {{ $product['codigo'] }}
-                                    </span>
-                                    <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 add-to-cart" 
-                                            data-id="{{ $product['id'] }}"
-                                            data-name="{{ $product['producto'] }}"
-                                            data-price="{{ $product['precio'] }}"
-                                            data-codigo="{{ $product['codigo'] }}"
-                                            data-descripcion="{{ $product['descripcion'] ?? '' }}"
-                                            data-iva="{{ $product['iva'] ?? '' }}"
-                                            data-descuentos="{{ $product['descuentos'] ?? '' }}"
-                                            data-existencia="{{ $product['existencia'] ?? '' }}"
-                                            data-venta-sin-existencia="{{ $product['venta_sin_existencia'] ?? '' }}">
-                                        Agregar al Carrito
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -100,9 +97,12 @@
                     <div class="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm">
                         @if($product->featured_image)
                             <div class="aspect-w-16 aspect-h-9">
-                                <img src="{{ Storage::url($product->featured_image) }}" 
-                                     alt="{{ $product->title }}"
-                                     class="object-cover w-full h-48">
+                                {!! render_image_container(
+                                    Storage::url($product->featured_image), 
+                                    $product->title, 
+                                    'aspect-w-16 aspect-h-9', 
+                                    'object-cover w-full h-48'
+                                ) !!}
                             </div>
                         @else
                             <div class="flex items-center justify-center w-full h-48 bg-gray-200">

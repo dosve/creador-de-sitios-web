@@ -23,7 +23,12 @@
                         @foreach($blogPosts as $post)
                             <article class="bg-white rounded-lg shadow-md overflow-hidden">
                                 @if($post->featured_image)
-                                    <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" class="w-full h-48 object-cover">
+                                    {!! render_image_container(
+                                        $post->featured_image, 
+                                        $post->title, 
+                                        'w-full h-48', 
+                                        'w-full h-48 object-cover'
+                                    ) !!}
                                 @else
                                     <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
                                         <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

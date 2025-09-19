@@ -89,7 +89,22 @@ class ExternalApiService
             ])->get($this->baseUrl . '/api-key/products', $filters);
 
             if ($response->successful()) {
-                return $response->json();
+                $data = $response->json();
+                
+                // Normalizar la respuesta - convertir objeto con claves numéricas a array
+                if (isset($data['data']) && is_array($data['data'])) {
+                    // Si data.data es un objeto con claves numéricas, convertirlo a array
+                    if (array_keys($data['data']) !== range(0, count($data['data']) - 1)) {
+                        $data['data'] = array_values($data['data']);
+                    }
+                }
+                
+                Log::info('ExternalApiService: Productos normalizados', [
+                    'original_keys' => isset($data['data']) ? array_keys($data['data']) : 'no_data',
+                    'normalized_count' => isset($data['data']) ? count($data['data']) : 0
+                ]);
+                
+                return $data;
             }
 
             Log::error('Error al obtener productos', [

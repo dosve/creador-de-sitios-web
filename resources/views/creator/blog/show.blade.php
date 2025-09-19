@@ -70,7 +70,12 @@
                 <!-- Featured Image -->
                 @if($blogPost->featured_image)
                     <div class="px-6 py-4">
-                        <img src="{{ $blogPost->featured_image }}" alt="{{ $blogPost->title }}" class="w-full h-64 object-cover rounded-lg">
+                        {!! render_image_container(
+                            $blogPost->featured_image, 
+                            $blogPost->title, 
+                            'w-full h-64 rounded-lg', 
+                            'w-full h-64 object-cover rounded-lg'
+                        ) !!}
                     </div>
                 @endif
 
