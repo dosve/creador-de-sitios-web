@@ -368,7 +368,43 @@ class TemplateSeeder extends Seeder
                 const addToCartButtons = document.querySelectorAll(".add-to-cart");
                 const cartCounter = document.getElementById("cart-counter");
 
+                const to2 = n => (Math.round(n * 100) / 100);
+                
                 let cart = [];
+
+                function applyDiscountGross(gross, pct = 0) {
+                    return gross * (1 - (pct / 100));
+                }
+
+                function lineAmounts(it) {
+                    const ivaRate = (parseFloat(it.iva) || 0) / 100; // 0, .05, .19
+                    const unitGross = applyDiscountGross(parseFloat(it.price || 0), parseFloat(it.discountPct || 0)); // bruto final
+                    const unitBase  = ivaRate > 0 ? unitGross / (1 + ivaRate) : unitGross;
+                    const unitIva   = unitGross - unitBase;
+                    return {
+                    unitGross: to2(unitGross),
+                    unitBase:  to2(unitBase),
+                    unitIva:   to2(unitIva),
+                    ivaRate
+                    };
+                }
+
+                  function computeTotals(cart) {
+                    let gross = 0, base = 0, iva = 0, ico = 0;
+                    for (const it of cart) {
+                        const { unitGross, unitBase, unitIva } = lineAmounts(it);
+                        const qty = parseInt(it.quantity || 1, 10);
+                        gross += unitGross * qty;
+                        base  += unitBase  * qty;
+                        iva   += unitIva   * qty;
+                    }
+                    return {
+                        gross: to2(gross),
+                        taxBase: to2(base),
+                        tax: to2(iva),
+                        taxIco: to2(ico)
+                    };
+                }
                 
                 // Abrir carrito
                 function openCart() {
@@ -392,8 +428,8 @@ class TemplateSeeder extends Seeder
                 
                 // Actualizar total del carrito
                 function updateCartTotal() {
-                    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    cartTotal.textContent = `$${total.toFixed(2)}`;
+                    const totals = computeTotals(cart);
+                    cartTotal.textContent = `$${totals.gross.toFixed(2)}`;
                     checkoutBtn.disabled = cart.length === 0;
                 }
 
@@ -403,28 +439,54 @@ class TemplateSeeder extends Seeder
                     const epaycoCustomerId = window.epaycoCustomerId || "";
 
                     if (epaycoPublicKey && epaycoPrivateKey && cart.length > 0) {
+
+                        const { gross, taxBase, tax, taxIco } = computeTotals(cart);
+                        
+                        const invoice = "ORD-" + Date.now();
+
+                        const name = cart.length > 1
+                            ? `${cart[0].name} + ${cart.length - 1} más`
+                            : cart[0].name;
+                            const description = cart.map(i => `${i.quantity}x ${i.name}`).join(" | ").slice(0, 120);
+
+                            
+                        const extra1 = JSON.stringify(
+                            cart.map(i => {
+                                const a = lineAmounts(i);
+                                return {
+                                id: i.id || null,
+                                name: i.name,
+                                qty: i.quantity,
+                                unitGross: a.unitGross,
+                                ivaRate: a.ivaRate
+                                };
+                            })
+                        ).slice(0, 250);
+
                         const handler = ePayco.checkout.configure({
                             key: window.epaycoPublicKey,
                             test: true
                         });
 
-                        const data={
-                            //Parametros compra (obligatorio)
-                            name: "Vestido Mujer Primavera",
-                            description: "Vestido Mujer Primavera",
-                            invoice: "FAC-1234",
+                        const data = {
+                            name,
+                            description,
+                            invoice,
                             currency: "cop",
-                            amount: "5000",
-                            tax_base: "4000",
-                            tax: "500",
-                            tax_ico: "500",
+                            amount: gross.toFixed(2),
+                            tax_base: taxBase.toFixed(2),
+                            tax: tax.toFixed(2),
+                            tax_ico: taxIco.toFixed(2),
                             country: "co",
                             lang: "es",
 
                             external: "false",
 
-                            confirmation: "http://secure2.payco.co/prueba_curl.php",
-                            response: "http://secure2.payco.co/prueba_curl.php",
+                            extra1,
+                            extra2: "carrito-web",
+                            extra3: "canal-online",
+
+                            response: "http://127.0.0.1:8000/response",
 
                             name_billing: "Jhon Doe",
                             address_billing: "Carrera 19 numero 14 91",
@@ -488,10 +550,11 @@ class TemplateSeeder extends Seeder
                         cart.push({
                             id: productData.id,
                             name: productData.name,
-                            price: productData.price,
+                            price: parseFloat(productData.price),
                             descripcion: productData.descripcion,
-                            existencia: productData.existencia,
-                            iva: productData.iva,
+                            existencia: parseInt(productData.existencia || 0,10),
+                            iva: parseFloat(productData.iva),
+                            discountPct: 0,
                             quantity: 1
                         });
                     }

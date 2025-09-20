@@ -304,6 +304,12 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
     });
 });
 
+// Rutas de pago (sin autenticación para permitir callbacks de ePayco)
+Route::get('/response', [App\Http\Controllers\PaymentController::class, 'handleResponse'])->name('payment.response');
+Route::get('/payment/success', [App\Http\Controllers\PaymentController::class, 'success'])->name('payment.success');
+Route::get('/payment/pending', [App\Http\Controllers\PaymentController::class, 'pending'])->name('payment.pending');
+Route::get('/payment/error', [App\Http\Controllers\PaymentController::class, 'error'])->name('payment.error');
+
 // Redirección después del login
 Route::get('/home', function () {
     if (auth()->check() && auth()->user()->isAdmin()) {
