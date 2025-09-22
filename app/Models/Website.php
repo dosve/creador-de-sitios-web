@@ -128,6 +128,11 @@ class Website extends Model
         return $this->hasMany(Comment::class);
     }
 
+    public function menus()
+    {
+        return $this->hasMany(Menu::class);
+    }
+
     // Métodos de utilidad para SEO
     public function getUrl()
     {

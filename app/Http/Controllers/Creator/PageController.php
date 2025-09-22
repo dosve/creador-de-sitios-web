@@ -58,6 +58,17 @@ class PageController extends Controller
         return view('creator.pages.show', compact('website', 'page'));
     }
 
+    public function edit(Request $request, Website $website, Page $page)
+    {
+        $this->authorize('update', $website);
+
+        // Verificar que la página pertenece al sitio web
+        if ($page->website_id !== $website->id) {
+            abort(403);
+        }
+
+        return view('creator.pages.edit', compact('website', 'page'));
+    }
 
     public function update(Request $request, Website $website, Page $page)
     {
@@ -104,5 +115,27 @@ class PageController extends Controller
 
         return redirect()->route('creator.pages.index', $website)
             ->with('success', 'Página eliminada exitosamente');
+    }
+
+    /**
+     * Establecer una página como página de inicio
+     */
+    public function setHome(Request $request, Website $website, Page $page)
+    {
+        $this->authorize('update', $website);
+
+        // Verificar que la página pertenece al sitio web
+        if ($page->website_id !== $website->id) {
+            abort(403);
+        }
+
+        // Desmarcar todas las otras páginas como inicio
+        $website->pages()->where('id', '!=', $page->id)->update(['is_home' => false]);
+
+        // Marcar esta página como inicio
+        $page->update(['is_home' => true]);
+
+        return redirect()->route('creator.pages.index', $website)
+            ->with('success', "La página '{$page->title}' ahora es la página de inicio");
     }
 }

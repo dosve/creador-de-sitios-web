@@ -14,11 +14,13 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Ejecutar seeders en orden
-        $this->call([
-            TemplateSeeder::class,
-            UserSeeder::class,
-            WebsiteSeeder::class,
-            SharedComponentSeeder::class,
-        ]);
+    $this->call([
+        TemplateSeeder::class,
+        DefaultTemplateSeeder::class,
+        UserSeeder::class,
+        WebsiteSeeder::class,
+        SharedComponentSeeder::class,
+        MenuSeeder::class,
+    ]);
     }
 }

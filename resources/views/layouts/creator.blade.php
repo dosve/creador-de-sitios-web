@@ -83,6 +83,14 @@
                                             </svg>
                                             Biblioteca Multimedia
                                         </a>
+                                        @if($selectedWebsite)
+                                            <a href="{{ route('creator.websites.menus.index', $selectedWebsite) }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ request()->routeIs('creator.websites.menus.*') ? 'bg-green-100 text-green-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                                </svg>
+                                                Menús
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             @endif

@@ -160,10 +160,19 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('websites/{website}/pages/create', [App\Http\Controllers\Creator\PageController::class, 'create'])->name('pages.create');
         Route::post('websites/{website}/pages', [App\Http\Controllers\Creator\PageController::class, 'store'])->name('pages.store');
         Route::get('websites/{website}/pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'show'])->name('pages.show');
+        Route::get('websites/{website}/pages/{page}/edit', [App\Http\Controllers\Creator\PageController::class, 'edit'])->name('pages.edit');
         Route::put('websites/{website}/pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'update'])->name('pages.update');
         Route::delete('websites/{website}/pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'destroy'])->name('pages.destroy');
         Route::get('websites/{website}/pages/{page}/editor', [PageController::class, 'editor'])->name('pages.editor');
         Route::post('websites/{website}/pages/{page}/save', [PageController::class, 'saveContent'])->name('pages.save');
+        Route::post('websites/{website}/pages/{page}/set-home', [App\Http\Controllers\Creator\PageController::class, 'setHome'])->name('pages.set-home');
+
+        // Rutas de menús
+        Route::resource('websites.menus', App\Http\Controllers\Creator\MenuController::class);
+        Route::post('websites/{website}/menus/{menu}/items', [App\Http\Controllers\Creator\MenuController::class, 'storeItem'])->name('menus.items.store');
+        Route::put('websites/{website}/menus/{menu}/items/{menuItem}', [App\Http\Controllers\Creator\MenuController::class, 'updateItem'])->name('menus.items.update');
+        Route::delete('websites/{website}/menus/{menu}/items/{menuItem}', [App\Http\Controllers\Creator\MenuController::class, 'destroyItem'])->name('menus.items.destroy');
+        Route::post('websites/{website}/menus/{menu}/update-order', [App\Http\Controllers\Creator\MenuController::class, 'updateOrder'])->name('menus.update-order');
 
         // Rutas de versiones de páginas
         Route::get('websites/{website}/pages/{page}/versions', [PageController::class, 'versions'])->name('pages.versions');

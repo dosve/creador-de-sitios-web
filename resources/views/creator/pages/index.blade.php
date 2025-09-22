@@ -41,11 +41,31 @@
         <!-- Page Actions -->
         <div class="space-y-2">
             <div class="flex space-x-2">
-                <a href="{{ route('creator.pages.editor', [$website, $page]) }}"
+                <a href="{{ route('creator.pages.edit', [$website, $page]) }}"
                     class="flex-1 px-3 py-2 text-sm text-center text-white bg-green-600 rounded-md hover:bg-green-700">
                     Editar
                 </a>
+                <a href="{{ route('creator.pages.editor', [$website, $page]) }}"
+                    class="flex-1 px-3 py-2 text-sm text-center text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                    Constructor
+                </a>
             </div>
+            
+            <!-- Botón para establecer como página de inicio -->
+            @if(!$page->is_home)
+                <form method="POST" action="{{ route('creator.pages.set-home', [$website, $page]) }}" class="w-full">
+                    @csrf
+                    <button type="submit" 
+                            class="w-full px-3 py-2 text-sm text-center text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100"
+                            onclick="return confirm('¿Establecer esta página como página de inicio?')">
+                        🏠 Establecer como Inicio
+                    </button>
+                </form>
+            @else
+                <div class="w-full px-3 py-2 text-sm text-center text-green-600 bg-green-50 border border-green-200 rounded-md">
+                    ✅ Página de Inicio
+                </div>
+            @endif
             <form method="POST" action="{{ route('creator.pages.destroy', [$website, $page]) }}" onsubmit="return confirm('¿Estás seguro de eliminar esta página?')">
                 @csrf
                 @method('DELETE')
