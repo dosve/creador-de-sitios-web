@@ -75,12 +75,37 @@ class MenuItem extends Model
      */
     public function getFinalUrlAttribute(): string
     {
+        // Si tiene URL personalizada, usarla
         if ($this->url) {
             return $this->url;
         }
 
-        if ($this->page) {
-            return '/' . $this->page->slug;
+        // Si está vinculado a una página
+        if ($this->page_id && $this->page) {
+            $website = $this->page->website;
+            
+            // Verificar si tiene dominio personalizado
+            $customDomain = $website->domains()
+                ->where('is_verified', true)
+                ->where('status', 'active')
+                ->where('is_primary', true)
+                ->first();
+            
+            if ($customDomain) {
+                // Con dominio personalizado, no usar slug del sitio
+                if ($this->page->is_home) {
+                    return '/';
+                }
+                return '/' . $this->page->slug;
+            } else {
+                // Sin dominio personalizado, usar slug del sitio
+                $websiteSlug = $website->slug;
+                
+                if ($this->page->is_home) {
+                    return '/' . $websiteSlug;
+                }
+                return '/' . $websiteSlug . '/' . $this->page->slug;
+            }
         }
 
         return '#';

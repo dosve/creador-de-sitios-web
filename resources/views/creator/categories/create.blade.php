@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Categoría - {{ $website->name }}</title>
-    @vite('resources/js/app.js')
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen">
@@ -13,7 +13,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-4">
                     <div class="flex items-center space-x-4">
-                        <a href="{{ route('creator.categories.index', $website) }}" class="text-gray-600 hover:text-gray-900">
+                        <a href="{{ route('creator.categories.index') }}" class="text-gray-600 hover:text-gray-900">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                             </svg>
@@ -28,7 +28,7 @@
         <main class="max-w-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="bg-white shadow rounded-lg">
                 <div class="px-6 py-8">
-                    <form method="POST" action="{{ route('creator.categories.store', $website) }}" class="space-y-6">
+                    <form method="POST" action="{{ route('creator.categories.store') }}" class="space-y-6">
                         @csrf
                         
                         <div>
@@ -85,7 +85,7 @@
                         </div>
 
                         <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                            <a href="{{ route('creator.categories.index', $website) }}" 
+                            <a href="{{ route('creator.categories.index') }}" 
                                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 Cancelar
                             </a>

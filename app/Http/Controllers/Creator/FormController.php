@@ -160,8 +160,14 @@ class FormController extends Controller
     /**
      * Mostrar formulario para editar
      */
-    public function edit(Request $request, Website $website, Form $form)
+    public function edit(Request $request, Form $form)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         // Verificar que el formulario pertenece al sitio web
@@ -169,14 +175,20 @@ class FormController extends Controller
             abort(403);
         }
 
-        return view('creator.forms.edit', compact('website', 'form'));
+        return view('creator.forms.edit', compact('form'));
     }
 
     /**
      * Mostrar constructor de formularios
      */
-    public function builder(Request $request, Website $website, Form $form)
+    public function builder(Request $request, Form $form)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
 
         // Verificar que el formulario pertenece al sitio web
@@ -186,7 +198,7 @@ class FormController extends Controller
 
         $form->load('fields');
 
-        return view('creator.forms.builder', compact('website', 'form'));
+        return view('creator.forms.builder', compact('form', 'website'));
     }
 
     /**
@@ -215,8 +227,14 @@ class FormController extends Controller
     /**
      * Mostrar envíos del formulario
      */
-    public function submissions(Request $request, Website $website, Form $form)
+    public function submissions(Request $request, Form $form)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
 
         // Verificar que el formulario pertenece al sitio web
@@ -228,14 +246,20 @@ class FormController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return view('creator.forms.submissions', compact('website', 'form', 'submissions'));
+        return view('creator.forms.submissions', compact('form', 'submissions'));
     }
 
     /**
      * Mostrar envío específico
      */
-    public function showSubmission(Request $request, Website $website, Form $form, FormSubmission $submission)
+    public function showSubmission(Request $request, Form $form, FormSubmission $submission)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
 
         // Verificar que el formulario y envío pertenecen al sitio web
@@ -248,14 +272,20 @@ class FormController extends Controller
             $submission->markAsRead();
         }
 
-        return view('creator.forms.show-submission', compact('website', 'form', 'submission'));
+        return view('creator.forms.show-submission', compact('form', 'submission'));
     }
 
     /**
      * Actualizar formulario
      */
-    public function update(Request $request, Website $website, Form $form)
+    public function update(Request $request, Form $form)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         // Verificar que el formulario pertenece al sitio web
@@ -298,8 +328,14 @@ class FormController extends Controller
     /**
      * Eliminar formulario
      */
-    public function destroy(Request $request, Website $website, Form $form)
+    public function destroy(Request $request, Form $form)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         // Verificar que el formulario pertenece al sitio web
@@ -309,11 +345,153 @@ class FormController extends Controller
 
         $form->delete();
 
-        $redirectRoute = $form->blog_post_id
-            ? route('creator.forms.blog-index', [$website, $form->blogPost])
-            : route('creator.forms.index', $website);
-
-        return redirect($redirectRoute)
+        return redirect()->route('creator.forms.index')
             ->with('success', 'Formulario eliminado exitosamente.');
+    }
+
+    /**
+     * Agregar un campo al formulario
+     */
+    public function addField(Request $request, Form $form)
+    {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return response()->json(['error' => 'No hay sitio web seleccionado'], 403);
+        }
+        
+        $this->authorize('view', $website);
+
+        // Verificar que el formulario pertenece al sitio web
+        if ($form->website_id !== $website->id) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $validated = $request->validate([
+            'type' => 'required|in:text,email,textarea,select,checkbox,radio,number,tel,date,file',
+            'label' => 'nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
+            'placeholder' => 'nullable|string|max:255',
+            'required' => 'nullable|boolean',
+            'options' => 'nullable|array',
+        ]);
+
+        // Generar nombre automático si no se proporciona
+        if (empty($validated['name'])) {
+            $validated['name'] = 'field_' . time() . '_' . rand(1000, 9999);
+        }
+
+        // Obtener el siguiente orden
+        $maxSortOrder = $form->fields()->max('sort_order') ?? 0;
+        
+        $field = $form->fields()->create([
+            'type' => $validated['type'],
+            'label' => $validated['label'] ?? ucfirst($validated['type']),
+            'name' => $validated['name'],
+            'placeholder' => $validated['placeholder'] ?? null,
+            'required' => $validated['required'] ?? false,
+            'options' => $validated['options'] ?? null,
+            'sort_order' => $maxSortOrder + 1,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'field' => $field,
+        ]);
+    }
+
+    /**
+     * Actualizar un campo del formulario
+     */
+    public function updateField(Request $request, Form $form, FormField $field)
+    {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return response()->json(['error' => 'No hay sitio web seleccionado'], 403);
+        }
+        
+        $this->authorize('view', $website);
+
+        // Verificar que el formulario y campo pertenecen al sitio web
+        if ($form->website_id !== $website->id || $field->form_id !== $form->id) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $validated = $request->validate([
+            'label' => 'nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
+            'placeholder' => 'nullable|string|max:255',
+            'required' => 'nullable|boolean',
+            'options' => 'nullable|array',
+            'validation_rules' => 'nullable|string',
+        ]);
+
+        $field->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'field' => $field,
+        ]);
+    }
+
+    /**
+     * Eliminar un campo del formulario
+     */
+    public function deleteField(Request $request, Form $form, FormField $field)
+    {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return response()->json(['error' => 'No hay sitio web seleccionado'], 403);
+        }
+        
+        $this->authorize('view', $website);
+
+        // Verificar que el formulario y campo pertenecen al sitio web
+        if ($form->website_id !== $website->id || $field->form_id !== $form->id) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $field->delete();
+
+        return response()->json([
+            'success' => true,
+        ]);
+    }
+
+    /**
+     * Reordenar campos del formulario
+     */
+    public function reorderFields(Request $request, Form $form)
+    {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return response()->json(['error' => 'No hay sitio web seleccionado'], 403);
+        }
+        
+        $this->authorize('view', $website);
+
+        // Verificar que el formulario pertenece al sitio web
+        if ($form->website_id !== $website->id) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $validated = $request->validate([
+            'fields' => 'required|array',
+            'fields.*.id' => 'required|exists:form_fields,id',
+            'fields.*.sort_order' => 'required|integer',
+        ]);
+
+        foreach ($validated['fields'] as $fieldData) {
+            FormField::where('id', $fieldData['id'])
+                ->where('form_id', $form->id)
+                ->update(['sort_order' => $fieldData['sort_order']]);
+        }
+
+        return response()->json([
+            'success' => true,
+        ]);
     }
 }

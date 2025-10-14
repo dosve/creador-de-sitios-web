@@ -1,8 +1,8 @@
 {{-- Bloques Multimedia --}}
 {
-  id: 'video'
-  , label: 'Video'
-  , attributes: {
+  id: 'video',
+  label: 'Video',
+  category: 'Multimedia', attributes: {
     class: 'gjs-block-video'
   }
   , content: `<div class="mb-8 video-container">
@@ -13,9 +13,9 @@
   </div>`
 },
 {
-  id: 'youtube'
-  , label: 'YouTube'
-  , attributes: {
+  id: 'youtube',
+  label: 'YouTube',
+  category: 'Multimedia', attributes: {
     class: 'gjs-block-video'
   }
   , content: `<div class="mb-8 youtube-container">
@@ -29,9 +29,9 @@
   </div>`
 },
 {
-  id: 'gallery'
-  , label: 'Galería'
-  , attributes: {
+  id: 'gallery',
+  label: 'Galería',
+  category: 'Multimedia', attributes: {
     class: 'gjs-block-gallery'
   }
   , content: `<section class="py-16 gallery">

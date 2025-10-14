@@ -9,27 +9,59 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
-class PageController extends Controller
+class PageController extends BaseController
 {
     use AuthorizesRequests;
-    public function index(Request $request, Website $website)
+    public function index(Request $request)
     {
+        // Debug temporal
+        $selectedWebsiteId = session('selected_website_id');
+        
+        if (!$selectedWebsiteId) {
+            return response()->json([
+                'error' => 'No hay sitio web seleccionado en la sesión',
+                'session_data' => session()->all(),
+                'user_id' => auth()->id()
+            ], 403);
+        }
+        
+        $website = Website::find($selectedWebsiteId);
+        
+        if (!$website) {
+            return response()->json([
+                'error' => 'Sitio web no encontrado',
+                'selected_website_id' => $selectedWebsiteId
+            ], 403);
+        }
+        
         $this->authorize('view', $website);
 
         $pages = $website->pages()->latest()->get();
 
-        return view('creator.pages.index', compact('website', 'pages'));
+        return view('creator.pages.index', compact('pages'));
     }
 
-    public function create(Request $request, Website $website)
+    public function create(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
-        return view('creator.pages.create', compact('website'));
+        return view('creator.pages.create');
     }
 
-    public function store(Request $request, Website $website)
+    public function store(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         $request->validate([
@@ -47,19 +79,31 @@ class PageController extends Controller
             'sort_order' => $website->pages()->max('sort_order') + 1,
         ]);
 
-        return redirect()->route('creator.pages.index', $website)
+        return redirect()->route('creator.pages.index')
             ->with('success', 'Página creada exitosamente');
     }
 
-    public function show(Request $request, Website $website, Page $page)
+    public function show(Request $request, Page $page)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
 
-        return view('creator.pages.show', compact('website', 'page'));
+        return view('creator.pages.show', compact('page'));
     }
 
-    public function edit(Request $request, Website $website, Page $page)
+    public function edit(Request $request, Page $page)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         // Verificar que la página pertenece al sitio web
@@ -67,11 +111,17 @@ class PageController extends Controller
             abort(403);
         }
 
-        return view('creator.pages.edit', compact('website', 'page'));
+        return view('creator.pages.edit', compact('page'));
     }
 
-    public function update(Request $request, Website $website, Page $page)
+    public function update(Request $request, Page $page)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         $request->validate([
@@ -103,25 +153,37 @@ class PageController extends Controller
             ]);
         }
 
-        return redirect()->route('creator.pages.index', $website)
+        return redirect()->route('creator.pages.index')
             ->with('success', 'Página actualizada exitosamente');
     }
 
-    public function destroy(Request $request, Website $website, Page $page)
+    public function destroy(Request $request, Page $page)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         $page->delete();
 
-        return redirect()->route('creator.pages.index', $website)
+        return redirect()->route('creator.pages.index')
             ->with('success', 'Página eliminada exitosamente');
     }
 
     /**
      * Establecer una página como página de inicio
      */
-    public function setHome(Request $request, Website $website, Page $page)
+    public function setHome(Request $request, Page $page)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         // Verificar que la página pertenece al sitio web
@@ -135,7 +197,7 @@ class PageController extends Controller
         // Marcar esta página como inicio
         $page->update(['is_home' => true]);
 
-        return redirect()->route('creator.pages.index', $website)
+        return redirect()->route('creator.pages.index')
             ->with('success', "La página '{$page->title}' ahora es la página de inicio");
     }
 }

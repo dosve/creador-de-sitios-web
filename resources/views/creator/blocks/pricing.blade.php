@@ -1,8 +1,8 @@
 {{-- Bloques de Precios --}}
 {
-  id: 'pricing'
-  , label: 'Precios'
-  , attributes: {
+  id: 'pricing',
+  label: 'Precios',
+  category: 'Precios', attributes: {
     class: 'gjs-block-pricing'
   }
   , content: `<section class="py-16 pricing">

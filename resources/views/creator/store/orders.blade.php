@@ -1,6 +1,6 @@
 @extends('layouts.creator')
 
-@section('title', 'Pedidos - ' . $website->name)
+@section('title', 'Pedidos')
 
 @section('content')
 <div class="min-h-screen bg-gray-50">

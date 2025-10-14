@@ -125,7 +125,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎯 Vista previa de plantilla cargada, buscando productos...');
             
-            // Función para cargar productos reales
+            // Función para cargar productos reales desde la API
             function loadRealProductsInPreview() {
                 console.log('🚀 Iniciando carga de productos en vista previa de plantilla...');
                 
@@ -150,7 +150,7 @@
                     return;
                 }
                 
-                console.log('✅ Cargando productos reales en la vista previa de plantilla...');
+                console.log('✅ Encontrados', productsContainers.length, 'contenedores de productos');
                 
                 productsContainers.forEach((container, index) => {
                     console.log(`🔄 Procesando contenedor ${index + 1}`);
@@ -165,22 +165,148 @@
                         </div>
                     `;
 
-                    // Para la vista previa de plantilla, mostrar productos de ejemplo mejorados
+                    // Obtener credenciales de la API
+                    const apiKey = window.websiteApiKey || "";
+                    const apiBaseUrl = window.websiteApiUrl || "";
+                    
+                    console.log('🔑 API Key:', apiKey ? 'Configurada' : 'No configurada');
+                    console.log('🌐 API URL:', apiBaseUrl ? apiBaseUrl : 'No configurada');
+
+                    // Si hay credenciales de API, cargar productos reales
+                    if (apiKey && apiBaseUrl) {
+                        console.log('✅ Credenciales encontradas, cargando productos de la API externa...');
+                        
+                        fetch(apiBaseUrl + '/api-key/products?paginate=6&estado=1', {
+                            method: 'GET',
+                            headers: {
+                                'X-API-Key': apiKey,
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            console.log('📡 Respuesta de la API:', response.status);
+                            if (!response.ok) {
+                                throw new Error('Error en la respuesta de la API: ' + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('📦 Datos recibidos:', data);
+                            
+                            // La API devuelve data como array, pero verificar por si acaso
+                            let products = [];
+                            
+                            if (data && data.data && Array.isArray(data.data)) {
+                                products = data.data;
+                            } else if (data && data.data && typeof data.data === 'object') {
+                                // Fallback: convertir objeto con claves numéricas a array
+                                products = Object.values(data.data);
+                            }
+                            
+                            console.log('✅ Productos procesados:', products.length);
+                            
+                            if (products.length > 0) {
+                                renderRealProducts(container, products);
+                            } else {
+                                console.log('⚠️ No se encontraron productos, mostrando productos de ejemplo');
+                                showEnhancedExampleProducts(container);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('❌ Error al cargar productos de la API:', error);
+                            // Si falla la API, mostrar productos de ejemplo
+                            showEnhancedExampleProducts(container);
+                        });
+                    } else {
+                        console.log('⚠️ No hay credenciales de API, mostrando productos de ejemplo');
+                        // Si no hay credenciales, mostrar productos de ejemplo
+                        showEnhancedExampleProducts(container);
+                    }
                 });
             }
 
-            // Función para mostrar productos de ejemplo mejorados
+            // Función para renderizar productos reales de la API
+            function renderRealProducts(container, products) {
+                console.log('🎨 Renderizando', products.length, 'productos reales...');
+                
+                let productsHtml = '';
+                
+                products.forEach(product => {
+                    const title = product.producto || 'Producto sin nombre';
+                    const description = product.descripcion || 'Sin descripción';
+                    const price = product.precio || '0.00';
+                    const image = product.img || null;
+                    const category = product.categoria ? product.categoria.categoria : null;
+                    const iva = product.iva || '0';
+                    
+                    // HTML para la imagen
+                    let imageHtml = `
+                        <div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
+                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                    `;
+                    
+                    // Si hay imagen, usarla (comentado por ahora, puedes habilitarlo si las imágenes están disponibles)
+                    if (image && false) {
+                        imageHtml = `<div class="mb-4 aspect-w-16 aspect-h-9"><img src="${image}" alt="${title}" class="object-cover w-full h-48 rounded-lg"></div>`;
+                    }
+                    
+                    // HTML para la categoría
+                    let categoryHtml = '';
+                    if (category) {
+                        categoryHtml = `<span class="inline-block px-2 py-1 mb-2 text-xs text-blue-800 bg-blue-100 rounded-full">${category}</span>`;
+                    }
+                    
+                    // Construir el HTML del producto
+                    productsHtml += `
+                        <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                            ${imageHtml}
+                            <h3 class="mb-2 text-lg font-semibold text-gray-900">${title}</h3>
+                            ${categoryHtml}
+                            <p class="mb-4 text-sm text-gray-600 line-clamp-2">${description}</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-bold text-green-600">$${price}</span>
+                                <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 add-to-cart" 
+                                        data-id="${product.id || ''}" 
+                                        data-name="${title}" 
+                                        data-price="${price}" 
+                                        data-descripcion="${product.descripcion || ''}" 
+                                        data-existencia="${product.existencia || ''}" 
+                                        data-iva="${iva}">
+                                    Agregar al Carrito
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = productsHtml;
+                
+                console.log('✅ Productos reales renderizados correctamente');
+                
+                // Recargar los event listeners del carrito
+                if (typeof window.reloadCartListeners === 'function') {
+                    window.reloadCartListeners();
+                }
+            }
+
+            // Función para mostrar productos de ejemplo cuando no hay API configurada
             function showEnhancedExampleProducts(container) {
+                console.log('🎨 Mostrando productos de ejemplo...');
+                
                 const exampleProducts = [
                     {
                         title: "Producto Premium 1",
-                        description: "Este es un producto de ejemplo que se mostrará en la vista previa de la plantilla.",
+                        description: "Este es un producto de ejemplo. Configure su API externa para ver productos reales.",
                         price: "99.99",
                         category: "Categoría A"
                     },
                     {
                         title: "Producto Premium 2", 
-                        description: "Los productos reales se cargarán automáticamente cuando uses esta plantilla en tu sitio.",
+                        description: "Los productos reales se cargarán automáticamente cuando configure las credenciales de API.",
                         price: "149.99",
                         category: "Categoría B"
                     },
@@ -211,9 +337,9 @@
                     </div>
                 `).join('');
 
-                // Agregar el botón "Ver más" después de los productos
-
                 container.innerHTML = productsHtml;
+                
+                console.log('✅ Productos de ejemplo renderizados');
             }
             
             // Cargar productos después de un breve delay

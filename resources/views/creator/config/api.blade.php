@@ -18,7 +18,7 @@
                 <p class="mt-1 text-sm text-gray-500">Ingresa los datos de tu API para sincronizar productos, categorías y pedidos</p>
             </div>
 
-            <form method="POST" action="{{ route('creator.config.api.update', $website) }}" class="p-6">
+            <form method="POST" action="{{ route('creator.config.api.update') }}" class="p-6">
                 @csrf
                 @method('PUT')
 
@@ -84,7 +84,7 @@
 
                 <!-- Submit Button -->
                 <div class="flex justify-end space-x-3">
-                    <a href="{{ route('creator.websites.edit', $website) }}" 
+                    <a href="{{ route('creator.config.general') }}" 
                        class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         Cancelar
                     </a>
@@ -178,7 +178,7 @@ function testApiConnection() {
         Probando...
     `;
     
-    fetch('{{ route("creator.config.api.test", $website) }}', {
+    fetch('{{ route("creator.config.api.test") }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

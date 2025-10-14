@@ -42,7 +42,7 @@
                     </div>
                 </div>
                 <div class="px-6 py-4">
-                    <form method="POST" action="{{ route('creator.config.security.ssl', $website) }}">
+                    <form method="POST" action="{{ route('creator.config.security.ssl') }}">
                         @csrf
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">
@@ -101,7 +101,7 @@
                     <p class="text-sm text-gray-600 mt-1">Ajustes adicionales de seguridad para tu sitio web</p>
                 </div>
                 <div class="px-6 py-4">
-                    <form method="POST" action="{{ route('creator.config.security.update', $website) }}">
+                    <form method="POST" action="{{ route('creator.config.security.update') }}">
                         @csrf
                         <div class="space-y-6">
                             <div class="flex items-center justify-between">
@@ -231,7 +231,7 @@
             <script>
                 function generateSsl() {
                     if (confirm('¿Estás seguro de que quieres regenerar el certificado SSL? Esto puede tomar unos minutos.')) {
-                        fetch('{{ route("creator.config.security.generate-ssl", $website) }}', {
+                        fetch('{{ route("creator.config.security.generate-ssl") }}', {
                             method: 'POST',
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),

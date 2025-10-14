@@ -2,6 +2,7 @@
 {
   id: 'hero'
   , label: 'Hero'
+  , category: 'Layout'
   , content: `<section class="relative py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
     <div class="container px-4 mx-auto text-center">
       <h1 class="mb-6 text-4xl font-bold md:text-6xl">Título Principal</h1>
@@ -20,6 +21,7 @@
 {
   id: 'features'
   , label: 'Características'
+  , category: 'Layout'
   , content: `<section class="py-16 bg-white">
     <div class="container px-4 mx-auto">
       <div class="mb-12 text-center">
@@ -61,6 +63,7 @@
 {
   id: 'testimonials'
   , label: 'Testimonios'
+  , category: 'Layout'
   , attributes: {
     class: 'gjs-block-testimonial'
   }
@@ -114,6 +117,7 @@
 {
   id: 'cta'
   , label: 'Llamada a la Acción'
+  , category: 'Layout'
   , content: `<section class="py-16 bg-blue-600">
     <div class="container px-4 mx-auto text-center">
       <h2 class="mb-4 text-3xl font-bold text-white">¿Listo para comenzar?</h2>

@@ -1,6 +1,6 @@
 @extends('layouts.creator')
 
-@section('title', 'Blog - ' . $website->name)
+@section('title', 'Blog')
 @section('page-title', 'Blog')
 @section('content')
             <!-- Blog Header -->
@@ -8,10 +8,10 @@
                 <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-lg font-medium text-gray-900">Blog de {{ $website->name }}</h2>
+                            <h2 class="text-lg font-medium text-gray-900">Blog</h2>
                             <p class="text-sm text-gray-600 mt-1">Gestiona los artículos de tu blog</p>
                         </div>
-                        <a href="{{ route('creator.blog.create', $website) }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                        <a href="{{ route('creator.blog.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
                             Nuevo Artículo
                         </a>
                     </div>
@@ -62,11 +62,11 @@
 
                     <!-- Post Actions -->
                     <div class="flex space-x-2">
-                        <a href="{{ route('creator.blog.edit', [$website, $post]) }}" 
+                        <a href="{{ route('creator.blog.edit', $post) }}" 
                            class="flex-1 bg-blue-600 text-white text-center py-2 px-3 rounded-md hover:bg-blue-700 text-sm">
                             Editar
                         </a>
-                        <form method="POST" action="{{ route('creator.blog.destroy', [$website, $post]) }}" class="flex-1" onsubmit="return confirm('¿Estás seguro de eliminar este artículo?')">
+                        <form method="POST" action="{{ route('creator.blog.destroy', $post) }}" class="flex-1" onsubmit="return confirm('¿Estás seguro de eliminar este artículo?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="w-full bg-red-600 text-white py-2 px-3 rounded-md hover:bg-red-700 text-sm">
@@ -88,7 +88,7 @@
                 </div>
                 <h3 class="text-xl font-medium text-gray-900 mb-2">No hay artículos en el blog</h3>
                 <p class="text-gray-500 mb-8">Comienza escribiendo tu primer artículo para tu blog.</p>
-                <a href="{{ route('creator.blog.create', $website) }}" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700">
+                <a href="{{ route('creator.blog.create') }}" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700">
                     Escribir Primer Artículo
                 </a>
             </div>

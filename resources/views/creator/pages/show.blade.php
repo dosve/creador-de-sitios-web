@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $page->title }} - {{ $website->name }}</title>
-    @vite('resources/js/app.js')
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen">
@@ -13,7 +13,7 @@
             <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between py-4">
                     <div class="flex items-center space-x-4">
-                        <a href="{{ route('creator.pages.index', $website) }}" class="text-gray-600 hover:text-gray-900">
+                        <a href="{{ route('creator.pages.index') }}" class="text-gray-600 hover:text-gray-900">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                             </svg>
@@ -27,7 +27,7 @@
                         <a href="{{ route('creator.pages.versions', [$website, $page]) }}" class="px-4 py-2 text-sm text-white bg-gray-600 rounded-md hover:bg-gray-700">
                             Historial
                         </a>
-                        <a href="{{ route('creator.pages.editor', [$website, $page]) }}" class="px-4 py-2 text-sm text-white bg-green-600 rounded-md hover:bg-green-700">
+                        <a href="{{ route('creator.pages.editor', $page) }}" class="px-4 py-2 text-sm text-white bg-green-600 rounded-md hover:bg-green-700">
                             Editar
                         </a>
                     </div>
@@ -80,11 +80,11 @@
                                class="text-sm font-medium text-gray-600 hover:text-gray-900">
                                 Historial ({{ $page->versions()->count() }} versiones)
                             </a>
-                            <a href="{{ route('creator.pages.editor', [$website, $page]) }}" 
+                            <a href="{{ route('creator.pages.editor', $page) }}" 
                                class="text-sm font-medium text-green-600 hover:text-green-900">
                                 Editar
                             </a>
-                            <form method="POST" action="{{ route('creator.pages.destroy', [$website, $page]) }}" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar esta página?')">
+                            <form method="POST" action="{{ route('creator.pages.destroy', $page) }}" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar esta página?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-sm text-red-600 hover:text-red-900">

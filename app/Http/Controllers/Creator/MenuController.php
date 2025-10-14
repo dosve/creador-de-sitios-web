@@ -23,30 +23,57 @@ class MenuController extends Controller
     /**
      * Mostrar la lista de menús del sitio web
      */
-    public function index(Website $website)
+    public function index()
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
+        // DEBUG: Verificar datos de autorización
+        \Log::info('MenuController::index - Verificación de autorización', [
+            'user_id' => auth()->id(),
+            'user_role' => auth()->user()->role,
+            'website_id' => $website->id,
+            'website_user_id' => $website->user_id,
+            'can_view' => auth()->user()->id === $website->user_id || auth()->user()->isAdmin(),
+        ]);
+        
         $this->authorize('view', $website);
 
         $menus = $website->menus()->with('items')->get();
 
-        return view('creator.menus.index', compact('website', 'menus'));
+        return view('creator.menus.index', compact('menus'));
     }
 
     /**
      * Mostrar el formulario para crear un nuevo menú
      */
-    public function create(Website $website)
+    public function create()
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
-        return view('creator.menus.create', compact('website'));
+        return view('creator.menus.create');
     }
 
     /**
      * Almacenar un nuevo menú
      */
-    public function store(Request $request, Website $website)
+    public function store(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         $request->validate([
@@ -62,15 +89,21 @@ class MenuController extends Controller
             'is_active' => true,
         ]);
 
-        return redirect()->route('creator.websites.menus.show', [$website, $menu])
+        return redirect()->route('creator.menus.show', $menu)
             ->with('success', 'Menú creado exitosamente');
     }
 
     /**
      * Mostrar un menú específico y sus items
      */
-    public function show(Website $website, Menu $menu)
+    public function show(Menu $menu)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
 
         if ($menu->website_id !== $website->id) {
@@ -85,28 +118,40 @@ class MenuController extends Controller
 
         $pages = $website->pages()->where('is_published', true)->get();
 
-        return view('creator.menus.show', compact('website', 'menu', 'pages'));
+        return view('creator.menus.show', compact('menu', 'pages'));
     }
 
     /**
      * Mostrar el formulario para editar un menú
      */
-    public function edit(Website $website, Menu $menu)
+    public function edit(Menu $menu)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         if ($menu->website_id !== $website->id) {
             abort(403);
         }
 
-        return view('creator.menus.edit', compact('website', 'menu'));
+        return view('creator.menus.edit', compact('menu'));
     }
 
     /**
      * Actualizar un menú
      */
-    public function update(Request $request, Website $website, Menu $menu)
+    public function update(Request $request, Menu $menu)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         if ($menu->website_id !== $website->id) {
@@ -127,15 +172,21 @@ class MenuController extends Controller
             'is_active' => $request->has('is_active'),
         ]);
 
-        return redirect()->route('creator.websites.menus.show', [$website, $menu])
+        return redirect()->route('creator.menus.show', $menu)
             ->with('success', 'Menú actualizado exitosamente');
     }
 
     /**
      * Eliminar un menú
      */
-    public function destroy(Website $website, Menu $menu)
+    public function destroy(Menu $menu)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         if ($menu->website_id !== $website->id) {
@@ -144,15 +195,21 @@ class MenuController extends Controller
 
         $menu->delete();
 
-        return redirect()->route('creator.websites.menus.index', $website)
+        return redirect()->route('creator.menus.index')
             ->with('success', 'Menú eliminado exitosamente');
     }
 
     /**
      * Crear un nuevo item del menú
      */
-    public function storeItem(Request $request, Website $website, Menu $menu)
+    public function storeItem(Request $request, Menu $menu)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         \Log::info('=== INICIO storeItem ===');
         \Log::info('Datos recibidos:', $request->all());
         \Log::info('Website ID:', ['id' => $website->id]);
@@ -200,16 +257,23 @@ class MenuController extends Controller
         }
 
         \Log::info('Preparando datos para crear menu item...');
+        
+        // Determinar automáticamente el target si no se especificó
+        $target = $request->target;
+        if (!$target) {
+            $target = $this->determineTarget($request->type, $request->url);
+        }
+        
         $data = [
             'title' => $request->title,
             'page_id' => $request->type === 'page' ? $request->page_id : null,
             'url' => $request->type !== 'page' ? $request->url : null,
-            'target' => $request->target ?? '_self',
+            'target' => $target,
             'icon' => $request->icon,
             'description' => $request->description,
             'parent_id' => $request->parent_id,
             'order' => ($menu->items()->max('order') ?? 0) + 1,
-            'is_active' => true,
+            'is_active' => $request->boolean('is_active', true),
         ];
         \Log::info('Datos a insertar:', $data);
         
@@ -222,15 +286,21 @@ class MenuController extends Controller
         }
 
         \Log::info('=== FIN storeItem ===');
-        return redirect()->route('creator.websites.menus.show', [$website, $menu])
+        return redirect()->route('creator.menus.show', $menu)
             ->with('success', 'Item del menú creado exitosamente');
     }
 
     /**
      * Actualizar un item del menú
      */
-    public function updateItem(Request $request, Website $website, Menu $menu, MenuItem $menuItem)
+    public function updateItem(Request $request, Menu $menu, MenuItem $menuItem)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         if ($menu->website_id !== $website->id || $menuItem->menu_id !== $menu->id) {
@@ -256,25 +326,37 @@ class MenuController extends Controller
             }
         }
 
+        // Determinar automáticamente el target si no se especificó
+        $target = $request->target;
+        if (!$target) {
+            $target = $this->determineTarget($request->type, $request->url);
+        }
+        
         $menuItem->update([
             'title' => $request->title,
             'page_id' => $request->type === 'page' ? $request->page_id : null,
             'url' => $request->type !== 'page' ? $request->url : null,
-            'target' => $request->target ?? '_self',
+            'target' => $target,
             'icon' => $request->icon,
             'description' => $request->description,
-            'is_active' => $request->has('is_active'),
+            'is_active' => $request->boolean('is_active'),
         ]);
 
-        return redirect()->route('creator.websites.menus.show', [$website, $menu])
+        return redirect()->route('creator.menus.show', $menu)
             ->with('success', 'Item del menú actualizado exitosamente');
     }
 
     /**
      * Eliminar un item del menú
      */
-    public function destroyItem(Website $website, Menu $menu, MenuItem $menuItem)
+    public function destroyItem(Menu $menu, MenuItem $menuItem)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         if ($menu->website_id !== $website->id || $menuItem->menu_id !== $menu->id) {
@@ -283,15 +365,21 @@ class MenuController extends Controller
 
         $menuItem->delete();
 
-        return redirect()->route('creator.websites.menus.show', [$website, $menu])
+        return redirect()->route('creator.menus.show', $menu)
             ->with('success', 'Item del menú eliminado exitosamente');
     }
 
     /**
      * Actualizar el orden de los items del menú
      */
-    public function updateOrder(Request $request, Website $website, Menu $menu)
+    public function updateOrder(Request $request, Menu $menu)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return response()->json(['success' => false, 'message' => 'No website selected'], 403);
+        }
+        
         $this->authorize('update', $website);
 
         if ($menu->website_id !== $website->id) {
@@ -316,5 +404,71 @@ class MenuController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Determinar automáticamente si un enlace debe abrirse en una nueva pestaña
+     * 
+     * @param string $type Tipo de enlace (page, custom, external)
+     * @param string|null $url URL del enlace
+     * @return string '_self' o '_blank'
+     */
+    private function determineTarget($type, $url)
+    {
+        // Si es una página interna, siempre abrir en la misma pestaña
+        if ($type === 'page') {
+            return '_self';
+        }
+
+        // Si no hay URL, abrir en la misma pestaña
+        if (!$url) {
+            return '_self';
+        }
+
+        // Normalizar la URL
+        $url = strtolower(trim($url));
+
+        // Enlaces de correo o teléfono - misma pestaña
+        if (str_starts_with($url, 'mailto:') || str_starts_with($url, 'tel:')) {
+            return '_self';
+        }
+
+        // Enlaces con anclas (#) - misma pestaña
+        if (str_starts_with($url, '#')) {
+            return '_self';
+        }
+
+        // Enlaces relativos (comienzan con /) - misma pestaña
+        if (str_starts_with($url, '/')) {
+            return '_self';
+        }
+
+        // Enlaces externos (contienen http:// o https://)
+        if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+            // Obtener el dominio actual
+            $currentHost = parse_url(config('app.url'), PHP_URL_HOST);
+            
+            // Obtener el dominio del enlace
+            $linkHost = parse_url($url, PHP_URL_HOST);
+            
+            // Si el dominio es diferente, abrir en nueva pestaña
+            if ($linkHost && $linkHost !== $currentHost) {
+                return '_blank';
+            }
+            
+            // Si es el mismo dominio, abrir en la misma pestaña
+            return '_self';
+        }
+
+        // Archivos descargables comunes - nueva pestaña
+        $downloadableExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', 'jpg', 'jpeg', 'png', 'gif'];
+        $extension = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION);
+        
+        if (in_array(strtolower($extension), $downloadableExtensions)) {
+            return '_blank';
+        }
+
+        // Por defecto, enlaces personalizados en la misma pestaña
+        return '_self';
     }
 }

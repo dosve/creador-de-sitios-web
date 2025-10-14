@@ -15,8 +15,14 @@ class IntegrationController extends Controller
     /**
      * Mostrar página de integración con Epayco
      */
-    public function epayco(Request $request, Website $website)
+    public function epayco(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
         
         return view('creator.integrations.epayco', compact('website'));
@@ -25,8 +31,14 @@ class IntegrationController extends Controller
     /**
      * Configurar integración con Epayco
      */
-    public function epaycoStore(Request $request, Website $website)
+    public function epaycoStore(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
         
         $request->validate([
@@ -42,15 +54,21 @@ class IntegrationController extends Controller
             'epayco_customer_id' => $request->epayco_customer_id,
         ]);
 
-        return redirect()->route('creator.integrations.epayco', $website)
+        return redirect()->route('creator.integrations.epayco')
             ->with('success', 'Configuración de Epayco guardada exitosamente');
     }
 
     /**
      * Mostrar página de integración con Admin Negocios
      */
-    public function adminNegocios(Request $request, Website $website)
+    public function adminNegocios(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
         
         return view('creator.integrations.admin-negocios', compact('website'));
@@ -59,8 +77,14 @@ class IntegrationController extends Controller
     /**
      * Configurar integración con Admin Negocios
      */
-    public function adminNegociosStore(Request $request, Website $website)
+    public function adminNegociosStore(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
         
         $request->validate([
@@ -74,15 +98,21 @@ class IntegrationController extends Controller
             'api_key' => $request->api_key,
         ]);
 
-        return redirect()->route('creator.integrations.admin-negocios', $website)
+        return redirect()->route('creator.integrations.admin-negocios')
             ->with('success', 'Configuración de API guardada exitosamente');
     }
 
     /**
      * Probar la conexión con la API
      */
-    public function testApiConnection(Request $request, Website $website)
+    public function testApiConnection(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return response()->json(['error' => 'No website selected'], 403);
+        }
+        
         $this->authorize('view', $website);
         
         try {

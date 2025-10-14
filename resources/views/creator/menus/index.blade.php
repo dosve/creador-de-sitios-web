@@ -9,7 +9,7 @@
             <h1 class="text-3xl font-bold text-gray-900">Gestión de Menús</h1>
             <p class="text-gray-600 mt-2">Administra los menús de navegación de tu sitio web</p>
         </div>
-        <a href="{{ route('creator.websites.menus.create', $website) }}" 
+        <a href="{{ route('creator.menus.create') }}" 
            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
             ➕ Crear Menú
         </a>
@@ -54,15 +54,15 @@
                     </div>
 
                     <div class="flex space-x-2">
-                        <a href="{{ route('creator.websites.menus.show', [$website, $menu]) }}" 
+                        <a href="{{ route('creator.menus.show', $menu) }}" 
                            class="flex-1 bg-blue-50 text-blue-600 px-3 py-2 rounded-md text-sm text-center hover:bg-blue-100 transition-colors">
                             👁️ Ver
                         </a>
-                        <a href="{{ route('creator.websites.menus.edit', [$website, $menu]) }}" 
+                        <a href="{{ route('creator.menus.edit', $menu) }}" 
                            class="flex-1 bg-gray-50 text-gray-600 px-3 py-2 rounded-md text-sm text-center hover:bg-gray-100 transition-colors">
                             ✏️ Editar
                         </a>
-                        <form method="POST" action="{{ route('creator.websites.menus.destroy', [$website, $menu]) }}" 
+                        <form method="POST" action="{{ route('creator.menus.destroy', $menu) }}" 
                               class="flex-1" 
                               onsubmit="return confirm('¿Estás seguro de que quieres eliminar este menú?')">
                             @csrf
@@ -81,7 +81,7 @@
             <div class="text-gray-400 text-6xl mb-4">🧭</div>
             <h3 class="text-lg font-medium text-gray-900 mb-2">No hay menús creados</h3>
             <p class="text-gray-600 mb-6">Crea tu primer menú para comenzar a organizar la navegación de tu sitio web.</p>
-            <a href="{{ route('creator.websites.menus.create', $website) }}" 
+            <a href="{{ route('creator.menus.create') }}" 
                class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
                 ➕ Crear Primer Menú
             </a>

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - Creador de Sitios Web</title>
-    @vite('resources/js/app.js')
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
@@ -19,6 +19,36 @@
             </p>
         </div>
 
+        <!-- Botón principal: Login con OAuth2 -->
+        <div class="mt-8">
+            <a href="{{ route('oauth.redirect') }}" 
+               class="group relative flex justify-center w-full px-4 py-3 text-base font-medium text-white bg-gradient-to-r from-indigo-600 to-blue-600 border border-transparent rounded-lg hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg transform transition hover:scale-105">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="w-5 h-5 text-indigo-200 group-hover:text-indigo-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                    </svg>
+                </span>
+                Iniciar sesión con Auth EME10
+            </a>
+            
+            <p class="mt-3 text-xs text-center text-gray-500">
+                🔒 Autenticación segura centralizada con soporte 2FA
+            </p>
+        </div>
+
+        <!-- Separador -->
+        <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-gray-100 text-gray-500">
+                    O usa el login directo (legacy)
+                </span>
+            </div>
+        </div>
+
+        <!-- Formulario legacy (para usuarios antiguos) -->
         <form class="mt-8 space-y-6" method="POST" action="{{ route('login') }}">
             @csrf
 

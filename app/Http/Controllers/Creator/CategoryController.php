@@ -13,24 +13,43 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class CategoryController extends Controller
 {
     use AuthorizesRequests;
-    public function index(Request $request, Website $website)
+    
+    public function index(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
         
         $categories = $website->categories()->latest()->get();
         
-        return view('creator.categories.index', compact('website', 'categories'));
+        return view('creator.categories.index', compact('categories'));
     }
 
-    public function create(Request $request, Website $website)
+    public function create(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
         
-        return view('creator.categories.create', compact('website'));
+        return view('creator.categories.create');
     }
 
-    public function store(Request $request, Website $website)
+    public function store(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
         
         $request->validate([
@@ -44,7 +63,7 @@ class CategoryController extends Controller
             'description' => $request->description,
         ]);
 
-        return redirect()->route('creator.categories.index', $website)
+        return redirect()->route('creator.categories.index')
             ->with('success', 'Categoría creada exitosamente');
     }
 }

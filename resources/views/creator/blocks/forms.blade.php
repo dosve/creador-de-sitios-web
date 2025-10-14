@@ -1,8 +1,8 @@
 {{-- Bloques de Formularios --}}
 {
-  id: 'form-contact'
-  , label: 'Formulario de Contacto'
-  , attributes: {
+  id: 'form-contact',
+  label: 'Formulario de Contacto',
+  category: 'Formularios', attributes: {
     class: 'gjs-block-form'
   }
   , content: `<section class="py-16 contact-form bg-gray-50">
@@ -21,9 +21,9 @@
   </section>`
 },
 {
-  id: 'newsletter'
-  , label: 'Newsletter'
-  , attributes: {
+  id: 'newsletter',
+  label: 'Newsletter',
+  category: 'Formularios', attributes: {
     class: 'gjs-block-newsletter'
   }
   , content: `<section class="py-16 text-white bg-blue-600 newsletter">

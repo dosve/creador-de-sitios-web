@@ -11,7 +11,7 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-            <form method="POST" action="{{ route('creator.websites.menus.store', $website) }}">
+            <form method="POST" action="{{ route('creator.menus.store') }}">
                 @csrf
 
                 <div class="mb-6">
@@ -69,7 +69,7 @@
                 </div>
 
                 <div class="flex justify-end space-x-4">
-                    <a href="{{ route('creator.websites.menus.index', $website) }}" 
+                    <a href="{{ route('creator.menus.index') }}" 
                        class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
                         Cancelar
                     </a>

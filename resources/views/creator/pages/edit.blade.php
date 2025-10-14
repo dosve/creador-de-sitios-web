@@ -8,10 +8,10 @@
                 <div class="bg-white shadow rounded-lg">
                     <div class="px-6 py-4 border-b border-gray-200">
                         <h3 class="text-lg font-medium text-gray-900">Editar Página</h3>
-                        <p class="mt-1 text-sm text-gray-600">Modifica los datos de la página "{{ $page->title }}" en {{ $website->name }}.</p>
+                        <p class="mt-1 text-sm text-gray-600">Modifica los datos de la página "{{ $page->title }}".</p>
                     </div>
                     
-                    <form method="POST" action="{{ route('creator.pages.update', [$website, $page]) }}" class="px-6 py-4">
+                    <form method="POST" action="{{ route('creator.pages.update', $page) }}" class="px-6 py-4">
                         @csrf
                         @method('PUT')
                         
@@ -37,7 +37,7 @@
                                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md @error('slug') border-red-300 @enderror" 
                                            placeholder="mi-nueva-pagina" required>
                                 </div>
-                                <p class="mt-2 text-sm text-gray-500">La URL será: {{ url('/') }}/{{ $website->slug }}/<span id="slug-preview">{{ $page->slug }}</span></p>
+                                <p class="mt-2 text-sm text-gray-500">La URL será: {{ url('/') }}/<span id="slug-preview">{{ $page->slug }}</span></p>
                                 @error('slug')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -78,7 +78,7 @@
 
                         <!-- Form Actions -->
                         <div class="mt-6 flex items-center justify-end space-x-3">
-                            <a href="{{ route('creator.pages.index', $website) }}" 
+                            <a href="{{ route('creator.pages.index') }}" 
                                class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 Cancelar
                             </a>

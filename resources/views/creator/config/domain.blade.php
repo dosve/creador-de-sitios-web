@@ -37,7 +37,7 @@
                     <p class="text-sm text-gray-600 mt-1">Ingresa el dominio que quieres conectar con tu sitio web</p>
                 </div>
                 <div class="px-6 py-4">
-                    <form method="POST" action="{{ route('creator.config.domain.store', $website) }}">
+                    <form method="POST" action="{{ route('creator.config.domain.store') }}">
                         @csrf
                         <div class="max-w-md">
                             <label for="domain_name" class="block text-sm font-medium text-gray-700">Tu Dominio</label>
@@ -95,7 +95,7 @@
                         </div>
                         <div class="flex items-center space-x-2">
                             @if(!$domain->is_verified)
-                                <form method="POST" action="{{ route('creator.config.domain.verify', [$website, $domain]) }}" class="inline">
+                                <form method="POST" action="{{ route('creator.config.domain.verify', $domain) }}" class="inline">
                                     @csrf
                                     <button type="submit" 
                                             class="text-blue-600 hover:text-blue-800 text-sm font-medium">
@@ -103,7 +103,7 @@
                                     </button>
                                 </form>
                             @endif
-                            <form method="POST" action="{{ route('creator.config.domain.destroy', [$website, $domain]) }}" class="inline">
+                            <form method="POST" action="{{ route('creator.config.domain.destroy', $domain) }}" class="inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" 

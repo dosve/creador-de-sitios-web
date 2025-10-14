@@ -1,6 +1,6 @@
 @extends('layouts.creator')
 
-@section('title', 'Categorías - ' . $website->name)
+@section('title', 'Categorías')
 @section('page-title', 'Categorías')
 @section('content')
             <!-- Categories Header -->
@@ -8,10 +8,10 @@
                 <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-lg font-medium text-gray-900">Categorías de {{ $website->name }}</h2>
+                            <h2 class="text-lg font-medium text-gray-900">Categorías</h2>
                             <p class="text-sm text-gray-600 mt-1">Gestiona las categorías para tu blog</p>
                     </div>
-                        <a href="{{ route('creator.categories.create', $website) }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                        <a href="{{ route('creator.categories.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
                             Nueva Categoría
                         </a>
                     </div>
@@ -43,7 +43,7 @@
                 </div>
                 <h3 class="text-xl font-medium text-gray-900 mb-2">No hay categorías creadas</h3>
                 <p class="text-gray-500 mb-8">Crea categorías para organizar tus artículos del blog.</p>
-                <a href="{{ route('creator.categories.create', $website) }}" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700">
+                <a href="{{ route('creator.categories.create') }}" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700">
                     Crear Primera Categoría
                 </a>
             </div>
