@@ -15,12 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         // Ejecutar seeders en orden
     $this->call([
-        TemplateSeeder::class,
-        DefaultTemplateSeeder::class,
-        UserSeeder::class,
-        WebsiteSeeder::class,
-        SharedComponentSeeder::class,
-        MenuSeeder::class,
+        PlanSeeder::class,
     ]);
     }
 }

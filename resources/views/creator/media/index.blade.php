@@ -1,6 +1,6 @@
 @extends('layouts.creator')
 
-@section('title', 'Multimedia - ' . $website->name)
+@section('title', 'Biblioteca Multimedia')
 @section('page-title', 'Biblioteca Multimedia')
 @section('content')
             <!-- Media Header -->
@@ -8,7 +8,7 @@
                 <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-lg font-medium text-gray-900">Biblioteca Multimedia de {{ $website->name }}</h2>
+                            <h2 class="text-lg font-medium text-gray-900">Biblioteca Multimedia</h2>
                             <p class="text-sm text-gray-600 mt-1">Gestiona las imágenes y archivos de tu sitio web</p>
                         </div>
                         <button onclick="openUploadModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
@@ -49,7 +49,7 @@
                                 class="flex-1 bg-gray-100 text-gray-700 text-center py-1 px-2 rounded text-xs hover:bg-gray-200">
                             URL
                         </button>
-                        <form method="POST" action="{{ route('creator.media.destroy', [$website, $file]) }}" class="flex-1" onsubmit="return confirm('¿Eliminar archivo?')">
+                        <form method="POST" action="{{ route('creator.media.destroy', $file) }}" class="flex-1" onsubmit="return confirm('¿Eliminar archivo?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="w-full bg-red-100 text-red-700 py-1 px-2 rounded text-xs hover:bg-red-200">
@@ -126,7 +126,7 @@
                     
                     const formData = new FormData(this);
                     
-                    fetch('{{ route("creator.media.store", $website) }}', {
+                    fetch('{{ route("creator.media.store") }}', {
                         method: 'POST',
                         body: formData,
                         headers: {

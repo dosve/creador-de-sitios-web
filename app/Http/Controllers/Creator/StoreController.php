@@ -22,8 +22,14 @@ class StoreController extends Controller
     /**
      * Lista de productos
      */
-    public function products(Request $request, Website $website)
+    public function products(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
 
         $products = [];
@@ -104,14 +110,20 @@ class StoreController extends Controller
             ]);
         }
 
-        return view('creator.store.products', compact('website', 'products', 'externalProducts', 'useExternalApi', 'pagination'));
+        return view('creator.store.products', compact('products', 'externalProducts', 'useExternalApi', 'pagination'));
     }
 
     /**
      * Categorías de productos
      */
-    public function categories(Request $request, Website $website)
+    public function categories(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
 
         $categories = [];
@@ -162,14 +174,20 @@ class StoreController extends Controller
                 ->get();
         }
 
-        return view('creator.store.categories', compact('website', 'categories', 'externalCategories', 'useExternalApi', 'pagination'));
+        return view('creator.store.categories', compact('categories', 'externalCategories', 'useExternalApi', 'pagination'));
     }
 
     /**
      * Lista de pedidos
      */
-    public function orders(Request $request, Website $website)
+    public function orders(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
 
         $orders = [];
@@ -231,6 +249,6 @@ class StoreController extends Controller
                 ->get();
         }
 
-        return view('creator.store.orders', compact('website', 'orders', 'externalOrders', 'useExternalApi', 'pagination'));
+        return view('creator.store.orders', compact('orders', 'externalOrders', 'useExternalApi', 'pagination'));
     }
 }

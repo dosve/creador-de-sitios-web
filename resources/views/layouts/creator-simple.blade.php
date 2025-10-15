@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Panel de Creador') - Creador de Sitios Web</title>
-    @vite('resources/js/app.js')
+    <script src="https://cdn.tailwindcss.com"></script>
     @stack('styles')
 </head>
 

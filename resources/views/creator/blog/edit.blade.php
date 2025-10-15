@@ -1,41 +1,38 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Artículo - {{ $website->name }}</title>
-    @vite('resources/js/app.js')
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-</head>
-<body class="bg-gray-100">
-    <div class="min-h-screen">
-        <!-- Header -->
-        <header class="bg-white shadow-sm border-b">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center py-4">
-                    <div class="flex items-center space-x-4">
-                        <a href="{{ route('creator.blog.show', [$website, $blogPost]) }}" class="text-gray-600 hover:text-gray-900">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                        </a>
-                        <h1 class="text-2xl font-bold text-gray-900">Editar Artículo</h1>
-                    </div>
-                </div>
-            </div>
-        </header>
+@extends('layouts.creator')
 
-        <!-- Main Content -->
-        <main class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-8">
-                    <form method="POST" action="{{ route('creator.blog.update', [$website, $blogPost]) }}" class="space-y-6">
+@section('title', 'Editar Artículo')
+@section('page-title', 'Editar Artículo')
+
+@push('styles')
+<script src="https://cdn.ckeditor.com/ckeditor5/40.2.0/classic/ckeditor.js"></script>
+@endpush
+
+@section('content')
+            <!-- Edit Article Form -->
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">Editar Artículo</h3>
+                                <p class="mt-1 text-sm text-gray-600">Actualiza el artículo del blog.</p>
+                            </div>
+                            <a href="{{ route('creator.blog.show', $blogPost) }}" class="text-gray-600 hover:text-gray-900">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <form method="POST" action="{{ route('creator.blog.update', $blogPost) }}" class="px-6 py-4">
                         @csrf
                         @method('PUT')
                         
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <!-- Main Content -->
                             <div class="lg:col-span-2 space-y-6">
+                                <!-- Title -->
                                 <div>
                                     <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
                                         Título del artículo
@@ -44,7 +41,7 @@
                                            id="title" 
                                            name="title" 
                                            value="{{ old('title', $blogPost->title) }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('title') border-red-500 @enderror"
+                                           class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md @error('title') border-red-300 @enderror"
                                            placeholder="Título atractivo para tu artículo"
                                            required>
                                     @error('title')
@@ -52,19 +49,20 @@
                                     @enderror
                                 </div>
 
+                                <!-- Slug -->
                                 <div>
                                     <label for="slug" class="block text-sm font-medium text-gray-700 mb-2">
                                         URL del artículo
                                     </label>
                                     <div class="flex">
                                         <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                                            {{ $website->slug }}.tudominio.com/blog/
+                                            /blog/
                                         </span>
                                         <input type="text" 
                                                id="slug" 
                                                name="slug" 
                                                value="{{ old('slug', $blogPost->slug) }}"
-                                               class="flex-1 px-3 py-2 border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('slug') border-red-500 @enderror"
+                                               class="flex-1 px-3 py-2 border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('slug') border-red-300 @enderror"
                                                placeholder="url-del-articulo"
                                                required>
                                     </div>
@@ -74,6 +72,7 @@
                                     <p class="mt-1 text-xs text-gray-500">Se generará automáticamente si lo dejas vacío.</p>
                                 </div>
 
+                                <!-- Excerpt -->
                                 <div>
                                     <label for="excerpt" class="block text-sm font-medium text-gray-700 mb-2">
                                         Resumen (opcional)
@@ -82,24 +81,28 @@
                                               name="excerpt" 
                                               rows="3"
                                               maxlength="500"
-                                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('excerpt') border-red-500 @enderror"
+                                              class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md @error('excerpt') border-red-300 @enderror"
                                               placeholder="Breve descripción del artículo...">{{ old('excerpt', $blogPost->excerpt) }}</textarea>
                                     @error('excerpt')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
-                                    <p class="mt-1 text-xs text-gray-500">Máximo 500 caracteres. Aparecerá en la lista de artículos.</p>
+                                    <p class="mt-1 text-xs text-gray-500" id="excerpt-counter">0/500 caracteres. Aparecerá en la lista de artículos.</p>
                                 </div>
 
+                                <!-- Content -->
                                 <div>
                                     <label for="content" class="block text-sm font-medium text-gray-700 mb-2">
                                         Contenido del artículo
                                     </label>
-                                    <textarea id="content" 
+                                    <div id="editor-container" style="min-height: 400px;">
+                                        <textarea id="content" 
                                               name="content" 
                                               rows="15"
-                                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('content') border-red-500 @enderror"
+                                              class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md @error('content') border-red-300 @enderror"
                                               placeholder="Escribe tu artículo aquí..."
-                                              required>{{ old('content', $blogPost->content) }}</textarea>
+                                              autocomplete="off"
+                                              data-form-type="other">{{ old('content', $blogPost->content) }}</textarea>
+                                    </div>
                                     @error('content')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -109,8 +112,8 @@
                             <!-- Sidebar -->
                             <div class="lg:col-span-1 space-y-6">
                                 <!-- Publish Settings -->
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <h3 class="text-lg font-medium text-gray-900 mb-4">Configuración</h3>
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <h3 class="text-sm font-medium text-gray-900 mb-4">Configuración</h3>
                                     
                                     <div class="space-y-4">
                                         <div class="flex items-center">
@@ -128,12 +131,12 @@
                                 </div>
 
                                 <!-- Category -->
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <h3 class="text-lg font-medium text-gray-900 mb-4">Categoría</h3>
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <h3 class="text-sm font-medium text-gray-900 mb-4">Categoría</h3>
                                     
                                     <select id="category_id" 
                                             name="category_id" 
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('category_id') border-red-500 @enderror">
+                                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md @error('category_id') border-red-300 @enderror">
                                         <option value="">Sin categoría</option>
                                         @foreach($categories as $category)
                                             <option value="{{ $category->id }}" {{ old('category_id', $blogPost->category_id) == $category->id ? 'selected' : '' }}>
@@ -147,14 +150,14 @@
                                     
                                     @if($categories->count() == 0)
                                         <p class="mt-2 text-xs text-gray-500">
-                                            <a href="{{ route('creator.categories.create', $website) }}" class="text-blue-600 hover:text-blue-800">Crear categoría</a>
+                                            <a href="{{ route('creator.categories.index') }}" class="text-blue-600 hover:text-blue-800">Crear categoría</a>
                                         </p>
                                     @endif
                                 </div>
 
                                 <!-- Tags -->
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <h3 class="text-lg font-medium text-gray-900 mb-4">Etiquetas</h3>
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <h3 class="text-sm font-medium text-gray-900 mb-4">Etiquetas</h3>
                                     
                                     @if($tags->count() > 0)
                                         <div class="space-y-2">
@@ -172,20 +175,20 @@
                                     @else
                                         <p class="text-sm text-gray-500 mb-2">No hay etiquetas disponibles</p>
                                         <p class="text-xs text-gray-500">
-                                            <a href="{{ route('creator.tags.create', $website) }}" class="text-blue-600 hover:text-blue-800">Crear etiquetas</a>
+                                            <a href="{{ route('creator.tags.index', session('selected_website_id')) }}" class="text-blue-600 hover:text-blue-800">Crear etiquetas</a>
                                         </p>
                                     @endif
                                 </div>
 
                                 <!-- Featured Image -->
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <h3 class="text-lg font-medium text-gray-900 mb-4">Imagen destacada</h3>
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <h3 class="text-sm font-medium text-gray-900 mb-4">Imagen destacada</h3>
                                     
                                     <input type="url" 
                                            id="featured_image" 
                                            name="featured_image" 
                                            value="{{ old('featured_image', $blogPost->featured_image) }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('featured_image') border-red-500 @enderror"
+                                           class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md @error('featured_image') border-red-300 @enderror"
                                            placeholder="https://ejemplo.com/imagen.jpg">
                                     @error('featured_image')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -195,74 +198,115 @@
                             </div>
                         </div>
 
-                        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                            <a href="{{ route('creator.blog.show', [$website, $blogPost]) }}" 
-                               class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <!-- Form Actions -->
+                        <div class="mt-6 flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                            <a href="{{ route('creator.blog.show', $blogPost) }}" 
+                               class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 Cancelar
                             </a>
                             <button type="submit" 
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 Actualizar Artículo
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
-        </main>
-    </div>
 
-    <script>
-        // Auto-generar slug desde el título
-        document.getElementById('title').addEventListener('input', function() {
-            const title = this.value;
-            const slug = title
-                .toLowerCase()
-                .replace(/[^a-z0-9\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                .trim('-');
-            
-            document.getElementById('slug').value = slug;
-        });
+@push('scripts')
+<script>
+    // Auto-generar slug desde el título
+    document.getElementById('title').addEventListener('input', function() {
+        const title = this.value;
+        const slug = title
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remover acentos
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim('-');
+        
+        document.getElementById('slug').value = slug;
+    });
 
-        // Contador de caracteres para excerpt
-        const excerptTextarea = document.getElementById('excerpt');
-        const excerptCounter = document.createElement('div');
-        excerptCounter.className = 'text-xs text-gray-500 mt-1';
-        excerptTextarea.parentNode.appendChild(excerptCounter);
+    // Contador de caracteres para excerpt
+    const excerptTextarea = document.getElementById('excerpt');
+    const excerptCounter = document.getElementById('excerpt-counter');
 
-        function updateExcerptCounter() {
-            const length = excerptTextarea.value.length;
-            excerptCounter.textContent = `${length}/500 caracteres`;
-            if (length > 500) {
-                excerptCounter.className = 'text-xs text-red-500 mt-1';
-            } else {
-                excerptCounter.className = 'text-xs text-gray-500 mt-1';
-            }
+    function updateExcerptCounter() {
+        const length = excerptTextarea.value.length;
+        excerptCounter.textContent = `${length}/500 caracteres. Aparecerá en la lista de artículos.`;
+        if (length > 500) {
+            excerptCounter.classList.add('text-red-500');
+            excerptCounter.classList.remove('text-gray-500');
+        } else {
+            excerptCounter.classList.add('text-gray-500');
+            excerptCounter.classList.remove('text-red-500');
         }
+    }
 
-        excerptTextarea.addEventListener('input', updateExcerptCounter);
-        updateExcerptCounter();
+    excerptTextarea.addEventListener('input', updateExcerptCounter);
+    updateExcerptCounter();
 
-        // Inicializar TinyMCE
-        tinymce.init({
-            selector: '#content',
-            height: 400,
-            menubar: false,
-            plugins: [
-                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                'insertdatetime', 'media', 'table', 'help', 'wordcount'
+    // Inicializar CKEditor con manejo de errores mejorado
+    let editorInstance = null;
+    
+    ClassicEditor
+        .create(document.querySelector('#content'), {
+            toolbar: [
+                'heading', '|',
+                'bold', 'italic', 'link', '|',
+                'bulletedList', 'numberedList', '|',
+                'outdent', 'indent', '|',
+                'blockQuote', 'insertTable', '|',
+                'undo', 'redo'
             ],
-            toolbar: 'undo redo | blocks | ' +
-                'bold italic forecolor | alignleft aligncenter ' +
-                'alignright alignjustify | bullist numlist outdent indent | ' +
-                'removeformat | help',
-            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
             language: 'es',
-            branding: false,
-            promotion: false
+            table: {
+                contentToolbar: [
+                    'tableColumn',
+                    'tableRow',
+                    'mergeTableCells'
+                ]
+            }
+        })
+        .then(editor => {
+            editorInstance = editor;
+            console.log('CKEditor inicializado correctamente');
+            
+            // Asegurar que el contenido se sincronice antes del envío
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    try {
+                        // Forzar actualización del contenido del textarea
+                        if (editorInstance) {
+                            editorInstance.updateSourceElement();
+                        }
+                        
+                        // Verificar que el textarea tenga contenido
+                        const textarea = document.querySelector('#content');
+                        if (textarea && !textarea.value.trim()) {
+                            e.preventDefault();
+                            alert('Por favor, escribe el contenido del artículo.');
+                            return false;
+                        }
+                    } catch (error) {
+                        console.error('Error al sincronizar editor:', error);
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error al inicializar CKEditor:', error);
+            // Si falla CKEditor, mostrar el textarea normal y hacerlo requerido
+            const textarea = document.querySelector('#content');
+            if (textarea) {
+                textarea.style.display = 'block';
+                textarea.required = true;
+                textarea.setAttribute('data-fallback', 'true');
+            }
         });
-    </script>
-</body>
-</html>
+</script>
+@endpush
+@endsection

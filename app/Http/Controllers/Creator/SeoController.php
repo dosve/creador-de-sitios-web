@@ -11,22 +11,41 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class SeoController extends Controller
 {
     use AuthorizesRequests;
-    public function index(Request $request, Website $website)
+    
+    public function index(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
         
         return view('creator.seo.index', compact('website'));
     }
 
-    public function edit(Request $request, Website $website)
+    public function edit(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
         
         return view('creator.seo.edit', compact('website'));
     }
 
-    public function update(Request $request, Website $website)
+    public function update(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
         
         $request->validate([
@@ -46,7 +65,7 @@ class SeoController extends Controller
             'seo_settings' => $seoSettings
         ]);
 
-        return redirect()->route('creator.seo.index', $website)
+        return redirect()->route('creator.seo.index')
             ->with('success', 'Configuración SEO actualizada exitosamente');
     }
 }

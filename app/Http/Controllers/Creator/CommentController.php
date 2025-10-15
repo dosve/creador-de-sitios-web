@@ -16,8 +16,14 @@ class CommentController extends Controller
     /**
      * Mostrar lista de comentarios
      */
-    public function index(Request $request, Website $website)
+    public function index(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
 
         $query = $website->comments()->with(['blogPost', 'parent']);
@@ -46,14 +52,20 @@ class CommentController extends Controller
         // Obtener posts del blog para el filtro
         $blogPosts = $website->blogPosts()->where('is_published', true)->get();
 
-        return view('creator.comments.index', compact('website', 'comments', 'blogPosts'));
+        return view('creator.comments.index', compact('comments', 'blogPosts'));
     }
 
     /**
      * Mostrar comentario específico
      */
-    public function show(Request $request, Website $website, Comment $comment)
+    public function show(Request $request, Comment $comment)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
 
         // Verificar que el comentario pertenece al sitio web
@@ -64,14 +76,20 @@ class CommentController extends Controller
         $comment->load(['blogPost', 'parent', 'replies']);
 
         // TODO: Crear vista creator.comments.show
-        return view('creator.comments.show', compact('website', 'comment'));
+        return view('creator.comments.show', compact('comment'));
     }
 
     /**
      * Aprobar comentario
      */
-    public function approve(Request $request, Website $website, Comment $comment)
+    public function approve(Request $request, Comment $comment)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         // Verificar que el comentario pertenece al sitio web
@@ -88,8 +106,14 @@ class CommentController extends Controller
     /**
      * Desaprobar comentario
      */
-    public function unapprove(Request $request, Website $website, Comment $comment)
+    public function unapprove(Request $request, Comment $comment)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         // Verificar que el comentario pertenece al sitio web
@@ -106,8 +130,14 @@ class CommentController extends Controller
     /**
      * Marcar como spam
      */
-    public function markAsSpam(Request $request, Website $website, Comment $comment)
+    public function markAsSpam(Request $request, Comment $comment)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         // Verificar que el comentario pertenece al sitio web
@@ -124,8 +154,14 @@ class CommentController extends Controller
     /**
      * Marcar como no spam
      */
-    public function markAsNotSpam(Request $request, Website $website, Comment $comment)
+    public function markAsNotSpam(Request $request, Comment $comment)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         // Verificar que el comentario pertenece al sitio web
@@ -142,8 +178,14 @@ class CommentController extends Controller
     /**
      * Eliminar comentario
      */
-    public function destroy(Request $request, Website $website, Comment $comment)
+    public function destroy(Request $request, Comment $comment)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         // Verificar que el comentario pertenece al sitio web
@@ -160,8 +202,14 @@ class CommentController extends Controller
     /**
      * Aprobar múltiples comentarios
      */
-    public function bulkApprove(Request $request, Website $website)
+    public function bulkApprove(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         $request->validate([
@@ -182,8 +230,14 @@ class CommentController extends Controller
     /**
      * Eliminar múltiples comentarios
      */
-    public function bulkDelete(Request $request, Website $website)
+    public function bulkDelete(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         $request->validate([

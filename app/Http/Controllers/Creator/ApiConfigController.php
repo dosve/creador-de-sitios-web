@@ -12,11 +12,18 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class ApiConfigController extends Controller
 {
     use AuthorizesRequests;
+    
     /**
      * Mostrar la configuración de API
      */
-    public function show(Website $website)
+    public function show()
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
         
         return view('creator.config.api', compact('website'));
@@ -25,8 +32,14 @@ class ApiConfigController extends Controller
     /**
      * Actualizar la configuración de API
      */
-    public function update(Request $request, Website $website)
+    public function update(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
 
         $request->validate([
@@ -39,15 +52,21 @@ class ApiConfigController extends Controller
             'api_key' => $request->api_key,
         ]);
 
-        return redirect()->route('creator.config.api', $website)
+        return redirect()->route('creator.config.api')
             ->with('success', 'Configuración de API actualizada correctamente');
     }
 
     /**
      * Probar la conexión con la API
      */
-    public function test(Request $request, Website $website)
+    public function test(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return response()->json(['error' => 'No website selected'], 403);
+        }
+        
         $this->authorize('view', $website);
 
         if (!$website->api_key || !$website->api_base_url) {

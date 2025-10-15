@@ -52,7 +52,7 @@ class DomainConfigController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect()->route('creator.config.domain', $website)
+        return redirect()->route('creator.config.domain')
             ->with('success', 'Dominio vinculado exitosamente. Configura los registros DNS para verificar el dominio.');
     }
 
@@ -86,7 +86,7 @@ class DomainConfigController extends Controller
             'is_primary' => $request->is_primary ?? false,
         ]);
 
-        return redirect()->route('creator.config.domain', $website)
+        return redirect()->route('creator.config.domain')
             ->with('success', 'Dominio actualizado exitosamente.');
     }
 
@@ -107,7 +107,7 @@ class DomainConfigController extends Controller
 
         $domain->delete();
 
-        return redirect()->route('creator.config.domain', $website)
+        return redirect()->route('creator.config.domain')
             ->with('success', 'Dominio eliminado exitosamente.');
     }
 
@@ -133,7 +133,7 @@ class DomainConfigController extends Controller
             'status' => 'active',
         ]);
 
-        return redirect()->route('creator.config.domain', $website)
+        return redirect()->route('creator.config.domain')
             ->with('success', 'Dominio verificado exitosamente.');
     }
 }

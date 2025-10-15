@@ -13,17 +13,33 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class MediaFileController extends Controller
 {
     use AuthorizesRequests;
-    public function index(Request $request, Website $website)
+    
+    public function index(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
         
         $mediaFiles = $website->mediaFiles()->latest()->get();
         
-        return view('creator.media.index', compact('website', 'mediaFiles'));
+        return view('creator.media.index', compact('mediaFiles'));
     }
 
-    public function store(Request $request, Website $website)
+    public function store(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No website selected'
+            ], 403);
+        }
+        
         $this->authorize('update', $website);
         
         $request->validate([
@@ -53,8 +69,14 @@ class MediaFileController extends Controller
         ]);
     }
 
-    public function destroy(Request $request, Website $website, MediaFile $mediaFile)
+    public function destroy(Request $request, MediaFile $mediaFile)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $website);
         
         // Delete file from storage
@@ -63,12 +85,18 @@ class MediaFileController extends Controller
         // Delete record from database
         $mediaFile->delete();
 
-        return redirect()->route('creator.media.index', $website)
+        return redirect()->route('creator.media.index')
             ->with('success', 'Archivo eliminado exitosamente');
     }
 
-    public function getFileUrl(Request $request, Website $website, MediaFile $mediaFile)
+    public function getFileUrl(Request $request, MediaFile $mediaFile)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return response()->json(['error' => 'No website selected'], 403);
+        }
+        
         $this->authorize('view', $website);
         
         return response()->json([

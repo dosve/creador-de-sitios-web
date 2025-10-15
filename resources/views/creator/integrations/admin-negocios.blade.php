@@ -21,7 +21,7 @@
 
     <!-- Formulario de configuración -->
     <div class="bg-white shadow rounded-lg p-6">
-        <form action="{{ route('creator.integrations.admin-negocios.store', $website) }}" method="POST">
+        <form action="{{ route('creator.integrations.admin-negocios.store') }}" method="POST">
             @csrf
             
             <div class="space-y-6">
@@ -211,7 +211,7 @@ function testApiConnection() {
         Probando...
     `;
     
-    fetch('{{ route("creator.integrations.admin-negocios.test-api", $website) }}', {
+    fetch('{{ route("creator.integrations.admin-negocios.test-api", session("selected_website_id")) }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

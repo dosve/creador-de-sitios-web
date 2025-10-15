@@ -1,0 +1,43 @@
+{
+    "name": "Plantilla Básica",
+    "slug": "plantilla-basica",
+    "description": "Plantilla básica por defecto con estilos limpios y responsivos",
+    "category": "basic",
+    "preview_image": "preview.jpg",
+    "is_premium": false,
+    "is_active": true,
+    "blocks": ["header", "content", "footer"],
+    "customization": {
+        "colors": {
+            "primary": "#3b82f6",
+            "secondary": "#1f2937",
+            "accent": "#10b981",
+            "background": "#ffffff",
+            "text": "#111827"
+        },
+        "fonts": {
+            "heading": "Inter, sans-serif",
+            "body": "Inter, sans-serif"
+        },
+        "layout": {
+            "container_width": "1200px"
+        },
+        "header": {
+            "sticky": false,
+            "show_logo": true,
+            "show_search": false
+        },
+        "footer": {
+            "background": "bg-gray-800",
+            "columns": 3,
+            "show_social": false,
+            "show_copyright": true,
+            "copyright_text": "Todos los derechos reservados."
+        }
+    },
+    "templates": {
+        "home": "template.blade.php",
+        "page": "template.blade.php",
+        "blog": "template.blade.php"
+    }
+}

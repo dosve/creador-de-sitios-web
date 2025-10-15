@@ -289,7 +289,7 @@
                         Ver Plantillas Disponibles
                     </a>
                     
-                    <a href="{{ route('creator.websites.menus.index', $website) }}" class="btn btn-secondary">
+                    <a href="{{ route('creator.menus.index') }}" class="btn btn-secondary">
                         <i class="fas fa-bars"></i>
                         Configurar Menús
                     </a>

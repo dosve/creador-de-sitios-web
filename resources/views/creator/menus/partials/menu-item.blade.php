@@ -47,7 +47,8 @@
                     {{ $item->page_id ?? 'null' }}, 
                     '{{ addslashes($item->url ?? '') }}', 
                     '{{ $item->target }}', 
-                    '{{ addslashes($item->icon ?? '') }}'
+                    '{{ addslashes($item->icon ?? '') }}',
+                    {{ $item->is_active ? 'true' : 'false' }}
                 )" 
                 class="text-blue-600 hover:text-blue-800 text-sm">
                     ✏️

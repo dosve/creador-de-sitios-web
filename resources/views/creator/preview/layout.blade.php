@@ -50,7 +50,7 @@
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <div class="flex-shrink-0">
-                    <a href="{{ route('creator.preview.index', $website) }}" class="text-xl font-bold text-gray-900">
+                    <a href="{{ route('creator.preview.index') }}" class="text-xl font-bold text-gray-900">
                         {{ $website->name ?? 'Mi Sitio Web' }}
                     </a>
                 </div>
@@ -58,26 +58,26 @@
                 <!-- Menú de Navegación -->
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="{{ route('creator.preview.index', $website) }}" 
+                        <a href="{{ route('creator.preview.index') }}" 
                            class="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('creator.preview.index') ? 'bg-gray-100' : '' }}">
                             Inicio
                         </a>
                         
                         @if(isset($pages) && $pages->count() > 0)
                             @foreach($pages->where('is_home', false) as $page)
-                                <a href="{{ route('creator.preview.page', [$website, $page]) }}" 
+                                <a href="{{ route('creator.preview.page', $page) }}" 
                                    class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('creator.preview.page') && request()->route('page')->id === $page->id ? 'bg-gray-100' : '' }}">
                                     {{ $page->title }}
                                 </a>
                             @endforeach
                         @endif
                         
-                        <a href="{{ route('creator.preview.blog', $website) }}" 
+                        <a href="{{ route('creator.preview.blog') }}" 
                            class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('creator.preview.blog*') ? 'bg-gray-100' : '' }}">
                             Blog
                         </a>
                         
-                        <a href="{{ route('creator.preview.contact', $website) }}" 
+                        <a href="{{ route('creator.preview.contact') }}" 
                            class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('creator.preview.contact') ? 'bg-gray-100' : '' }}">
                             Contacto
                         </a>
@@ -99,26 +99,26 @@
         <!-- Menú móvil -->
         <div class="md:hidden" id="mobile-menu">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
-                <a href="{{ route('creator.preview.index', $website) }}" 
+                <a href="{{ route('creator.preview.index') }}" 
                    class="text-gray-900 block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('creator.preview.index') ? 'bg-gray-100' : '' }}">
                     Inicio
                 </a>
                 
                 @if(isset($pages) && $pages->count() > 0)
                     @foreach($pages->where('is_home', false) as $page)
-                        <a href="{{ route('creator.preview.page', [$website, $page]) }}" 
+                        <a href="{{ route('creator.preview.page', $page) }}" 
                            class="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('creator.preview.page') && request()->route('page')->id === $page->id ? 'bg-gray-100' : '' }}">
                             {{ $page->title }}
                         </a>
                     @endforeach
                 @endif
                 
-                <a href="{{ route('creator.preview.blog', $website) }}" 
+                <a href="{{ route('creator.preview.blog') }}" 
                    class="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('creator.preview.blog*') ? 'bg-gray-100' : '' }}">
                     Blog
                 </a>
                 
-                <a href="{{ route('creator.preview.contact', $website) }}" 
+                <a href="{{ route('creator.preview.contact') }}" 
                    class="text-gray-600 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('creator.preview.contact') ? 'bg-gray-100' : '' }}">
                     Contacto
                 </a>
@@ -142,9 +142,9 @@
                 <div>
                     <h4 class="text-md font-semibold mb-4">Enlaces Rápidos</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="{{ route('creator.preview.index', $website) }}" class="text-gray-300 hover:text-white">Inicio</a></li>
-                        <li><a href="{{ route('creator.preview.blog', $website) }}" class="text-gray-300 hover:text-white">Blog</a></li>
-                        <li><a href="{{ route('creator.preview.contact', $website) }}" class="text-gray-300 hover:text-white">Contacto</a></li>
+                        <li><a href="{{ route('creator.preview.index') }}" class="text-gray-300 hover:text-white">Inicio</a></li>
+                        <li><a href="{{ route('creator.preview.blog') }}" class="text-gray-300 hover:text-white">Blog</a></li>
+                        <li><a href="{{ route('creator.preview.contact') }}" class="text-gray-300 hover:text-white">Contacto</a></li>
                     </ul>
                 </div>
                 <div>

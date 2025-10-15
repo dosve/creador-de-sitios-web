@@ -108,8 +108,20 @@ class PageController extends Controller
             ->with('success', 'Página eliminada exitosamente');
     }
 
-    public function editor(Website $website, Page $page)
+    public function editor(Page $page)
     {
+        // Obtener el website desde la sesión
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
+        // Verificar que la página pertenece al sitio web seleccionado
+        if ($page->website_id !== $website->id) {
+            abort(403, 'Esta página no pertenece al sitio web seleccionado');
+        }
+        
         $this->authorize('update', $website);
         $this->authorize('update', $page);
 
@@ -117,30 +129,60 @@ class PageController extends Controller
             'website' => $website,
             'editable' => $page,
             'editableType' => 'page',
-            'saveRoute' => route('creator.pages.save', [$website, $page])
+            'saveRoute' => route('creator.pages.save', $page)
         ]);
     }
 
-    public function saveContent(Request $request, Website $website, Page $page)
+    public function saveContent(Request $request, Page $page)
     {
-        $this->authorize('update', $website);
-        $this->authorize('update', $page);
+        try {
+            
+            // Obtener el website desde la sesión
+            $website = Website::find(session('selected_website_id'));
+            
+            if (!$website) {
+                return response()->json(['success' => false, 'message' => 'No hay sitio web seleccionado'], 400);
+            }
+            
+            // Verificar que la página pertenece al sitio web seleccionado
+            if ($page->website_id !== $website->id) {
+                return response()->json(['success' => false, 'message' => 'Esta página no pertenece al sitio web seleccionado'], 403);
+            }
+            
+            $this->authorize('update', $website);
+            $this->authorize('update', $page);
 
-        $request->validate([
-            'html_content' => 'required|string',
-            'css_content' => 'nullable|string',
-            'grapesjs_data' => 'nullable|json',
-            'enable_store' => 'nullable|boolean',
-        ]);
+            $request->validate([
+                'html_content' => 'required|string',
+                'css_content' => 'nullable|string',
+                'grapesjs_data' => 'nullable|json',
+                'enable_store' => 'nullable|boolean',
+            ]);
 
-        $page->update([
-            'html_content' => $request->html_content,
-            'css_content' => $request->css_content,
-            'grapesjs_data' => $request->grapesjs_data,
-            'enable_store' => $request->boolean('enable_store', false),
-        ]);
+            $page->update([
+                'html_content' => $request->html_content,
+                'css_content' => $request->css_content,
+                'grapesjs_data' => $request->grapesjs_data,
+                'enable_store' => $request->boolean('enable_store', false),
+            ]);
 
-        return response()->json(['success' => true, 'message' => 'Contenido guardado exitosamente']);
+            return response()->json(['success' => true, 'message' => 'Contenido guardado exitosamente']);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation error in saveContent', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
+            return response()->json(['success' => false, 'message' => 'Error de validación: ' . implode(', ', array_flatten($e->errors()))], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error in saveContent', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['success' => false, 'message' => 'Error al guardar: ' . $e->getMessage()], 500);
+        }
     }
 
     public function versions(Website $website, Page $page)

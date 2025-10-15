@@ -1,8 +1,8 @@
 {{-- Bloques de Redes Sociales y Otros --}}
 {
-  id: 'social-links'
-  , label: 'Redes Sociales'
-  , attributes: {
+  id: 'social-links',
+  label: 'Redes Sociales',
+  category: 'Social', attributes: {
     class: 'gjs-block-social'
   }
   , content: `<div class="py-8 text-center social-links">
@@ -32,9 +32,9 @@
   </div>`
 },
 {
-  id: 'map'
-  , label: 'Mapa'
-  , attributes: {
+  id: 'map',
+  label: 'Mapa',
+  category: 'Social', attributes: {
     class: 'gjs-block-map'
   }
   , content: `<section class="py-16 map">
@@ -59,9 +59,9 @@
   </section>`
 },
 {
-  id: 'stats'
-  , label: 'Estadísticas'
-  , content: `<section class="py-16 text-white bg-blue-600 stats">
+  id: 'stats',
+  label: 'Estadísticas',
+  category: 'Social', content: `<section class="py-16 text-white bg-blue-600 stats">
     <div class="container px-4 mx-auto">
         <div class="grid grid-cols-2 gap-8 text-center md:grid-cols-4">
             <div>

@@ -1,6 +1,6 @@
 @extends('layouts.creator')
 
-@section('title', 'Productos - ' . $website->name)
+@section('title', 'Productos')
 
 @section('content')
 <div class="min-h-screen bg-gray-50">
@@ -12,7 +12,7 @@
                     <h1 class="text-3xl font-bold text-gray-900">Productos</h1>
                     <p class="mt-2 text-gray-600">Gestiona los productos de tu tienda</p>
                 </div>
-                {{-- <a href="{{ route('creator.pages.create', $website) }}" 
+                {{-- <a href="{{ route('creator.pages.create') }}" 
                    class="px-4 py-2 font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">
                     Nuevo Producto
                 </a> --}}
@@ -145,7 +145,7 @@
                                 
                                 <div class="flex items-center space-x-2">
                                     <span class="text-gray-300">|</span>
-                                    <a href="{{ route('creator.pages.preview', [$website, $product]) }}" 
+                                    <a href="{{ route('creator.preview.index') }}" 
                                        class="text-sm font-medium text-green-600 hover:text-green-800">
                                         Ver
                                     </a>
@@ -170,12 +170,12 @@
                 </p>
                 {{-- <div class="mt-6 space-x-4">
                     @if(!$useExternalApi)
-                        <a href="{{ route('creator.pages.create', $website) }}" 
+                        <a href="{{ route('creator.pages.create') }}" 
                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700">
                             Crear Producto
                         </a>
                     @endif
-                    <a href="{{ route('creator.config.api', $website) }}" 
+                    <a href="{{ route('creator.config.api') }}" 
                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50">
                         Configurar API Externa
                     </a>

@@ -11,7 +11,7 @@
                             <h2 class="text-lg font-medium text-gray-900">SEO & Analytics de {{ $website->name }}</h2>
                             <p class="text-sm text-gray-600 mt-1">Optimiza tu sitio web para los motores de búsqueda</p>
                         </div>
-                        <a href="{{ route('creator.seo.edit', $website) }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                        <a href="{{ route('creator.seo.edit') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
                             Configurar SEO
                         </a>
                     </div>

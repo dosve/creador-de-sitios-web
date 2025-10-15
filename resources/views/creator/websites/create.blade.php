@@ -110,10 +110,10 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                                     </svg>
                                                 </div>
-                                                <h5 class="font-medium text-gray-900">{{ $template->name }}</h5>
-                                                <p class="text-sm text-gray-500">{{ $template->category }}</p>
+                                                <h5 class="font-medium text-gray-900">{{ $template['name'] }}</h5>
+                                                <p class="text-sm text-gray-500">{{ $template['category'] }}</p>
                                             </div>
-                                            <input type="radio" name="template_id" value="{{ $template->id }}" class="sr-only template-radio">
+                                            <input type="radio" name="template_slug" value="{{ $template['slug'] }}" class="sr-only template-radio">
                                         </div>
                                     @endforeach
                                 </div>
@@ -162,7 +162,7 @@
                             } else {
                                 templateSelection.classList.add('hidden');
                                 // Clear template selection
-                                document.querySelectorAll('input[name="template_id"]').forEach(radio => {
+                                document.querySelectorAll('input[name="template_slug"]').forEach(radio => {
                                     radio.checked = false;
                                 });
                                 templateItems.forEach(item => {

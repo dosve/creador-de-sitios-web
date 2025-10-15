@@ -21,7 +21,7 @@
 
     <!-- Formulario de configuración -->
     <div class="p-6 bg-white rounded-lg shadow">
-        <form action="{{ route('creator.integrations.epayco.store', $website) }}" method="POST">
+        <form action="{{ route('creator.integrations.epayco.store') }}" method="POST">
             @csrf
             
             <div class="space-y-6">

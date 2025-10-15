@@ -1,6 +1,8 @@
 {{-- Incluir todos los bloques --}}
 @include('creator.blocks.basic')
 ,
+@include('creator.blocks.columns')
+,
 @include('creator.blocks.layout')
 ,
 @include('creator.blocks.multimedia')
@@ -18,3 +20,11 @@
 @include('creator.blocks.test')
 ,
 @include('creator.blocks.footer')
+,
+@include('creator.blocks.ecommerce')
+,
+@include('creator.blocks.blog')
+,
+@include('creator.blocks.advanced')
+,
+@include('creator.blocks.templates')

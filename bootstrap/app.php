@@ -14,6 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
             'require.selected.website' => \App\Http\Middleware\RequireSelectedWebsite::class,
+            'sync.auth.eme10' => \App\Http\Middleware\SyncAuthEME10::class,
+        ]);
+        
+        // Agregar middleware global para sincronización con Auth EME10
+        $middleware->web(append: [
+            \App\Http\Middleware\SyncAuthEME10::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

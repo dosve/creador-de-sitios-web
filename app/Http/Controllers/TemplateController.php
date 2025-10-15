@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Template;
 use App\Models\Website;
+use App\Services\TemplateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -11,39 +11,48 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class TemplateController extends Controller
 {
     use AuthorizesRequests;
-    public function index()
+
+    protected $templateService;
+
+    public function __construct(TemplateService $templateService)
     {
-        $templates = Template::active()
-            ->with(['websites' => function($query) {
-                $query->where('user_id', Auth::id());
-            }])
-            ->get()
-            ->groupBy('category');
-
-        $categories = [
-            'business' => 'Negocios',
-            'portfolio' => 'Portafolio',
-            'blog' => 'Blog',
-            'ecommerce' => 'E-commerce',
-            'landing' => 'Landing Page',
-            'corporate' => 'Corporativo',
-        ];
-
-        return view('creator.templates.index', compact('templates', 'categories'));
+        $this->templateService = $templateService;
     }
 
-    public function show(Template $template)
+    public function index()
     {
-        $template->load('websites');
+        $templates = $this->templateService->groupByCategory();
+        $categories = $this->templateService->getCategories();
+
+        // Obtener el sitio web actual
+        $website = Website::find(session('selected_website_id'));
+
+        return view('creator.templates.index', compact('templates', 'categories', 'website'));
+    }
+
+    public function show(string $slug)
+    {
+        $template = $this->templateService->find($slug);
+        
+        if (!$template) {
+            abort(404, 'Plantilla no encontrada');
+        }
+
         return view('creator.templates.show', compact('template'));
     }
 
-    public function apply(Request $request, Website $website, Template $template)
+    public function apply(Request $request, Website $website, string $slug)
     {
         $this->authorize('update', $website);
 
+        $template = $this->templateService->find($slug);
+        
+        if (!$template) {
+            return redirect()->back()->with('error', 'Plantilla no encontrada');
+        }
+
         // Verificar si el usuario puede usar plantillas premium
-        if ($template->is_premium && !$this->canUsePremiumTemplates()) {
+        if (($template['is_premium'] ?? false) && !$this->canUsePremiumTemplates()) {
             return redirect()->back()
                 ->with('error', 'Necesitas un plan premium para usar esta plantilla');
         }
@@ -72,26 +81,62 @@ class TemplateController extends Controller
         }
         
         // Procesar los hooks de la plantilla antes de guardarla
-        $processedContent = $this->processTemplateHooks($template->html_content, $website, $homePage);
+        $processedContent = $this->processTemplateHooks($template['html_content'], $website, $homePage);
         
         // Actualizar el contenido de la página de inicio con la plantilla procesada
         $homePage->update([
             'html_content' => $processedContent,
-            'css_content' => $template->css_content,
+            'css_content' => $template['css_content'] ?? '',
         ]);
 
-        // Actualizar el sitio web con la plantilla
+        // Actualizar el sitio web con el slug de la plantilla
         $website->update([
-            'template_id' => $template->id,
+            'template_id' => $slug,
         ]);
 
-        return redirect()->route('creator.websites.show', $website)
+        return redirect()->route('creator.templates.index')
             ->with('success', 'Plantilla aplicada exitosamente');
     }
 
-    public function preview(Template $template)
+    public function preview(string $slug)
     {
-        return view('creator.templates.preview', compact('template'));
+        $template = $this->templateService->find($slug);
+        
+        if (!$template) {
+            abort(404, 'Plantilla no encontrada');
+        }
+
+        // Obtener el sitio web actual del usuario
+        $website = Auth::user()->websites()->find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website')
+                ->with('error', 'Debes seleccionar un sitio web para ver la vista previa');
+        }
+
+        // Crear un sitio web temporal para la vista previa
+        $previewWebsite = clone $website;
+        $previewWebsite->template_id = $slug;
+        
+        // Obtener la página de inicio
+        $homePage = $website->pages()->where('is_home', true)->first();
+        
+        if (!$homePage) {
+            $homePage = $website->pages()->first();
+        }
+
+        // Renderizar la plantilla directamente
+        $templateFile = $template['templates']['home'] ?? 'template.blade.php';
+        $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
+        
+        $customization = $template['customization'] ?? [];
+        
+        return view($viewPath, [
+            'website' => $previewWebsite,
+            'page' => $homePage,
+            'pages' => $website->pages()->orderBy('sort_order')->get(),
+            'customization' => $customization
+        ]);
     }
 
     private function canUsePremiumTemplates()
@@ -114,7 +159,9 @@ class TemplateController extends Controller
         // Obtener menús del sitio web
         $menus = $website->menus()->with(['items' => function($query) {
             $query->whereNull('parent_id')->where('is_active', true)->orderBy('order');
-        }])->get();
+        }, 'items.page', 'items.children' => function($query) {
+            $query->where('is_active', true)->orderBy('order');
+        }, 'items.children.page'])->get();
         
         // Detectar si estamos en modo preview
         $isPreview = request()->is('creator/websites/*/preview*');

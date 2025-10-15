@@ -20,16 +20,33 @@ use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Ruta raíz - mostrar el sitio web real
+Route::get('/', [App\Http\Controllers\WebsiteController::class, 'showRoot'])->name('website.root');
 
-// Rutas de autenticación
+// Ruta de bienvenida/landing page
+Route::get('/bienvenida', [App\Http\Controllers\WelcomeController::class, 'index'])->name('welcome');
+
+// Ruta pública de planes
+Route::get('/planes', function () {
+    $plans = \App\Models\Plan::where('is_active', true)->orderBy('price')->get();
+    return view('plans', compact('plans'));
+})->name('plans');
+
+// Rutas de autenticación OAuth2 (Recomendado)
+Route::get('/auth/oauth/redirect', [App\Http\Controllers\Auth\OAuthController::class, 'redirect'])->name('oauth.redirect');
+Route::get('/auth/oauth/callback', [App\Http\Controllers\Auth\OAuthController::class, 'callback'])->name('oauth.callback');
+Route::post('/auth/oauth/handle-token', [App\Http\Controllers\Auth\OAuthController::class, 'handleToken'])->name('oauth.handle-token');
+
+// Rutas de autenticación tradicional (Legacy - para usuarios antiguos)
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
+
+// Rutas de verificación 2FA
+Route::get('/two-factor', [App\Http\Controllers\Auth\TwoFactorController::class, 'show'])->name('two-factor.show');
+Route::post('/two-factor/verify', [App\Http\Controllers\Auth\TwoFactorController::class, 'verify'])->name('two-factor.verify');
 
 // Rutas para administradores
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -146,33 +163,64 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
 // Rutas para usuarios creadores
 Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')->group(function () {
+    // Ruta raíz de creator - redirige al dashboard
+    Route::get('/', function () {
+        return redirect()->route('creator.dashboard');
+    });
+    
     // Selección de sitio web (sin middleware de sitio seleccionado)
     Route::get('/select-website', [App\Http\Controllers\Creator\SelectWebsiteController::class, 'index'])->name('select-website');
-    Route::post('/select-website', [App\Http\Controllers\Creator\SelectWebsiteController::class, 'store'])->name('select-website');
+    Route::post('/select-website', [App\Http\Controllers\Creator\SelectWebsiteController::class, 'store'])->name('select-website.store');
 
     // Rutas que requieren sitio web seleccionado
     Route::middleware(['require.selected.website'])->group(function () {
         Route::get('/dashboard', [CreatorDashboard::class, 'index'])->name('dashboard');
-        Route::resource('websites', WebsiteController::class);
+        
+        // Rutas de websites que usan sesión
+        Route::get('websites', [WebsiteController::class, 'index'])->name('websites.index');
+        Route::get('websites/create', [WebsiteController::class, 'create'])->name('websites.create');
+        Route::post('websites', [WebsiteController::class, 'store'])->name('websites.store');
+        Route::get('websites/show', function() {
+            $website = \App\Models\Website::find(session('selected_website_id'));
+            if (!$website) {
+                return redirect()->route('creator.select-website');
+            }
+            app(\App\Http\Controllers\WebsiteController::class)->authorize('view', $website);
+            $pages = $website->pages()->orderBy('sort_order')->get();
+            return view('creator.websites.show', compact('website', 'pages'));
+        })->name('websites.show');
+        Route::delete('websites/{website}', [WebsiteController::class, 'destroy'])->name('websites.destroy');
+        
+        // Configuración general del sitio (dentro de config)
+        Route::get('config/general', [WebsiteController::class, 'edit'])->name('config.general');
+        Route::put('config/general', [WebsiteController::class, 'update'])->name('config.general.update');
+        Route::patch('websites/{website}/toggle-publish', [WebsiteController::class, 'togglePublish'])->name('websites.toggle-publish');
+        
+        // Gestión de dominios personalizados
+        Route::get('config/domain', [App\Http\Controllers\DomainController::class, 'index'])->name('creator.config.domain');
+        Route::post('config/domain', [App\Http\Controllers\DomainController::class, 'store'])->name('domains.store');
+        Route::post('config/domain/{domain}/verify', [App\Http\Controllers\DomainController::class, 'verify'])->name('domains.verify');
+        Route::patch('config/domain/{domain}/set-primary', [App\Http\Controllers\DomainController::class, 'setPrimary'])->name('domains.set-primary');
+        Route::delete('config/domain/{domain}', [App\Http\Controllers\DomainController::class, 'destroy'])->name('domains.destroy');
 
-        // Rutas de páginas
-        Route::get('websites/{website}/pages', [App\Http\Controllers\Creator\PageController::class, 'index'])->name('pages.index');
-        Route::get('websites/{website}/pages/create', [App\Http\Controllers\Creator\PageController::class, 'create'])->name('pages.create');
-        Route::post('websites/{website}/pages', [App\Http\Controllers\Creator\PageController::class, 'store'])->name('pages.store');
-        Route::get('websites/{website}/pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'show'])->name('pages.show');
-        Route::get('websites/{website}/pages/{page}/edit', [App\Http\Controllers\Creator\PageController::class, 'edit'])->name('pages.edit');
-        Route::put('websites/{website}/pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'update'])->name('pages.update');
-        Route::delete('websites/{website}/pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'destroy'])->name('pages.destroy');
-        Route::get('websites/{website}/pages/{page}/editor', [PageController::class, 'editor'])->name('pages.editor');
-        Route::post('websites/{website}/pages/{page}/save', [PageController::class, 'saveContent'])->name('pages.save');
-        Route::post('websites/{website}/pages/{page}/set-home', [App\Http\Controllers\Creator\PageController::class, 'setHome'])->name('pages.set-home');
+        // Rutas de páginas (usan sesión en lugar de parámetro website)
+        Route::get('pages', [App\Http\Controllers\Creator\PageController::class, 'index'])->name('pages.index');
+        Route::get('pages/create', [App\Http\Controllers\Creator\PageController::class, 'create'])->name('pages.create');
+        Route::post('pages', [App\Http\Controllers\Creator\PageController::class, 'store'])->name('pages.store');
+        Route::get('pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'show'])->name('pages.show');
+        Route::get('pages/{page}/edit', [App\Http\Controllers\Creator\PageController::class, 'edit'])->name('pages.edit');
+        Route::put('pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'update'])->name('pages.update');
+        Route::delete('pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'destroy'])->name('pages.destroy');
+        Route::get('pages/{page}/editor', [PageController::class, 'editor'])->name('pages.editor');
+        Route::post('pages/{page}/save', [PageController::class, 'saveContent'])->name('pages.save');
+        Route::post('pages/{page}/set-home', [App\Http\Controllers\Creator\PageController::class, 'setHome'])->name('pages.set-home');
 
-        // Rutas de menús
-        Route::resource('websites.menus', App\Http\Controllers\Creator\MenuController::class);
-        Route::post('websites/{website}/menus/{menu}/items', [App\Http\Controllers\Creator\MenuController::class, 'storeItem'])->name('menus.items.store');
-        Route::put('websites/{website}/menus/{menu}/items/{menuItem}', [App\Http\Controllers\Creator\MenuController::class, 'updateItem'])->name('menus.items.update');
-        Route::delete('websites/{website}/menus/{menu}/items/{menuItem}', [App\Http\Controllers\Creator\MenuController::class, 'destroyItem'])->name('menus.items.destroy');
-        Route::post('websites/{website}/menus/{menu}/update-order', [App\Http\Controllers\Creator\MenuController::class, 'updateOrder'])->name('menus.update-order');
+        // Rutas de menús (usan sesión en lugar de parámetro website)
+        Route::resource('menus', App\Http\Controllers\Creator\MenuController::class);
+        Route::post('menus/{menu}/items', [App\Http\Controllers\Creator\MenuController::class, 'storeItem'])->name('menus.items.store');
+        Route::put('menus/{menu}/items/{menuItem}', [App\Http\Controllers\Creator\MenuController::class, 'updateItem'])->name('menus.items.update');
+        Route::delete('menus/{menu}/items/{menuItem}', [App\Http\Controllers\Creator\MenuController::class, 'destroyItem'])->name('menus.items.destroy');
+        Route::post('menus/{menu}/update-order', [App\Http\Controllers\Creator\MenuController::class, 'updateOrder'])->name('menus.update-order');
 
         // Rutas de versiones de páginas
         Route::get('websites/{website}/pages/{page}/versions', [PageController::class, 'versions'])->name('pages.versions');
@@ -182,26 +230,30 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
 
         // Rutas de plantillas
         Route::get('templates', [TemplateController::class, 'index'])->name('templates.index');
-        Route::get('templates/{template}', [TemplateController::class, 'show'])->name('templates.show');
-        Route::post('websites/{website}/templates/{template}/apply', [TemplateController::class, 'apply'])->name('templates.apply');
+        Route::get('templates/{slug}', [TemplateController::class, 'show'])->name('templates.show');
+        Route::get('templates/{slug}/preview', [TemplateController::class, 'preview'])->name('templates.preview');
+        Route::post('websites/{website}/templates/{slug}/apply', [TemplateController::class, 'apply'])->name('templates.apply');
 
-        // Rutas del blog
-        Route::get('websites/{website}/blog', [App\Http\Controllers\Creator\BlogPostController::class, 'index'])->name('blog.index');
-        Route::get('websites/{website}/blog/create', [App\Http\Controllers\Creator\BlogPostController::class, 'create'])->name('blog.create');
-        Route::post('websites/{website}/blog', [App\Http\Controllers\Creator\BlogPostController::class, 'store'])->name('blog.store');
-        Route::get('websites/{website}/blog/{blogPost}', [App\Http\Controllers\Creator\BlogPostController::class, 'show'])->name('blog.show');
-        Route::get('websites/{website}/blog/{blogPost}/edit', [App\Http\Controllers\Creator\BlogPostController::class, 'edit'])->name('blog.edit');
-        Route::put('websites/{website}/blog/{blogPost}', [App\Http\Controllers\Creator\BlogPostController::class, 'update'])->name('blog.update');
-        Route::delete('websites/{website}/blog/{blogPost}', [App\Http\Controllers\Creator\BlogPostController::class, 'destroy'])->name('blog.destroy');
+        // Rutas del blog (usan sesión en lugar de parámetro website)
+        Route::get('blog', [App\Http\Controllers\Creator\BlogPostController::class, 'index'])->name('blog.index');
+        Route::get('blog/create', [App\Http\Controllers\Creator\BlogPostController::class, 'create'])->name('blog.create');
+        Route::post('blog', [App\Http\Controllers\Creator\BlogPostController::class, 'store'])->name('blog.store');
+        Route::get('blog/{blogPost}', [App\Http\Controllers\Creator\BlogPostController::class, 'show'])->name('blog.show');
+        Route::get('blog/{blogPost}/edit', [App\Http\Controllers\Creator\BlogPostController::class, 'edit'])->name('blog.edit');
+        Route::put('blog/{blogPost}', [App\Http\Controllers\Creator\BlogPostController::class, 'update'])->name('blog.update');
+        Route::delete('blog/{blogPost}', [App\Http\Controllers\Creator\BlogPostController::class, 'destroy'])->name('blog.destroy');
+        
+        // API para posts del blog (para el componente dinámico)
+        Route::get('api/websites/{website}/blog-posts', [App\Http\Controllers\Creator\BlogPostController::class, 'apiIndex'])->name('api.blog.index');
 
-        // Rutas de categorías
-        Route::get('websites/{website}/categories', [App\Http\Controllers\Creator\CategoryController::class, 'index'])->name('categories.index');
-        Route::get('websites/{website}/categories/create', [App\Http\Controllers\Creator\CategoryController::class, 'create'])->name('categories.create');
-        Route::post('websites/{website}/categories', [App\Http\Controllers\Creator\CategoryController::class, 'store'])->name('categories.store');
+        // Rutas de categorías (usan sesión en lugar de parámetro website)
+        Route::get('categories', [App\Http\Controllers\Creator\CategoryController::class, 'index'])->name('categories.index');
+        Route::get('categories/create', [App\Http\Controllers\Creator\CategoryController::class, 'create'])->name('categories.create');
+        Route::post('categories', [App\Http\Controllers\Creator\CategoryController::class, 'store'])->name('categories.store');
         // TODO: Crear vista para esta ruta
-        // Route::get('websites/{website}/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
-        Route::put('websites/{website}/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
-        Route::delete('websites/{website}/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+        // Route::get('categories/{category}/edit', [App\Http\Controllers\Creator\CategoryController::class, 'edit'])->name('categories.edit');
+        Route::put('categories/{category}', [App\Http\Controllers\Creator\CategoryController::class, 'update'])->name('categories.update');
+        Route::delete('categories/{category}', [App\Http\Controllers\Creator\CategoryController::class, 'destroy'])->name('categories.destroy');
 
         // Rutas de etiquetas
         Route::get('websites/{website}/tags', [App\Http\Controllers\Creator\TagController::class, 'index'])->name('tags.index');
@@ -225,91 +277,100 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('websites/{website}/components/{component}/editor', [SharedComponentController::class, 'editor'])->name('components.editor');
         Route::post('websites/{website}/components/{component}/save', [SharedComponentController::class, 'saveContent'])->name('components.save');
 
-        // Rutas de biblioteca multimedia
-        Route::get('websites/{website}/media', [App\Http\Controllers\Creator\MediaFileController::class, 'index'])->name('media.index');
-        Route::post('websites/{website}/media', [App\Http\Controllers\Creator\MediaFileController::class, 'store'])->name('media.store');
-        Route::delete('websites/{website}/media/{mediaFile}', [App\Http\Controllers\Creator\MediaFileController::class, 'destroy'])->name('media.destroy');
-        Route::get('websites/{website}/media/{mediaFile}/url', [App\Http\Controllers\Creator\MediaFileController::class, 'getFileUrl'])->name('media.url');
+        // Rutas de biblioteca multimedia (usan sesión en lugar de parámetro website)
+        Route::get('media', [App\Http\Controllers\Creator\MediaFileController::class, 'index'])->name('media.index');
+        Route::post('media', [App\Http\Controllers\Creator\MediaFileController::class, 'store'])->name('media.store');
+        Route::delete('media/{mediaFile}', [App\Http\Controllers\Creator\MediaFileController::class, 'destroy'])->name('media.destroy');
+        Route::get('media/{mediaFile}/url', [App\Http\Controllers\Creator\MediaFileController::class, 'getFileUrl'])->name('media.url');
 
-        // Rutas de SEO
-        Route::get('websites/{website}/seo', [App\Http\Controllers\Creator\SeoController::class, 'index'])->name('seo.index');
-        Route::get('websites/{website}/seo/edit', [App\Http\Controllers\Creator\SeoController::class, 'edit'])->name('seo.edit');
-        Route::put('websites/{website}/seo', [App\Http\Controllers\Creator\SeoController::class, 'update'])->name('seo.update');
+        // Rutas de SEO (usan sesión en lugar de parámetro website)
+        Route::get('seo', [App\Http\Controllers\Creator\SeoController::class, 'index'])->name('seo.index');
+        Route::get('seo/edit', [App\Http\Controllers\Creator\SeoController::class, 'edit'])->name('seo.edit');
+        Route::put('seo', [App\Http\Controllers\Creator\SeoController::class, 'update'])->name('seo.update');
         Route::get('websites/{website}/seo/sitemap', [SeoController::class, 'sitemap'])->name('seo.sitemap');
         Route::get('websites/{website}/seo/robots', [SeoController::class, 'robots'])->name('seo.robots');
         Route::post('websites/{website}/seo/generate-sitemap', [SeoController::class, 'generateSitemap'])->name('seo.generate-sitemap');
         Route::get('websites/{website}/seo/preview/{page?}', [SeoController::class, 'preview'])->name('seo.preview');
 
-        // Rutas de formularios
-        Route::get('websites/{website}/forms', [App\Http\Controllers\Creator\FormController::class, 'index'])->name('forms.index');
-        Route::get('websites/{website}/forms/create', [App\Http\Controllers\Creator\FormController::class, 'create'])->name('forms.create');
-        Route::post('websites/{website}/forms', [App\Http\Controllers\Creator\FormController::class, 'store'])->name('forms.store');
-        Route::get('websites/{website}/forms/{form}/edit', [App\Http\Controllers\Creator\FormController::class, 'edit'])->name('forms.edit');
-        Route::get('websites/{website}/forms/{form}/builder', [App\Http\Controllers\Creator\FormController::class, 'builder'])->name('forms.builder');
-        Route::get('websites/{website}/forms/{form}/submissions', [App\Http\Controllers\Creator\FormController::class, 'submissions'])->name('forms.submissions');
-        Route::get('websites/{website}/forms/{form}/submissions/{submission}', [App\Http\Controllers\Creator\FormController::class, 'showSubmission'])->name('forms.show-submission');
-        Route::put('websites/{website}/forms/{form}', [App\Http\Controllers\Creator\FormController::class, 'update'])->name('forms.update');
-        Route::delete('websites/{website}/forms/{form}', [App\Http\Controllers\Creator\FormController::class, 'destroy'])->name('forms.destroy');
+        // Rutas de formularios (usan sesión en lugar de parámetro website)
+        Route::get('forms', [App\Http\Controllers\Creator\FormController::class, 'index'])->name('forms.index');
+        Route::get('forms/create', [App\Http\Controllers\Creator\FormController::class, 'create'])->name('forms.create');
+        Route::post('forms', [App\Http\Controllers\Creator\FormController::class, 'store'])->name('forms.store');
+        Route::get('forms/{form}/edit', [App\Http\Controllers\Creator\FormController::class, 'edit'])->name('forms.edit');
+        Route::get('forms/{form}/builder', [App\Http\Controllers\Creator\FormController::class, 'builder'])->name('forms.builder');
+        Route::get('forms/{form}/submissions', [App\Http\Controllers\Creator\FormController::class, 'submissions'])->name('forms.submissions');
+        Route::get('forms/{form}/submissions/{submission}', [App\Http\Controllers\Creator\FormController::class, 'showSubmission'])->name('forms.show-submission');
+        Route::put('forms/{form}', [App\Http\Controllers\Creator\FormController::class, 'update'])->name('forms.update');
+        Route::delete('forms/{form}', [App\Http\Controllers\Creator\FormController::class, 'destroy'])->name('forms.destroy');
+        
+        // Rutas API para el constructor de formularios
+        Route::post('forms/{form}/fields', [App\Http\Controllers\Creator\FormController::class, 'addField'])->name('forms.add-field');
+        Route::put('forms/{form}/fields/{field}', [App\Http\Controllers\Creator\FormController::class, 'updateField'])->name('forms.update-field');
+        Route::delete('forms/{form}/fields/{field}', [App\Http\Controllers\Creator\FormController::class, 'deleteField'])->name('forms.delete-field');
+        Route::post('forms/{form}/fields/reorder', [App\Http\Controllers\Creator\FormController::class, 'reorderFields'])->name('forms.reorder-fields');
 
-        // Rutas de vista previa
-        Route::get('websites/{website}/preview', [App\Http\Controllers\Creator\PreviewController::class, 'index'])->name('preview.index');
-        Route::get('websites/{website}/preview/pages/{page}', [App\Http\Controllers\Creator\PreviewController::class, 'page'])->name('preview.page');
-        Route::get('websites/{website}/preview/blog', [App\Http\Controllers\Creator\PreviewController::class, 'blog'])->name('preview.blog');
-        Route::get('websites/{website}/preview/blog/{blogPost}', [App\Http\Controllers\Creator\PreviewController::class, 'blogPost'])->name('preview.blog-post');
-        Route::get('websites/{website}/preview/contact', [App\Http\Controllers\Creator\PreviewController::class, 'contact'])->name('preview.contact');
+        // Rutas de vista previa (usan el sitio de la sesión)
+        Route::get('preview', [App\Http\Controllers\Creator\PreviewController::class, 'index'])->name('preview.index');
+        Route::get('preview/pages/{page}', [App\Http\Controllers\Creator\PreviewController::class, 'page'])->name('preview.page');
+        Route::get('preview/blog', [App\Http\Controllers\Creator\PreviewController::class, 'blog'])->name('preview.blog');
+        Route::get('preview/blog/{blogPost}', [App\Http\Controllers\Creator\PreviewController::class, 'blogPost'])->name('preview.blog-post');
+        Route::get('preview/contact', [App\Http\Controllers\Creator\PreviewController::class, 'contact'])->name('preview.contact');
 
         // Ruta de vista previa de plantillas
-        Route::get('templates/{template}/preview', [App\Http\Controllers\Creator\PreviewController::class, 'template'])->name('templates.preview');
+        // Ruta de preview movida arriba con las otras rutas de templates
 
-        // Rutas de comentarios
-        Route::get('websites/{website}/comments', [App\Http\Controllers\Creator\CommentController::class, 'index'])->name('comments.index');
+        // Rutas de comentarios (usan sesión)
+        Route::get('comments', [App\Http\Controllers\Creator\CommentController::class, 'index'])->name('comments.index');
         // TODO: Crear vista para esta ruta
-        // Route::get('websites/{website}/comments/{comment}', [App\Http\Controllers\Creator\CommentController::class, 'show'])->name('comments.show');
-        Route::post('websites/{website}/comments/{comment}/approve', [App\Http\Controllers\Creator\CommentController::class, 'approve'])->name('comments.approve');
-        Route::post('websites/{website}/comments/{comment}/unapprove', [App\Http\Controllers\Creator\CommentController::class, 'unapprove'])->name('comments.unapprove');
-        Route::post('websites/{website}/comments/{comment}/mark-spam', [App\Http\Controllers\Creator\CommentController::class, 'markAsSpam'])->name('comments.mark-spam');
-        Route::post('websites/{website}/comments/{comment}/mark-not-spam', [App\Http\Controllers\Creator\CommentController::class, 'markAsNotSpam'])->name('comments.mark-not-spam');
-        Route::delete('websites/{website}/comments/{comment}', [App\Http\Controllers\Creator\CommentController::class, 'destroy'])->name('comments.destroy');
-        Route::post('websites/{website}/comments/bulk-approve', [App\Http\Controllers\Creator\CommentController::class, 'bulkApprove'])->name('comments.bulk-approve');
-        Route::post('websites/{website}/comments/bulk-delete', [App\Http\Controllers\Creator\CommentController::class, 'bulkDelete'])->name('comments.bulk-delete');
+        // Route::get('comments/{comment}', [App\Http\Controllers\Creator\CommentController::class, 'show'])->name('comments.show');
+        Route::post('comments/{comment}/approve', [App\Http\Controllers\Creator\CommentController::class, 'approve'])->name('comments.approve');
+        Route::post('comments/{comment}/unapprove', [App\Http\Controllers\Creator\CommentController::class, 'unapprove'])->name('comments.unapprove');
+        Route::post('comments/{comment}/mark-spam', [App\Http\Controllers\Creator\CommentController::class, 'markAsSpam'])->name('comments.mark-spam');
+        Route::post('comments/{comment}/mark-not-spam', [App\Http\Controllers\Creator\CommentController::class, 'markAsNotSpam'])->name('comments.mark-not-spam');
+        Route::delete('comments/{comment}', [App\Http\Controllers\Creator\CommentController::class, 'destroy'])->name('comments.destroy');
+        Route::post('comments/bulk-approve', [App\Http\Controllers\Creator\CommentController::class, 'bulkApprove'])->name('comments.bulk-approve');
+        Route::post('comments/bulk-delete', [App\Http\Controllers\Creator\CommentController::class, 'bulkDelete'])->name('comments.bulk-delete');
 
         // TODO: Crear vistas para estas rutas de formularios de blog
         // Route::get('websites/{website}/blog/{blogPost}/forms', [App\Http\Controllers\Creator\FormController::class, 'blogIndex'])->name('forms.blog-index');
         // Route::get('websites/{website}/blog/{blogPost}/forms/create', [App\Http\Controllers\Creator\FormController::class, 'create'])->name('forms.blog-create');
         // Route::get('websites/{website}/blog/{blogPost}/forms/{form}/builder', [App\Http\Controllers\Creator\FormController::class, 'blogBuilder'])->name('forms.blog-builder');
 
-        // Rutas de configuración de dominios
-        Route::get('websites/{website}/config/domain', [App\Http\Controllers\Creator\DomainConfigController::class, 'index'])->name('config.domain');
-        Route::post('websites/{website}/config/domain', [App\Http\Controllers\Creator\DomainConfigController::class, 'store'])->name('config.domain.store');
-        Route::put('websites/{website}/config/domain/{domain}', [App\Http\Controllers\Creator\DomainConfigController::class, 'update'])->name('config.domain.update');
-        Route::delete('websites/{website}/config/domain/{domain}', [App\Http\Controllers\Creator\DomainConfigController::class, 'destroy'])->name('config.domain.destroy');
-        Route::post('websites/{website}/config/domain/{domain}/verify', [App\Http\Controllers\Creator\DomainConfigController::class, 'verify'])->name('config.domain.verify');
+        // Rutas de configuración de dominios (usan sesión)
+        Route::get('config/domain', [App\Http\Controllers\Creator\DomainConfigController::class, 'index'])->name('config.domain');
+        Route::post('config/domain', [App\Http\Controllers\Creator\DomainConfigController::class, 'store'])->name('config.domain.store');
+        Route::put('config/domain/{domain}', [App\Http\Controllers\Creator\DomainConfigController::class, 'update'])->name('config.domain.update');
+        Route::delete('config/domain/{domain}', [App\Http\Controllers\Creator\DomainConfigController::class, 'destroy'])->name('config.domain.destroy');
+        Route::post('config/domain/{domain}/verify', [App\Http\Controllers\Creator\DomainConfigController::class, 'verify'])->name('config.domain.verify');
 
-        // Rutas de configuración de seguridad
-        Route::get('websites/{website}/config/security', [App\Http\Controllers\Creator\SecurityConfigController::class, 'index'])->name('config.security');
-        Route::post('websites/{website}/config/security/ssl', [App\Http\Controllers\Creator\SecurityConfigController::class, 'updateSsl'])->name('config.security.ssl');
-        Route::post('websites/{website}/config/security/generate-ssl', [App\Http\Controllers\Creator\SecurityConfigController::class, 'generateSsl'])->name('config.security.generate-ssl');
-        Route::post('websites/{website}/config/security/update', [App\Http\Controllers\Creator\SecurityConfigController::class, 'updateSecurity'])->name('config.security.update');
+        // Rutas de configuración de seguridad (usan sesión)
+        Route::get('config/security', [App\Http\Controllers\Creator\SecurityConfigController::class, 'index'])->name('config.security');
+        Route::post('config/security/ssl', [App\Http\Controllers\Creator\SecurityConfigController::class, 'updateSsl'])->name('config.security.ssl');
+        Route::post('config/security/generate-ssl', [App\Http\Controllers\Creator\SecurityConfigController::class, 'generateSsl'])->name('config.security.generate-ssl');
+        Route::post('config/security/update', [App\Http\Controllers\Creator\SecurityConfigController::class, 'updateSecurity'])->name('config.security.update');
 
-        // Rutas de configuración de API
-        Route::get('websites/{website}/config/api', [App\Http\Controllers\Creator\ApiConfigController::class, 'show'])->name('config.api');
-        Route::put('websites/{website}/config/api', [App\Http\Controllers\Creator\ApiConfigController::class, 'update'])->name('config.api.update');
-        Route::post('websites/{website}/config/api/test', [App\Http\Controllers\Creator\ApiConfigController::class, 'test'])->name('config.api.test');
+        // Rutas de configuración de API (usan sesión)
+        Route::get('config/api', [App\Http\Controllers\Creator\ApiConfigController::class, 'show'])->name('config.api');
+        Route::put('config/api', [App\Http\Controllers\Creator\ApiConfigController::class, 'update'])->name('config.api.update');
+        Route::post('config/api/test', [App\Http\Controllers\Creator\ApiConfigController::class, 'test'])->name('config.api.test');
 
-        // Rutas de tienda en línea
-        Route::get('websites/{website}/store/products', [App\Http\Controllers\Creator\StoreController::class, 'products'])->name('store.products');
-        Route::get('websites/{website}/store/categories', [App\Http\Controllers\Creator\StoreController::class, 'categories'])->name('store.categories');
-        Route::get('websites/{website}/store/orders', [App\Http\Controllers\Creator\StoreController::class, 'orders'])->name('store.orders');
+        // API para obtener la página actual
+        Route::post('api/current-page', [App\Http\Controllers\Creator\ApiController::class, 'getCurrentPage'])->name('api.current-page');
 
-        // Rutas de usuarios
-        Route::get('websites/{website}/users', [App\Http\Controllers\Creator\UserController::class, 'index'])->name('users.index');
+        // Rutas de tienda en línea (usan sesión en lugar de parámetro website)
+        Route::get('store/products', [App\Http\Controllers\Creator\StoreController::class, 'products'])->name('store.products');
+        Route::get('store/categories', [App\Http\Controllers\Creator\StoreController::class, 'categories'])->name('store.categories');
+        Route::get('store/orders', [App\Http\Controllers\Creator\StoreController::class, 'orders'])->name('store.orders');
 
-        // Rutas de integraciones
-        Route::get('websites/{website}/integrations/epayco', [App\Http\Controllers\Creator\IntegrationController::class, 'epayco'])->name('integrations.epayco');
-        Route::post('websites/{website}/integrations/epayco', [App\Http\Controllers\Creator\IntegrationController::class, 'epaycoStore'])->name('integrations.epayco.store');
-        Route::get('websites/{website}/integrations/admin-negocios', [App\Http\Controllers\Creator\IntegrationController::class, 'adminNegocios'])->name('integrations.admin-negocios');
-        Route::post('websites/{website}/integrations/admin-negocios', [App\Http\Controllers\Creator\IntegrationController::class, 'adminNegociosStore'])->name('integrations.admin-negocios.store');
-        Route::post('websites/{website}/integrations/admin-negocios/test-api', [App\Http\Controllers\Creator\IntegrationController::class, 'testApiConnection'])->name('integrations.admin-negocios.test-api');
+        // Rutas de usuarios (usan sesión)
+        Route::get('users', [App\Http\Controllers\Creator\UserController::class, 'index'])->name('users.index');
+
+        // Rutas de integraciones (usan sesión)
+        Route::get('integrations/epayco', [App\Http\Controllers\Creator\IntegrationController::class, 'epayco'])->name('integrations.epayco');
+        Route::post('integrations/epayco', [App\Http\Controllers\Creator\IntegrationController::class, 'epaycoStore'])->name('integrations.epayco.store');
+        Route::get('integrations/admin-negocios', [App\Http\Controllers\Creator\IntegrationController::class, 'adminNegocios'])->name('integrations.admin-negocios');
+        Route::post('integrations/admin-negocios', [App\Http\Controllers\Creator\IntegrationController::class, 'adminNegociosStore'])->name('integrations.admin-negocios.store');
+        Route::post('integrations/admin-negocios/test-api', [App\Http\Controllers\Creator\IntegrationController::class, 'testApiConnection'])->name('integrations.admin-negocios.test-api');
     });
 });
 
@@ -326,3 +387,32 @@ Route::get('/home', function () {
     }
     return redirect()->route('creator.select-website');
 })->middleware('auth');
+
+// Página de bienvenida (debe ir antes de las rutas con slug)
+// COMENTADO: Esta ruta sobrescribía showRoot()
+// Route::get('/', function () {
+//     return view('welcome');
+// })->name('welcome');
+
+// Rutas públicas del sitio web (antes que las rutas con auth para evitar conflictos)
+Route::get('/{website:slug}', [WebsiteController::class, 'showPublic'])->name('website.show');
+Route::get('/{website:slug}/{page:slug}', [WebsiteController::class, 'showPagePublic'])->name('website.page.show');
+Route::get('/{website:slug}/blog', [App\Http\Controllers\Creator\BlogPostController::class, 'publicIndex'])->name('website.blog.index');
+Route::get('/{website:slug}/blog/{blogPost:slug}', [App\Http\Controllers\Creator\BlogPostController::class, 'publicShow'])->name('website.blog.show');
+
+// Rutas para dominios personalizados (sin slug del sitio)
+Route::get('/blog', [App\Http\Controllers\Creator\BlogPostController::class, 'publicIndexByDomain'])->name('website.blog.domain');
+Route::get('/blog/{blogPost:slug}', [App\Http\Controllers\Creator\BlogPostController::class, 'publicShowByDomain'])->name('website.blog.show.domain');
+Route::get('/{page:slug}', [WebsiteController::class, 'showPageByDomain'])->name('website.page.domain');
+
+// Rutas para el sitio seleccionado en sesión (usuario logueado)
+Route::middleware('auth')->group(function () {
+    // Ruta para el blog del sitio seleccionado
+    Route::get('/blog', [WebsiteController::class, 'showBlog'])->name('website.blog');
+    Route::get('/blog/{slug}', [WebsiteController::class, 'showBlogPost'])->name('website.blog.post');
+    
+    // Ruta para mostrar páginas del sitio seleccionado por slug (debe ir al final)
+    Route::get('/{slug}', [WebsiteController::class, 'showPageBySlug'])
+        ->where('slug', '^(?!creator|admin|login|register|logout|bienvenida|api|mi-siito-web|sitio).*')
+        ->name('website.page.slug');
+});

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar SEO - {{ $website->name }}</title>
-    @vite('resources/js/app.js')
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen">
@@ -13,7 +13,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-4">
                     <div class="flex items-center space-x-4">
-                        <a href="{{ route('creator.seo.index', $website) }}" class="text-gray-600 hover:text-gray-900">
+                        <a href="{{ route('creator.seo.index') }}" class="text-gray-600 hover:text-gray-900">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                             </svg>
@@ -26,7 +26,7 @@
 
         <!-- Main Content -->
         <main class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-            <form method="POST" action="{{ route('creator.seo.update', $website) }}" class="space-y-8">
+            <form method="POST" action="{{ route('creator.seo.update') }}" class="space-y-8">
                 @csrf
                 @method('PUT')
 
@@ -340,7 +340,7 @@
 
                 <!-- Botones de Acción -->
                 <div class="flex justify-end space-x-3 pt-6">
-                    <a href="{{ route('creator.seo.index', $website) }}" 
+                    <a href="{{ route('creator.seo.index') }}" 
                        class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         Cancelar
                     </a>

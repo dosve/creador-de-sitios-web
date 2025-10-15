@@ -1,6 +1,6 @@
 @extends('layouts.creator')
 
-@section('title', 'Páginas - ' . $website->name)
+@section('title', 'Páginas')
 @section('page-title', 'Páginas')
 @section('content')
 <!-- Pages Header -->
@@ -8,10 +8,10 @@
     <div class="px-6 py-4 border-b border-gray-200">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-lg font-medium text-gray-900">Páginas de {{ $website->name }}</h2>
+                <h2 class="text-lg font-medium text-gray-900">Páginas</h2>
                 <p class="mt-1 text-sm text-gray-600">Gestiona el contenido de tu sitio web</p>
             </div>
-            <a href="{{ route('creator.pages.create', $website) }}" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
+            <a href="{{ route('creator.pages.create') }}" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
                 Nueva Página
             </a>
         </div>
@@ -41,11 +41,11 @@
         <!-- Page Actions -->
         <div class="space-y-2">
             <div class="flex space-x-2">
-                <a href="{{ route('creator.pages.edit', [$website, $page]) }}"
+                <a href="{{ route('creator.pages.edit', $page) }}"
                     class="flex-1 px-3 py-2 text-sm text-center text-white bg-green-600 rounded-md hover:bg-green-700">
                     Editar
                 </a>
-                <a href="{{ route('creator.pages.editor', [$website, $page]) }}"
+                <a href="{{ route('creator.pages.editor', $page) }}"
                     class="flex-1 px-3 py-2 text-sm text-center text-white bg-blue-600 rounded-md hover:bg-blue-700">
                     Constructor
                 </a>
@@ -53,7 +53,7 @@
             
             <!-- Botón para establecer como página de inicio -->
             @if(!$page->is_home)
-                <form method="POST" action="{{ route('creator.pages.set-home', [$website, $page]) }}" class="w-full">
+                <form method="POST" action="{{ route('creator.pages.set-home', $page) }}" class="w-full">
                     @csrf
                     <button type="submit" 
                             class="w-full px-3 py-2 text-sm text-center text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100"
@@ -66,7 +66,7 @@
                     ✅ Página de Inicio
                 </div>
             @endif
-            <form method="POST" action="{{ route('creator.pages.destroy', [$website, $page]) }}" onsubmit="return confirm('¿Estás seguro de eliminar esta página?')">
+            <form method="POST" action="{{ route('creator.pages.destroy', $page) }}" onsubmit="return confirm('¿Estás seguro de eliminar esta página?')">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="w-full px-3 py-2 text-sm text-white bg-red-600 rounded-md hover:bg-red-700">
@@ -88,7 +88,7 @@
     </div>
     <h3 class="mb-2 text-xl font-medium text-gray-900">No hay páginas creadas</h3>
     <p class="mb-8 text-gray-500">Comienza creando tu primera página para tu sitio web.</p>
-    <a href="{{ route('creator.pages.create', $website) }}" class="px-6 py-3 text-white bg-blue-600 rounded-md hover:bg-blue-700">
+    <a href="{{ route('creator.pages.create') }}" class="px-6 py-3 text-white bg-blue-600 rounded-md hover:bg-blue-700">
         Crear Primera Página
     </a>
 </div>

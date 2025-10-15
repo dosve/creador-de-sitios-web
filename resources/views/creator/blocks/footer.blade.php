@@ -1,8 +1,8 @@
 {{-- Bloques de Footer --}}
 {
-  id: 'navbar'
-  , label: 'Navegación'
-  , content: `<nav class="bg-white border-b border-gray-200 shadow-sm">
+  id: 'navbar',
+  label: 'Navegación',
+  category: 'Footer', content: `<nav class="bg-white border-b border-gray-200 shadow-sm">
     <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             <!-- Logo -->
@@ -31,9 +31,9 @@
   </nav>`
 },
 {
-  id: 'footer'
-  , label: 'Footer'
-  , content: `<footer class="text-white bg-gray-800">
+  id: 'footer',
+  label: 'Footer',
+  category: 'Footer', content: `<footer class="text-white bg-gray-800">
     <div class="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
             <div>

@@ -11,7 +11,7 @@
                         <p class="mt-1 text-sm text-gray-600">Modifica la información de tu sitio web.</p>
                     </div>
                     
-                    <form method="POST" action="{{ route('creator.websites.update', $website) }}" class="px-6 py-4">
+                    <form method="POST" action="{{ route('creator.config.general.update') }}" class="px-6 py-4">
                         @csrf
                         @method('PUT')
                         

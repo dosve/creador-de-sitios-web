@@ -16,8 +16,14 @@ class UserController extends Controller
     /**
      * Lista de usuarios (clientes)
      */
-    public function index(Request $request, Website $website)
+    public function index(Request $request)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('view', $website);
         
         $customers = $website->customers()
@@ -25,6 +31,6 @@ class UserController extends Controller
             ->latest()
             ->get();
         
-        return view('creator.users.index', compact('website', 'customers'));
+        return view('creator.users.index', compact('customers'));
     }
 }

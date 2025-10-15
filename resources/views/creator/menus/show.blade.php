@@ -10,7 +10,7 @@
             <p class="text-gray-600 mt-2">{{ ucfirst($menu->location) }} • {{ $menu->items->count() }} items</p>
         </div>
         <div class="flex space-x-3">
-            <a href="{{ route('creator.websites.menus.edit', [$website, $menu]) }}" 
+            <a href="{{ route('creator.menus.edit', $menu) }}" 
                class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
                 ✏️ Editar Menú
             </a>
@@ -142,6 +142,20 @@
                                    placeholder="🏠, 📧, 📱, etc.">
                         </div>
 
+                        <div class="mb-4">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" 
+                                       id="is_active" 
+                                       name="is_active" 
+                                       value="1"
+                                       checked
+                                       class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                                <span class="text-sm font-medium text-gray-700">
+                                    Item activo (visible en el menú)
+                                </span>
+                            </label>
+                        </div>
+
                         <div class="flex justify-end space-x-3">
                             <button type="button" 
                                     onclick="hideItemModal()" 
@@ -200,16 +214,16 @@
 <script>
 function showAddItemModal() {
     document.getElementById('modalTitle').textContent = 'Agregar Item al Menú';
-    document.getElementById('itemForm').action = '{{ route("creator.menus.items.store", [$website, $menu]) }}';
+    document.getElementById('itemForm').action = '{{ route("creator.menus.items.store", $menu) }}';
     document.getElementById('methodField').innerHTML = '';
     document.getElementById('itemForm').reset();
     document.getElementById('itemModal').classList.remove('hidden');
     toggleUrlFields();
 }
 
-function showEditItemModal(itemId, title, type, pageId, url, target, icon) {
+function showEditItemModal(itemId, title, type, pageId, url, target, icon, isActive) {
     document.getElementById('modalTitle').textContent = 'Editar Item del Menú';
-    document.getElementById('itemForm').action = '{{ route("creator.menus.items.update", [$website, $menu, ":itemId"]) }}'.replace(':itemId', itemId);
+    document.getElementById('itemForm').action = '{{ route("creator.menus.items.update", [$menu, ":itemId"]) }}'.replace(':itemId', itemId);
     document.getElementById('methodField').innerHTML = '@method("PUT")';
     
     document.getElementById('title').value = title;
@@ -218,6 +232,7 @@ function showEditItemModal(itemId, title, type, pageId, url, target, icon) {
     document.getElementById('url').value = url || '';
     document.getElementById('target').value = target || '_self';
     document.getElementById('icon').value = icon || '';
+    document.getElementById('is_active').checked = isActive;
     
     document.getElementById('itemModal').classList.remove('hidden');
     toggleUrlFields();
@@ -249,7 +264,7 @@ function deleteItem(itemId) {
     if (confirm('¿Estás seguro de que quieres eliminar este item?')) {
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '{{ route("creator.menus.items.destroy", [$website, $menu, ":itemId"]) }}'.replace(':itemId', itemId);
+        form.action = '{{ route("creator.menus.items.destroy", [$menu, ":itemId"]) }}'.replace(':itemId', itemId);
         
         const methodField = document.createElement('input');
         methodField.type = 'hidden';
@@ -302,7 +317,7 @@ function updateMenuOrder() {
     });
     
     // Enviar la actualización al servidor
-    fetch('{{ route("creator.menus.update-order", [$website, $menu]) }}', {
+    fetch('{{ route("creator.menus.update-order", $menu) }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

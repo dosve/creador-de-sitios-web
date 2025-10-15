@@ -49,7 +49,7 @@ class SecurityConfigController extends Controller
             'hsts_enabled' => $request->hsts_enabled ?? false,
         ]);
 
-        return redirect()->route('creator.config.security', $website)
+        return redirect()->route('creator.config.security')
             ->with('success', 'Configuración de SSL actualizada exitosamente.');
     }
 
@@ -66,7 +66,7 @@ class SecurityConfigController extends Controller
         // Aquí implementarías la lógica para generar un certificado SSL
         // Por ahora, simularemos la generación
         
-        return redirect()->route('creator.config.security', $website)
+        return redirect()->route('creator.config.security')
             ->with('success', 'Certificado SSL generado exitosamente. Se activará en unos minutos.');
     }
 
@@ -96,7 +96,7 @@ class SecurityConfigController extends Controller
             'ip_whitelist' => $request->ip_whitelist,
         ]);
 
-        return redirect()->route('creator.config.security', $website)
+        return redirect()->route('creator.config.security')
             ->with('success', 'Configuración de seguridad actualizada exitosamente.');
     }
 }

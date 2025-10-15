@@ -10,12 +10,7 @@ const editorConfig = {
   assetManager: {
     upload: false,
     uploadText: 'Arrastra archivos aquí o haz clic para subir',
-    addBtnText: 'Agregar imagen',
-    uploadUrl: '/upload',
-    upload: function (files) {
-      // Aquí se implementaría la subida de archivos
-      console.log('Subir archivos:', files);
-    }
+    addBtnText: 'Agregar imagen'
   },
   layerManager: {
     appendTo: '.layers-container'
@@ -29,27 +24,37 @@ const editorConfig = {
       {
         name: 'General',
         open: false,
-        buildProps: ['float', 'display', 'position', 'top', 'right', 'left', 'bottom']
+        buildProps: ['float', 'display', 'position', 'top', 'right', 'left', 'bottom', 'z-index']
       },
       {
         name: 'Dimension',
         open: false,
-        buildProps: ['width', 'height', 'max-width', 'min-height', 'margin', 'padding']
+        buildProps: ['width', 'height', 'max-width', 'min-width', 'max-height', 'min-height', 'margin', 'padding']
       },
       {
         name: 'Typography',
         open: false,
-        buildProps: ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'color', 'line-height']
+        buildProps: ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'color', 'line-height', 'text-align', 'text-decoration']
       },
       {
         name: 'Decorations',
         open: false,
-        buildProps: ['opacity', 'background-color', 'border-radius', 'border', 'box-shadow', 'background']
+        buildProps: ['opacity', 'background-color', 'border-radius', 'border', 'box-shadow', 'background', 'border-width', 'border-style', 'border-color']
+      },
+      {
+        name: 'Flexbox',
+        open: false,
+        buildProps: ['flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'align-content', 'flex-grow', 'flex-shrink']
+      },
+      {
+        name: 'Grid',
+        open: false,
+        buildProps: ['grid-template-columns', 'grid-template-rows', 'grid-gap', 'grid-column', 'grid-row', 'justify-self', 'align-self']
       },
       {
         name: 'Extra',
         open: false,
-        buildProps: ['transition', 'perspective', 'transform']
+        buildProps: ['transition', 'perspective', 'transform', 'filter', 'backdrop-filter']
       }
     ]
   },
@@ -143,7 +148,42 @@ const editorConfig = {
     ]
   },
   plugins: [],
-  pluginsOpts: {}
+  pluginsOpts: {},
+  // Configuraciones adicionales
+  allowScripts: 1,
+  showOffsets: 1,
+  showOffsetsSelected: 1,
+  noticeOnUnload: 0,
+  height: '100%',
+  width: '100%',
+  // Configuración de comandos
+  commands: [
+    {
+      id: 'copy',
+      run: 'core:copy',
+      keys: 'ctrl+c'
+    },
+    {
+      id: 'paste',
+      run: 'core:paste',
+      keys: 'ctrl+v'
+    },
+    {
+      id: 'undo',
+      run: 'core:undo',
+      keys: 'ctrl+z'
+    },
+    {
+      id: 'redo',
+      run: 'core:redo',
+      keys: 'ctrl+y'
+    },
+    {
+      id: 'select-all',
+      run: 'core:select-all',
+      keys: 'ctrl+a'
+    }
+  ]
 };
 
 // Comandos personalizados del editor

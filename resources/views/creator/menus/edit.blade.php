@@ -11,7 +11,7 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-            <form method="POST" action="{{ route('creator.websites.menus.update', [$website, $menu]) }}">
+            <form method="POST" action="{{ route('creator.menus.update', $menu) }}">
                 @csrf
                 @method('PUT')
 
@@ -84,7 +84,7 @@
                 </div>
 
                 <div class="flex justify-end space-x-4">
-                    <a href="{{ route('creator.websites.menus.show', [$website, $menu]) }}" 
+                    <a href="{{ route('creator.menus.show', $menu) }}" 
                        class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
                         Cancelar
                     </a>

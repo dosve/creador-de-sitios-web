@@ -52,11 +52,9 @@ class Website extends Model
         return $this->hasMany(BlogPost::class);
     }
 
-    public function template()
-    {
-        return $this->belongsTo(Template::class);
-    }
-
+    // Nota: template_id ahora guarda el slug de la plantilla (string), no una foreign key
+    // Las plantillas se cargan desde archivos usando TemplateService
+    
     public function mediaFiles()
     {
         return $this->hasMany(MediaFile::class);
@@ -136,12 +134,20 @@ class Website extends Model
     // Métodos de utilidad para SEO
     public function getUrl()
     {
-        if ($this->domain) {
-            return 'https://' . $this->domain;
+        // Buscar dominio personalizado verificado
+        $customDomain = $this->domains()
+            ->where('is_verified', true)
+            ->where('status', 'active')
+            ->where('is_primary', true)
+            ->first();
+            
+        if ($customDomain) {
+            return 'https://' . $customDomain->domain;
         }
         
+        // Si tiene subdominio, usar creadorweb.eme10.com
         if ($this->subdomain) {
-            return 'https://' . $this->subdomain . '.creador-sitios.com';
+            return 'https://' . $this->subdomain . '.creadorweb.eme10.com';
         }
         
         return url('/');
