@@ -510,7 +510,6 @@
     window.saveUrl = '{{ $saveRoute }}';
     window.csrfToken = '{{ csrf_token() }}';
     window.editableType = '{{ $editableType }}'; // 'page' o 'component'
-    
     // Configurar bloques del editor
     window.editorBlocks = [
       @include('creator.blocks.all')

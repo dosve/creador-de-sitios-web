@@ -15,4 +15,6 @@
 ,
 @include('creator.blocks.products')
 ,
+@include('creator.blocks.test')
+,
 @include('creator.blocks.footer')
