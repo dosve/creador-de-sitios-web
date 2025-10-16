@@ -112,16 +112,16 @@ class PageController extends Controller
     {
         // Obtener el website desde la sesión
         $website = Website::find(session('selected_website_id'));
-        
+
         if (!$website) {
             return redirect()->route('creator.select-website');
         }
-        
+
         // Verificar que la página pertenece al sitio web seleccionado
         if ($page->website_id !== $website->id) {
             abort(403, 'Esta página no pertenece al sitio web seleccionado');
         }
-        
+
         $this->authorize('update', $website);
         $this->authorize('update', $page);
 
@@ -136,19 +136,19 @@ class PageController extends Controller
     public function saveContent(Request $request, Page $page)
     {
         try {
-            
+
             // Obtener el website desde la sesión
             $website = Website::find(session('selected_website_id'));
-            
+
             if (!$website) {
                 return response()->json(['success' => false, 'message' => 'No hay sitio web seleccionado'], 400);
             }
-            
+
             // Verificar que la página pertenece al sitio web seleccionado
             if ($page->website_id !== $website->id) {
                 return response()->json(['success' => false, 'message' => 'Esta página no pertenece al sitio web seleccionado'], 403);
             }
-            
+
             $this->authorize('update', $website);
             $this->authorize('update', $page);
 
@@ -167,20 +167,9 @@ class PageController extends Controller
             ]);
 
             return response()->json(['success' => true, 'message' => 'Contenido guardado exitosamente']);
-            
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation error in saveContent', [
-                'errors' => $e->errors(),
-                'request_data' => $request->all()
-            ]);
             return response()->json(['success' => false, 'message' => 'Error de validación: ' . implode(', ', array_flatten($e->errors()))], 422);
         } catch (\Exception $e) {
-            \Log::error('Error in saveContent', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
             return response()->json(['success' => false, 'message' => 'Error al guardar: ' . $e->getMessage()], 500);
         }
     }

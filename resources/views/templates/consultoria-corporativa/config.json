@@ -1,0 +1,49 @@
+{
+    "name": "Consultoría Corporativa",
+    "slug": "consultoria-corporativa",
+    "description": "Diseño corporativo profesional para consultorías y empresas de servicios. Colores serios, testimonios de clientes y casos de éxito.",
+    "category": "corporate",
+    "preview_image": "preview.jpg",
+    "is_premium": false,
+    "is_active": true,
+    "blocks": ["header", "hero", "services", "about", "testimonials", "clients", "cta"],
+    "customization": {
+        "colors": {
+            "primary": "#1e40af",
+            "secondary": "#64748b",
+            "accent": "#0ea5e9",
+            "background": "#f8fafc",
+            "text": "#1e293b"
+        },
+        "fonts": {
+            "heading": "'Merriweather', serif",
+            "body": "'Open Sans', sans-serif"
+        },
+        "layout": {
+            "container_width": "1200px"
+        },
+        "header": {
+            "sticky": true,
+            "show_logo": true,
+            "show_search": false,
+            "show_cart": false,
+            "transparent": false,
+            "show_cta": true
+        },
+        "footer": {
+            "background": "bg-slate-900",
+            "columns": 4,
+            "show_social": true,
+            "show_copyright": true,
+            "show_certifications": true,
+            "copyright_text": "Todos los derechos reservados."
+        }
+    },
+    "templates": {
+        "home": "template.blade.php",
+        "page": "template-page.blade.php",
+        "blog": "template-blog.blade.php",
+        "services": "template.blade.php"
+    }
+}
+

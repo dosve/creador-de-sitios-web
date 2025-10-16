@@ -30,45 +30,55 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        // Intentar login con Auth EME10
-        $result = $this->authService->login($request->email, $request->password);
+        \Log::info('Intento de login', ['email' => $request->email]);
 
-        if (!$result['success']) {
+        // Verificar si el usuario existe
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            \Log::warning('Usuario no encontrado', ['email' => $request->email]);
             throw ValidationException::withMessages([
-                'email' => $result['message'] ?? 'Credenciales incorrectas',
+                'email' => 'Usuario no encontrado. ¿Ejecutaste el seeder?',
             ]);
         }
 
-        // Si requiere 2FA
-        if ($result['requires_two_factor']) {
-            session([
-                'two_factor_temp_token' => $result['temp_token'],
-                'two_factor_email' => $request->email,
-            ]);
+        \Log::info('Usuario encontrado', ['email' => $user->email, 'role' => $user->role]);
 
-            return redirect()->route('two-factor.show')->with([
-                'message' => $result['message'],
-                'sent_to' => $result['sent_to'],
-                'method' => $result['method'],
-            ]);
+        // Intentar login local primero
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->filled('remember'))) {
+            $request->session()->regenerate();
+
+            $user = Auth::user();
+            \Log::info('Login exitoso', ['user_id' => $user->id, 'role' => $user->role]);
+
+            // Si el usuario está sincronizado con Auth EME10, intentar actualizar token
+            if ($user->isSyncedWithAuthEME10()) {
+                try {
+                    $result = $this->authService->login($request->email, $request->password);
+                    if ($result['success'] && !$result['requires_two_factor']) {
+                        $user->updateAuthEME10Token($result['token']);
+                        $this->authService->createAppSession($result['token']);
+                    }
+                } catch (\Exception $e) {
+                    // Si falla Auth EME10, continuar con login local
+                    \Log::warning('Auth EME10 sync failed during login', ['error' => $e->getMessage()]);
+                }
+            }
+
+            // Redirigir según el rol del usuario
+            if ($user->isAdmin()) {
+                \Log::info('Redirigiendo a admin dashboard');
+                return redirect()->route('admin.dashboard');
+            }
+
+            \Log::info('Redirigiendo a creator select-website');
+            return redirect()->route('creator.select-website');
         }
 
-        // Login exitoso - buscar o crear usuario local
-        $user = $this->findOrCreateLocalUser($result['user'], $result['token']);
-
-        // Autenticar usuario localmente
-        Auth::login($user, $request->filled('remember'));
-        $request->session()->regenerate();
-
-        // Crear sesión en Auth EME10
-        $this->authService->createAppSession($result['token']);
-
-        // Redirigir según el rol del usuario
-        if ($user->isAdmin()) {
-            return redirect()->route('admin.dashboard');
-        }
-
-        return redirect()->route('creator.select-website');
+        // Si falla login local, lanzar error
+        \Log::error('Credenciales incorrectas', ['email' => $request->email]);
+        throw ValidationException::withMessages([
+            'email' => 'Las credenciales proporcionadas no coinciden con nuestros registros.',
+        ]);
     }
 
     public function logout(Request $request)
@@ -139,4 +149,3 @@ class LoginController extends Controller
         return $user;
     }
 }
-

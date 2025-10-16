@@ -1,0 +1,49 @@
+{
+    "name": "Agencia Creativa",
+    "slug": "agencia-creativa",
+    "description": "Plantilla vibrante para agencias de diseño y marketing. Portfolio de proyectos, servicios y equipo con animaciones modernas.",
+    "category": "agency",
+    "preview_image": "preview.jpg",
+    "is_premium": false,
+    "is_active": true,
+    "blocks": ["header", "hero", "services", "portfolio", "team", "cta"],
+    "customization": {
+        "colors": {
+            "primary": "#7c3aed",
+            "secondary": "#ec4899",
+            "accent": "#f59e0b",
+            "background": "#ffffff",
+            "text": "#1f2937"
+        },
+        "fonts": {
+            "heading": "'Poppins', sans-serif",
+            "body": "'Inter', sans-serif"
+        },
+        "layout": {
+            "container_width": "1280px"
+        },
+        "header": {
+            "sticky": true,
+            "show_logo": true,
+            "show_search": false,
+            "show_cart": false,
+            "transparent": false,
+            "show_cta": true
+        },
+        "footer": {
+            "background": "bg-gray-900",
+            "columns": 4,
+            "show_social": true,
+            "show_copyright": true,
+            "show_contact": true,
+            "copyright_text": "Todos los derechos reservados."
+        }
+    },
+    "templates": {
+        "home": "template.blade.php",
+        "page": "template-page.blade.php",
+        "blog": "template-blog.blade.php",
+        "portfolio": "template.blade.php"
+    }
+}
+

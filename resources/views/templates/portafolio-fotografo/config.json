@@ -1,0 +1,49 @@
+{
+    "name": "Portafolio Fotógrafo",
+    "slug": "portafolio-fotografo",
+    "description": "Diseño minimalista para fotógrafos. Grid masonry de imágenes, galerías full-screen y presentación visual impactante.",
+    "category": "portfolio",
+    "preview_image": "preview.jpg",
+    "is_premium": false,
+    "is_active": true,
+    "blocks": ["header", "hero", "gallery", "about", "contact"],
+    "customization": {
+        "colors": {
+            "primary": "#000000",
+            "secondary": "#ffffff",
+            "accent": "#6b7280",
+            "background": "#fafafa",
+            "text": "#1f2937"
+        },
+        "fonts": {
+            "heading": "'Oswald', sans-serif",
+            "body": "'Source Sans Pro', sans-serif"
+        },
+        "layout": {
+            "container_width": "1600px"
+        },
+        "header": {
+            "sticky": false,
+            "show_logo": true,
+            "show_search": false,
+            "show_cart": false,
+            "transparent": true,
+            "minimal": true
+        },
+        "footer": {
+            "background": "bg-gray-900",
+            "columns": 3,
+            "show_social": true,
+            "show_copyright": true,
+            "minimal": true,
+            "copyright_text": "Todos los derechos reservados."
+        }
+    },
+    "templates": {
+        "home": "template.blade.php",
+        "page": "template-page.blade.php",
+        "blog": "template-blog.blade.php",
+        "gallery": "template.blade.php"
+    }
+}
+
