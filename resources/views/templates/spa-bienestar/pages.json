@@ -1,0 +1,248 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Spa & Bienestar - Relajación y Armonía",
+      "meta_description": "Centro de spa y bienestar. Masajes, tratamientos faciales, yoga y más.",
+      "content": "<h1>Relajación y Armonía</h1><p>Tu espacio de paz interior.</p>",
+      "blocks": [
+        {
+          "type": "hero",
+          "image": true,
+          "title": "Tu Oasis de Tranquilidad",
+          "subtitle": "Descubre el equilibrio perfecto entre cuerpo y mente",
+          "cta_text": "Reservar Ahora",
+          "cta_link": "/reservas",
+          "cta_secondary_text": "Ver Tratamientos",
+          "cta_secondary_link": "/tratamientos",
+          "soft_colors": true
+        },
+        {
+          "type": "services_spa",
+          "title": "Nuestros Servicios",
+          "items": [
+            {"icon": "massage", "name": "Masajes", "description": "Terapéuticos y relajantes"},
+            {"icon": "spa", "name": "Tratamientos Faciales", "description": "Rejuvenecimiento y cuidado"},
+            {"icon": "yoga", "name": "Yoga & Meditación", "description": "Clases grupales y privadas"},
+            {"icon": "lotus", "name": "Aromaterapia", "description": "Terapia con aceites esenciales"}
+          ]
+        },
+        {
+          "type": "featured_treatments",
+          "title": "Tratamientos Destacados",
+          "limit": 3,
+          "show_duration": true,
+          "show_price": true
+        },
+        {
+          "type": "testimonials",
+          "title": "Lo que Dicen Nuestros Clientes",
+          "layout": "carousel",
+          "show_rating": true
+        }
+      ]
+    },
+    {
+      "title": "Tratamientos",
+      "slug": "tratamientos",
+      "is_home": false,
+      "meta_title": "Tratamientos - Spa & Bienestar",
+      "meta_description": "Todos nuestros tratamientos: masajes, faciales, corporales y paquetes especiales.",
+      "content": "<h1>Tratamientos</h1><p>Para cada necesidad.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestros Tratamientos",
+          "subtitle": "Bienestar Integral"
+        },
+        {
+          "type": "treatments_categories",
+          "categories": [
+            {
+              "name": "Masajes",
+              "items": [
+                {"name": "Masaje Relajante", "duration": "60 min", "price": "$80", "description": "Alivio del estrés y tensión muscular"},
+                {"name": "Masaje Terapéutico", "duration": "90 min", "price": "$120", "description": "Tratamiento profundo de zonas específicas"},
+                {"name": "Masaje con Piedras Calientes", "duration": "75 min", "price": "$100", "description": "Relajación profunda con termoterapia"},
+                {"name": "Masaje Aromático", "duration": "60 min", "price": "$85", "description": "Con aceites esenciales personalizados"}
+              ]
+            },
+            {
+              "name": "Faciales",
+              "items": [
+                {"name": "Facial Hidratante", "duration": "60 min", "price": "$70"},
+                {"name": "Facial Anti-Edad", "duration": "75 min", "price": "$95"},
+                {"name": "Limpieza Profunda", "duration": "45 min", "price": "$60"}
+              ]
+            },
+            {
+              "name": "Corporales",
+              "items": [
+                {"name": "Exfoliación Corporal", "duration": "45 min", "price": "$65"},
+                {"name": "Envoltura de Algas", "duration": "60 min", "price": "$85"},
+                {"name": "Tratamiento Reductivo", "duration": "90 min", "price": "$110"}
+              ]
+            }
+          ]
+        },
+        {
+          "type": "packages",
+          "title": "Paquetes Especiales",
+          "items": [
+            {"name": "Día de Spa", "price": "$200", "includes": ["Masaje 60min", "Facial", "Manicure", "Lunch"], "duration": "4 horas"},
+            {"name": "Escapada de Fin de Semana", "price": "$450", "includes": ["2 días completos", "4 tratamientos", "Yoga", "Alimentación"], "duration": "2 días"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Yoga & Meditación",
+      "slug": "yoga",
+      "is_home": false,
+      "meta_title": "Clases de Yoga y Meditación",
+      "meta_description": "Clases de yoga para todos los niveles. Hatha, Vinyasa, Yin Yoga y meditación guiada.",
+      "content": "<h1>Yoga & Meditación</h1><p>Equilibrio cuerpo y mente.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Yoga & Meditación",
+          "subtitle": "Equilibrio y Paz Interior"
+        },
+        {
+          "type": "yoga_classes",
+          "categories": [
+            {"name": "Hatha Yoga", "level": "Principiante", "duration": "60 min"},
+            {"name": "Vinyasa Flow", "level": "Intermedio", "duration": "75 min"},
+            {"name": "Yin Yoga", "level": "Todos", "duration": "60 min"},
+            {"name": "Meditación Guiada", "level": "Todos", "duration": "30 min"}
+          ]
+        },
+        {
+          "type": "class_schedule",
+          "show_instructor": true,
+          "show_availability": true,
+          "allow_booking": true
+        }
+      ]
+    },
+    {
+      "title": "Reservas",
+      "slug": "reservas",
+      "is_home": false,
+      "meta_title": "Reservar Tratamiento",
+      "meta_description": "Reserva tu tratamiento o clase online. Selecciona fecha y hora.",
+      "content": "<h1>Reservas</h1><p>Agenda tu sesión.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Reservar",
+          "subtitle": "Tu Momento de Relax"
+        },
+        {
+          "type": "booking_system",
+          "steps": ["treatment", "date_time", "personal_info"],
+          "show_calendar": true,
+          "show_therapist_selection": true,
+          "show_notes": true,
+          "submit_text": "Confirmar Reserva"
+        }
+      ]
+    },
+    {
+      "title": "Membresías",
+      "slug": "membresias",
+      "is_home": false,
+      "meta_title": "Membresías - Spa & Bienestar",
+      "meta_description": "Planes mensuales con descuentos especiales y acceso ilimitado.",
+      "content": "<h1>Membresías</h1><p>Descuentos especiales.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Membresías",
+          "subtitle": "Invierte en tu Bienestar"
+        },
+        {
+          "type": "pricing_plans",
+          "plans": [
+            {
+              "name": "Básico",
+              "price": "$79",
+              "period": "/mes",
+              "features": ["2 masajes al mes", "10% descuento", "Acceso a yoga"],
+              "cta": "Suscribirse"
+            },
+            {
+              "name": "Premium",
+              "price": "$149",
+              "period": "/mes",
+              "features": ["4 tratamientos al mes", "20% descuento", "Yoga ilimitado", "Productos gratis"],
+              "recommended": true,
+              "cta": "Suscribirse"
+            },
+            {
+              "name": "VIP",
+              "price": "$299",
+              "period": "/mes",
+              "features": ["Tratamientos ilimitados", "30% descuento", "Prioridad", "Invitado gratis"],
+              "cta": "Suscribirse"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Galería",
+      "slug": "galeria",
+      "is_home": false,
+      "meta_title": "Galería - Nuestras Instalaciones",
+      "meta_description": "Conoce nuestras instalaciones y ambiente relajante.",
+      "content": "<h1>Galería</h1><p>Nuestro espacio.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Galería",
+          "subtitle": "Nuestro Espacio de Paz"
+        },
+        {
+          "type": "gallery_grid",
+          "layout": "masonry",
+          "categories": ["Instalaciones", "Tratamientos", "Yoga Studio", "Productos"],
+          "lightbox": true
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Spa & Bienestar",
+      "meta_description": "Visítanos o contáctanos para más información sobre nuestros servicios.",
+      "content": "<h1>Contacto</h1><p>Estamos aquí.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Visítanos",
+          "subtitle": "Tu Oasis de Paz te Espera"
+        },
+        {
+          "type": "contact_info",
+          "address": "Calle Zen #123, Centro",
+          "phone": "+1 234 567 890",
+          "whatsapp": "+1 234 567 890",
+          "email": "info@spa.com",
+          "hours": "Lunes a Domingo: 9:00 AM - 9:00 PM",
+          "show_map": true
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "phone", "interest", "message"],
+          "submit_text": "Enviar Consulta"
+        }
+      ]
+    }
+  ]
+}
+
+

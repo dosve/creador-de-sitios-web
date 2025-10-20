@@ -13,6 +13,9 @@ class Page extends Model
         'website_id',
         'title',
         'slug',
+        'content',
+        'blocks',
+        'meta_title',
         'meta_description',
         'html_content',
         'css_content',
@@ -30,6 +33,7 @@ class Page extends Model
             'is_home' => 'boolean',
             'enable_store' => 'boolean',
             'grapesjs_data' => 'array',
+            'blocks' => 'array',
         ];
     }
 

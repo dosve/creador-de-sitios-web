@@ -1,0 +1,175 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Consultoría Corporativa - Expertos en Estrategia Empresarial",
+      "meta_description": "Ofrecemos servicios de consultoría empresarial para optimizar tus procesos y maximizar resultados.",
+      "content": "<h1>Consultoría Empresarial de Alto Nivel</h1><p>Transformamos tu negocio con estrategias efectivas y soluciones innovadoras.</p>",
+      "blocks": [
+        {
+          "type": "hero",
+          "title": "Consultoría Empresarial de Alto Nivel",
+          "subtitle": "Transformamos tu negocio con estrategias efectivas y soluciones innovadoras",
+          "cta_primary_text": "Agendar Consulta",
+          "cta_primary_link": "#contacto",
+          "cta_secondary_text": "Nuestros Servicios",
+          "cta_secondary_link": "#servicios"
+        },
+        {
+          "type": "stats",
+          "items": [
+            {"number": "500+", "label": "Clientes Satisfechos"},
+            {"number": "15", "label": "Años de Experiencia"},
+            {"number": "98%", "label": "Tasa de Éxito"},
+            {"number": "50+", "label": "Consultores Expertos"}
+          ]
+        },
+        {
+          "type": "services",
+          "title": "Nuestros Servicios",
+          "subtitle": "Soluciones Integrales",
+          "items": [
+            {
+              "title": "Estrategia Empresarial",
+              "description": "Desarrollamos planes estratégicos para alcanzar tus objetivos de negocio"
+            },
+            {
+              "title": "Transformación Digital",
+              "description": "Implementamos tecnología para optimizar tus procesos"
+            },
+            {
+              "title": "Gestión del Cambio",
+              "description": "Facilitamos la adopción de nuevas prácticas organizacionales"
+            },
+            {
+              "title": "Análisis Financiero",
+              "description": "Optimizamos tu estructura financiera para máxima rentabilidad"
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "title": "¿Listo para transformar tu empresa?",
+          "description": "Agenda una consulta gratuita con nuestros expertos",
+          "cta_text": "Agendar Consulta",
+          "cta_link": "#contacto"
+        }
+      ]
+    },
+    {
+      "title": "Servicios",
+      "slug": "servicios",
+      "is_home": false,
+      "meta_title": "Servicios de Consultoría - Soluciones Empresariales",
+      "meta_description": "Descubre nuestros servicios de consultoría: Estrategia, Transformación Digital, Gestión del Cambio y más.",
+      "content": "<h1>Nuestros Servicios</h1><p>Ofrecemos soluciones integrales de consultoría empresarial.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestros Servicios",
+          "subtitle": "Soluciones Integrales",
+          "description": "Servicios de consultoría personalizados para cada etapa de tu negocio"
+        },
+        {
+          "type": "services_detailed",
+          "items": [
+            {
+              "title": "Estrategia Empresarial",
+              "description": "Desarrollamos planes estratégicos alineados con tus objetivos de negocio.",
+              "features": ["Análisis de Mercado", "Planificación Estratégica", "Modelo de Negocio", "Expansión"]
+            },
+            {
+              "title": "Transformación Digital",
+              "description": "Implementamos tecnología para optimizar procesos y aumentar eficiencia.",
+              "features": ["Automatización", "ERP/CRM", "Business Intelligence", "Cloud Computing"]
+            },
+            {
+              "title": "Gestión del Cambio",
+              "description": "Facilitamos la adopción exitosa de nuevas prácticas organizacionales.",
+              "features": ["Capacitación", "Change Management", "Cultura Organizacional", "Comunicación"]
+            },
+            {
+              "title": "Análisis Financiero",
+              "description": "Optimizamos tu estructura financiera para máxima rentabilidad.",
+              "features": ["Evaluación Financiera", "Reducción de Costos", "Flujo de Caja", "Inversiones"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Casos de Éxito",
+      "slug": "casos-exito",
+      "is_home": false,
+      "meta_title": "Casos de Éxito - Historias de Transformación",
+      "meta_description": "Conoce cómo hemos ayudado a empresas a alcanzar sus objetivos de negocio.",
+      "content": "<h1>Casos de Éxito</h1><p>Historias de transformación empresarial.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Casos de Éxito",
+          "subtitle": "Historias de Transformación",
+          "description": "Conoce cómo hemos ayudado a empresas a alcanzar sus objetivos"
+        },
+        {
+          "type": "case_studies",
+          "items_per_page": 9,
+          "categories": ["Todos", "Estrategia", "Digital", "Financiero"]
+        }
+      ]
+    },
+    {
+      "title": "Nuestro Equipo",
+      "slug": "equipo",
+      "is_home": false,
+      "meta_title": "Nuestro Equipo - Expertos en Consultoría",
+      "meta_description": "Conoce a nuestro equipo de consultores expertos con amplia experiencia empresarial.",
+      "content": "<h1>Nuestro Equipo</h1><p>Consultores expertos con amplia experiencia.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestro Equipo",
+          "subtitle": "Expertos en Consultoría",
+          "description": "Profesionales con amplia experiencia en transformación empresarial"
+        },
+        {
+          "type": "team_grid",
+          "layout": "cards",
+          "show_bio": true,
+          "show_social": true
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Agenda tu Consulta",
+      "meta_description": "Agenda una consulta gratuita con nuestros expertos en consultoría empresarial.",
+      "content": "<h1>Contacto</h1><p>Agenda una consulta gratuita.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Contacto",
+          "subtitle": "Agenda tu Consulta",
+          "description": "Estamos listos para ayudarte a transformar tu empresa"
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "company", "phone", "service", "message"],
+          "submit_text": "Enviar Solicitud"
+        },
+        {
+          "type": "contact_info",
+          "email": "contacto@consultoria.com",
+          "phone": "+1 234 567 890",
+          "address": "Edificio Corporativo, Piso 10",
+          "hours": "Lunes a Viernes, 8:00 - 19:00"
+        }
+      ]
+    }
+  ]
+}
+

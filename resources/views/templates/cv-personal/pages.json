@@ -1,0 +1,179 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Juan Pérez - Desarrollador Full Stack",
+      "meta_description": "CV online de Juan Pérez. Desarrollador con 5 años de experiencia en tecnologías web.",
+      "content": "<h1>Juan Pérez</h1><p>Desarrollador Full Stack</p>",
+      "blocks": [
+        {
+          "type": "hero_cv",
+          "name": "Tu Nombre",
+          "title": "Tu Profesión",
+          "subtitle": "Breve descripción profesional",
+          "profile_image": true,
+          "cta_text": "Descargar CV",
+          "cta_link": "/cv.pdf",
+          "show_social": true
+        },
+        {
+          "type": "about_summary",
+          "title": "Sobre Mí",
+          "content": "Profesional con experiencia en...",
+          "highlights": ["X años de experiencia", "Y proyectos completados", "Z clientes satisfechos"]
+        },
+        {
+          "type": "experience_timeline",
+          "title": "Experiencia Laboral",
+          "items": [
+            {
+              "company": "Empresa ABC",
+              "position": "Senior Developer",
+              "period": "2021 - Presente",
+              "description": "Responsabilidades y logros...",
+              "technologies": ["Laravel", "React", "AWS"]
+            },
+            {
+              "company": "Startup XYZ",
+              "position": "Full Stack Developer",
+              "period": "2019 - 2021",
+              "description": "Desarrollo de aplicaciones web...",
+              "technologies": ["Vue.js", "Node.js", "MongoDB"]
+            }
+          ]
+        },
+        {
+          "type": "skills_section",
+          "title": "Habilidades",
+          "categories": [
+            {
+              "name": "Frontend",
+              "skills": [
+                {"name": "React", "level": 90},
+                {"name": "Vue.js", "level": 85},
+                {"name": "Tailwind CSS", "level": 95}
+              ]
+            },
+            {
+              "name": "Backend",
+              "skills": [
+                {"name": "Laravel", "level": 90},
+                {"name": "Node.js", "level": 80},
+                {"name": "Python", "level": 75}
+              ]
+            }
+          ]
+        },
+        {
+          "type": "education",
+          "title": "Educación",
+          "items": [
+            {
+              "institution": "Universidad XYZ",
+              "degree": "Ingeniería en Sistemas",
+              "period": "2015 - 2019",
+              "description": "Graduado con honores"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Portfolio",
+      "slug": "portfolio",
+      "is_home": false,
+      "meta_title": "Portfolio - Proyectos Destacados",
+      "meta_description": "Explora mis proyectos y trabajos realizados.",
+      "content": "<h1>Portfolio</h1><p>Proyectos destacados.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Portfolio",
+          "subtitle": "Proyectos Destacados"
+        },
+        {
+          "type": "portfolio_grid",
+          "layout": "grid",
+          "columns": 3,
+          "show_tags": true,
+          "show_description": true,
+          "filters": ["Todos", "Web", "Mobile", "Design"]
+        }
+      ]
+    },
+    {
+      "title": "Experiencia",
+      "slug": "experiencia",
+      "is_home": false,
+      "meta_title": "Experiencia Laboral Detallada",
+      "meta_description": "Historia completa de mi trayectoria profesional.",
+      "content": "<h1>Experiencia</h1><p>Mi trayectoria profesional.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Experiencia Laboral",
+          "subtitle": "Mi Trayectoria"
+        },
+        {
+          "type": "experience_detailed",
+          "show_timeline": true,
+          "show_achievements": true,
+          "show_technologies": true
+        }
+      ]
+    },
+    {
+      "title": "Habilidades",
+      "slug": "habilidades",
+      "is_home": false,
+      "meta_title": "Habilidades Técnicas",
+      "meta_description": "Resumen completo de mis habilidades y competencias técnicas.",
+      "content": "<h1>Habilidades</h1><p>Tecnologías y herramientas.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Habilidades Técnicas",
+          "subtitle": "Tecnologías y Competencias"
+        },
+        {
+          "type": "skills_detailed",
+          "show_progress_bars": true,
+          "show_certifications": true,
+          "categories": ["Frontend", "Backend", "Database", "DevOps", "Soft Skills"]
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Trabajemos Juntos",
+      "meta_description": "Estoy disponible para nuevos proyectos y oportunidades.",
+      "content": "<h1>Contacto</h1><p>Trabajemos juntos.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Trabajemos Juntos",
+          "subtitle": "Disponible para Nuevos Proyectos"
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "company", "message"],
+          "submit_text": "Enviar Mensaje"
+        },
+        {
+          "type": "contact_info",
+          "email": "tu@email.com",
+          "phone": "+1 234 567 890",
+          "location": "Ciudad, País",
+          "show_social": true,
+          "show_availability": true
+        }
+      ]
+    }
+  ]
+}
+
+

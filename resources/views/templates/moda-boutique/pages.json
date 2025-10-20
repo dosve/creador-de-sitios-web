@@ -1,0 +1,156 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Boutique de Moda - Estilo Único",
+      "meta_description": "Descubre las últimas tendencias en moda. Colecciones exclusivas y diseños únicos.",
+      "content": "<h1>Estilo Único</h1><p>Descubre las últimas tendencias.</p>",
+      "blocks": [
+        {
+          "type": "hero_fashion",
+          "image": true,
+          "title": "Nueva Colección",
+          "subtitle": "Primavera/Verano 2025",
+          "cta_text": "Descubrir",
+          "cta_link": "/colecciones",
+          "fullscreen": true
+        },
+        {
+          "type": "featured_products",
+          "title": "Recién Llegados",
+          "layout": "grid",
+          "columns": 4,
+          "limit": 8,
+          "show_quick_view": true
+        },
+        {
+          "type": "lookbook",
+          "title": "Lookbook",
+          "layout": "editorial",
+          "images": 6
+        },
+        {
+          "type": "instagram_feed",
+          "title": "Síguenos @boutique",
+          "username": "@boutique",
+          "limit": 8
+        }
+      ]
+    },
+    {
+      "title": "Colecciones",
+      "slug": "colecciones",
+      "is_home": false,
+      "meta_title": "Colecciones - Boutique",
+      "meta_description": "Explora nuestras colecciones: Primavera/Verano, Otoño/Invierno, Accesorios.",
+      "content": "<h1>Colecciones</h1><p>Nuestras líneas exclusivas.</p>",
+      "blocks": [
+        {
+          "type": "page_header_minimal",
+          "title": "Colecciones"
+        },
+        {
+          "type": "collections_grid",
+          "items": [
+            {"name": "Primavera/Verano", "season": "SS 2025", "image": true},
+            {"name": "Otoño/Invierno", "season": "AW 2024", "image": true},
+            {"name": "Accesorios", "type": "Complementos", "image": true},
+            {"name": "Joyería", "type": "Exclusiva", "image": true}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Tienda",
+      "slug": "tienda",
+      "is_home": false,
+      "meta_title": "Tienda - Todos los Productos",
+      "meta_description": "Explora todos nuestros productos: vestidos, blusas, pantalones, accesorios y más.",
+      "content": "<h1>Tienda</h1><p>Todos los productos.</p>",
+      "blocks": [
+        {
+          "type": "page_header_minimal",
+          "title": "Tienda"
+        },
+        {
+          "type": "shop_filters",
+          "categories": ["Todos", "Vestidos", "Blusas", "Pantalones", "Faldas", "Accesorios"],
+          "sizes": ["XS", "S", "M", "L", "XL"],
+          "colors": ["Negro", "Blanco", "Beige", "Azul", "Rosa"],
+          "price_ranges": ["$0-50", "$50-100", "$100-200", "$200+"]
+        },
+        {
+          "type": "products_grid",
+          "layout": "grid",
+          "columns": 4,
+          "show_filters": true,
+          "show_sort": true,
+          "items_per_page": 24
+        }
+      ]
+    },
+    {
+      "title": "Lookbook",
+      "slug": "lookbook",
+      "is_home": false,
+      "meta_title": "Lookbook - Inspiración de Estilo",
+      "meta_description": "Inspiración de estilo para cada ocasión.",
+      "content": "<h1>Lookbook</h1><p>Inspiración de estilo.</p>",
+      "blocks": [
+        {
+          "type": "lookbook_fullwidth",
+          "layout": "editorial",
+          "show_product_tags": true,
+          "show_shop_button": true
+        }
+      ]
+    },
+    {
+      "title": "Sobre Nosotros",
+      "slug": "sobre-nosotros",
+      "is_home": false,
+      "meta_title": "Sobre Nosotros - Nuestra Historia",
+      "meta_description": "Conoce nuestra historia, filosofía y compromiso con la moda sostenible.",
+      "content": "<h1>Sobre Nosotros</h1><p>Nuestra historia.</p>",
+      "blocks": [
+        {
+          "type": "about_fashion",
+          "show_image": true,
+          "show_values": true,
+          "values": ["Sostenibilidad", "Calidad", "Diseño Exclusivo", "Comercio Justo"]
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Boutique",
+      "meta_description": "Visita nuestra boutique o contáctanos online.",
+      "content": "<h1>Contacto</h1><p>Visítanos.</p>",
+      "blocks": [
+        {
+          "type": "page_header_minimal",
+          "title": "Contacto"
+        },
+        {
+          "type": "contact_info",
+          "address": "Calle Moda #123, Centro",
+          "phone": "+1 234 567 890",
+          "email": "hola@boutique.com",
+          "hours": "Lunes a Sábado: 10:00 AM - 8:00 PM<br>Domingo: 11:00 AM - 6:00 PM",
+          "show_map": true
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "subject", "message"],
+          "submit_text": "Enviar"
+        }
+      ]
+    }
+  ]
+}
+
+

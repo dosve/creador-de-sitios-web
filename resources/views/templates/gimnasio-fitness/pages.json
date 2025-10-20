@@ -1,0 +1,226 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Gimnasio & Fitness - Transforma tu Cuerpo",
+      "meta_description": "El mejor gimnasio con entrenadores certificados, clases grupales y equipamiento de última generación.",
+      "content": "<h1>Transforma tu Cuerpo</h1><p>Únete al mejor gimnasio de la ciudad.</p>",
+      "blocks": [
+        {
+          "type": "hero",
+          "title": "NO HAY PROGRESO SIN ESFUERZO",
+          "subtitle": "Alcanza tus metas fitness con nuestros entrenadores expertos",
+          "cta_text": "Prueba Gratis 7 Días",
+          "cta_link": "/registro",
+          "cta_secondary_text": "Ver Planes",
+          "cta_secondary_link": "/membresias",
+          "background_video": true
+        },
+        {
+          "type": "stats",
+          "items": [
+            {"number": "5000+", "label": "Miembros Activos"},
+            {"number": "50+", "label": "Entrenadores"},
+            {"number": "100+", "label": "Clases Semanales"},
+            {"number": "10", "label": "Años de Experiencia"}
+          ]
+        },
+        {
+          "type": "classes_featured",
+          "title": "CLASES GRUPALES",
+          "subtitle": "Encuentra tu Clase Ideal",
+          "items": [
+            {"name": "CrossFit", "duration": "60 min", "level": "Todos", "calories": "600"},
+            {"name": "Yoga", "duration": "45 min", "level": "Principiante", "calories": "200"},
+            {"name": "Spinning", "duration": "45 min", "level": "Intermedio", "calories": "500"},
+            {"name": "Zumba", "duration": "60 min", "level": "Todos", "calories": "450"}
+          ]
+        },
+        {
+          "type": "facilities",
+          "title": "NUESTRAS INSTALACIONES",
+          "items": [
+            {"icon": "dumbbell", "title": "Área de Pesas", "description": "Equipamiento de última generación"},
+            {"icon": "running", "title": "Cardio Zone", "description": "Máquinas cardiovasculares modernas"},
+            {"icon": "swimmer", "title": "Piscina", "description": "Piscina olímpica climatizada"},
+            {"icon": "spa", "title": "Spa & Sauna", "description": "Relájate después del entrenamiento"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Clases",
+      "slug": "clases",
+      "is_home": false,
+      "meta_title": "Clases Grupales - Gimnasio & Fitness",
+      "meta_description": "Descubre nuestra variedad de clases grupales: CrossFit, Yoga, Spinning, Pilates y más.",
+      "content": "<h1>Clases Grupales</h1><p>Entrena en grupo y supera tus límites.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "CLASES GRUPALES",
+          "subtitle": "Entrena con Energía",
+          "description": "Más de 100 clases semanales para todos los niveles"
+        },
+        {
+          "type": "class_schedule",
+          "show_filters": true,
+          "filters": ["day", "time", "instructor", "level"],
+          "view_modes": ["calendar", "list"]
+        },
+        {
+          "type": "classes_grid",
+          "categories": ["Fuerza", "Cardio", "Mente-Cuerpo", "Baile", "Funcional"],
+          "show_duration": true,
+          "show_calories": true,
+          "show_level": true,
+          "show_instructor": true
+        }
+      ]
+    },
+    {
+      "title": "Membresías",
+      "slug": "membresias",
+      "is_home": false,
+      "meta_title": "Planes de Membresía - Gimnasio & Fitness",
+      "meta_description": "Elige el plan perfecto para ti. Acceso ilimitado, clases grupales y entrenamientos personalizados.",
+      "content": "<h1>Membresías</h1><p>Elige tu plan.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "PLANES DE MEMBRESÍA",
+          "subtitle": "Invierte en tu Salud",
+          "description": "Sin permanencia. Cancela cuando quieras."
+        },
+        {
+          "type": "pricing_plans",
+          "plans": [
+            {
+              "name": "BÁSICO",
+              "price": "$29",
+              "period": "/mes",
+              "features": ["Acceso al gimnasio", "Área de pesas", "Cardio zone", "Vestuarios"],
+              "cta": "Unirme Ahora"
+            },
+            {
+              "name": "PRO",
+              "price": "$49",
+              "period": "/mes",
+              "features": ["Todo de Básico", "Clases grupales ilimitadas", "Piscina", "Spa & Sauna"],
+              "recommended": true,
+              "cta": "Prueba 7 Días Gratis"
+            },
+            {
+              "name": "ELITE",
+              "price": "$99",
+              "period": "/mes",
+              "features": ["Todo de Pro", "Entrenador personal", "Plan nutricional", "Acceso 24/7"],
+              "cta": "Unirme Ahora"
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "title": "¿Primera vez? ¡Prueba 7 días GRATIS!",
+          "description": "Experimenta todas nuestras instalaciones sin compromiso",
+          "cta_text": "Comenzar Prueba Gratuita",
+          "cta_link": "/registro"
+        }
+      ]
+    },
+    {
+      "title": "Entrenadores",
+      "slug": "entrenadores",
+      "is_home": false,
+      "meta_title": "Nuestros Entrenadores - Expertos Certificados",
+      "meta_description": "Conoce a nuestro equipo de entrenadores certificados con años de experiencia.",
+      "content": "<h1>Nuestros Entrenadores</h1><p>Expertos en fitness.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "NUESTROS ENTRENADORES",
+          "subtitle": "Expertos Certificados",
+          "description": "Profesionales dedicados a ayudarte a alcanzar tus metas"
+        },
+        {
+          "type": "trainers_grid",
+          "layout": "cards",
+          "show_bio": true,
+          "show_specialties": true,
+          "show_certifications": true,
+          "show_booking": true
+        }
+      ]
+    },
+    {
+      "title": "Instalaciones",
+      "slug": "instalaciones",
+      "is_home": false,
+      "meta_title": "Nuestras Instalaciones - Tour Virtual",
+      "meta_description": "Conoce nuestras instalaciones de última generación: área de pesas, cardio, piscina, spa y más.",
+      "content": "<h1>Instalaciones</h1><p>Equipamiento de primera.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "NUESTRAS INSTALACIONES",
+          "subtitle": "Tour Virtual",
+          "description": "Más de 2,000m² de instalaciones modernas"
+        },
+        {
+          "type": "gallery",
+          "layout": "masonry",
+          "categories": ["Área de Pesas", "Cardio", "Clases", "Piscina", "Spa", "Vestuarios"]
+        },
+        {
+          "type": "facilities_detailed",
+          "items": [
+            {
+              "name": "Área de Pesas",
+              "description": "500m² con equipamiento profesional de última generación",
+              "features": ["Pesas libres", "Máquinas Hammer Strength", "Área de funcional", "Zona CrossFit"]
+            },
+            {
+              "name": "Cardio Zone",
+              "description": "Más de 50 máquinas cardiovasculares con pantallas HD",
+              "features": ["Cintas de correr", "Elípticas", "Bicicletas", "Remos"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Visítanos",
+      "meta_description": "Visítanos y conoce nuestras instalaciones. Estamos abiertos de 6:00 AM a 11:00 PM.",
+      "content": "<h1>Contacto</h1><p>Ven a conocernos.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "VISÍTANOS",
+          "subtitle": "Estamos Aquí para Ti",
+          "description": "Ven y conoce nuestras instalaciones"
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "phone", "interest", "message"],
+          "submit_text": "Solicitar Información"
+        },
+        {
+          "type": "contact_info",
+          "address": "Calle Principal #123, Ciudad",
+          "phone": "+1 234 567 890",
+          "whatsapp": "+1 234 567 890",
+          "email": "info@gimnasio.com",
+          "hours": "Lunes a Viernes: 6:00 AM - 11:00 PM<br>Sábados: 7:00 AM - 9:00 PM<br>Domingos: 8:00 AM - 8:00 PM",
+          "show_map": true
+        }
+      ]
+    }
+  ]
+}
+
+

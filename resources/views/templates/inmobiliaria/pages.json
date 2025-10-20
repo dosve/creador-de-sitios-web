@@ -1,0 +1,229 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Inmobiliaria - Encuentra tu Hogar Ideal",
+      "meta_description": "Propiedades en venta y alquiler. Casas, apartamentos, locales comerciales y más.",
+      "content": "<h1>Encuentra tu Hogar Ideal</h1><p>Miles de propiedades disponibles.</p>",
+      "blocks": [
+        {
+          "type": "hero",
+          "title": "Encuentra el Hogar de tus Sueños",
+          "subtitle": "Miles de propiedades en venta y alquiler en las mejores zonas",
+          "show_search_bar": true,
+          "search_fields": ["location", "type", "price_range", "bedrooms"]
+        },
+        {
+          "type": "property_search",
+          "quick_filters": ["Comprar", "Alquilar", "Casas", "Apartamentos"],
+          "show_map": true
+        },
+        {
+          "type": "featured_properties",
+          "title": "Propiedades Destacadas",
+          "limit": 6,
+          "show_price": true,
+          "show_features": true,
+          "show_location": true
+        },
+        {
+          "type": "stats",
+          "items": [
+            {"number": "5,000+", "label": "Propiedades"},
+            {"number": "2,000+", "label": "Clientes Satisfechos"},
+            {"number": "50+", "label": "Agentes"},
+            {"number": "15", "label": "Años de Experiencia"}
+          ]
+        },
+        {
+          "type": "services_realestate",
+          "title": "Nuestros Servicios",
+          "items": [
+            {"icon": "home", "title": "Venta de Propiedades", "description": "Te ayudamos a vender tu propiedad"},
+            {"icon": "key", "title": "Alquiler", "description": "Gestión completa de alquileres"},
+            {"icon": "document", "title": "Asesoría Legal", "description": "Trámites y documentación"},
+            {"icon": "calculator", "title": "Crédito Hipotecario", "description": "Te ayudamos con el financiamiento"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Propiedades en Venta",
+      "slug": "venta",
+      "is_home": false,
+      "meta_title": "Propiedades en Venta",
+      "meta_description": "Explora todas las propiedades disponibles para la venta. Casas, apartamentos, terrenos y más.",
+      "content": "<h1>Propiedades en Venta</h1><p>Encuentra tu próxima inversión.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Propiedades en Venta",
+          "subtitle": "Encuentra tu Próxima Inversión"
+        },
+        {
+          "type": "property_filters",
+          "filters": {
+            "type": ["Casa", "Apartamento", "Terreno", "Local Comercial", "Oficina"],
+            "price": ["0-100k", "100k-200k", "200k-300k", "300k+"],
+            "bedrooms": ["1", "2", "3", "4+"],
+            "bathrooms": ["1", "2", "3+"],
+            "area": ["0-50m²", "50-100m²", "100-200m²", "200m²+"],
+            "features": ["Piscina", "Garaje", "Jardín", "Terraza"]
+          }
+        },
+        {
+          "type": "properties_grid",
+          "layout": "grid",
+          "columns": 3,
+          "show_map": true,
+          "show_compare": true,
+          "show_favorites": true,
+          "items_per_page": 12
+        }
+      ]
+    },
+    {
+      "title": "Propiedades en Alquiler",
+      "slug": "alquiler",
+      "is_home": false,
+      "meta_title": "Propiedades en Alquiler",
+      "meta_description": "Alquila tu próximo hogar u oficina. Variedad de propiedades disponibles.",
+      "content": "<h1>Propiedades en Alquiler</h1><p>Tu próximo hogar te espera.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Propiedades en Alquiler",
+          "subtitle": "Encuentra tu Próximo Hogar"
+        },
+        {
+          "type": "property_filters",
+          "filters": {
+            "type": ["Casa", "Apartamento", "Habitación", "Local", "Oficina"],
+            "rent": ["0-500", "500-1000", "1000-1500", "1500+"],
+            "bedrooms": ["1", "2", "3", "4+"],
+            "furnished": ["Amueblado", "Sin Amueblar"],
+            "pets": ["Se admiten mascotas"]
+          }
+        },
+        {
+          "type": "properties_grid",
+          "layout": "grid",
+          "columns": 3,
+          "show_map": true,
+          "items_per_page": 12
+        }
+      ]
+    },
+    {
+      "title": "Vende tu Propiedad",
+      "slug": "vender",
+      "is_home": false,
+      "meta_title": "Vende tu Propiedad con Nosotros",
+      "meta_description": "Te ayudamos a vender tu propiedad rápido y al mejor precio.",
+      "content": "<h1>Vende tu Propiedad</h1><p>Te ayudamos a obtener el mejor precio.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Vende tu Propiedad",
+          "subtitle": "Te Ayudamos a Obtener el Mejor Precio"
+        },
+        {
+          "type": "sell_benefits",
+          "items": [
+            {"icon": "chart", "title": "Valoración Gratuita", "description": "Conoce el valor real de tu propiedad"},
+            {"icon": "camera", "title": "Fotografía Profesional", "description": "Mostramos tu propiedad en su mejor versión"},
+            {"icon": "megaphone", "title": "Marketing Digital", "description": "Máxima visibilidad en todos los canales"},
+            {"icon": "contract", "title": "Asesoría Legal", "description": "Te acompañamos en todo el proceso"}
+          ]
+        },
+        {
+          "type": "property_valuation_form",
+          "title": "Solicita tu Valoración Gratuita",
+          "fields": ["name", "email", "phone", "property_type", "address", "size", "description"],
+          "submit_text": "Solicitar Valoración"
+        }
+      ]
+    },
+    {
+      "title": "Nuestros Agentes",
+      "slug": "agentes",
+      "is_home": false,
+      "meta_title": "Nuestros Agentes Inmobiliarios",
+      "meta_description": "Conoce a nuestro equipo de agentes inmobiliarios expertos.",
+      "content": "<h1>Nuestros Agentes</h1><p>Expertos en bienes raíces.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestros Agentes",
+          "subtitle": "Expertos en Bienes Raíces"
+        },
+        {
+          "type": "agents_grid",
+          "layout": "cards",
+          "show_bio": true,
+          "show_specialties": true,
+          "show_contact": true,
+          "show_properties_count": true
+        }
+      ]
+    },
+    {
+      "title": "Sobre Nosotros",
+      "slug": "sobre-nosotros",
+      "is_home": false,
+      "meta_title": "Sobre Nosotros - Inmobiliaria",
+      "meta_description": "Conoce nuestra historia, misión y compromiso con nuestros clientes.",
+      "content": "<h1>Sobre Nosotros</h1><p>Nuestra historia.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Sobre Nosotros",
+          "subtitle": "15 Años Conectando Personas con Hogares"
+        },
+        {
+          "type": "about_content",
+          "show_timeline": true,
+          "show_values": true,
+          "values": ["Transparencia", "Profesionalismo", "Compromiso", "Confianza"]
+        },
+        {
+          "type": "team_photo",
+          "show_full_width": true
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Inmobiliaria",
+      "meta_description": "Contáctanos para comprar, vender o alquilar propiedades.",
+      "content": "<h1>Contacto</h1><p>Estamos para ayudarte.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Contáctanos",
+          "subtitle": "Estamos Aquí para Ayudarte"
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "phone", "interest", "property_type", "budget", "message"],
+          "submit_text": "Enviar Consulta"
+        },
+        {
+          "type": "contact_info",
+          "address": "Av. Principal #123, Centro",
+          "phone": "+1 234 567 890",
+          "whatsapp": "+1 234 567 890",
+          "email": "info@inmobiliaria.com",
+          "hours": "Lunes a Viernes: 9:00 AM - 7:00 PM<br>Sábados: 9:00 AM - 2:00 PM",
+          "show_map": true
+        }
+      ]
+    }
+  ]
+}
+
+

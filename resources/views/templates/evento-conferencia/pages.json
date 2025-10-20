@@ -1,0 +1,282 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Conferencia Tech 2025 - 15-17 Marzo",
+      "meta_description": "La mayor conferencia de tecnología del año. 3 días de aprendizaje, networking y speakers de clase mundial.",
+      "content": "<h1>Conferencia Tech 2025</h1><p>3 días que cambiarán tu perspectiva.</p>",
+      "blocks": [
+        {
+          "type": "hero_event",
+          "event_name": "Nombre del Evento",
+          "tagline": "Tu Tagline Impactante",
+          "date": "15-17 Marzo 2025",
+          "location": "Centro de Convenciones, Ciudad",
+          "cta_text": "Comprar Entradas",
+          "cta_link": "/entradas",
+          "show_countdown": true
+        },
+        {
+          "type": "countdown",
+          "event_date": "2025-03-15",
+          "title": "Faltan solo"
+        },
+        {
+          "type": "event_stats",
+          "items": [
+            {"number": "3", "label": "Días", "icon": "calendar"},
+            {"number": "50+", "label": "Speakers", "icon": "microphone"},
+            {"number": "100+", "label": "Talleres", "icon": "workshop"},
+            {"number": "5,000", "label": "Asistentes", "icon": "users"}
+          ]
+        },
+        {
+          "type": "featured_speakers",
+          "title": "Speakers Destacados",
+          "limit": 6,
+          "show_bio": true,
+          "show_social": true
+        },
+        {
+          "type": "sponsors_logos",
+          "title": "Nuestros Patrocinadores",
+          "tiers": ["Platino", "Oro", "Plata"]
+        }
+      ]
+    },
+    {
+      "title": "Agenda",
+      "slug": "agenda",
+      "is_home": false,
+      "meta_title": "Agenda del Evento - Conferencia Tech",
+      "meta_description": "Agenda completa del evento: charlas, talleres, networking y más.",
+      "content": "<h1>Agenda</h1><p>Programa completo.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Agenda del Evento",
+          "subtitle": "Programa Completo"
+        },
+        {
+          "type": "event_schedule",
+          "days": [
+            {
+              "date": "Día 1 - 15 Marzo",
+              "tracks": ["Track Principal", "Track Desarrollo", "Track Design"],
+              "show_time": true,
+              "show_speaker": true,
+              "show_location": true,
+              "allow_add_to_calendar": true
+            }
+          ],
+          "show_filters": true,
+          "show_search": true
+        }
+      ]
+    },
+    {
+      "title": "Speakers",
+      "slug": "speakers",
+      "is_home": false,
+      "meta_title": "Speakers - Conferencia Tech",
+      "meta_description": "Conoce a todos los speakers que participarán en el evento.",
+      "content": "<h1>Speakers</h1><p>Expertos de clase mundial.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestros Speakers",
+          "subtitle": "Expertos de Clase Mundial"
+        },
+        {
+          "type": "speakers_grid",
+          "layout": "grid",
+          "columns": 4,
+          "show_bio": true,
+          "show_company": true,
+          "show_topic": true,
+          "show_social": true,
+          "filters": ["Todos", "Keynote", "Workshop", "Panel"]
+        }
+      ]
+    },
+    {
+      "title": "Entradas",
+      "slug": "entradas",
+      "is_home": false,
+      "meta_title": "Comprar Entradas - Conferencia Tech",
+      "meta_description": "Compra tus entradas para el evento. Early bird, regular y VIP disponibles.",
+      "content": "<h1>Entradas</h1><p>Asegura tu lugar.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Comprar Entradas",
+          "subtitle": "Asegura tu Lugar"
+        },
+        {
+          "type": "ticket_types",
+          "early_bird_until": "2025-02-01",
+          "types": [
+            {
+              "name": "Early Bird",
+              "price": "$199",
+              "regular_price": "$299",
+              "available_until": "01 Feb 2025",
+              "features": ["Acceso 3 días", "Material digital", "Certificado"],
+              "stock": "Últimas entradas"
+            },
+            {
+              "name": "Regular",
+              "price": "$299",
+              "features": ["Acceso 3 días", "Material digital", "Certificado", "Almuerzo incluido"],
+              "available": true
+            },
+            {
+              "name": "VIP",
+              "price": "$599",
+              "features": ["Todo de Regular", "Acceso backstage", "Meet & Greet", "Cena de gala", "Asientos premium"],
+              "recommended": true
+            },
+            {
+              "name": "Estudiante",
+              "price": "$149",
+              "features": ["Acceso 3 días", "Material digital", "Certificado"],
+              "requirement": "ID estudiantil requerido"
+            }
+          ]
+        },
+        {
+          "type": "purchase_form",
+          "show_quantity": true,
+          "show_promo_code": true
+        }
+      ]
+    },
+    {
+      "title": "Talleres",
+      "slug": "talleres",
+      "is_home": false,
+      "meta_title": "Talleres - Conferencia Tech",
+      "meta_description": "Talleres prácticos con cupo limitado. Regístrate ahora.",
+      "content": "<h1>Talleres</h1><p>Aprendizaje práctico.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Talleres Prácticos",
+          "subtitle": "Cupo Limitado - Regístrate Ahora"
+        },
+        {
+          "type": "workshops_list",
+          "show_instructor": true,
+          "show_level": true,
+          "show_duration": true,
+          "show_capacity": true,
+          "show_register_button": true,
+          "categories": ["Desarrollo", "Design", "Marketing", "Business"]
+        }
+      ]
+    },
+    {
+      "title": "Venue",
+      "slug": "venue",
+      "is_home": false,
+      "meta_title": "Sede del Evento - Cómo Llegar",
+      "meta_description": "Información sobre la sede del evento, cómo llegar y alojamiento cercano.",
+      "content": "<h1>Sede</h1><p>Cómo llegar.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Sede del Evento",
+          "subtitle": "Centro de Convenciones"
+        },
+        {
+          "type": "venue_info",
+          "name": "Centro de Convenciones",
+          "address": "Av. Principal #456, Ciudad",
+          "show_map": true,
+          "show_directions": true,
+          "parking_info": true
+        },
+        {
+          "type": "nearby_hotels",
+          "title": "Alojamiento Recomendado",
+          "show_discount_code": true,
+          "items": [
+            {"name": "Hotel Premium", "distance": "100m", "discount": "15%"},
+            {"name": "Hotel Centro", "distance": "500m", "discount": "10%"}
+          ]
+        },
+        {
+          "type": "transportation",
+          "title": "Cómo Llegar",
+          "options": ["Metro", "Bus", "Taxi", "Uber", "Parking"]
+        }
+      ]
+    },
+    {
+      "title": "Patrocinadores",
+      "slug": "patrocinadores",
+      "is_home": false,
+      "meta_title": "Patrocinadores - Conferencia Tech",
+      "meta_description": "Conoce a las empresas que hacen posible este evento.",
+      "content": "<h1>Patrocinadores</h1><p>Gracias por el apoyo.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestros Patrocinadores",
+          "subtitle": "Gracias por Hacer Esto Posible"
+        },
+        {
+          "type": "sponsors_tiers",
+          "tiers": [
+            {"name": "Platino", "logo_size": "large", "show_description": true},
+            {"name": "Oro", "logo_size": "medium", "show_description": true},
+            {"name": "Plata", "logo_size": "small", "show_description": false}
+          ]
+        },
+        {
+          "type": "become_sponsor",
+          "title": "¿Quieres ser Patrocinador?",
+          "description": "Descarga nuestro kit de patrocinio",
+          "cta_text": "Descargar Kit",
+          "cta_link": "/sponsor-kit.pdf"
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Conferencia Tech",
+      "meta_description": "¿Tienes preguntas? Contáctanos.",
+      "content": "<h1>Contacto</h1><p>Estamos aquí para ayudarte.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Contacto",
+          "subtitle": "¿Tienes Preguntas?"
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "category", "message"],
+          "categories": ["General", "Registro", "Patrocinio", "Prensa", "Speakers"],
+          "submit_text": "Enviar Mensaje"
+        },
+        {
+          "type": "contact_info",
+          "email": "info@conferencia.com",
+          "phone": "+1 234 567 890",
+          "show_social": true
+        },
+        {
+          "type": "faq_section",
+          "title": "Preguntas Frecuentes",
+          "categories": ["Entradas", "Agenda", "Venue", "Otros"]
+        }
+      ]
+    }
+  ]
+}
+
+

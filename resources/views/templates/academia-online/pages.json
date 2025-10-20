@@ -1,0 +1,189 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Academia Online - Aprende a tu Ritmo",
+      "meta_description": "Plataforma de cursos online con certificados. Aprende nuevas habilidades desde cualquier lugar.",
+      "content": "<h1>Aprende a tu Ritmo</h1><p>Miles de cursos disponibles para impulsar tu carrera profesional.</p>",
+      "blocks": [
+        {
+          "type": "hero",
+          "title": "Impulsa tu Carrera con Cursos Online",
+          "subtitle": "Aprende de expertos desde cualquier lugar. Miles de cursos disponibles.",
+          "cta_text": "Explorar Cursos",
+          "cta_link": "/cursos",
+          "cta_secondary_text": "Comenzar Gratis",
+          "cta_secondary_link": "/registro"
+        },
+        {
+          "type": "features",
+          "title": "¿Por qué Elegirnos?",
+          "items": [
+            {"icon": "video", "title": "Clases en Video HD", "description": "Contenido de alta calidad"},
+            {"icon": "certificate", "title": "Certificados", "description": "Valida tus conocimientos"},
+            {"icon": "clock", "title": "A tu Ritmo", "description": "Aprende cuando quieras"},
+            {"icon": "users", "title": "Comunidad", "description": "Red de estudiantes"}
+          ]
+        },
+        {
+          "type": "courses_featured",
+          "title": "Cursos Populares",
+          "subtitle": "Los más elegidos",
+          "limit": 6
+        },
+        {
+          "type": "stats",
+          "items": [
+            {"number": "10,000+", "label": "Estudiantes"},
+            {"number": "500+", "label": "Cursos"},
+            {"number": "50+", "label": "Instructores"},
+            {"number": "95%", "label": "Satisfacción"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Cursos",
+      "slug": "cursos",
+      "is_home": false,
+      "meta_title": "Catálogo de Cursos - Academia Online",
+      "meta_description": "Explora nuestra amplia selección de cursos en diferentes categorías: programación, diseño, marketing y más.",
+      "content": "<h1>Nuestros Cursos</h1><p>Encuentra el curso perfecto para ti.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Catálogo de Cursos",
+          "subtitle": "Explora y Aprende",
+          "description": "Más de 500 cursos en diversas categorías"
+        },
+        {
+          "type": "course_filters",
+          "categories": ["Todos", "Programación", "Diseño", "Marketing", "Negocios", "Idiomas"],
+          "levels": ["Principiante", "Intermedio", "Avanzado"],
+          "duration": ["0-2 horas", "2-5 horas", "5-10 horas", "10+ horas"]
+        },
+        {
+          "type": "courses_grid",
+          "layout": "grid",
+          "items_per_page": 12,
+          "show_filters": true,
+          "show_price": true,
+          "show_rating": true,
+          "show_students": true
+        }
+      ]
+    },
+    {
+      "title": "Instructores",
+      "slug": "instructores",
+      "is_home": false,
+      "meta_title": "Nuestros Instructores - Expertos en su Campo",
+      "meta_description": "Conoce a nuestro equipo de instructores expertos con años de experiencia en la industria.",
+      "content": "<h1>Nuestros Instructores</h1><p>Aprende de los mejores profesionales.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestros Instructores",
+          "subtitle": "Expertos Apasionados",
+          "description": "Profesionales con años de experiencia compartiendo sus conocimientos"
+        },
+        {
+          "type": "instructors_grid",
+          "layout": "cards",
+          "show_bio": true,
+          "show_courses": true,
+          "show_rating": true,
+          "show_students": true
+        }
+      ]
+    },
+    {
+      "title": "Mi Aprendizaje",
+      "slug": "mi-aprendizaje",
+      "is_home": false,
+      "meta_title": "Mi Aprendizaje - Dashboard del Estudiante",
+      "meta_description": "Accede a tus cursos, revisa tu progreso y continúa aprendiendo.",
+      "content": "<h1>Mi Aprendizaje</h1><p>Tu espacio personal de aprendizaje.</p>",
+      "blocks": [
+        {
+          "type": "student_dashboard",
+          "show_progress": true,
+          "show_certificates": true,
+          "show_enrolled_courses": true,
+          "show_recommended": true
+        }
+      ]
+    },
+    {
+      "title": "Planes",
+      "slug": "planes",
+      "is_home": false,
+      "meta_title": "Planes y Precios - Academia Online",
+      "meta_description": "Elige el plan perfecto para tus necesidades. Acceso ilimitado a todos los cursos.",
+      "content": "<h1>Planes</h1><p>Acceso ilimitado a todos los cursos.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Planes y Precios",
+          "subtitle": "Invierte en tu Futuro",
+          "description": "Elige el plan que mejor se adapte a tus necesidades"
+        },
+        {
+          "type": "pricing_plans",
+          "plans": [
+            {
+              "name": "Gratis",
+              "price": "$0",
+              "features": ["10 cursos gratuitos", "Acceso limitado", "Certificados básicos"]
+            },
+            {
+              "name": "Mensual",
+              "price": "$29",
+              "features": ["Acceso ilimitado", "Todos los cursos", "Certificados premium", "Soporte prioritario"],
+              "recommended": true
+            },
+            {
+              "name": "Anual",
+              "price": "$199",
+              "features": ["Todo de Mensual", "2 meses gratis", "Cursos exclusivos", "Mentoría 1-on-1"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Academia Online",
+      "meta_description": "¿Tienes preguntas? Estamos aquí para ayudarte.",
+      "content": "<h1>Contacto</h1><p>Estamos aquí para ayudarte.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Contacto",
+          "subtitle": "¿Tienes Preguntas?",
+          "description": "Nuestro equipo está listo para ayudarte"
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "subject", "message"],
+          "submit_text": "Enviar Mensaje"
+        },
+        {
+          "type": "faq_section",
+          "title": "Preguntas Frecuentes",
+          "items": [
+            {"question": "¿Cómo me inscribo?", "answer": "..."},
+            {"question": "¿Hay certificados?", "answer": "..."},
+            {"question": "¿Cuánto duran los cursos?", "answer": "..."}
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+

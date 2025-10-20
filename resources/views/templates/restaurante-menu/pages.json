@@ -1,0 +1,210 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Restaurante - Sabores Auténticos",
+      "meta_description": "Disfruta de una experiencia gastronómica única. Reserva tu mesa y descubre nuestro menú especial.",
+      "content": "<h1>Sabores Auténticos</h1><p>Una experiencia gastronómica única.</p>",
+      "blocks": [
+        {
+          "type": "hero",
+          "title": "Sabores que Enamoran",
+          "subtitle": "Descubre una experiencia gastronómica única con ingredientes frescos y recetas tradicionales",
+          "cta_text": "Reservar Mesa",
+          "cta_link": "/reservas",
+          "cta_secondary_text": "Ver Menú",
+          "cta_secondary_link": "/menu",
+          "background_image": true
+        },
+        {
+          "type": "specialties",
+          "title": "Nuestras Especialidades",
+          "items": [
+            {"name": "Plato del Día", "description": "Chef's special", "price": "$25"},
+            {"name": "Parrillada Premium", "description": "Para 2 personas", "price": "$45"},
+            {"name": "Menú Degustación", "description": "7 tiempos", "price": "$80"}
+          ]
+        },
+        {
+          "type": "features",
+          "items": [
+            {"icon": "chef", "title": "Chef Experto", "description": "20 años de experiencia"},
+            {"icon": "ingredients", "title": "Ingredientes Frescos", "description": "Del huerto a tu mesa"},
+            {"icon": "ambiance", "title": "Ambiente Acogedor", "description": "Perfecto para toda ocasión"},
+            {"icon": "wine", "title": "Carta de Vinos", "description": "Selección premium"}
+          ]
+        },
+        {
+          "type": "gallery_preview",
+          "title": "Galería",
+          "subtitle": "Nuestros Platos",
+          "limit": 6
+        }
+      ]
+    },
+    {
+      "title": "Menú",
+      "slug": "menu",
+      "is_home": false,
+      "meta_title": "Nuestro Menú - Restaurante",
+      "meta_description": "Explora nuestro menú completo: entradas, platos principales, postres y bebidas.",
+      "content": "<h1>Nuestro Menú</h1><p>Descubre nuestras delicias.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestro Menú",
+          "subtitle": "Carta Completa",
+          "description": "Platos elaborados con ingredientes de primera calidad"
+        },
+        {
+          "type": "menu_categories",
+          "categories": [
+            {
+              "name": "Entradas",
+              "items": [
+                {"name": "Ensalada César", "description": "Lechuga, pollo, parmesano, crutones", "price": "$12"},
+                {"name": "Carpaccio de Res", "description": "Láminas de res, rúcula, parmesano", "price": "$16"},
+                {"name": "Tabla de Quesos", "description": "Selección artesanal", "price": "$18"}
+              ]
+            },
+            {
+              "name": "Platos Principales",
+              "items": [
+                {"name": "Filete Mignon", "description": "Con puré de papas trufa", "price": "$35"},
+                {"name": "Salmón a la Parrilla", "description": "Con vegetales asados", "price": "$28"},
+                {"name": "Risotto de Hongos", "description": "Con queso parmesano", "price": "$22"}
+              ]
+            },
+            {
+              "name": "Postres",
+              "items": [
+                {"name": "Tiramisú", "description": "Receta tradicional italiana", "price": "$8"},
+                {"name": "Cheesecake", "description": "Con frutos rojos", "price": "$7"},
+                {"name": "Mousse de Chocolate", "description": "Chocolate belga 70%", "price": "$9"}
+              ]
+            }
+          ]
+        },
+        {
+          "type": "menu_download",
+          "title": "Descarga nuestro menú completo",
+          "pdf_link": "/menu.pdf"
+        }
+      ]
+    },
+    {
+      "title": "Reservas",
+      "slug": "reservas",
+      "is_home": false,
+      "meta_title": "Reservar Mesa - Restaurante",
+      "meta_description": "Reserva tu mesa online. Selecciona fecha, hora y número de personas.",
+      "content": "<h1>Reservar Mesa</h1><p>Asegura tu lugar.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Reservar Mesa",
+          "subtitle": "Garantiza tu Experiencia",
+          "description": "Reserva con anticipación y disfruta de la mejor atención"
+        },
+        {
+          "type": "reservation_form",
+          "fields": ["name", "email", "phone", "date", "time", "guests", "special_requests"],
+          "time_slots": ["12:00", "12:30", "13:00", "13:30", "14:00", "19:00", "19:30", "20:00", "20:30", "21:00"],
+          "max_guests": 12,
+          "submit_text": "Confirmar Reserva"
+        },
+        {
+          "type": "info_box",
+          "content": "Para grupos mayores a 12 personas, contáctanos directamente al +1 234 567 890"
+        }
+      ]
+    },
+    {
+      "title": "Galería",
+      "slug": "galeria",
+      "is_home": false,
+      "meta_title": "Galería - Nuestros Platos y Ambiente",
+      "meta_description": "Descubre nuestros platos, instalaciones y momentos especiales.",
+      "content": "<h1>Galería</h1><p>Una probada visual.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Galería",
+          "subtitle": "Imágenes que Inspiran",
+          "description": "Descubre nuestros platos y ambiente"
+        },
+        {
+          "type": "gallery_grid",
+          "layout": "masonry",
+          "categories": ["Todos", "Platos", "Postres", "Bebidas", "Ambiente", "Eventos"],
+          "lightbox": true
+        }
+      ]
+    },
+    {
+      "title": "Eventos",
+      "slug": "eventos",
+      "is_home": false,
+      "meta_title": "Eventos Privados - Restaurante",
+      "meta_description": "Organiza tu evento especial en nuestro restaurante. Cumpleaños, bodas, eventos corporativos.",
+      "content": "<h1>Eventos Privados</h1><p>Momentos especiales.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Eventos Privados",
+          "subtitle": "Tu Celebración Perfecta",
+          "description": "Capacidad hasta 100 personas"
+        },
+        {
+          "type": "event_types",
+          "items": [
+            {"name": "Bodas", "capacity": "100 personas", "description": "Menú personalizado y decoración incluida"},
+            {"name": "Eventos Corporativos", "capacity": "50 personas", "description": "Proyector y audio disponible"},
+            {"name": "Cumpleaños", "capacity": "30 personas", "description": "Decoración temática"},
+            {"name": "Reuniones Familiares", "capacity": "40 personas", "description": "Menú familiar especial"}
+          ]
+        },
+        {
+          "type": "contact_form",
+          "title": "Solicita tu Cotización",
+          "fields": ["name", "email", "phone", "event_type", "date", "guests", "message"],
+          "submit_text": "Solicitar Información"
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Restaurante",
+      "meta_description": "Visítanos, llámanos o envíanos un mensaje. Estamos aquí para atenderte.",
+      "content": "<h1>Contacto</h1><p>Estamos aquí para ti.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Visítanos",
+          "subtitle": "Estamos Aquí",
+          "description": "Te esperamos con los brazos abiertos"
+        },
+        {
+          "type": "contact_info",
+          "address": "Av. Principal #456, Centro",
+          "phone": "+1 234 567 890",
+          "whatsapp": "+1 234 567 890",
+          "email": "reservas@restaurante.com",
+          "hours": "Martes a Domingo:<br>12:00 PM - 3:00 PM<br>7:00 PM - 11:00 PM<br><br>Lunes: Cerrado",
+          "show_map": true
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "subject", "message"],
+          "submit_text": "Enviar Mensaje"
+        }
+      ]
+    }
+  ]
+}
+
+

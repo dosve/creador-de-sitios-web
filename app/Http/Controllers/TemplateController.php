@@ -93,9 +93,18 @@ class TemplateController extends Controller
         $website->update([
             'template_id' => $slug,
         ]);
+        
+        // Importar páginas prediseñadas de la plantilla
+        $templatePageService = new \App\Services\TemplatePageService();
+        $result = $templatePageService->importTemplatePages($website, $slug);
+        
+        if ($result['success'] && $result['imported'] > 0) {
+            return redirect()->route('creator.templates.index')
+                ->with('success', "Plantilla aplicada exitosamente. {$result['imported']} páginas prediseñadas fueron importadas.");
+        }
 
         return redirect()->route('creator.templates.index')
-            ->with('success', 'Plantilla aplicada exitosamente');
+            ->with('success', 'Plantilla aplicada exitosamente.');
     }
 
     public function preview(string $slug)

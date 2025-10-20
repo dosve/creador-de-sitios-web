@@ -1,0 +1,102 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Blog Personal - Pensamientos y Reflexiones",
+      "meta_description": "Blog personal de escritura, reflexiones y experiencias.",
+      "content": "<h1>Bienvenido a mi Blog</h1><p>Un espacio para compartir ideas y reflexiones.</p>",
+      "blocks": [
+        {
+          "type": "hero_minimal",
+          "title": "Pensamientos y Reflexiones",
+          "subtitle": "Explorando ideas, compartiendo experiencias",
+          "show_social": true
+        },
+        {
+          "type": "blog_posts_feed",
+          "layout": "list",
+          "show_featured_image": true,
+          "show_excerpt": true,
+          "show_date": true,
+          "show_reading_time": true,
+          "posts_per_page": 10
+        },
+        {
+          "type": "newsletter_signup",
+          "title": "Suscríbete",
+          "description": "Recibe nuevas publicaciones directamente en tu email",
+          "placeholder": "Tu email",
+          "button_text": "Suscribirse"
+        }
+      ]
+    },
+    {
+      "title": "Sobre Mí",
+      "slug": "sobre-mi",
+      "is_home": false,
+      "meta_title": "Sobre Mí - Blog Personal",
+      "meta_description": "Conoce un poco más sobre mí, mis intereses y por qué escribo.",
+      "content": "<h1>Sobre Mí</h1><p>Hola, soy [Tu Nombre].</p>",
+      "blocks": [
+        {
+          "type": "page_header_minimal",
+          "title": "Sobre Mí",
+          "show_profile_image": true
+        },
+        {
+          "type": "about_content",
+          "layout": "single-column",
+          "max_width": "740px"
+        },
+        {
+          "type": "social_links",
+          "platforms": ["twitter", "linkedin", "instagram", "github"]
+        }
+      ]
+    },
+    {
+      "title": "Archivo",
+      "slug": "archivo",
+      "is_home": false,
+      "meta_title": "Archivo de Publicaciones",
+      "meta_description": "Todas las publicaciones del blog organizadas cronológicamente.",
+      "content": "<h1>Archivo</h1><p>Todas las publicaciones.</p>",
+      "blocks": [
+        {
+          "type": "page_header_minimal",
+          "title": "Archivo de Publicaciones"
+        },
+        {
+          "type": "blog_archive",
+          "group_by": "month",
+          "show_count": true,
+          "layout": "timeline"
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Blog Personal",
+      "meta_description": "Ponte en contacto conmigo.",
+      "content": "<h1>Contacto</h1><p>Me encantaría escucharte.</p>",
+      "blocks": [
+        {
+          "type": "page_header_minimal",
+          "title": "Hablemos"
+        },
+        {
+          "type": "contact_simple",
+          "email": "hola@miblog.com",
+          "show_social": true,
+          "show_form": true
+        }
+      ]
+    }
+  ]
+}
+
+

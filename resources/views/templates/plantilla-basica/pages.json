@@ -1,0 +1,142 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Bienvenido - Mi Sitio Web",
+      "meta_description": "Sitio web profesional creado con nuestro creador de sitios.",
+      "content": "<h1>Bienvenido</h1><p>Este es mi sitio web.</p>",
+      "blocks": [
+        {
+          "type": "hero",
+          "title": "Tu Título Principal",
+          "subtitle": "Tu descripción o eslogan atractivo",
+          "cta_text": "Comenzar",
+          "cta_link": "#"
+        },
+        {
+          "type": "features",
+          "title": "Características",
+          "items": [
+            {"icon": "star", "title": "Característica 1", "description": "Descripción de la característica"},
+            {"icon": "check", "title": "Característica 2", "description": "Descripción de la característica"},
+            {"icon": "heart", "title": "Característica 3", "description": "Descripción de la característica"}
+          ]
+        },
+        {
+          "type": "cta",
+          "title": "¿Listo para Comenzar?",
+          "description": "Ponte en contacto con nosotros hoy",
+          "cta_text": "Contactar",
+          "cta_link": "/contacto"
+        }
+      ]
+    },
+    {
+      "title": "Sobre Nosotros",
+      "slug": "sobre-nosotros",
+      "is_home": false,
+      "meta_title": "Sobre Nosotros",
+      "meta_description": "Conoce más sobre nosotros, nuestra misión y valores.",
+      "content": "<h1>Sobre Nosotros</h1><p>Nuestra historia.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Sobre Nosotros",
+          "subtitle": "Nuestra Historia"
+        },
+        {
+          "type": "about_content",
+          "content": "Escribe aquí tu historia, misión y valores...",
+          "show_image": true
+        }
+      ]
+    },
+    {
+      "title": "Servicios",
+      "slug": "servicios",
+      "is_home": false,
+      "meta_title": "Nuestros Servicios",
+      "meta_description": "Descubre todos los servicios que ofrecemos.",
+      "content": "<h1>Servicios</h1><p>Lo que ofrecemos.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestros Servicios",
+          "subtitle": "¿Qué Ofrecemos?"
+        },
+        {
+          "type": "services_grid",
+          "items": [
+            {
+              "title": "Servicio 1",
+              "description": "Descripción detallada del servicio",
+              "icon": "service"
+            },
+            {
+              "title": "Servicio 2",
+              "description": "Descripción detallada del servicio",
+              "icon": "service"
+            },
+            {
+              "title": "Servicio 3",
+              "description": "Descripción detallada del servicio",
+              "icon": "service"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Blog",
+      "slug": "blog",
+      "is_home": false,
+      "meta_title": "Blog - Últimas Noticias",
+      "meta_description": "Lee nuestras últimas publicaciones y noticias.",
+      "content": "<h1>Blog</h1><p>Noticias y artículos.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Blog",
+          "subtitle": "Noticias y Artículos"
+        },
+        {
+          "type": "blog_posts_grid",
+          "layout": "grid",
+          "columns": 3,
+          "items_per_page": 9
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Ponte en Contacto",
+      "meta_description": "Ponte en contacto con nosotros. Estamos aquí para ayudarte.",
+      "content": "<h1>Contacto</h1><p>Estamos aquí para ayudarte.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Contacto",
+          "subtitle": "Hablemos"
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "phone", "message"],
+          "submit_text": "Enviar Mensaje"
+        },
+        {
+          "type": "contact_info",
+          "email": "contacto@sitio.com",
+          "phone": "+1 234 567 890",
+          "address": "Tu Dirección",
+          "show_map": false
+        }
+      ]
+    }
+  ]
+}
+
+

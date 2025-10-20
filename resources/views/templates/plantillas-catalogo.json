@@ -1,0 +1,406 @@
+{
+  "version": "1.0.0",
+  "total_templates": 17,
+  "last_updated": "2025-10-17",
+  "templates": [
+    {
+      "id": 1,
+      "name": "Academia Online",
+      "slug": "academia-online",
+      "category": "education",
+      "description": "Plataforma de cursos online. Listado de clases, inscripciones, progreso de estudiantes y certificados.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 6,
+      "pages": ["Inicio", "Cursos", "Instructores", "Mi Aprendizaje", "Planes", "Contacto"],
+      "colors": {
+        "primary": "#8b5cf6",
+        "secondary": "#3b82f6"
+      },
+      "features": ["Catálogo de cursos", "Sistema de inscripción", "Perfiles de instructores", "Dashboard de estudiante"],
+      "ideal_for": ["Escuelas online", "Plataformas educativas", "Cursos online", "Academias"],
+      "preview_url": "/templates/academia-online/preview"
+    },
+    {
+      "id": 2,
+      "name": "Agencia Creativa",
+      "slug": "agencia-creativa",
+      "category": "agency",
+      "description": "Plantilla vibrante para agencias de diseño y marketing. Portfolio de proyectos, servicios y equipo con animaciones modernas.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 5,
+      "pages": ["Inicio", "Servicios", "Portfolio", "Sobre Nosotros", "Contacto"],
+      "colors": {
+        "primary": "#7c3aed",
+        "secondary": "#ec4899"
+      },
+      "features": ["Portfolio de proyectos", "Grid de servicios", "Equipo", "Animaciones modernas"],
+      "ideal_for": ["Agencias de marketing", "Estudios de diseño", "Agencias digitales", "Freelancers"],
+      "preview_url": "/templates/agencia-creativa/preview"
+    },
+    {
+      "id": 3,
+      "name": "Blog Minimalista",
+      "slug": "blog-minimalista",
+      "category": "blog",
+      "description": "Blog personal estilo Medium. Lectura fácil, tipografía grande, diseño limpio centrado en el contenido.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 4,
+      "pages": ["Inicio", "Sobre Mí", "Archivo", "Contacto"],
+      "colors": {
+        "primary": "#1a1a1a",
+        "secondary": "#6b7280"
+      },
+      "features": ["Feed de posts", "Lectura fácil", "Newsletter", "Archivo cronológico"],
+      "ideal_for": ["Bloggers", "Escritores", "Periodistas", "Content creators"],
+      "preview_url": "/templates/blog-minimalista/preview"
+    },
+    {
+      "id": 4,
+      "name": "Consultoría Corporativa",
+      "slug": "consultoria-corporativa",
+      "category": "business",
+      "description": "Diseño profesional para consultoras empresariales. Casos de estudio, servicios B2B y equipo de expertos.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 5,
+      "pages": ["Inicio", "Servicios", "Casos de Éxito", "Nuestro Equipo", "Contacto"],
+      "colors": {
+        "primary": "#1e40af",
+        "secondary": "#475569"
+      },
+      "features": ["Estadísticas", "Casos de éxito", "Servicios B2B", "Equipo de consultores"],
+      "ideal_for": ["Consultoras", "Empresas de servicios", "Asesorías", "Corporativos"],
+      "preview_url": "/templates/consultoria-corporativa/preview"
+    },
+    {
+      "id": 5,
+      "name": "CV Personal",
+      "slug": "cv-personal",
+      "category": "personal",
+      "description": "Currículum vitae online profesional. Timeline de experiencia, skills, educación y portfolio personal.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 5,
+      "pages": ["Inicio", "Portfolio", "Experiencia", "Habilidades", "Contacto"],
+      "colors": {
+        "primary": "#2563eb",
+        "secondary": "#475569"
+      },
+      "features": ["Timeline de experiencia", "Skills con porcentajes", "Portfolio de proyectos", "Descarga CV PDF"],
+      "ideal_for": ["Profesionales", "Freelancers", "Desarrolladores", "Diseñadores"],
+      "preview_url": "/templates/cv-personal/preview"
+    },
+    {
+      "id": 6,
+      "name": "Evento & Conferencia",
+      "slug": "evento-conferencia",
+      "category": "event",
+      "description": "Landing page para eventos y conferencias. Agenda, speakers, registro de asistentes y patrocinadores.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 8,
+      "pages": ["Inicio", "Agenda", "Speakers", "Entradas", "Talleres", "Venue", "Patrocinadores", "Contacto"],
+      "colors": {
+        "primary": "#7c3aed",
+        "secondary": "#5b21b6"
+      },
+      "features": ["Countdown", "Agenda programática", "Grid de speakers", "Venta de entradas", "Patrocinadores"],
+      "ideal_for": ["Conferencias", "Eventos", "Seminarios", "Festivales", "Congresos"],
+      "preview_url": "/templates/evento-conferencia/preview"
+    },
+    {
+      "id": 7,
+      "name": "Gimnasio & Fitness",
+      "slug": "gimnasio-fitness",
+      "category": "fitness",
+      "description": "Diseño energético para gimnasios. Colores intensos, planes de membresía, clases y entrenadores.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 6,
+      "pages": ["Inicio", "Clases", "Membresías", "Entrenadores", "Instalaciones", "Contacto"],
+      "colors": {
+        "primary": "#ef4444",
+        "secondary": "#1f2937"
+      },
+      "features": ["Horario de clases", "Planes de membresía", "Entrenadores", "Galería de instalaciones"],
+      "ideal_for": ["Gimnasios", "Box CrossFit", "Estudios de yoga", "Centros deportivos"],
+      "preview_url": "/templates/gimnasio-fitness/preview"
+    },
+    {
+      "id": 8,
+      "name": "Inmobiliaria",
+      "slug": "inmobiliaria",
+      "category": "realestate",
+      "description": "Listado de propiedades en venta y alquiler. Búsqueda avanzada, filtros, mapas y galerías de fotos.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 7,
+      "pages": ["Inicio", "Propiedades en Venta", "Propiedades en Alquiler", "Vende tu Propiedad", "Nuestros Agentes", "Sobre Nosotros", "Contacto"],
+      "colors": {
+        "primary": "#0f766e",
+        "secondary": "#115e59"
+      },
+      "features": ["Búsqueda avanzada", "Filtros múltiples", "Mapas", "Agentes", "Valoración de propiedades"],
+      "ideal_for": ["Inmobiliarias", "Agentes inmobiliarios", "Desarrolladores", "Corredores"],
+      "preview_url": "/templates/inmobiliaria/preview"
+    },
+    {
+      "id": 9,
+      "name": "Médico & Clínica",
+      "slug": "medico-clinica",
+      "category": "medical",
+      "description": "Diseño profesional para clínicas y consultorios médicos. Sistema de citas, especialidades, doctores y servicios médicos.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 7,
+      "pages": ["Inicio", "Especialidades", "Nuestros Médicos", "Agendar Cita", "Servicios", "Seguros", "Contacto"],
+      "colors": {
+        "primary": "#0891b2",
+        "secondary": "#0c4a6e"
+      },
+      "features": ["Sistema de citas", "Especialidades médicas", "Perfiles de médicos", "Seguros médicos", "Urgencias 24/7"],
+      "ideal_for": ["Clínicas", "Consultorios", "Centros médicos", "Hospitales", "Médicos particulares"],
+      "preview_url": "/templates/medico-clinica/preview"
+    },
+    {
+      "id": 10,
+      "name": "Moda Boutique",
+      "slug": "moda-boutique",
+      "category": "fashion",
+      "description": "Diseño elegante para tiendas de ropa y moda. Estilo lookbook con imágenes full-screen y presentación editorial.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 6,
+      "pages": ["Inicio", "Colecciones", "Tienda", "Lookbook", "Sobre Nosotros", "Contacto"],
+      "colors": {
+        "primary": "#000000",
+        "secondary": "#faf8f5"
+      },
+      "features": ["Lookbook editorial", "Colecciones", "Filtros avanzados", "Instagram feed", "Quick view"],
+      "ideal_for": ["Boutiques", "Tiendas de ropa", "Diseñadores", "Marcas de moda"],
+      "preview_url": "/templates/moda-boutique/preview"
+    },
+    {
+      "id": 11,
+      "name": "Músico & Banda",
+      "slug": "musico-banda",
+      "category": "music",
+      "description": "Sitio para músicos y bandas. Reproductor de música, calendario de tours, galería de fotos y tienda de merch.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 7,
+      "pages": ["Inicio", "Música", "Tour", "La Banda", "Merch", "Galería", "Contacto"],
+      "colors": {
+        "primary": "#dc2626",
+        "secondary": "#991b1b"
+      },
+      "features": ["Reproductor de música", "Discografía", "Fechas de tour", "Merchandising", "Links de streaming"],
+      "ideal_for": ["Músicos", "Bandas", "DJs", "Productores", "Artistas"],
+      "preview_url": "/templates/musico-banda/preview"
+    },
+    {
+      "id": 12,
+      "name": "Portafolio Fotógrafo",
+      "slug": "portafolio-fotografo",
+      "category": "portfolio",
+      "description": "Diseño minimalista para fotógrafos. Grid masonry de imágenes, galerías full-screen y presentación visual impactante.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 6,
+      "pages": ["Inicio", "Galerías", "Bodas", "Sobre Mí", "Servicios", "Contacto"],
+      "colors": {
+        "primary": "#000000",
+        "secondary": "#ffffff"
+      },
+      "features": ["Galerías masonry", "Lightbox", "Categorías de fotos", "Paquetes fotográficos"],
+      "ideal_for": ["Fotógrafos", "Estudios fotográficos", "Fotógrafos de bodas", "Fotógrafos comerciales"],
+      "preview_url": "/templates/portafolio-fotografo/preview"
+    },
+    {
+      "id": 13,
+      "name": "Restaurante & Menú",
+      "slug": "restaurante-menu",
+      "category": "restaurant",
+      "description": "Plantilla perfecta para restaurantes. Menú digital con galería de platos, sistema de reservas y pedidos a domicilio.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 6,
+      "pages": ["Inicio", "Menú", "Reservas", "Galería", "Eventos", "Contacto"],
+      "colors": {
+        "primary": "#d97706",
+        "secondary": "#78350f"
+      },
+      "features": ["Menú digital", "Sistema de reservas", "Galería de platos", "Eventos privados", "Horarios"],
+      "ideal_for": ["Restaurantes", "Cafeterías", "Bares", "Food trucks", "Catering"],
+      "preview_url": "/templates/restaurante-menu/preview"
+    },
+    {
+      "id": 14,
+      "name": "Spa & Bienestar",
+      "slug": "spa-bienestar",
+      "category": "wellness",
+      "description": "Plantilla relajante para spas, centros de bienestar y salones. Colores pasteles suaves, imágenes tranquilas y sistema de reservas.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 7,
+      "pages": ["Inicio", "Tratamientos", "Yoga & Meditación", "Reservas", "Membresías", "Galería", "Contacto"],
+      "colors": {
+        "primary": "#d4a373",
+        "secondary": "#e8d5c4"
+      },
+      "features": ["Catálogo de tratamientos", "Sistema de reservas", "Clases de yoga", "Paquetes spa", "Membresías"],
+      "ideal_for": ["Spas", "Centros de bienestar", "Salones de belleza", "Estudios de yoga", "Masajistas"],
+      "preview_url": "/templates/spa-bienestar/preview"
+    },
+    {
+      "id": 15,
+      "name": "Tienda Minimalista",
+      "slug": "tienda-minimalista",
+      "category": "ecommerce",
+      "description": "Diseño ultra minimalista inspirado en Apple. Espacios blancos amplios, tipografía grande y elegante.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 6,
+      "pages": ["Inicio", "Productos", "Colecciones", "Sobre Nosotros", "Soporte", "Contacto"],
+      "colors": {
+        "primary": "#000000",
+        "secondary": "#ffffff"
+      },
+      "features": ["Diseño estilo Apple", "Producto destacado", "Colecciones", "FAQ", "Soporte"],
+      "ideal_for": ["Productos tech", "Productos premium", "Diseño minimalista", "Marcas exclusivas"],
+      "preview_url": "/templates/tienda-minimalista/preview"
+    },
+    {
+      "id": 16,
+      "name": "Tienda Virtual",
+      "slug": "tienda-virtual",
+      "category": "ecommerce",
+      "description": "E-commerce completo con carrito, checkout y gestión de productos. Integración con pasarelas de pago.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 6,
+      "pages": ["Inicio", "Productos", "Carrito", "Checkout", "Sobre Nosotros", "Contacto"],
+      "colors": {
+        "primary": "#059669",
+        "secondary": "#047857"
+      },
+      "features": ["Carrito de compras", "Checkout completo", "Categorías", "Filtros", "Pasarela de pago"],
+      "ideal_for": ["Tiendas online", "E-commerce", "Ventas por internet", "Negocios retail"],
+      "preview_url": "/templates/tienda-virtual/preview"
+    },
+    {
+      "id": 17,
+      "name": "Plantilla Básica",
+      "slug": "plantilla-basica",
+      "category": "basic",
+      "description": "Plantilla básica por defecto con estilos limpios y responsivos. Perfecta para comenzar desde cero.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 5,
+      "pages": ["Inicio", "Sobre Nosotros", "Servicios", "Blog", "Contacto"],
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#1f2937"
+      },
+      "features": ["Diseño limpio", "Responsive", "Fácil personalización", "Genérico"],
+      "ideal_for": ["Cualquier tipo de negocio", "Sitios personales", "Landing pages", "Proyectos básicos"],
+      "preview_url": "/templates/plantilla-basica/preview"
+    }
+  ],
+  "categories": {
+    "agency": {
+      "name": "Agencias",
+      "templates": ["agencia-creativa"]
+    },
+    "blog": {
+      "name": "Blogs",
+      "templates": ["blog-minimalista"]
+    },
+    "business": {
+      "name": "Negocios",
+      "templates": ["consultoria-corporativa"]
+    },
+    "ecommerce": {
+      "name": "E-commerce",
+      "templates": ["tienda-virtual", "tienda-minimalista", "moda-boutique"]
+    },
+    "education": {
+      "name": "Educación",
+      "templates": ["academia-online"]
+    },
+    "event": {
+      "name": "Eventos",
+      "templates": ["evento-conferencia"]
+    },
+    "fashion": {
+      "name": "Moda",
+      "templates": ["moda-boutique"]
+    },
+    "fitness": {
+      "name": "Fitness",
+      "templates": ["gimnasio-fitness"]
+    },
+    "medical": {
+      "name": "Médico",
+      "templates": ["medico-clinica"]
+    },
+    "music": {
+      "name": "Música",
+      "templates": ["musico-banda"]
+    },
+    "personal": {
+      "name": "Personal",
+      "templates": ["cv-personal"]
+    },
+    "portfolio": {
+      "name": "Portfolio",
+      "templates": ["portafolio-fotografo"]
+    },
+    "restaurant": {
+      "name": "Restaurantes",
+      "templates": ["restaurante-menu"]
+    },
+    "realestate": {
+      "name": "Bienes Raíces",
+      "templates": ["inmobiliaria"]
+    },
+    "wellness": {
+      "name": "Bienestar",
+      "templates": ["spa-bienestar"]
+    },
+    "basic": {
+      "name": "Básicas",
+      "templates": ["plantilla-basica"]
+    }
+  },
+  "statistics": {
+    "total_templates": 17,
+    "total_pages": 95,
+    "avg_pages_per_template": 5.6,
+    "total_block_types": 50,
+    "free_templates": 17,
+    "premium_templates": 0
+  }
+}
+
+

@@ -1,0 +1,198 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Banda de Rock - Música en Vivo",
+      "meta_description": "Sitio oficial de la banda. Escucha nuestra música, próximos conciertos y merch exclusivo.",
+      "content": "<h1>Rock & Roll</h1><p>Música que mueve masas.</p>",
+      "blocks": [
+        {
+          "type": "hero_video",
+          "video_background": true,
+          "title": "NOMBRE DE LA BANDA",
+          "subtitle": "Rock que sacude tu alma",
+          "show_music_player": true,
+          "cta_text": "Escuchar Ahora",
+          "cta_link": "/musica"
+        },
+        {
+          "type": "music_player",
+          "title": "Últimas Canciones",
+          "tracks": [
+            {"title": "Canción 1", "duration": "3:45"},
+            {"title": "Canción 2", "duration": "4:12"},
+            {"title": "Canción 3", "duration": "3:28"}
+          ],
+          "show_album_art": true,
+          "streaming_links": ["spotify", "apple_music", "youtube"]
+        },
+        {
+          "type": "tour_dates",
+          "title": "Próximas Fechas",
+          "limit": 5,
+          "show_buy_tickets": true
+        },
+        {
+          "type": "latest_album",
+          "title": "Último Álbum",
+          "show_tracklist": true,
+          "show_streaming_links": true
+        }
+      ]
+    },
+    {
+      "title": "Música",
+      "slug": "musica",
+      "is_home": false,
+      "meta_title": "Nuestra Música - Discografía",
+      "meta_description": "Escucha toda nuestra discografía. Álbumes, singles y colaboraciones.",
+      "content": "<h1>Discografía</h1><p>Toda nuestra música.</p>",
+      "blocks": [
+        {
+          "type": "page_header_dark",
+          "title": "DISCOGRAFÍA"
+        },
+        {
+          "type": "albums_grid",
+          "show_year": true,
+          "show_tracklist": true,
+          "show_streaming": true,
+          "show_purchase": true
+        },
+        {
+          "type": "streaming_platforms",
+          "title": "Escúchanos en",
+          "platforms": ["spotify", "apple_music", "youtube_music", "amazon_music", "deezer"]
+        }
+      ]
+    },
+    {
+      "title": "Tour",
+      "slug": "tour",
+      "is_home": false,
+      "meta_title": "Tour - Próximos Conciertos",
+      "meta_description": "Próximas fechas de conciertos. Compra tus entradas online.",
+      "content": "<h1>Tour</h1><p>Encuéntranos en vivo.</p>",
+      "blocks": [
+        {
+          "type": "page_header_dark",
+          "title": "TOUR 2025",
+          "subtitle": "Encuéntranos en Vivo"
+        },
+        {
+          "type": "tour_calendar",
+          "show_map": true,
+          "show_tickets_button": true,
+          "show_venue_info": true,
+          "group_by": "month"
+        },
+        {
+          "type": "past_shows",
+          "title": "Shows Pasados",
+          "show_photos": true,
+          "show_videos": true
+        }
+      ]
+    },
+    {
+      "title": "La Banda",
+      "slug": "la-banda",
+      "is_home": false,
+      "meta_title": "La Banda - Integrantes",
+      "meta_description": "Conoce a los integrantes de la banda.",
+      "content": "<h1>La Banda</h1><p>Conoce a los integrantes.</p>",
+      "blocks": [
+        {
+          "type": "page_header_dark",
+          "title": "LA BANDA"
+        },
+        {
+          "type": "band_members",
+          "layout": "cards",
+          "show_instrument": true,
+          "show_bio": true,
+          "show_social": true
+        },
+        {
+          "type": "band_history",
+          "title": "Nuestra Historia",
+          "show_timeline": true
+        }
+      ]
+    },
+    {
+      "title": "Merch",
+      "slug": "merch",
+      "is_home": false,
+      "meta_title": "Merchandising Oficial",
+      "meta_description": "Compra merchandising oficial: camisetas, hoodies, posters y más.",
+      "content": "<h1>Merch Oficial</h1><p>Lleva tu estilo.</p>",
+      "blocks": [
+        {
+          "type": "page_header_dark",
+          "title": "MERCHANDISING OFICIAL"
+        },
+        {
+          "type": "merch_products",
+          "categories": ["Todos", "Ropa", "Accesorios", "Música", "Coleccionables"],
+          "layout": "grid",
+          "columns": 3,
+          "show_sizes": true,
+          "items_per_page": 12
+        }
+      ]
+    },
+    {
+      "title": "Galería",
+      "slug": "galeria",
+      "is_home": false,
+      "meta_title": "Galería - Fotos y Videos",
+      "meta_description": "Fotos y videos de conciertos, backstage y momentos especiales.",
+      "content": "<h1>Galería</h1><p>Momentos en vivo.</p>",
+      "blocks": [
+        {
+          "type": "page_header_dark",
+          "title": "GALERÍA"
+        },
+        {
+          "type": "media_gallery",
+          "tabs": ["Fotos", "Videos"],
+          "layout": "masonry",
+          "show_filters": true,
+          "categories": ["Conciertos", "Backstage", "Estudio", "Promo"]
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Booking",
+      "meta_description": "Contrata a la banda para tu evento. Información de booking y management.",
+      "content": "<h1>Contacto</h1><p>Booking y management.</p>",
+      "blocks": [
+        {
+          "type": "page_header_dark",
+          "title": "CONTACTO",
+          "subtitle": "Booking & Management"
+        },
+        {
+          "type": "contact_booking",
+          "email_booking": "booking@banda.com",
+          "email_management": "management@banda.com",
+          "phone": "+1 234 567 890",
+          "show_rider_download": true
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "phone", "event_type", "event_date", "venue", "message"],
+          "submit_text": "Enviar Consulta"
+        }
+      ]
+    }
+  ]
+}
+
+

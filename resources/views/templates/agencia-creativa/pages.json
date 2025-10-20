@@ -1,0 +1,187 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Agencia Creativa - Diseño y Desarrollo Web",
+      "meta_description": "Somos una agencia creativa especializada en transformar ideas en realidades digitales que impulsan tu negocio.",
+      "content": "<h1>Creamos experiencias digitales increíbles</h1><p>Somos una agencia creativa especializada en transformar ideas en realidades digitales que impulsan tu negocio.</p>",
+      "blocks": [
+        {
+          "type": "hero",
+          "title": "Creamos experiencias digitales increíbles",
+          "subtitle": "Somos una agencia creativa especializada en transformar ideas en realidades digitales que impulsan tu negocio.",
+          "cta_primary_text": "Ver Proyectos",
+          "cta_primary_link": "#portfolio",
+          "cta_secondary_text": "Hablemos",
+          "cta_secondary_link": "#contacto"
+        },
+        {
+          "type": "services",
+          "title": "Nuestros Servicios",
+          "subtitle": "¿Qué hacemos?",
+          "description": "Ofrecemos soluciones creativas integrales para hacer crecer tu marca",
+          "items": [
+            {
+              "title": "Diseño Web",
+              "icon": "monitor",
+              "description": "Interfaces modernas y funcionales que convierten visitantes en clientes"
+            },
+            {
+              "title": "Desarrollo",
+              "icon": "code",
+              "description": "Aplicaciones web robustas con las últimas tecnologías"
+            },
+            {
+              "title": "Branding",
+              "icon": "palette",
+              "description": "Identidades visuales únicas que destacan tu marca"
+            },
+            {
+              "title": "Marketing",
+              "icon": "megaphone",
+              "description": "Estrategias digitales que generan resultados reales"
+            }
+          ]
+        },
+        {
+          "type": "portfolio",
+          "title": "Proyectos Destacados",
+          "subtitle": "Portfolio",
+          "description": "Algunos de nuestros trabajos más recientes",
+          "items_count": 6
+        },
+        {
+          "type": "cta",
+          "title": "¿Listo para empezar tu proyecto?",
+          "description": "Hablemos sobre tu idea y hagamos algo increíble juntos",
+          "cta_text": "Enviar Email",
+          "cta_link": "mailto:hola@agencia.com",
+          "cta_secondary_text": "Llamar Ahora",
+          "cta_secondary_link": "tel:+123456789"
+        }
+      ]
+    },
+    {
+      "title": "Servicios",
+      "slug": "servicios",
+      "is_home": false,
+      "meta_title": "Nuestros Servicios - Agencia Creativa",
+      "meta_description": "Descubre todos los servicios que ofrecemos: Diseño Web, Desarrollo, Branding y Marketing Digital.",
+      "content": "<h1>Nuestros Servicios</h1><p>Ofrecemos soluciones creativas integrales para hacer crecer tu marca.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestros Servicios",
+          "subtitle": "¿Qué hacemos?",
+          "description": "Ofrecemos soluciones creativas integrales para hacer crecer tu marca"
+        },
+        {
+          "type": "services_detailed",
+          "items": [
+            {
+              "title": "Diseño Web",
+              "description": "Creamos sitios web modernos, atractivos y funcionales que representan tu marca y convierten visitantes en clientes.",
+              "features": ["Diseño Responsive", "UX/UI Profesional", "Optimización SEO", "Carga Rápida"]
+            },
+            {
+              "title": "Desarrollo Web",
+              "description": "Desarrollamos aplicaciones web robustas y escalables utilizando las últimas tecnologías.",
+              "features": ["Laravel & PHP", "React & Vue.js", "API REST", "Seguridad Avanzada"]
+            },
+            {
+              "title": "Branding",
+              "description": "Creamos identidades visuales únicas que hacen que tu marca destaque.",
+              "features": ["Logo Design", "Paleta de Colores", "Tipografía", "Manual de Marca"]
+            },
+            {
+              "title": "Marketing Digital",
+              "description": "Implementamos estrategias de marketing que generan resultados medibles.",
+              "features": ["SEO/SEM", "Social Media", "Email Marketing", "Analytics"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Portfolio",
+      "slug": "portfolio",
+      "is_home": false,
+      "meta_title": "Portfolio - Nuestros Proyectos",
+      "meta_description": "Explora nuestros proyectos más recientes y descubre cómo hemos ayudado a nuestros clientes.",
+      "content": "<h1>Portfolio</h1><p>Algunos de nuestros trabajos más recientes.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Portfolio",
+          "subtitle": "Proyectos Destacados",
+          "description": "Algunos de nuestros trabajos más recientes"
+        },
+        {
+          "type": "portfolio_grid",
+          "layout": "masonry",
+          "items_per_page": 12,
+          "categories": ["Todos", "Diseño Web", "Desarrollo", "Branding"]
+        }
+      ]
+    },
+    {
+      "title": "Sobre Nosotros",
+      "slug": "sobre-nosotros",
+      "is_home": false,
+      "meta_title": "Sobre Nosotros - Agencia Creativa",
+      "meta_description": "Conoce nuestro equipo, misión y valores. Somos una agencia apasionada por el diseño y la tecnología.",
+      "content": "<h1>Sobre Nosotros</h1><p>Somos una agencia creativa con pasión por el diseño y la tecnología.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Sobre Nosotros",
+          "subtitle": "Quiénes Somos",
+          "description": "Somos una agencia creativa con pasión por el diseño y la tecnología"
+        },
+        {
+          "type": "about_content",
+          "mission": "Transformar ideas en realidades digitales que impulsan negocios.",
+          "vision": "Ser la agencia creativa líder en innovación digital.",
+          "values": ["Creatividad", "Calidad", "Compromiso", "Innovación"]
+        },
+        {
+          "type": "team",
+          "title": "Nuestro Equipo",
+          "description": "Conoce a las personas detrás de nuestros proyectos"
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Agencia Creativa",
+      "meta_description": "Ponte en contacto con nosotros. Estamos listos para hacer realidad tu proyecto.",
+      "content": "<h1>Contacto</h1><p>¿Listo para empezar tu proyecto? Hablemos.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Contacto",
+          "subtitle": "Hablemos",
+          "description": "¿Listo para empezar tu proyecto? Estamos aquí para ayudarte"
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "phone", "message"],
+          "submit_text": "Enviar Mensaje"
+        },
+        {
+          "type": "contact_info",
+          "email": "hola@agencia.com",
+          "phone": "+1 234 567 890",
+          "address": "123 Calle Principal, Ciudad",
+          "hours": "Lunes a Viernes, 9:00 - 18:00"
+        }
+      ]
+    }
+  ]
+}
+
+
