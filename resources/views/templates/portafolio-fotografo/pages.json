@@ -4,104 +4,100 @@
       "title": "Inicio",
       "slug": "inicio",
       "is_home": true,
-      "meta_title": "Fotógrafo Profesional - Portfolio",
-      "meta_description": "Portfolio de fotografía profesional. Bodas, eventos, retratos y más.",
-      "content": "<h1>Fotografía Profesional</h1><p>Capturando momentos únicos.</p>",
+      "meta_title": "María Fotógrafa - Capturando Momentos Únicos",
+      "meta_description": "Fotógrafa profesional especializada en bodas, retratos y eventos. Capturando momentos únicos.",
+      "content": "<h1>Capturando Momentos Únicos</h1><p>Fotografía profesional para tu evento especial.</p>",
       "blocks": [
         {
-          "type": "hero_fullscreen",
-          "image": true,
-          "title": "Tu Nombre",
-          "subtitle": "Fotógrafo Profesional",
-          "minimal": true,
-          "show_scroll_indicator": true
+          "type": "hero_portfolio",
+          "title": "María Fotógrafa",
+          "subtitle": "Capturando Momentos Únicos",
+          "specialties": ["Bodas", "Retratos", "Eventos"],
+          "cta_primary_text": "Ver Portfolio",
+          "cta_primary_link": "/portfolio",
+          "cta_secondary_text": "Contactar",
+          "cta_secondary_link": "/contacto"
         },
         {
-          "type": "gallery_masonry",
-          "title": "Portfolio Destacado",
+          "type": "featured_work",
+          "title": "Trabajos Destacados",
+          "limit": 6
+        },
+        {
+          "type": "services_preview",
+          "title": "Mis Servicios",
+          "items": [
+            {"icon": "wedding", "title": "Bodas", "description": "Fotografía de bodas completa"},
+            {"icon": "portrait", "title": "Retratos", "description": "Sesiones de retrato profesionales"},
+            {"icon": "event", "title": "Eventos", "description": "Cobertura de eventos corporativos"},
+            {"icon": "family", "title": "Familias", "description": "Sesiones familiares y infantiles"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Portfolio",
+      "slug": "portfolio",
+      "is_home": false,
+      "meta_title": "Portfolio - María Fotógrafa",
+      "meta_description": "Explora mi portfolio de fotografías: bodas, retratos, eventos y más.",
+      "content": "<h1>Mi Portfolio</h1><p>Mis mejores trabajos.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Mi Portfolio",
+          "subtitle": "Mis Mejores Trabajos",
+          "description": "Una selección de mis fotografías más destacadas"
+        },
+        {
+          "type": "portfolio_grid",
+          "categories": ["Todos", "Bodas", "Retratos", "Eventos", "Familias"],
           "layout": "masonry",
-          "columns": 3,
-          "limit": 12,
-          "lightbox": true
-        },
-        {
-          "type": "services_minimal",
-          "title": "Servicios",
-          "items": [
-            {"name": "Bodas", "description": "Cobertura completa de tu día especial"},
-            {"name": "Eventos", "description": "Corporativos, sociales, culturales"},
-            {"name": "Retratos", "description": "Sesiones personales y familiares"},
-            {"name": "Producto", "description": "Fotografía comercial y publicitaria"}
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Galerías",
-      "slug": "galerias",
-      "is_home": false,
-      "meta_title": "Galerías - Portfolio Completo",
-      "meta_description": "Explora todas mis galerías organizadas por categoría.",
-      "content": "<h1>Galerías</h1><p>Explora mi trabajo.</p>",
-      "blocks": [
-        {
-          "type": "page_header_minimal",
-          "title": "Galerías"
-        },
-        {
-          "type": "gallery_categories",
-          "layout": "grid",
-          "categories": [
-            {"name": "Bodas", "count": 45, "cover_image": true},
-            {"name": "Retratos", "count": 120, "cover_image": true},
-            {"name": "Eventos", "count": 80, "cover_image": true},
-            {"name": "Producto", "count": 60, "cover_image": true},
-            {"name": "Paisaje", "count": 95, "cover_image": true},
-            {"name": "Street", "count": 150, "cover_image": true}
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Bodas",
-      "slug": "bodas",
-      "is_home": false,
-      "meta_title": "Fotografía de Bodas",
-      "meta_description": "Capturo cada momento especial de tu boda con estilo único.",
-      "content": "<h1>Bodas</h1><p>Tu día especial.</p>",
-      "blocks": [
-        {
-          "type": "page_header_minimal",
-          "title": "Fotografía de Bodas",
-          "subtitle": "Momentos Inolvidables"
-        },
-        {
-          "type": "gallery_fullwidth",
-          "layout": "justified",
           "lightbox": true,
-          "show_info": true
+          "show_captions": true
+        }
+      ]
+    },
+    {
+      "title": "Servicios",
+      "slug": "servicios",
+      "is_home": false,
+      "meta_title": "Servicios - María Fotógrafa",
+      "meta_description": "Servicios de fotografía profesional: bodas, retratos, eventos y sesiones especiales.",
+      "content": "<h1>Mis Servicios</h1><p>Fotografía profesional para cada ocasión.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Mis Servicios",
+          "subtitle": "Fotografía Profesional",
+          "description": "Servicios especializados para cada ocasión"
         },
         {
-          "type": "packages_photography",
-          "title": "Paquetes de Bodas",
+          "type": "services_detailed",
           "items": [
             {
-              "name": "Básico",
-              "price": "$800",
-              "features": ["4 horas de cobertura", "200 fotos editadas", "Álbum digital"],
-              "popular": false
+              "title": "Fotografía de Bodas",
+              "description": "Cobertura completa de tu día especial",
+              "features": ["Sesión de compromiso", "Ceremonia completa", "Recepción", "Álbum digital", "Edición profesional"],
+              "price": "Desde $1,500"
             },
             {
-              "name": "Premium",
-              "price": "$1,500",
-              "features": ["8 horas de cobertura", "400 fotos editadas", "Álbum impreso", "Segundo fotógrafo"],
-              "popular": true
+              "title": "Retratos",
+              "description": "Sesiones de retrato profesionales",
+              "features": ["Sesión de 2 horas", "Múltiples looks", "Edición profesional", "Fotos digitales", "Revelado incluido"],
+              "price": "Desde $300"
             },
             {
-              "name": "Completo",
-              "price": "$2,500",
-              "features": ["12 horas de cobertura", "Fotos ilimitadas", "2 álbumes impresos", "Video de boda", "Engagement session"],
-              "popular": false
+              "title": "Eventos Corporativos",
+              "description": "Cobertura de eventos empresariales",
+              "features": ["Cobertura completa", "Fotos en tiempo real", "Entrega rápida", "Edición profesional"],
+              "price": "Desde $500"
+            },
+            {
+              "title": "Sesiones Familiares",
+              "description": "Fotografía familiar e infantil",
+              "features": ["Sesión de 1 hora", "Múltiples poses", "Edición profesional", "Fotos digitales"],
+              "price": "Desde $250"
             }
           ]
         }
@@ -111,73 +107,45 @@
       "title": "Sobre Mí",
       "slug": "sobre-mi",
       "is_home": false,
-      "meta_title": "Sobre Mí - Fotógrafo",
-      "meta_description": "Conoce mi historia, mi estilo fotográfico y mi pasión por capturar momentos.",
-      "content": "<h1>Sobre Mí</h1><p>Mi historia.</p>",
+      "meta_title": "Sobre Mí - María Fotógrafa",
+      "meta_description": "Conoce mi historia, experiencia y pasión por la fotografía.",
+      "content": "<h1>Sobre Mí</h1><p>Mi historia en la fotografía.</p>",
       "blocks": [
         {
-          "type": "about_photographer",
-          "layout": "split",
-          "show_image": true,
-          "show_signature": true
+          "type": "page_header",
+          "title": "Sobre Mí",
+          "subtitle": "Mi Historia",
+          "description": "Pasión por capturar momentos únicos"
         },
         {
-          "type": "stats",
-          "items": [
-            {"number": "500+", "label": "Bodas Fotografiadas"},
-            {"number": "10", "label": "Años de Experiencia"},
-            {"number": "50k+", "label": "Fotos Capturadas"},
-            {"number": "100%", "label": "Clientes Felices"}
-          ]
-        },
-        {
-          "type": "awards",
-          "title": "Reconocimientos",
-          "show_logos": true
+          "type": "about_content",
+          "story": "Desde 2018 capturando momentos especiales...",
+          "experience": "5 años de experiencia en fotografía profesional",
+          "specialties": ["Bodas", "Retratos", "Eventos", "Familias"],
+          "equipment": "Canon EOS R5, Lentes profesionales, Iluminación de estudio"
         }
       ]
     },
     {
-      "title": "Servicios",
-      "slug": "servicios",
+      "title": "Testimonios",
+      "slug": "testimonios",
       "is_home": false,
-      "meta_title": "Servicios de Fotografía",
-      "meta_description": "Todos mis servicios de fotografía: bodas, eventos, retratos, comercial.",
-      "content": "<h1>Servicios</h1><p>¿Qué ofrezco?</p>",
+      "meta_title": "Testimonios - María Fotógrafa",
+      "meta_description": "Lo que dicen mis clientes sobre mi trabajo y servicio.",
+      "content": "<h1>Testimonios</h1><p>Lo que dicen mis clientes.</p>",
       "blocks": [
         {
-          "type": "page_header_minimal",
-          "title": "Servicios",
-          "subtitle": "Fotografía Profesional"
+          "type": "page_header",
+          "title": "Testimonios",
+          "subtitle": "Lo que Dicen mis Clientes",
+          "description": "Experiencias reales de clientes satisfechos"
         },
         {
-          "type": "services_detailed",
-          "items": [
-            {
-              "name": "Bodas",
-              "description": "Cobertura completa de tu día especial, desde la preparación hasta la fiesta",
-              "features": ["Pre-boda", "Ceremonia", "Recepción", "Álbum personalizado"],
-              "price_from": "$800"
-            },
-            {
-              "name": "Retratos",
-              "description": "Sesiones personales, familiares o profesionales",
-              "features": ["Locación a elegir", "Cambios de vestuario", "Retoque profesional"],
-              "price_from": "$150"
-            },
-            {
-              "name": "Eventos Corporativos",
-              "description": "Cobertura de eventos empresariales y sociales",
-              "features": ["Fotografía en vivo", "Galería online", "Entrega rápida"],
-              "price_from": "$400"
-            },
-            {
-              "name": "Producto",
-              "description": "Fotografía comercial para e-commerce y publicidad",
-              "features": ["Estudio profesional", "Edición avanzada", "Formatos múltiples"],
-              "price_from": "$100/hr"
-            }
-          ]
+          "type": "testimonials_grid",
+          "layout": "cards",
+          "show_photos": true,
+          "show_ratings": true,
+          "show_dates": true
         }
       ]
     },
@@ -185,31 +153,30 @@
       "title": "Contacto",
       "slug": "contacto",
       "is_home": false,
-      "meta_title": "Contacto - Reserva tu Sesión",
-      "meta_description": "Agenda tu sesión fotográfica. Disponible para bodas, eventos y más.",
-      "content": "<h1>Contacto</h1><p>Trabajemos juntos.</p>",
+      "meta_title": "Contacto - María Fotógrafa",
+      "meta_description": "Contrata mis servicios de fotografía. Presupuesto gratuito y consulta personalizada.",
+      "content": "<h1>Contacto</h1><p>Hablemos de tu proyecto.</p>",
       "blocks": [
         {
-          "type": "page_header_minimal",
-          "title": "Reserva tu Sesión",
-          "subtitle": "Capturemos Momentos Juntos"
+          "type": "page_header",
+          "title": "Contacto",
+          "subtitle": "Hablemos de tu Proyecto",
+          "description": "Presupuesto gratuito y consulta personalizada"
         },
         {
           "type": "contact_form",
-          "fields": ["name", "email", "phone", "event_date", "service", "message"],
+          "fields": ["name", "email", "phone", "service", "date", "location", "message"],
           "submit_text": "Enviar Consulta"
         },
         {
           "type": "contact_info",
-          "email": "hola@fotografo.com",
+          "email": "hola@mariafotografa.com",
           "phone": "+1 234 567 890",
-          "instagram": "@tufotografo",
-          "show_social": true,
-          "show_availability_calendar": true
+          "whatsapp": "+1 234 567 890",
+          "address": "Ciudad, País",
+          "hours": "Lunes a Viernes: 9:00 - 18:00"
         }
       ]
     }
   ]
 }
-
-

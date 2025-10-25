@@ -4,126 +4,86 @@
       "title": "Inicio",
       "slug": "inicio",
       "is_home": true,
-      "meta_title": "Spa & Bienestar - Relajación y Armonía",
-      "meta_description": "Centro de spa y bienestar. Masajes, tratamientos faciales, yoga y más.",
-      "content": "<h1>Relajación y Armonía</h1><p>Tu espacio de paz interior.</p>",
+      "meta_title": "Spa Serenity - Bienestar y Relajación",
+      "meta_description": "Spa de bienestar con tratamientos relajantes, masajes y terapias. Tu momento de paz te espera.",
+      "content": "<h1>Bienestar y Relajación</h1><p>Tu momento de paz te espera.</p>",
       "blocks": [
         {
           "type": "hero",
-          "image": true,
-          "title": "Tu Oasis de Tranquilidad",
-          "subtitle": "Descubre el equilibrio perfecto entre cuerpo y mente",
-          "cta_text": "Reservar Ahora",
-          "cta_link": "/reservas",
-          "cta_secondary_text": "Ver Tratamientos",
-          "cta_secondary_link": "/tratamientos",
-          "soft_colors": true
+          "title": "Bienestar y Relajación",
+          "subtitle": "Descubre un oasis de tranquilidad en el corazón de la ciudad",
+          "cta_primary_text": "Reservar Tratamiento",
+          "cta_primary_link": "/reservas",
+          "cta_secondary_text": "Ver Servicios",
+          "cta_secondary_link": "/servicios"
         },
         {
-          "type": "services_spa",
-          "title": "Nuestros Servicios",
+          "type": "features",
+          "title": "¿Por qué Elegirnos?",
           "items": [
-            {"icon": "massage", "name": "Masajes", "description": "Terapéuticos y relajantes"},
-            {"icon": "spa", "name": "Tratamientos Faciales", "description": "Rejuvenecimiento y cuidado"},
-            {"icon": "yoga", "name": "Yoga & Meditación", "description": "Clases grupales y privadas"},
-            {"icon": "lotus", "name": "Aromaterapia", "description": "Terapia con aceites esenciales"}
+            {"icon": "spa", "title": "Tratamientos Premium", "description": "Técnicas profesionales"},
+            {"icon": "relax", "title": "Ambiente Relajante", "description": "Espacios diseñados para tu bienestar"},
+            {"icon": "therapist", "title": "Terapeutas Certificados", "description": "Profesionales altamente capacitados"},
+            {"icon": "natural", "title": "Productos Naturales", "description": "Ingredientes orgánicos y naturales"}
           ]
         },
         {
-          "type": "featured_treatments",
+          "type": "treatments_preview",
           "title": "Tratamientos Destacados",
-          "limit": 3,
-          "show_duration": true,
-          "show_price": true
+          "limit": 6
         },
         {
           "type": "testimonials",
           "title": "Lo que Dicen Nuestros Clientes",
-          "layout": "carousel",
-          "show_rating": true
+          "limit": 3
         }
       ]
     },
     {
-      "title": "Tratamientos",
-      "slug": "tratamientos",
+      "title": "Servicios",
+      "slug": "servicios",
       "is_home": false,
-      "meta_title": "Tratamientos - Spa & Bienestar",
-      "meta_description": "Todos nuestros tratamientos: masajes, faciales, corporales y paquetes especiales.",
-      "content": "<h1>Tratamientos</h1><p>Para cada necesidad.</p>",
+      "meta_title": "Servicios - Spa Serenity",
+      "meta_description": "Descubre nuestros tratamientos: masajes, faciales, corporales y terapias especializadas.",
+      "content": "<h1>Nuestros Servicios</h1><p>Tratamientos para tu bienestar.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Nuestros Tratamientos",
-          "subtitle": "Bienestar Integral"
+          "title": "Nuestros Servicios",
+          "subtitle": "Tratamientos para tu Bienestar",
+          "description": "Servicios especializados en relajación y belleza"
         },
         {
-          "type": "treatments_categories",
-          "categories": [
+          "type": "services_detailed",
+          "items": [
             {
-              "name": "Masajes",
-              "items": [
-                {"name": "Masaje Relajante", "duration": "60 min", "price": "$80", "description": "Alivio del estrés y tensión muscular"},
-                {"name": "Masaje Terapéutico", "duration": "90 min", "price": "$120", "description": "Tratamiento profundo de zonas específicas"},
-                {"name": "Masaje con Piedras Calientes", "duration": "75 min", "price": "$100", "description": "Relajación profunda con termoterapia"},
-                {"name": "Masaje Aromático", "duration": "60 min", "price": "$85", "description": "Con aceites esenciales personalizados"}
+              "title": "Masajes",
+              "description": "Relajación y alivio del estrés",
+              "treatments": [
+                {"name": "Masaje Relajante", "duration": "60 min", "price": "$80"},
+                {"name": "Masaje Deportivo", "duration": "90 min", "price": "$120"},
+                {"name": "Masaje con Piedras Calientes", "duration": "75 min", "price": "$100"}
               ]
             },
             {
-              "name": "Faciales",
-              "items": [
+              "title": "Faciales",
+              "description": "Cuidado facial profesional",
+              "treatments": [
                 {"name": "Facial Hidratante", "duration": "60 min", "price": "$70"},
-                {"name": "Facial Anti-Edad", "duration": "75 min", "price": "$95"},
-                {"name": "Limpieza Profunda", "duration": "45 min", "price": "$60"}
+                {"name": "Facial Anti-edad", "duration": "90 min", "price": "$110"},
+                {"name": "Facial Limpieza Profunda", "duration": "75 min", "price": "$90"}
               ]
             },
             {
-              "name": "Corporales",
-              "items": [
-                {"name": "Exfoliación Corporal", "duration": "45 min", "price": "$65"},
-                {"name": "Envoltura de Algas", "duration": "60 min", "price": "$85"},
-                {"name": "Tratamiento Reductivo", "duration": "90 min", "price": "$110"}
+              "title": "Tratamientos Corporales",
+              "description": "Belleza y cuidado del cuerpo",
+              "treatments": [
+                {"name": "Exfoliación Corporal", "duration": "60 min", "price": "$85"},
+                {"name": "Wrapping Corporal", "duration": "90 min", "price": "$130"},
+                {"name": "Tratamiento Celulitis", "duration": "75 min", "price": "$100"}
               ]
             }
           ]
-        },
-        {
-          "type": "packages",
-          "title": "Paquetes Especiales",
-          "items": [
-            {"name": "Día de Spa", "price": "$200", "includes": ["Masaje 60min", "Facial", "Manicure", "Lunch"], "duration": "4 horas"},
-            {"name": "Escapada de Fin de Semana", "price": "$450", "includes": ["2 días completos", "4 tratamientos", "Yoga", "Alimentación"], "duration": "2 días"}
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Yoga & Meditación",
-      "slug": "yoga",
-      "is_home": false,
-      "meta_title": "Clases de Yoga y Meditación",
-      "meta_description": "Clases de yoga para todos los niveles. Hatha, Vinyasa, Yin Yoga y meditación guiada.",
-      "content": "<h1>Yoga & Meditación</h1><p>Equilibrio cuerpo y mente.</p>",
-      "blocks": [
-        {
-          "type": "page_header",
-          "title": "Yoga & Meditación",
-          "subtitle": "Equilibrio y Paz Interior"
-        },
-        {
-          "type": "yoga_classes",
-          "categories": [
-            {"name": "Hatha Yoga", "level": "Principiante", "duration": "60 min"},
-            {"name": "Vinyasa Flow", "level": "Intermedio", "duration": "75 min"},
-            {"name": "Yin Yoga", "level": "Todos", "duration": "60 min"},
-            {"name": "Meditación Guiada", "level": "Todos", "duration": "30 min"}
-          ]
-        },
-        {
-          "type": "class_schedule",
-          "show_instructor": true,
-          "show_availability": true,
-          "allow_booking": true
         }
       ]
     },
@@ -131,85 +91,74 @@
       "title": "Reservas",
       "slug": "reservas",
       "is_home": false,
-      "meta_title": "Reservar Tratamiento",
-      "meta_description": "Reserva tu tratamiento o clase online. Selecciona fecha y hora.",
-      "content": "<h1>Reservas</h1><p>Agenda tu sesión.</p>",
+      "meta_title": "Reservar Tratamiento - Spa Serenity",
+      "meta_description": "Reserva tu tratamiento de bienestar. Selecciona servicio, fecha y hora.",
+      "content": "<h1>Reservar Tratamiento</h1><p>Tu momento de relajación.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Reservar",
-          "subtitle": "Tu Momento de Relax"
+          "title": "Reservar Tratamiento",
+          "subtitle": "Tu Momento de Relajación",
+          "description": "Selecciona tu tratamiento preferido"
         },
         {
-          "type": "booking_system",
-          "steps": ["treatment", "date_time", "personal_info"],
-          "show_calendar": true,
-          "show_therapist_selection": true,
-          "show_notes": true,
+          "type": "booking_form",
+          "fields": ["name", "email", "phone", "treatment", "therapist", "date", "time", "notes"],
           "submit_text": "Confirmar Reserva"
-        }
-      ]
-    },
-    {
-      "title": "Membresías",
-      "slug": "membresias",
-      "is_home": false,
-      "meta_title": "Membresías - Spa & Bienestar",
-      "meta_description": "Planes mensuales con descuentos especiales y acceso ilimitado.",
-      "content": "<h1>Membresías</h1><p>Descuentos especiales.</p>",
-      "blocks": [
-        {
-          "type": "page_header",
-          "title": "Membresías",
-          "subtitle": "Invierte en tu Bienestar"
         },
         {
-          "type": "pricing_plans",
-          "plans": [
-            {
-              "name": "Básico",
-              "price": "$79",
-              "period": "/mes",
-              "features": ["2 masajes al mes", "10% descuento", "Acceso a yoga"],
-              "cta": "Suscribirse"
-            },
-            {
-              "name": "Premium",
-              "price": "$149",
-              "period": "/mes",
-              "features": ["4 tratamientos al mes", "20% descuento", "Yoga ilimitado", "Productos gratis"],
-              "recommended": true,
-              "cta": "Suscribirse"
-            },
-            {
-              "name": "VIP",
-              "price": "$299",
-              "period": "/mes",
-              "features": ["Tratamientos ilimitados", "30% descuento", "Prioridad", "Invitado gratis"],
-              "cta": "Suscribirse"
-            }
+          "type": "booking_info",
+          "title": "Información Importante",
+          "items": [
+            "Llega 15 minutos antes de tu cita",
+            "Usa ropa cómoda",
+            "Evita comer 2 horas antes",
+            "Para cancelar, avisa con 24 horas de anticipación"
           ]
         }
       ]
     },
     {
-      "title": "Galería",
-      "slug": "galeria",
+      "title": "Terapeutas",
+      "slug": "terapeutas",
       "is_home": false,
-      "meta_title": "Galería - Nuestras Instalaciones",
-      "meta_description": "Conoce nuestras instalaciones y ambiente relajante.",
-      "content": "<h1>Galería</h1><p>Nuestro espacio.</p>",
+      "meta_title": "Nuestros Terapeutas - Spa Serenity",
+      "meta_description": "Conoce a nuestro equipo de terapeutas profesionales y especializados.",
+      "content": "<h1>Nuestros Terapeutas</h1><p>Profesionales especializados.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Galería",
-          "subtitle": "Nuestro Espacio de Paz"
+          "title": "Nuestros Terapeutas",
+          "subtitle": "Profesionales Especializados",
+          "description": "Equipo altamente capacitado en bienestar y relajación"
         },
         {
-          "type": "gallery_grid",
-          "layout": "masonry",
-          "categories": ["Instalaciones", "Tratamientos", "Yoga Studio", "Productos"],
-          "lightbox": true
+          "type": "therapists_grid",
+          "layout": "cards",
+          "show_specialties": true,
+          "show_certifications": true,
+          "show_schedule": true
+        }
+      ]
+    },
+    {
+      "title": "Instalaciones",
+      "slug": "instalaciones",
+      "is_home": false,
+      "meta_title": "Instalaciones - Spa Serenity",
+      "meta_description": "Conoce nuestras instalaciones diseñadas para tu máximo bienestar y relajación.",
+      "content": "<h1>Nuestras Instalaciones</h1><p>Espacios de relajación.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestras Instalaciones",
+          "subtitle": "Espacios de Relajación",
+          "description": "Ambientes diseñados para tu bienestar"
+        },
+        {
+          "type": "facilities_gallery",
+          "categories": ["Salas de Tratamiento", "Sala de Relajación", "Sauna", "Jacuzzi", "Vestuarios"],
+          "show_descriptions": true
         }
       ]
     },
@@ -217,32 +166,30 @@
       "title": "Contacto",
       "slug": "contacto",
       "is_home": false,
-      "meta_title": "Contacto - Spa & Bienestar",
-      "meta_description": "Visítanos o contáctanos para más información sobre nuestros servicios.",
-      "content": "<h1>Contacto</h1><p>Estamos aquí.</p>",
+      "meta_title": "Contacto - Spa Serenity",
+      "meta_description": "Visítanos, llámanos o envíanos un mensaje. Estamos aquí para tu bienestar.",
+      "content": "<h1>Contacto</h1><p>Estamos aquí para ti.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Visítanos",
-          "subtitle": "Tu Oasis de Paz te Espera"
+          "title": "Contacto",
+          "subtitle": "Estamos Aquí",
+          "description": "Para tu bienestar y relajación"
         },
         {
           "type": "contact_info",
-          "address": "Calle Zen #123, Centro",
+          "address": "Av. Bienestar #654, Centro",
           "phone": "+1 234 567 890",
-          "whatsapp": "+1 234 567 890",
-          "email": "info@spa.com",
-          "hours": "Lunes a Domingo: 9:00 AM - 9:00 PM",
+          "email": "info@spaserenity.com",
+          "hours": "Lunes a Domingo: 9:00 - 21:00",
           "show_map": true
         },
         {
           "type": "contact_form",
-          "fields": ["name", "email", "phone", "interest", "message"],
-          "submit_text": "Enviar Consulta"
+          "fields": ["name", "email", "phone", "subject", "message"],
+          "submit_text": "Enviar Mensaje"
         }
       ]
     }
   ]
 }
-
-

@@ -1,0 +1,21 @@
+{
+  "name": "Dosve - Empresa de Desarrollo",
+  "slug": "dosve-empresa",
+  "category": "empresa",
+  "description": "Plantilla para empresa de desarrollo de software con servicios tecnológicos",
+  "preview_image": "preview.jpg",
+  "templates": {
+    "home": "template.blade.php"
+  },
+  "customization": {
+    "colors": {
+      "primary": "#3B82F6",
+      "secondary": "#1E40AF",
+      "accent": "#F59E0B"
+    },
+    "fonts": {
+      "heading": "Inter",
+      "body": "Roboto"
+    }
+  }
+}

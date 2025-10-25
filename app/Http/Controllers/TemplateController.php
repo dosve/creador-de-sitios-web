@@ -33,7 +33,7 @@ class TemplateController extends Controller
     public function show(string $slug)
     {
         $template = $this->templateService->find($slug);
-        
+
         if (!$template) {
             abort(404, 'Plantilla no encontrada');
         }
@@ -46,7 +46,7 @@ class TemplateController extends Controller
         $this->authorize('update', $website);
 
         $template = $this->templateService->find($slug);
-        
+
         if (!$template) {
             return redirect()->back()->with('error', 'Plantilla no encontrada');
         }
@@ -59,11 +59,11 @@ class TemplateController extends Controller
 
         // Aplicar la plantilla a la página de inicio
         $homePage = $website->pages()->where('is_home', true)->first();
-        
+
         if (!$homePage) {
             // Si no hay página de inicio, buscar por slug 'inicio' o crear una nueva
             $homePage = $website->pages()->where('slug', 'inicio')->first();
-            
+
             if (!$homePage) {
                 // Crear una nueva página de inicio
                 $homePage = $website->pages()->create([
@@ -79,10 +79,10 @@ class TemplateController extends Controller
                 $homePage->update(['is_home' => true]);
             }
         }
-        
+
         // Procesar los hooks de la plantilla antes de guardarla
         $processedContent = $this->processTemplateHooks($template['html_content'], $website, $homePage);
-        
+
         // Actualizar el contenido de la página de inicio con la plantilla procesada
         $homePage->update([
             'html_content' => $processedContent,
@@ -93,11 +93,11 @@ class TemplateController extends Controller
         $website->update([
             'template_id' => $slug,
         ]);
-        
+
         // Importar páginas prediseñadas de la plantilla
         $templatePageService = new \App\Services\TemplatePageService();
         $result = $templatePageService->importTemplatePages($website, $slug);
-        
+
         if ($result['success'] && $result['imported'] > 0) {
             return redirect()->route('creator.templates.index')
                 ->with('success', "Plantilla aplicada exitosamente. {$result['imported']} páginas prediseñadas fueron importadas.");
@@ -110,40 +110,51 @@ class TemplateController extends Controller
     public function preview(string $slug)
     {
         $template = $this->templateService->find($slug);
-        
+
         if (!$template) {
             abort(404, 'Plantilla no encontrada');
         }
 
-        // Obtener el sitio web actual del usuario
-        $website = Auth::user()->websites()->find(session('selected_website_id'));
-        
-        if (!$website) {
-            return redirect()->route('creator.select-website')
-                ->with('error', 'Debes seleccionar un sitio web para ver la vista previa');
-        }
+        // Crear un mock del modelo Website dinámico para la vista previa
+        $templateName = $template['name'] ?? ucwords(str_replace('-', ' ', $slug));
+        $website = new class($slug, $templateName) {
+            public $name;
+            public $slug;
 
-        // Crear un sitio web temporal para la vista previa
-        $previewWebsite = clone $website;
-        $previewWebsite->template_id = $slug;
-        
-        // Obtener la página de inicio
-        $homePage = $website->pages()->where('is_home', true)->first();
-        
-        if (!$homePage) {
-            $homePage = $website->pages()->first();
-        }
+            public function __construct($slug, $name)
+            {
+                $this->slug = $slug;
+                $this->name = $name;
+            }
+
+            public function menus()
+            {
+                return new class {
+                    public function where($field, $value)
+                    {
+                        return $this;
+                    }
+                    public function first()
+                    {
+                        return null; // No hay menú configurado, usará el fallback
+                    }
+                };
+            }
+        };
+
+        // Para la vista previa, no necesitamos páginas específicas
+        $homePage = null;
 
         // Renderizar la plantilla directamente
         $templateFile = $template['templates']['home'] ?? 'template.blade.php';
         $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
-        
+
         $customization = $template['customization'] ?? [];
-        
+
         return view($viewPath, [
-            'website' => $previewWebsite,
+            'website' => $website,
             'page' => $homePage,
-            'pages' => $website->pages()->orderBy('sort_order')->get(),
+            'pages' => collect(), // No hay páginas en preview de plantilla
             'customization' => $customization
         ]);
     }
@@ -151,37 +162,37 @@ class TemplateController extends Controller
     private function canUsePremiumTemplates()
     {
         $user = Auth::user();
-        
+
         // Verificar si el usuario tiene un plan que permita plantillas premium
         if ($user->plan) {
             return $user->plan->name !== 'Plan Gratuito';
         }
-        
+
         return false;
     }
-    
+
     /**
      * Procesar hooks de plantilla
      */
     private function processTemplateHooks($templateContent, $website, $homePage)
     {
         // Obtener menús del sitio web
-        $menus = $website->menus()->with(['items' => function($query) {
+        $menus = $website->menus()->with(['items' => function ($query) {
             $query->whereNull('parent_id')->where('is_active', true)->orderBy('order');
-        }, 'items.page', 'items.children' => function($query) {
+        }, 'items.page', 'items.children' => function ($query) {
             $query->where('is_active', true)->orderBy('order');
         }, 'items.children.page'])->get();
-        
+
         // Detectar si estamos en modo preview
         $isPreview = request()->is('creator/websites/*/preview*');
-        
+
         // Definir hooks disponibles
         $hooks = $this->getTemplateHooks($website, $homePage, $menus, $isPreview);
-        
+
         // Procesar hooks en el contenido
         return $this->processHooks($templateContent, $hooks);
     }
-    
+
     /**
      * Definir todos los hooks disponibles para las plantillas
      */
@@ -192,30 +203,30 @@ class TemplateController extends Controller
             'SITIO_WEB_NOMBRE' => $website->name ?? "Mi Sitio Web",
             'SITIO_WEB_DESCRIPCION' => $website->description ?? "Descripción de mi sitio web",
             'ANIO_ACTUAL' => date("Y"),
-            
+
             // Hooks de la página de inicio
             'PAGINA_TITULO' => $homePage->title ?? $website->name ?? "Mi Sitio Web",
             'PAGINA_DESCRIPCION' => $homePage->meta_description ?? $website->description ?? "Descripción de mi sitio web",
-            
+
             // Hooks de menús
             'MENU_HEADER_ITEMS' => $this->generateHeaderMenuSimple($website, $menus, $isPreview),
             'MENU_FOOTER_ITEMS' => $this->generateFooterMenuSimple($website, $menus, $isPreview),
-            
+
             // Hooks de contenido
             'CONTENIDO_PAGINA' => $this->getDefaultPageContent(),
-            
+
             // Hooks de credenciales API
             'API_KEY' => $website->api_key ?? '',
             'API_BASE_URL' => $website->api_base_url ?? '',
             'EPAYCO_PUBLIC_KEY' => $website->epayco_public_key ?? '',
             'EPAYCO_PRIVATE_KEY' => $website->epayco_private_key ?? '',
             'EPAYCO_CUSTOMER_ID' => $website->epayco_customer_id ?? '',
-            
+
             // Hooks de contacto
             'CONTACTO_EMAIL' => $website->contact_email ?? 'contacto@misitio.com',
             'CONTACTO_TELEFONO' => $website->contact_phone ?? '+1 (555) 123-4567',
             'CONTACTO_DIRECCION' => $website->contact_address ?? 'Ciudad, País',
-            
+
             // Hooks de redes sociales
             'FACEBOOK_URL' => $website->facebook_url ?? '#',
             'INSTAGRAM_URL' => $website->instagram_url ?? '#',
@@ -223,7 +234,7 @@ class TemplateController extends Controller
             'LINKEDIN_URL' => $website->linkedin_url ?? '#',
         ];
     }
-    
+
     /**
      * Procesar hooks en el contenido de la plantilla
      */
@@ -233,31 +244,31 @@ class TemplateController extends Controller
         foreach ($hooks as $hook => $value) {
             $content = str_replace($hook, $value, $content);
         }
-        
+
         // También procesar hooks con formato {{ HOOK }}
         foreach ($hooks as $hook => $value) {
             $content = str_replace('{{ ' . $hook . ' }}', $value, $content);
             $content = str_replace('{{' . $hook . '}}', $value, $content);
         }
-        
+
         // Limpiar cualquier hook que no haya sido reemplazado
         $content = preg_replace('/\{{\s*[A-Z_]+\s*\}\}/', '', $content);
-        
+
         return $content;
     }
-    
+
     /**
      * Generar HTML simple del menú del header
      */
     private function generateHeaderMenuSimple($website, $menus, $isPreview = false)
     {
         $headerMenu = $menus->where('location', 'header')->first();
-        
+
         if ($headerMenu && $headerMenu->items->count() > 0) {
             $menuItems = '';
             foreach ($headerMenu->items as $item) {
                 $icon = $item->icon ? '<i class="' . $item->icon . ' mr-1"></i>' : '';
-                
+
                 // Si estamos en modo preview, crear enlaces que mantengan el contexto de preview
                 if ($isPreview) {
                     $previewUrl = $this->generatePreviewUrl($item, $website);
@@ -268,7 +279,7 @@ class TemplateController extends Controller
             }
             return $menuItems;
         }
-        
+
         // Menú por defecto
         if ($isPreview) {
             return '<a href="/creator/websites/' . $website->id . '/preview" class="text-gray-600 hover:text-gray-900">Inicio</a>
@@ -280,19 +291,19 @@ class TemplateController extends Controller
                     <a href="/contacto" class="text-gray-600 hover:text-gray-900">Contacto</a>';
         }
     }
-    
+
     /**
      * Generar HTML simple del menú del footer
      */
     private function generateFooterMenuSimple($website, $menus, $isPreview = false)
     {
         $footerMenu = $menus->where('location', 'footer')->first();
-        
+
         if ($footerMenu && $footerMenu->items->count() > 0) {
             $menuItems = '';
             foreach ($footerMenu->items as $item) {
                 $icon = $item->icon ? '<i class="' . $item->icon . ' mr-1"></i>' : '';
-                
+
                 // Si estamos en modo preview, crear enlaces que mantengan el contexto de preview
                 if ($isPreview) {
                     $previewUrl = $this->generatePreviewUrl($item, $website);
@@ -303,7 +314,7 @@ class TemplateController extends Controller
             }
             return $menuItems;
         }
-        
+
         // Menú por defecto
         if ($isPreview) {
             return '<li><a href="/creator/websites/' . $website->id . '/preview" class="text-gray-400 hover:text-white">Inicio</a></li>
@@ -315,7 +326,7 @@ class TemplateController extends Controller
                     <li><a href="/contacto" class="text-gray-400 hover:text-white">Contacto</a></li>';
         }
     }
-    
+
     /**
      * Generar URL de preview para un item del menú
      */
@@ -325,16 +336,16 @@ class TemplateController extends Controller
         if ($item->target === '_blank' || strpos($item->final_url, 'http') === 0) {
             return $item->final_url;
         }
-        
+
         // Si el item apunta a una página específica del sitio web, usar preview de esa página
         if ($item->page_id) {
             return "/creator/websites/{$website->id}/preview/pages/{$item->page_id}";
         }
-        
+
         // Para enlaces internos que no son páginas específicas, mantener en la vista preview principal
         return "/creator/websites/{$website->id}/preview";
     }
-    
+
     /**
      * Obtener contenido por defecto de la página
      */
@@ -354,5 +365,99 @@ class TemplateController extends Controller
                         </div>
                     </div>
                 </section>';
+    }
+
+    /**
+     * Mostrar el blog de una plantilla
+     */
+    public function blog($slug)
+    {
+        $template = $this->templateService->find($slug);
+
+        if (!$template) {
+            abort(404, 'Plantilla no encontrada');
+        }
+
+        // Crear un mock del modelo Website dinámico
+        $templateName = $template['name'] ?? ucwords(str_replace('-', ' ', $slug));
+        $website = new class($slug, $templateName) {
+            public $name;
+            public $slug;
+
+            public function __construct($slug, $name)
+            {
+                $this->slug = $slug;
+                $this->name = $name;
+            }
+
+            public function menus()
+            {
+                return new class {
+                    public function where($field, $value)
+                    {
+                        return $this;
+                    }
+                    public function first()
+                    {
+                        return null; // No hay menú configurado, usará el fallback
+                    }
+                };
+            }
+        };
+
+        return view("templates.{$slug}.blog", [
+            'website' => $website,
+            'customization' => [
+                'header' => [],
+                'footer' => []
+            ]
+        ]);
+    }
+
+    /**
+     * Mostrar el contacto de una plantilla
+     */
+    public function contacto($slug)
+    {
+        $template = $this->templateService->find($slug);
+
+        if (!$template) {
+            abort(404, 'Plantilla no encontrada');
+        }
+
+        // Crear un mock del modelo Website dinámico
+        $templateName = $template['name'] ?? ucwords(str_replace('-', ' ', $slug));
+        $website = new class($slug, $templateName) {
+            public $name;
+            public $slug;
+
+            public function __construct($slug, $name)
+            {
+                $this->slug = $slug;
+                $this->name = $name;
+            }
+
+            public function menus()
+            {
+                return new class {
+                    public function where($field, $value)
+                    {
+                        return $this;
+                    }
+                    public function first()
+                    {
+                        return null; // No hay menú configurado, usará el fallback
+                    }
+                };
+            }
+        };
+
+        return view("templates.{$slug}.contacto", [
+            'website' => $website,
+            'customization' => [
+                'header' => [],
+                'footer' => []
+            ]
+        ]);
     }
 }

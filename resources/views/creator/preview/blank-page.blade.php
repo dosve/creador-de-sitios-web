@@ -44,6 +44,9 @@
         </div>
     </div>
 
+    {{-- Navegación entre páginas --}}
+    @include('creator.preview.components.page-navigation', ['currentPage' => $page])
+
     <!-- Contenido Principal - Solo el contenido de la página específica -->
     <main class="min-h-screen">
         @if($page && $page->html_content)

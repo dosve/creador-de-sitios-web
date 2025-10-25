@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "total_templates": 17,
-  "last_updated": "2025-10-17",
+  "total_templates": 18,
+  "last_updated": "2025-01-27",
   "templates": [
     {
       "id": 1,
@@ -325,6 +325,25 @@
       "features": ["Diseño limpio", "Responsive", "Fácil personalización", "Genérico"],
       "ideal_for": ["Cualquier tipo de negocio", "Sitios personales", "Landing pages", "Proyectos básicos"],
       "preview_url": "/templates/plantilla-basica/preview"
+    },
+    {
+      "id": 18,
+      "name": "Dosve - Empresa de Desarrollo",
+      "slug": "dosve-empresa",
+      "category": "business",
+      "description": "Plantilla profesional para empresas de desarrollo de software. Servicios tecnológicos, proyectos, tecnologías y equipo de desarrollo.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 4,
+      "pages": ["Inicio", "Servicios", "Proyectos", "Contacto"],
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#1e40af"
+      },
+      "features": ["Servicios de desarrollo", "Portfolio de proyectos", "Tecnologías utilizadas", "Equipo de desarrollo", "Casos de éxito"],
+      "ideal_for": ["Empresas de software", "Desarrolladores", "Agencias de desarrollo", "Consultoras tecnológicas"],
+      "preview_url": "/templates/dosve-empresa/preview"
     }
   ],
   "categories": {
@@ -338,7 +357,7 @@
     },
     "business": {
       "name": "Negocios",
-      "templates": ["consultoria-corporativa"]
+      "templates": ["consultoria-corporativa", "dosve-empresa"]
     },
     "ecommerce": {
       "name": "E-commerce",
@@ -394,11 +413,11 @@
     }
   },
   "statistics": {
-    "total_templates": 17,
-    "total_pages": 95,
-    "avg_pages_per_template": 5.6,
+    "total_templates": 18,
+    "total_pages": 99,
+    "avg_pages_per_template": 5.5,
     "total_block_types": 50,
-    "free_templates": 17,
+    "free_templates": 18,
     "premium_templates": 0
   }
 }

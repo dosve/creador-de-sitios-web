@@ -1,3 +1,4 @@
+{{-- Menú Header Agencia Creativa --}}
 @php
     $headerMenu = $website->menus()->where('location', 'header')->where('is_active', true)->first();
 @endphp
@@ -12,13 +13,12 @@
         </a>
     @endforeach
 @else
-    {{-- Menú por defecto si no hay menú configurado --}}
+    {{-- Menú por defecto para agencia creativa --}}
     @php
-        $currentTemplate = $website->slug ?? 'academia-online';
+        $currentTemplate = $website->slug ?? 'agencia-creativa';
     @endphp
     <a href="{{ route('creator.templates.preview', $currentTemplate) }}" class="text-gray-600 hover:text-gray-900">Inicio</a>
     <a href="{{ route('creator.templates.blog', $currentTemplate) }}" class="text-gray-600 hover:text-gray-900">Blog</a>
     <a href="{{ route('creator.templates.contacto', $currentTemplate) }}" class="text-gray-600 hover:text-gray-900">Contacto</a>
     <a href="#servicios" class="text-gray-600 hover:text-gray-900">Servicios</a>
 @endif
-

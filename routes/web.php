@@ -167,7 +167,7 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
     Route::get('/', function () {
         return redirect()->route('creator.dashboard');
     });
-    
+
     // Selección de sitio web (sin middleware de sitio seleccionado)
     Route::get('/select-website', [App\Http\Controllers\Creator\SelectWebsiteController::class, 'index'])->name('select-website');
     Route::post('/select-website', [App\Http\Controllers\Creator\SelectWebsiteController::class, 'store'])->name('select-website.store');
@@ -175,12 +175,12 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
     // Rutas que requieren sitio web seleccionado
     Route::middleware(['require.selected.website'])->group(function () {
         Route::get('/dashboard', [CreatorDashboard::class, 'index'])->name('dashboard');
-        
+
         // Rutas de websites que usan sesión
         Route::get('websites', [WebsiteController::class, 'index'])->name('websites.index');
         Route::get('websites/create', [WebsiteController::class, 'create'])->name('websites.create');
         Route::post('websites', [WebsiteController::class, 'store'])->name('websites.store');
-        Route::get('websites/show', function() {
+        Route::get('websites/show', function () {
             $website = \App\Models\Website::find(session('selected_website_id'));
             if (!$website) {
                 return redirect()->route('creator.select-website');
@@ -190,12 +190,12 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
             return view('creator.websites.show', compact('website', 'pages'));
         })->name('websites.show');
         Route::delete('websites/{website}', [WebsiteController::class, 'destroy'])->name('websites.destroy');
-        
+
         // Configuración general del sitio (dentro de config)
         Route::get('config/general', [WebsiteController::class, 'edit'])->name('config.general');
         Route::put('config/general', [WebsiteController::class, 'update'])->name('config.general.update');
         Route::patch('websites/{website}/toggle-publish', [WebsiteController::class, 'togglePublish'])->name('websites.toggle-publish');
-        
+
         // Gestión de dominios personalizados
         Route::get('config/domain', [App\Http\Controllers\DomainController::class, 'index'])->name('creator.config.domain');
         Route::post('config/domain', [App\Http\Controllers\DomainController::class, 'store'])->name('domains.store');
@@ -232,6 +232,8 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('templates', [TemplateController::class, 'index'])->name('templates.index');
         Route::get('templates/{slug}', [TemplateController::class, 'show'])->name('templates.show');
         Route::get('templates/{slug}/preview', [TemplateController::class, 'preview'])->name('templates.preview');
+        Route::get('templates/{slug}/blog', [TemplateController::class, 'blog'])->name('templates.blog');
+        Route::get('templates/{slug}/contacto', [TemplateController::class, 'contacto'])->name('templates.contacto');
         Route::post('websites/{website}/templates/{slug}/apply', [TemplateController::class, 'apply'])->name('templates.apply');
 
         // Rutas del blog (usan sesión en lugar de parámetro website)
@@ -242,7 +244,7 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('blog/{blogPost}/edit', [App\Http\Controllers\Creator\BlogPostController::class, 'edit'])->name('blog.edit');
         Route::put('blog/{blogPost}', [App\Http\Controllers\Creator\BlogPostController::class, 'update'])->name('blog.update');
         Route::delete('blog/{blogPost}', [App\Http\Controllers\Creator\BlogPostController::class, 'destroy'])->name('blog.destroy');
-        
+
         // API para posts del blog (para el componente dinámico)
         Route::get('api/websites/{website}/blog-posts', [App\Http\Controllers\Creator\BlogPostController::class, 'apiIndex'])->name('api.blog.index');
 
@@ -302,7 +304,7 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('forms/{form}/submissions/{submission}', [App\Http\Controllers\Creator\FormController::class, 'showSubmission'])->name('forms.show-submission');
         Route::put('forms/{form}', [App\Http\Controllers\Creator\FormController::class, 'update'])->name('forms.update');
         Route::delete('forms/{form}', [App\Http\Controllers\Creator\FormController::class, 'destroy'])->name('forms.destroy');
-        
+
         // Rutas API para el constructor de formularios
         Route::post('forms/{form}/fields', [App\Http\Controllers\Creator\FormController::class, 'addField'])->name('forms.add-field');
         Route::put('forms/{form}/fields/{field}', [App\Http\Controllers\Creator\FormController::class, 'updateField'])->name('forms.update-field');
@@ -405,14 +407,28 @@ Route::get('/blog', [App\Http\Controllers\Creator\BlogPostController::class, 'pu
 Route::get('/blog/{blogPost:slug}', [App\Http\Controllers\Creator\BlogPostController::class, 'publicShowByDomain'])->name('website.blog.show.domain');
 Route::get('/{page:slug}', [WebsiteController::class, 'showPageByDomain'])->name('website.page.domain');
 
+// Rutas específicas para plantillas (deben ir antes de las rutas genéricas)
+Route::get('/template/{template}', [App\Http\Controllers\TemplatePreviewController::class, 'index'])->name('template.preview');
+Route::get('/template/{template}/blog', [App\Http\Controllers\TemplatePreviewController::class, 'blog'])->name('template.blog');
+Route::get('/template/{template}/contacto', [App\Http\Controllers\TemplatePreviewController::class, 'contact'])->name('template.contact');
+Route::get('/template/{template}/{page}', [App\Http\Controllers\TemplatePreviewController::class, 'page'])->name('template.page');
+
+// Rutas específicas para academia online (deben ir antes de las rutas genéricas)
+Route::get('/academia-online', [App\Http\Controllers\TemplatePreviewController::class, 'index'])->name('academia.index');
+Route::get('/academia-online/blog', [App\Http\Controllers\TemplatePreviewController::class, 'blog'])->name('academia.blog');
+Route::get('/academia-online/contacto', [App\Http\Controllers\TemplatePreviewController::class, 'contact'])->name('academia.contacto');
+
+// Rutas para páginas de plantillas
+Route::get('/template/{template}/{page}', [App\Http\Controllers\TemplatePageController::class, 'show'])->name('template.page');
+
 // Rutas para el sitio seleccionado en sesión (usuario logueado)
 Route::middleware('auth')->group(function () {
     // Ruta para el blog del sitio seleccionado
     Route::get('/blog', [WebsiteController::class, 'showBlog'])->name('website.blog');
     Route::get('/blog/{slug}', [WebsiteController::class, 'showBlogPost'])->name('website.blog.post');
-    
+
     // Ruta para mostrar páginas del sitio seleccionado por slug (debe ir al final)
     Route::get('/{slug}', [WebsiteController::class, 'showPageBySlug'])
-        ->where('slug', '^(?!creator|admin|login|register|logout|bienvenida|api|mi-siito-web|sitio).*')
+        ->where('slug', '^(?!creator|admin|login|register|logout|bienvenida|api|mi-siito-web|sitio|template|academia-online).*')
         ->name('website.page.slug');
 });

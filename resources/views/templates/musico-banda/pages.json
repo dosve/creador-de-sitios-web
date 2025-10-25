@@ -4,41 +4,34 @@
       "title": "Inicio",
       "slug": "inicio",
       "is_home": true,
-      "meta_title": "Banda de Rock - Música en Vivo",
-      "meta_description": "Sitio oficial de la banda. Escucha nuestra música, próximos conciertos y merch exclusivo.",
-      "content": "<h1>Rock & Roll</h1><p>Música que mueve masas.</p>",
+      "meta_title": "The Rockers - Música que Mueve",
+      "meta_description": "Banda de rock alternativo. Conciertos, música nueva y fechas de gira.",
+      "content": "<h1>Música que Mueve</h1><p>La mejor música te espera.</p>",
       "blocks": [
         {
-          "type": "hero_video",
-          "video_background": true,
-          "title": "NOMBRE DE LA BANDA",
-          "subtitle": "Rock que sacude tu alma",
-          "show_music_player": true,
-          "cta_text": "Escuchar Ahora",
-          "cta_link": "/musica"
+          "type": "hero_band",
+          "title": "The Rockers",
+          "subtitle": "Música que Mueve",
+          "genre": "Rock Alternativo",
+          "cta_primary_text": "Ver Conciertos",
+          "cta_primary_link": "/conciertos",
+          "cta_secondary_text": "Escuchar Música",
+          "cta_secondary_link": "/musica"
         },
         {
-          "type": "music_player",
-          "title": "Últimas Canciones",
-          "tracks": [
-            {"title": "Canción 1", "duration": "3:45"},
-            {"title": "Canción 2", "duration": "4:12"},
-            {"title": "Canción 3", "duration": "3:28"}
-          ],
-          "show_album_art": true,
-          "streaming_links": ["spotify", "apple_music", "youtube"]
+          "type": "latest_single",
+          "title": "Último Single",
+          "song": "Nueva Canción",
+          "release_date": "Enero 2024"
         },
         {
-          "type": "tour_dates",
-          "title": "Próximas Fechas",
-          "limit": 5,
-          "show_buy_tickets": true
+          "type": "upcoming_shows",
+          "title": "Próximos Conciertos",
+          "limit": 3
         },
         {
-          "type": "latest_album",
-          "title": "Último Álbum",
-          "show_tracklist": true,
-          "show_streaming_links": true
+          "type": "social_links",
+          "platforms": ["spotify", "youtube", "instagram", "facebook"]
         }
       ]
     },
@@ -46,101 +39,45 @@
       "title": "Música",
       "slug": "musica",
       "is_home": false,
-      "meta_title": "Nuestra Música - Discografía",
-      "meta_description": "Escucha toda nuestra discografía. Álbumes, singles y colaboraciones.",
-      "content": "<h1>Discografía</h1><p>Toda nuestra música.</p>",
+      "meta_title": "Nuestra Música - The Rockers",
+      "meta_description": "Escucha nuestra música: álbumes, singles y covers. Disponible en todas las plataformas.",
+      "content": "<h1>Nuestra Música</h1><p>Escucha nuestros temas.</p>",
       "blocks": [
         {
-          "type": "page_header_dark",
-          "title": "DISCOGRAFÍA"
+          "type": "page_header",
+          "title": "Nuestra Música",
+          "subtitle": "Escucha Nuestros Temas",
+          "description": "Álbumes, singles y covers disponibles"
         },
         {
-          "type": "albums_grid",
-          "show_year": true,
-          "show_tracklist": true,
-          "show_streaming": true,
-          "show_purchase": true
-        },
-        {
-          "type": "streaming_platforms",
-          "title": "Escúchanos en",
-          "platforms": ["spotify", "apple_music", "youtube_music", "amazon_music", "deezer"]
+          "type": "music_player",
+          "show_albums": true,
+          "show_singles": true,
+          "show_covers": true,
+          "platforms": ["spotify", "youtube", "apple", "amazon"]
         }
       ]
     },
     {
-      "title": "Tour",
-      "slug": "tour",
+      "title": "Conciertos",
+      "slug": "conciertos",
       "is_home": false,
-      "meta_title": "Tour - Próximos Conciertos",
-      "meta_description": "Próximas fechas de conciertos. Compra tus entradas online.",
-      "content": "<h1>Tour</h1><p>Encuéntranos en vivo.</p>",
+      "meta_title": "Conciertos - The Rockers",
+      "meta_description": "Próximos conciertos y fechas de gira. No te pierdas nuestros shows en vivo.",
+      "content": "<h1>Conciertos</h1><p>Shows en vivo.</p>",
       "blocks": [
         {
-          "type": "page_header_dark",
-          "title": "TOUR 2025",
-          "subtitle": "Encuéntranos en Vivo"
+          "type": "page_header",
+          "title": "Conciertos",
+          "subtitle": "Shows en Vivo",
+          "description": "Próximos conciertos y fechas de gira"
         },
         {
-          "type": "tour_calendar",
-          "show_map": true,
-          "show_tickets_button": true,
-          "show_venue_info": true,
-          "group_by": "month"
-        },
-        {
-          "type": "past_shows",
-          "title": "Shows Pasados",
-          "show_photos": true,
-          "show_videos": true
-        }
-      ]
-    },
-    {
-      "title": "La Banda",
-      "slug": "la-banda",
-      "is_home": false,
-      "meta_title": "La Banda - Integrantes",
-      "meta_description": "Conoce a los integrantes de la banda.",
-      "content": "<h1>La Banda</h1><p>Conoce a los integrantes.</p>",
-      "blocks": [
-        {
-          "type": "page_header_dark",
-          "title": "LA BANDA"
-        },
-        {
-          "type": "band_members",
-          "layout": "cards",
-          "show_instrument": true,
-          "show_bio": true,
-          "show_social": true
-        },
-        {
-          "type": "band_history",
-          "title": "Nuestra Historia",
-          "show_timeline": true
-        }
-      ]
-    },
-    {
-      "title": "Merch",
-      "slug": "merch",
-      "is_home": false,
-      "meta_title": "Merchandising Oficial",
-      "meta_description": "Compra merchandising oficial: camisetas, hoodies, posters y más.",
-      "content": "<h1>Merch Oficial</h1><p>Lleva tu estilo.</p>",
-      "blocks": [
-        {
-          "type": "page_header_dark",
-          "title": "MERCHANDISING OFICIAL"
-        },
-        {
-          "type": "merch_products",
-          "categories": ["Todos", "Ropa", "Accesorios", "Música", "Coleccionables"],
-          "layout": "grid",
-          "columns": 3,
-          "show_sizes": true,
-          "items_per_page": 12
+          "type": "concerts_timeline",
+          "show_past": false,
+          "show_upcoming": true,
+          "show_venues": true,
+          "show_tickets": true
         }
       ]
     },
@@ -148,20 +85,43 @@
       "title": "Galería",
       "slug": "galeria",
       "is_home": false,
-      "meta_title": "Galería - Fotos y Videos",
-      "meta_description": "Fotos y videos de conciertos, backstage y momentos especiales.",
-      "content": "<h1>Galería</h1><p>Momentos en vivo.</p>",
+      "meta_title": "Galería - The Rockers",
+      "meta_description": "Fotos de conciertos, backstage y momentos especiales de la banda.",
+      "content": "<h1>Galería</h1><p>Momentos especiales.</p>",
       "blocks": [
         {
-          "type": "page_header_dark",
-          "title": "GALERÍA"
+          "type": "page_header",
+          "title": "Galería",
+          "subtitle": "Momentos Especiales",
+          "description": "Fotos de conciertos y backstage"
         },
         {
-          "type": "media_gallery",
-          "tabs": ["Fotos", "Videos"],
-          "layout": "masonry",
-          "show_filters": true,
-          "categories": ["Conciertos", "Backstage", "Estudio", "Promo"]
+          "type": "gallery_grid",
+          "categories": ["Todos", "Conciertos", "Backstage", "Estudio", "Gira"],
+          "lightbox": true,
+          "show_captions": true
+        }
+      ]
+    },
+    {
+      "title": "Biografía",
+      "slug": "biografia",
+      "is_home": false,
+      "meta_title": "Biografía - The Rockers",
+      "meta_description": "Conoce la historia de The Rockers, desde sus inicios hasta el presente.",
+      "content": "<h1>Biografía</h1><p>Nuestra historia.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Biografía",
+          "subtitle": "Nuestra Historia",
+          "description": "Desde nuestros inicios hasta el presente"
+        },
+        {
+          "type": "band_timeline",
+          "show_milestones": true,
+          "show_albums": true,
+          "show_awards": true
         }
       ]
     },
@@ -169,30 +129,29 @@
       "title": "Contacto",
       "slug": "contacto",
       "is_home": false,
-      "meta_title": "Contacto - Booking",
-      "meta_description": "Contrata a la banda para tu evento. Información de booking y management.",
-      "content": "<h1>Contacto</h1><p>Booking y management.</p>",
+      "meta_title": "Contacto - The Rockers",
+      "meta_description": "Contrata la banda para tu evento o envía un mensaje. Estamos aquí para ti.",
+      "content": "<h1>Contacto</h1><p>Contrata la banda.</p>",
       "blocks": [
         {
-          "type": "page_header_dark",
-          "title": "CONTACTO",
-          "subtitle": "Booking & Management"
-        },
-        {
-          "type": "contact_booking",
-          "email_booking": "booking@banda.com",
-          "email_management": "management@banda.com",
-          "phone": "+1 234 567 890",
-          "show_rider_download": true
+          "type": "page_header",
+          "title": "Contacto",
+          "subtitle": "Contrata la Banda",
+          "description": "Para eventos y presentaciones"
         },
         {
           "type": "contact_form",
-          "fields": ["name", "email", "phone", "event_type", "event_date", "venue", "message"],
-          "submit_text": "Enviar Consulta"
+          "fields": ["name", "email", "phone", "event_type", "date", "venue", "message"],
+          "submit_text": "Enviar Solicitud"
+        },
+        {
+          "type": "contact_info",
+          "email": "booking@therockers.com",
+          "phone": "+1 234 567 890",
+          "manager": "Juan Manager",
+          "manager_phone": "+1 234 567 891"
         }
       ]
     }
   ]
 }
-
-

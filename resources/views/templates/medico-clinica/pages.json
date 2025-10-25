@@ -4,50 +4,38 @@
       "title": "Inicio",
       "slug": "inicio",
       "is_home": true,
-      "meta_title": "Clínica Médica - Tu Salud es Nuestra Prioridad",
-      "meta_description": "Atención médica de calidad con especialistas certificados. Agenda tu cita online.",
-      "content": "<h1>Tu Salud es Nuestra Prioridad</h1><p>Atención médica profesional y humana.</p>",
+      "meta_title": "Clínica Médica San Rafael - Cuidamos tu Salud",
+      "meta_description": "Clínica médica especializada con los mejores profesionales. Citas médicas, urgencias y atención integral.",
+      "content": "<h1>Cuidamos tu Salud</h1><p>Tu bienestar es nuestra prioridad.</p>",
       "blocks": [
         {
           "type": "hero",
-          "title": "Cuidando tu Salud con Excelencia",
-          "subtitle": "Especialistas certificados y tecnología de vanguardia para tu bienestar",
-          "cta_text": "Agendar Cita",
-          "cta_link": "/citas",
-          "cta_secondary_text": "Urgencias 24/7",
-          "cta_secondary_link": "tel:+1234567890",
-          "show_emergency_badge": true
-        },
-        {
-          "type": "stats",
-          "items": [
-            {"number": "25+", "label": "Años de Experiencia"},
-            {"number": "50+", "label": "Especialistas"},
-            {"number": "100k+", "label": "Pacientes Atendidos"},
-            {"number": "98%", "label": "Satisfacción"}
-          ]
-        },
-        {
-          "type": "services_medical",
-          "title": "Nuestras Especialidades",
-          "items": [
-            {"icon": "heart", "name": "Cardiología", "description": "Cuidado del corazón"},
-            {"icon": "brain", "name": "Neurología", "description": "Sistema nervioso"},
-            {"icon": "bone", "name": "Traumatología", "description": "Huesos y articulaciones"},
-            {"icon": "baby", "name": "Pediatría", "description": "Salud infantil"},
-            {"icon": "tooth", "name": "Odontología", "description": "Salud dental"},
-            {"icon": "eye", "name": "Oftalmología", "description": "Cuidado visual"}
-          ]
+          "title": "Cuidamos tu Salud",
+          "subtitle": "Clínica médica especializada con los mejores profesionales y tecnología avanzada",
+          "cta_primary_text": "Agendar Cita",
+          "cta_primary_link": "/citas",
+          "cta_secondary_text": "Urgencias",
+          "cta_secondary_link": "tel:+1234567890"
         },
         {
           "type": "features",
           "title": "¿Por qué Elegirnos?",
           "items": [
-            {"icon": "medical-team", "title": "Equipo Experto", "description": "Especialistas certificados"},
-            {"icon": "technology", "title": "Tecnología Avanzada", "description": "Equipamiento moderno"},
-            {"icon": "insurance", "title": "Seguros Médicos", "description": "Aceptamos todos"},
-            {"icon": "emergency", "title": "Urgencias 24/7", "description": "Siempre disponibles"}
+            {"icon": "doctors", "title": "Médicos Especialistas", "description": "Profesionales altamente capacitados"},
+            {"icon": "technology", "title": "Tecnología Avanzada", "description": "Equipos de última generación"},
+            {"icon": "emergency", "title": "Urgencias 24/7", "description": "Atención inmediata cuando la necesites"},
+            {"icon": "insurance", "title": "Seguros Médicos", "description": "Aceptamos la mayoría de seguros"}
           ]
+        },
+        {
+          "type": "specialties_preview",
+          "title": "Nuestras Especialidades",
+          "limit": 6
+        },
+        {
+          "type": "testimonials",
+          "title": "Lo que Dicen Nuestros Pacientes",
+          "limit": 3
         }
       ]
     },
@@ -55,127 +43,75 @@
       "title": "Especialidades",
       "slug": "especialidades",
       "is_home": false,
-      "meta_title": "Especialidades Médicas - Clínica",
-      "meta_description": "Conoce todas nuestras especialidades: cardiología, pediatría, traumatología y más.",
-      "content": "<h1>Especialidades Médicas</h1><p>Atención integral para tu salud.</p>",
+      "meta_title": "Especialidades Médicas - Clínica San Rafael",
+      "meta_description": "Conoce nuestras especialidades médicas y encuentra el especialista que necesitas.",
+      "content": "<h1>Nuestras Especialidades</h1><p>Médicos especialistas en cada área.</p>",
       "blocks": [
         {
           "type": "page_header",
           "title": "Nuestras Especialidades",
-          "subtitle": "Atención Integral",
-          "description": "Más de 20 especialidades médicas disponibles"
+          "subtitle": "Cuidado Integral",
+          "description": "Médicos especialistas en cada área de la salud"
         },
         {
-          "type": "specialties_detailed",
-          "categories": [
-            {
-              "name": "Medicina Interna",
-              "specialties": [
-                {
-                  "name": "Cardiología",
-                  "description": "Diagnóstico y tratamiento de enfermedades cardiovasculares",
-                  "services": ["Electrocardiograma", "Ecocardiograma", "Holter", "Prueba de esfuerzo"]
-                },
-                {
-                  "name": "Neumología",
-                  "description": "Atención de enfermedades respiratorias",
-                  "services": ["Espirometría", "Oximetría", "Radiografía de tórax"]
-                }
-              ]
-            },
-            {
-              "name": "Cirugía",
-              "specialties": [
-                {
-                  "name": "Cirugía General",
-                  "description": "Procedimientos quirúrgicos diversos",
-                  "services": ["Laparoscopía", "Cirugía ambulatoria", "Procedimientos mayores"]
-                },
-                {
-                  "name": "Traumatología",
-                  "description": "Tratamiento de lesiones músculo-esqueléticas",
-                  "services": ["Fracturas", "Prótesis", "Artroscopía", "Rehabilitación"]
-                }
-              ]
-            },
-            {
-              "name": "Pediatría",
-              "specialties": [
-                {
-                  "name": "Pediatría General",
-                  "description": "Atención integral del niño sano y enfermo",
-                  "services": ["Control de niño sano", "Vacunación", "Urgencias pediátricas"]
-                }
-              ]
-            }
-          ]
+          "type": "specialties_grid",
+          "categories": ["Todas", "Medicina General", "Especialidades", "Diagnóstico"],
+          "show_doctors": true,
+          "show_schedule": true
         }
       ]
     },
     {
-      "title": "Nuestros Médicos",
-      "slug": "medicos",
+      "title": "Doctores",
+      "slug": "doctores",
       "is_home": false,
-      "meta_title": "Nuestros Médicos - Especialistas Certificados",
-      "meta_description": "Conoce a nuestro equipo médico de especialistas certificados con amplia experiencia.",
-      "content": "<h1>Nuestros Médicos</h1><p>Especialistas de confianza.</p>",
+      "meta_title": "Nuestros Doctores - Clínica San Rafael",
+      "meta_description": "Conoce a nuestro equipo médico: especialistas certificados con amplia experiencia.",
+      "content": "<h1>Nuestros Doctores</h1><p>Especialistas certificados.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Nuestro Equipo Médico",
+          "title": "Nuestros Doctores",
           "subtitle": "Especialistas Certificados",
-          "description": "Profesionales comprometidos con tu salud"
+          "description": "Profesionales con amplia experiencia y certificaciones"
         },
         {
           "type": "doctors_grid",
           "layout": "cards",
-          "filters": ["specialty", "gender", "language"],
-          "show_bio": true,
-          "show_specialty": true,
-          "show_education": true,
+          "show_specialties": true,
           "show_schedule": true,
-          "show_booking": true
+          "show_credentials": true
         }
       ]
     },
     {
-      "title": "Agendar Cita",
+      "title": "Citas",
       "slug": "citas",
       "is_home": false,
-      "meta_title": "Agendar Cita - Clínica Médica",
-      "meta_description": "Agenda tu cita médica online. Elige especialidad, médico, fecha y hora.",
-      "content": "<h1>Agendar Cita</h1><p>Reserva tu consulta.</p>",
+      "meta_title": "Agendar Cita - Clínica San Rafael",
+      "meta_description": "Agenda tu cita médica de forma fácil y rápida. Selecciona especialista, fecha y hora.",
+      "content": "<h1>Agendar Cita</h1><p>Fácil y rápido.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Agendar Cita Médica",
-          "subtitle": "Proceso Simple y Rápido",
-          "description": "Selecciona tu especialista y horario preferido"
+          "title": "Agendar Cita",
+          "subtitle": "Fácil y Rápido",
+          "description": "Selecciona especialista, fecha y hora"
         },
         {
           "type": "appointment_form",
-          "steps": [
-            {
-              "name": "Especialidad",
-              "fields": ["specialty", "reason"]
-            },
-            {
-              "name": "Médico",
-              "fields": ["doctor", "preferred_date"]
-            },
-            {
-              "name": "Datos",
-              "fields": ["name", "email", "phone", "insurance", "notes"]
-            }
-          ],
-          "show_doctor_availability": true,
-          "show_insurance_info": true,
+          "fields": ["name", "email", "phone", "specialty", "doctor", "date", "time", "reason"],
           "submit_text": "Confirmar Cita"
         },
         {
-          "type": "info_box",
+          "type": "appointment_info",
           "title": "Información Importante",
-          "content": "<ul><li>Llega 15 minutos antes de tu cita</li><li>Trae tu carnet de identidad y seguro</li><li>Si no puedes asistir, cancela con 24 horas de anticipación</li></ul>"
+          "items": [
+            "Llega 15 minutos antes de tu cita",
+            "Trae identificación oficial",
+            "Si tienes seguro, trae tu tarjeta",
+            "Para cancelar, avisa con 24 horas de anticipación"
+          ]
         }
       ]
     },
@@ -183,83 +119,40 @@
       "title": "Servicios",
       "slug": "servicios",
       "is_home": false,
-      "meta_title": "Servicios Médicos - Clínica",
-      "meta_description": "Conoce todos nuestros servicios: consultas, exámenes, cirugía, hospitalización y más.",
-      "content": "<h1>Servicios Médicos</h1><p>Atención integral.</p>",
+      "meta_title": "Servicios Médicos - Clínica San Rafael",
+      "meta_description": "Conoce todos nuestros servicios médicos: consultas, urgencias, estudios y más.",
+      "content": "<h1>Nuestros Servicios</h1><p>Cuidado integral de tu salud.</p>",
       "blocks": [
         {
           "type": "page_header",
           "title": "Nuestros Servicios",
-          "subtitle": "Atención Completa",
-          "description": "Todo lo que necesitas para tu salud en un solo lugar"
+          "subtitle": "Cuidado Integral",
+          "description": "Servicios médicos completos para tu bienestar"
         },
         {
-          "type": "services_grid",
+          "type": "services_detailed",
           "items": [
             {
-              "name": "Consulta Médica",
-              "description": "Primera vez y seguimiento",
-              "icon": "stethoscope",
-              "price_from": "$50"
+              "title": "Consultas Médicas",
+              "description": "Atención médica especializada en todas las áreas",
+              "features": ["Medicina General", "Especialidades", "Segunda Opinión", "Telemedicina"]
             },
             {
-              "name": "Exámenes de Laboratorio",
-              "description": "Análisis clínicos completos",
-              "icon": "flask",
-              "price_from": "$30"
+              "title": "Urgencias",
+              "description": "Atención médica de urgencia 24/7",
+              "features": ["Atención Inmediata", "Ambulancia", "Hospitalización", "Cirugía de Urgencia"]
             },
             {
-              "name": "Imagenología",
-              "description": "Rayos X, Ecografía, TAC, Resonancia",
-              "icon": "xray",
-              "price_from": "$80"
+              "title": "Estudios de Laboratorio",
+              "description": "Análisis clínicos y estudios especializados",
+              "features": ["Análisis de Sangre", "Radiografías", "Ultrasonidos", "Resonancia Magnética"]
             },
             {
-              "name": "Cirugía Ambulatoria",
-              "description": "Procedimientos menores",
-              "icon": "surgical",
-              "price_from": "$500"
-            },
-            {
-              "name": "Hospitalización",
-              "description": "Habitaciones privadas y compartidas",
-              "icon": "hospital",
-              "price_from": "$200/día"
-            },
-            {
-              "name": "Urgencias 24/7",
-              "description": "Atención de emergencias",
-              "icon": "ambulance",
-              "always_available": true
+              "title": "Cirugías",
+              "description": "Procedimientos quirúrgicos ambulatorios y hospitalarios",
+              "features": ["Cirugía Ambulatoria", "Cirugía Mayor", "Recuperación", "Seguimiento"]
             }
           ]
-        }
-      ]
-    },
-    {
-      "title": "Seguros",
-      "slug": "seguros",
-      "is_home": false,
-      "meta_title": "Seguros Médicos - Clínica",
-      "meta_description": "Aceptamos todos los seguros médicos. Consulta la lista completa.",
-      "content": "<h1>Seguros Médicos</h1><p>Trabajamos con todos.</p>",
-      "blocks": [
-        {
-          "type": "page_header",
-          "title": "Seguros Médicos",
-          "subtitle": "Convenios",
-          "description": "Aceptamos todos los principales seguros"
-        },
-        {
-          "type": "insurance_list",
-          "show_logos": true,
-          "show_coverage": true,
-          "categories": ["Seguros Privados", "Seguros Públicos", "Seguros Internacionales"]
-        },
-        {
-          "type": "info_box",
-          "title": "¿Tu seguro no está en la lista?",
-          "content": "Contáctanos y verificaremos si tenemos convenio con tu aseguradora."
         }
       ]
     },
@@ -267,26 +160,24 @@
       "title": "Contacto",
       "slug": "contacto",
       "is_home": false,
-      "meta_title": "Contacto - Clínica Médica",
-      "meta_description": "Contáctanos para agendar citas, consultas o emergencias. Atención 24/7.",
+      "meta_title": "Contacto - Clínica San Rafael",
+      "meta_description": "Visítanos, llámanos o envíanos un mensaje. Estamos aquí para cuidar tu salud.",
       "content": "<h1>Contacto</h1><p>Estamos aquí para ti.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Contáctanos",
+          "title": "Contacto",
           "subtitle": "Estamos Aquí",
-          "description": "Atención 24 horas, 7 días a la semana"
+          "description": "Para cuidar tu salud y bienestar"
         },
         {
           "type": "contact_info",
-          "address": "Calle Salud #789, Ciudad",
+          "address": "Av. Salud #789, Centro Médico",
           "phone": "+1 234 567 890",
-          "emergency": "+1 234 567 899",
-          "whatsapp": "+1 234 567 890",
-          "email": "citas@clinica.com",
-          "hours": "Consultas:<br>Lunes a Viernes: 8:00 AM - 8:00 PM<br>Sábados: 8:00 AM - 2:00 PM<br><br>Urgencias: 24/7",
-          "show_map": true,
-          "highlight_emergency": true
+          "emergency_phone": "+1 234 567 891",
+          "email": "info@clinicasanrafael.com",
+          "hours": "Lunes a Viernes: 7:00 - 19:00<br>Sábados: 8:00 - 14:00<br>Urgencias: 24/7",
+          "show_map": true
         },
         {
           "type": "contact_form",
@@ -297,5 +188,3 @@
     }
   ]
 }
-
-

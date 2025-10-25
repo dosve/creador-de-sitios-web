@@ -4,52 +4,51 @@
       "title": "Inicio",
       "slug": "inicio",
       "is_home": true,
-      "meta_title": "Bienvenido - Mi Sitio Web",
-      "meta_description": "Sitio web profesional creado con nuestro creador de sitios.",
-      "content": "<h1>Bienvenido</h1><p>Este es mi sitio web.</p>",
+      "meta_title": "Mi Sitio Web - Bienvenido",
+      "meta_description": "Bienvenido a mi sitio web. Aquí encontrarás información sobre mis servicios y cómo contactarme.",
+      "content": "<h1>Bienvenido</h1><p>Gracias por visitar mi sitio web.</p>",
       "blocks": [
         {
           "type": "hero",
-          "title": "Tu Título Principal",
-          "subtitle": "Tu descripción o eslogan atractivo",
-          "cta_text": "Comenzar",
-          "cta_link": "#"
+          "title": "Bienvenido a Mi Sitio Web",
+          "subtitle": "Aquí encontrarás información sobre mis servicios y cómo contactarme",
+          "cta_primary_text": "Conocer Más",
+          "cta_primary_link": "/sobre-mi",
+          "cta_secondary_text": "Contactar",
+          "cta_secondary_link": "/contacto"
         },
         {
           "type": "features",
-          "title": "Características",
+          "title": "¿Qué Ofrezco?",
           "items": [
-            {"icon": "star", "title": "Característica 1", "description": "Descripción de la característica"},
-            {"icon": "check", "title": "Característica 2", "description": "Descripción de la característica"},
-            {"icon": "heart", "title": "Característica 3", "description": "Descripción de la característica"}
+            {"icon": "service1", "title": "Servicio 1", "description": "Descripción de mi primer servicio"},
+            {"icon": "service2", "title": "Servicio 2", "description": "Descripción de mi segundo servicio"},
+            {"icon": "service3", "title": "Servicio 3", "description": "Descripción de mi tercer servicio"},
+            {"icon": "service4", "title": "Servicio 4", "description": "Descripción de mi cuarto servicio"}
           ]
-        },
-        {
-          "type": "cta",
-          "title": "¿Listo para Comenzar?",
-          "description": "Ponte en contacto con nosotros hoy",
-          "cta_text": "Contactar",
-          "cta_link": "/contacto"
         }
       ]
     },
     {
-      "title": "Sobre Nosotros",
-      "slug": "sobre-nosotros",
+      "title": "Sobre Mí",
+      "slug": "sobre-mi",
       "is_home": false,
-      "meta_title": "Sobre Nosotros",
-      "meta_description": "Conoce más sobre nosotros, nuestra misión y valores.",
-      "content": "<h1>Sobre Nosotros</h1><p>Nuestra historia.</p>",
+      "meta_title": "Sobre Mí - Mi Historia",
+      "meta_description": "Conoce mi historia, experiencia y pasión por lo que hago.",
+      "content": "<h1>Sobre Mí</h1><p>Mi historia y experiencia.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Sobre Nosotros",
-          "subtitle": "Nuestra Historia"
+          "title": "Sobre Mí",
+          "subtitle": "Mi Historia",
+          "description": "Conoce más sobre mí y mi experiencia"
         },
         {
           "type": "about_content",
-          "content": "Escribe aquí tu historia, misión y valores...",
-          "show_image": true
+          "story": "Mi historia comenzó cuando...",
+          "experience": "X años de experiencia en...",
+          "passion": "Mi pasión es...",
+          "values": ["Valor 1", "Valor 2", "Valor 3", "Valor 4"]
         }
       ]
     },
@@ -57,55 +56,35 @@
       "title": "Servicios",
       "slug": "servicios",
       "is_home": false,
-      "meta_title": "Nuestros Servicios",
-      "meta_description": "Descubre todos los servicios que ofrecemos.",
-      "content": "<h1>Servicios</h1><p>Lo que ofrecemos.</p>",
+      "meta_title": "Servicios - Lo que Ofrezco",
+      "meta_description": "Descubre todos los servicios que ofrezco y cómo pueden ayudarte.",
+      "content": "<h1>Mis Servicios</h1><p>Lo que puedo hacer por ti.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Nuestros Servicios",
-          "subtitle": "¿Qué Ofrecemos?"
+          "title": "Mis Servicios",
+          "subtitle": "Lo que Ofrezco",
+          "description": "Servicios diseñados para ayudarte"
         },
         {
-          "type": "services_grid",
+          "type": "services_detailed",
           "items": [
             {
               "title": "Servicio 1",
-              "description": "Descripción detallada del servicio",
-              "icon": "service"
+              "description": "Descripción detallada del primer servicio",
+              "features": ["Característica 1", "Característica 2", "Característica 3"]
             },
             {
               "title": "Servicio 2",
-              "description": "Descripción detallada del servicio",
-              "icon": "service"
+              "description": "Descripción detallada del segundo servicio",
+              "features": ["Característica 1", "Característica 2", "Característica 3"]
             },
             {
               "title": "Servicio 3",
-              "description": "Descripción detallada del servicio",
-              "icon": "service"
+              "description": "Descripción detallada del tercer servicio",
+              "features": ["Característica 1", "Característica 2", "Característica 3"]
             }
           ]
-        }
-      ]
-    },
-    {
-      "title": "Blog",
-      "slug": "blog",
-      "is_home": false,
-      "meta_title": "Blog - Últimas Noticias",
-      "meta_description": "Lee nuestras últimas publicaciones y noticias.",
-      "content": "<h1>Blog</h1><p>Noticias y artículos.</p>",
-      "blocks": [
-        {
-          "type": "page_header",
-          "title": "Blog",
-          "subtitle": "Noticias y Artículos"
-        },
-        {
-          "type": "blog_posts_grid",
-          "layout": "grid",
-          "columns": 3,
-          "items_per_page": 9
         }
       ]
     },
@@ -113,30 +92,29 @@
       "title": "Contacto",
       "slug": "contacto",
       "is_home": false,
-      "meta_title": "Contacto - Ponte en Contacto",
-      "meta_description": "Ponte en contacto con nosotros. Estamos aquí para ayudarte.",
-      "content": "<h1>Contacto</h1><p>Estamos aquí para ayudarte.</p>",
+      "meta_title": "Contacto - Hablemos",
+      "meta_description": "Contáctame para cualquier consulta o proyecto. Estoy aquí para ayudarte.",
+      "content": "<h1>Contacto</h1><p>Hablemos de tu proyecto.</p>",
       "blocks": [
         {
           "type": "page_header",
           "title": "Contacto",
-          "subtitle": "Hablemos"
+          "subtitle": "Hablemos",
+          "description": "Estoy aquí para ayudarte"
         },
         {
           "type": "contact_form",
-          "fields": ["name", "email", "phone", "message"],
+          "fields": ["name", "email", "phone", "subject", "message"],
           "submit_text": "Enviar Mensaje"
         },
         {
           "type": "contact_info",
-          "email": "contacto@sitio.com",
+          "email": "hola@misitioweb.com",
           "phone": "+1 234 567 890",
-          "address": "Tu Dirección",
-          "show_map": false
+          "address": "Mi Dirección",
+          "hours": "Lunes a Viernes: 9:00 - 18:00"
         }
       ]
     }
   ]
 }
-
-

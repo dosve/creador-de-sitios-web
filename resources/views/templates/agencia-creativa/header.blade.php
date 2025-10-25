@@ -15,7 +15,7 @@
 
       {{-- Navigation --}}
       <nav class="hidden lg:flex items-center space-x-8">
-        @include('templates.partials.menu-header')
+        @include('templates.agencia-creativa.menu-header')
       </nav>
 
       {{-- CTA Button --}}
@@ -38,7 +38,7 @@
     {{-- Mobile Menu --}}
     <nav id="mobile-menu" class="hidden lg:hidden mt-4 pt-4 border-t border-gray-100">
       <div class="flex flex-col space-y-3">
-        @include('templates.partials.menu-header')
+        @include('templates.agencia-creativa.menu-header')
         <a href="#contacto" class="px-4 py-3 text-center bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium">
           Hablemos
         </a>

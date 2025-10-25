@@ -4,40 +4,27 @@
       "title": "Inicio",
       "slug": "inicio",
       "is_home": true,
-      "meta_title": "Tienda - Diseño Minimalista",
-      "meta_description": "Productos de calidad con diseño minimalista. Simpleza y funcionalidad.",
-      "content": "<h1>Simpleza y Funcionalidad</h1><p>Productos esenciales para tu vida.</p>",
+      "meta_title": "Minimal Store - Diseño y Simplicidad",
+      "meta_description": "Tienda minimalista con productos de diseño. Menos es más en nuestra selección cuidadosa.",
+      "content": "<h1>Diseño y Simplicidad</h1><p>Menos es más.</p>",
       "blocks": [
         {
           "type": "hero_minimal",
-          "title": "Nuevo Producto",
-          "subtitle": "Diseñado para simplificar tu vida",
-          "image": true,
-          "cta_text": "Descubrir",
-          "cta_link": "/productos",
-          "background_color": "#f5f5f7"
+          "title": "Diseño y Simplicidad",
+          "subtitle": "Productos cuidadosamente seleccionados para una vida minimalista",
+          "cta_text": "Explorar Productos",
+          "cta_link": "/productos"
         },
         {
-          "type": "featured_product_showcase",
-          "title": "Destacado",
-          "layout": "split",
-          "show_features": true,
-          "show_specs": true
+          "type": "featured_products",
+          "title": "Productos Destacados",
+          "limit": 6
         },
         {
-          "type": "products_carousel",
-          "title": "Productos Populares",
-          "limit": 6,
-          "minimal": true
-        },
-        {
-          "type": "features_minimal",
-          "items": [
-            {"icon": "box", "title": "Envío Gratis", "description": "En todos los pedidos"},
-            {"icon": "shield", "title": "Garantía 2 años", "description": "Productos duraderos"},
-            {"icon": "return", "title": "Devoluciones", "description": "14 días sin preguntas"},
-            {"icon": "support", "title": "Soporte", "description": "Asistencia rápida"}
-          ]
+          "type": "philosophy",
+          "title": "Nuestra Filosofía",
+          "content": "Creemos en la belleza de la simplicidad. Cada producto en nuestra tienda ha sido cuidadosamente seleccionado por su diseño, calidad y funcionalidad.",
+          "principles": ["Menos es más", "Calidad sobre cantidad", "Diseño atemporal", "Sostenibilidad"]
         }
       ]
     },
@@ -45,45 +32,42 @@
       "title": "Productos",
       "slug": "productos",
       "is_home": false,
-      "meta_title": "Todos los Productos",
-      "meta_description": "Explora nuestra selección completa de productos.",
-      "content": "<h1>Productos</h1><p>Catálogo completo.</p>",
+      "meta_title": "Productos - Minimal Store",
+      "meta_description": "Explora nuestra colección de productos minimalistas: hogar, oficina, moda y accesorios.",
+      "content": "<h1>Nuestros Productos</h1><p>Selección cuidadosa.</p>",
       "blocks": [
         {
           "type": "page_header_minimal",
-          "title": "Productos"
+          "title": "Nuestros Productos",
+          "subtitle": "Selección Cuidadosa"
         },
         {
-          "type": "products_grid_minimal",
-          "layout": "grid",
-          "columns": 3,
-          "spacing": "large",
-          "show_filters": false,
-          "show_sort": true,
-          "items_per_page": 12
+          "type": "product_grid",
+          "filters": ["categoria", "precio", "color", "material"],
+          "sort_options": ["destacados", "precio_asc", "precio_desc", "nuevos"],
+          "items_per_page": 12,
+          "layout": "minimal"
         }
       ]
     },
     {
-      "title": "Colecciones",
-      "slug": "colecciones",
+      "title": "Categorías",
+      "slug": "categorias",
       "is_home": false,
-      "meta_title": "Colecciones",
-      "meta_description": "Nuestras colecciones curadas especialmente para ti.",
-      "content": "<h1>Colecciones</h1><p>Selecciones curadas.</p>",
+      "meta_title": "Categorías - Minimal Store",
+      "meta_description": "Explora por categorías: hogar, oficina, moda, accesorios y más.",
+      "content": "<h1>Categorías</h1><p>Organiza por tipo.</p>",
       "blocks": [
         {
           "type": "page_header_minimal",
-          "title": "Colecciones"
+          "title": "Categorías",
+          "subtitle": "Organiza por Tipo"
         },
         {
-          "type": "collections_showcase",
-          "layout": "editorial",
-          "items": [
-            {"name": "Esenciales", "description": "Lo básico hecho mejor", "image": true},
-            {"name": "Tech", "description": "Tecnología minimalista", "image": true},
-            {"name": "Hogar", "description": "Diseño para tu espacio", "image": true}
-          ]
+          "type": "categories_grid",
+          "layout": "minimal",
+          "show_descriptions": true,
+          "show_product_count": true
         }
       ]
     },
@@ -91,58 +75,20 @@
       "title": "Sobre Nosotros",
       "slug": "sobre-nosotros",
       "is_home": false,
-      "meta_title": "Sobre Nosotros - Nuestra Filosofía",
-      "meta_description": "Creemos en la simpleza, calidad y diseño atemporal.",
-      "content": "<h1>Sobre Nosotros</h1><p>Nuestra filosofía.</p>",
-      "blocks": [
-        {
-          "type": "about_minimal",
-          "title": "Diseño Atemporal",
-          "subtitle": "Productos que duran",
-          "content": "Creemos en crear productos esenciales con diseño atemporal...",
-          "show_image": true,
-          "layout": "centered"
-        },
-        {
-          "type": "values_minimal",
-          "values": [
-            {"title": "Simpleza", "description": "Eliminamos lo innecesario"},
-            {"title": "Calidad", "description": "Materiales premium"},
-            {"title": "Sostenibilidad", "description": "Productos responsables"}
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Soporte",
-      "slug": "soporte",
-      "is_home": false,
-      "meta_title": "Soporte - Centro de Ayuda",
-      "meta_description": "Encuentra respuestas a tus preguntas o contáctanos.",
-      "content": "<h1>Soporte</h1><p>Estamos aquí para ayudarte.</p>",
+      "meta_title": "Sobre Nosotros - Minimal Store",
+      "meta_description": "Conoce nuestra historia y compromiso con el diseño minimalista y la sostenibilidad.",
+      "content": "<h1>Sobre Nosotros</h1><p>Nuestra historia.</p>",
       "blocks": [
         {
           "type": "page_header_minimal",
-          "title": "Centro de Ayuda"
+          "title": "Sobre Nosotros",
+          "subtitle": "Nuestra Historia"
         },
         {
-          "type": "support_categories",
-          "items": [
-            {"icon": "package", "title": "Pedidos y Envíos", "link": "#"},
-            {"icon": "return", "title": "Devoluciones", "link": "#"},
-            {"icon": "warranty", "title": "Garantía", "link": "#"},
-            {"icon": "question", "title": "FAQ", "link": "#"}
-          ]
-        },
-        {
-          "type": "faq_minimal",
-          "categories": ["Pedidos", "Productos", "Envíos", "Devoluciones"]
-        },
-        {
-          "type": "contact_support",
-          "email": "soporte@tienda.com",
-          "phone": "+1 234 567 890",
-          "hours": "Lunes a Viernes: 9:00 AM - 6:00 PM"
+          "type": "about_content",
+          "story": "Desde 2020 promoviendo el diseño minimalista...",
+          "mission": "Hacer que el buen diseño sea accesible para todos",
+          "values": ["Simplicidad", "Calidad", "Sostenibilidad", "Funcionalidad"]
         }
       ]
     },
@@ -150,27 +96,27 @@
       "title": "Contacto",
       "slug": "contacto",
       "is_home": false,
-      "meta_title": "Contacto",
-      "meta_description": "Ponte en contacto con nosotros.",
-      "content": "<h1>Contacto</h1><p>Hablemos.</p>",
+      "meta_title": "Contacto - Minimal Store",
+      "meta_description": "Contáctanos para cualquier consulta sobre nuestros productos o servicios.",
+      "content": "<h1>Contacto</h1><p>Estamos aquí.</p>",
       "blocks": [
         {
           "type": "page_header_minimal",
-          "title": "Contacto"
+          "title": "Contacto",
+          "subtitle": "Estamos Aquí"
         },
         {
-          "type": "contact_form_minimal",
-          "fields": ["name", "email", "message"],
-          "submit_text": "Enviar"
+          "type": "contact_form",
+          "fields": ["name", "email", "subject", "message"],
+          "submit_text": "Enviar Mensaje"
         },
         {
-          "type": "contact_info_minimal",
-          "email": "hola@tienda.com",
-          "show_social": false
+          "type": "contact_info",
+          "email": "hola@minimalstore.com",
+          "phone": "+1 234 567 890",
+          "address": "Av. Minimal #123, Centro"
         }
       ]
     }
   ]
 }
-
-

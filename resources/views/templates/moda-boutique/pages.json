@@ -4,38 +4,108 @@
       "title": "Inicio",
       "slug": "inicio",
       "is_home": true,
-      "meta_title": "Boutique de Moda - Estilo Único",
-      "meta_description": "Descubre las últimas tendencias en moda. Colecciones exclusivas y diseños únicos.",
-      "content": "<h1>Estilo Único</h1><p>Descubre las últimas tendencias.</p>",
+      "meta_title": "Boutique Elegance - Moda y Estilo",
+      "meta_description": "Descubre las últimas tendencias en moda. Ropa, accesorios y calzado de las mejores marcas.",
+      "content": "<h1>Moda y Estilo</h1><p>Las últimas tendencias te esperan.</p>",
       "blocks": [
         {
-          "type": "hero_fashion",
-          "image": true,
-          "title": "Nueva Colección",
-          "subtitle": "Primavera/Verano 2025",
-          "cta_text": "Descubrir",
-          "cta_link": "/colecciones",
-          "fullscreen": true
+          "type": "hero_slider",
+          "slides": [
+            {
+              "title": "Nueva Colección",
+              "subtitle": "Descubre las últimas tendencias",
+              "cta_text": "Ver Colección",
+              "cta_link": "/coleccion"
+            }
+          ]
         },
         {
           "type": "featured_products",
-          "title": "Recién Llegados",
-          "layout": "grid",
-          "columns": 4,
-          "limit": 8,
-          "show_quick_view": true
-        },
-        {
-          "type": "lookbook",
-          "title": "Lookbook",
-          "layout": "editorial",
-          "images": 6
-        },
-        {
-          "type": "instagram_feed",
-          "title": "Síguenos @boutique",
-          "username": "@boutique",
+          "title": "Productos Destacados",
           "limit": 8
+        },
+        {
+          "type": "categories",
+          "title": "Categorías",
+          "layout": "grid"
+        },
+        {
+          "type": "features",
+          "items": [
+            {"icon": "delivery", "title": "Envío Gratis", "description": "En compras mayores a $100"},
+            {"icon": "return", "title": "Devoluciones", "description": "30 días para cambiar"},
+            {"icon": "quality", "title": "Calidad Premium", "description": "Marcas reconocidas"},
+            {"icon": "style", "title": "Asesoría de Estilo", "description": "Personal shopper incluido"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Mujer",
+      "slug": "mujer",
+      "is_home": false,
+      "meta_title": "Moda Mujer - Boutique Elegance",
+      "meta_description": "Ropa, accesorios y calzado para mujer. Las últimas tendencias en moda femenina.",
+      "content": "<h1>Moda Mujer</h1><p>Estilo y elegancia para ti.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Moda Mujer",
+          "subtitle": "Estilo y Elegancia",
+          "description": "Las últimas tendencias en moda femenina"
+        },
+        {
+          "type": "product_grid",
+          "filters": ["categoria", "talla", "color", "precio", "marca"],
+          "sort_options": ["destacados", "precio_asc", "precio_desc", "nuevos"],
+          "items_per_page": 12,
+          "category": "mujer"
+        }
+      ]
+    },
+    {
+      "title": "Hombre",
+      "slug": "hombre",
+      "is_home": false,
+      "meta_title": "Moda Hombre - Boutique Elegance",
+      "meta_description": "Ropa, accesorios y calzado para hombre. Estilo moderno y sofisticado.",
+      "content": "<h1>Moda Hombre</h1><p>Estilo moderno y sofisticado.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Moda Hombre",
+          "subtitle": "Estilo Moderno",
+          "description": "Ropa y accesorios para el hombre contemporáneo"
+        },
+        {
+          "type": "product_grid",
+          "filters": ["categoria", "talla", "color", "precio", "marca"],
+          "sort_options": ["destacados", "precio_asc", "precio_desc", "nuevos"],
+          "items_per_page": 12,
+          "category": "hombre"
+        }
+      ]
+    },
+    {
+      "title": "Accesorios",
+      "slug": "accesorios",
+      "is_home": false,
+      "meta_title": "Accesorios - Boutique Elegance",
+      "meta_description": "Bolsas, zapatos, joyería y accesorios para completar tu look.",
+      "content": "<h1>Accesorios</h1><p>Completa tu look.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Accesorios",
+          "subtitle": "Completa tu Look",
+          "description": "Bolsas, zapatos, joyería y más"
+        },
+        {
+          "type": "product_grid",
+          "filters": ["tipo", "color", "precio", "marca"],
+          "sort_options": ["destacados", "precio_asc", "precio_desc", "nuevos"],
+          "items_per_page": 12,
+          "category": "accesorios"
         }
       ]
     },
@@ -43,67 +113,21 @@
       "title": "Colecciones",
       "slug": "colecciones",
       "is_home": false,
-      "meta_title": "Colecciones - Boutique",
-      "meta_description": "Explora nuestras colecciones: Primavera/Verano, Otoño/Invierno, Accesorios.",
-      "content": "<h1>Colecciones</h1><p>Nuestras líneas exclusivas.</p>",
+      "meta_title": "Colecciones - Boutique Elegance",
+      "meta_description": "Descubre nuestras colecciones especiales y ediciones limitadas.",
+      "content": "<h1>Colecciones</h1><p>Ediciones especiales.</p>",
       "blocks": [
         {
-          "type": "page_header_minimal",
-          "title": "Colecciones"
+          "type": "page_header",
+          "title": "Colecciones",
+          "subtitle": "Ediciones Especiales",
+          "description": "Descubre nuestras colecciones únicas"
         },
         {
           "type": "collections_grid",
-          "items": [
-            {"name": "Primavera/Verano", "season": "SS 2025", "image": true},
-            {"name": "Otoño/Invierno", "season": "AW 2024", "image": true},
-            {"name": "Accesorios", "type": "Complementos", "image": true},
-            {"name": "Joyería", "type": "Exclusiva", "image": true}
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Tienda",
-      "slug": "tienda",
-      "is_home": false,
-      "meta_title": "Tienda - Todos los Productos",
-      "meta_description": "Explora todos nuestros productos: vestidos, blusas, pantalones, accesorios y más.",
-      "content": "<h1>Tienda</h1><p>Todos los productos.</p>",
-      "blocks": [
-        {
-          "type": "page_header_minimal",
-          "title": "Tienda"
-        },
-        {
-          "type": "shop_filters",
-          "categories": ["Todos", "Vestidos", "Blusas", "Pantalones", "Faldas", "Accesorios"],
-          "sizes": ["XS", "S", "M", "L", "XL"],
-          "colors": ["Negro", "Blanco", "Beige", "Azul", "Rosa"],
-          "price_ranges": ["$0-50", "$50-100", "$100-200", "$200+"]
-        },
-        {
-          "type": "products_grid",
-          "layout": "grid",
-          "columns": 4,
-          "show_filters": true,
-          "show_sort": true,
-          "items_per_page": 24
-        }
-      ]
-    },
-    {
-      "title": "Lookbook",
-      "slug": "lookbook",
-      "is_home": false,
-      "meta_title": "Lookbook - Inspiración de Estilo",
-      "meta_description": "Inspiración de estilo para cada ocasión.",
-      "content": "<h1>Lookbook</h1><p>Inspiración de estilo.</p>",
-      "blocks": [
-        {
-          "type": "lookbook_fullwidth",
-          "layout": "editorial",
-          "show_product_tags": true,
-          "show_shop_button": true
+          "show_season": true,
+          "show_description": true,
+          "show_products": true
         }
       ]
     },
@@ -111,15 +135,21 @@
       "title": "Sobre Nosotros",
       "slug": "sobre-nosotros",
       "is_home": false,
-      "meta_title": "Sobre Nosotros - Nuestra Historia",
-      "meta_description": "Conoce nuestra historia, filosofía y compromiso con la moda sostenible.",
-      "content": "<h1>Sobre Nosotros</h1><p>Nuestra historia.</p>",
+      "meta_title": "Sobre Nosotros - Boutique Elegance",
+      "meta_description": "Conoce nuestra historia y compromiso con la moda y el estilo.",
+      "content": "<h1>Sobre Nosotros</h1><p>Nuestra historia en la moda.</p>",
       "blocks": [
         {
-          "type": "about_fashion",
-          "show_image": true,
-          "show_values": true,
-          "values": ["Sostenibilidad", "Calidad", "Diseño Exclusivo", "Comercio Justo"]
+          "type": "page_header",
+          "title": "Sobre Nosotros",
+          "subtitle": "Nuestra Historia",
+          "description": "Comprometidos con la moda y el estilo"
+        },
+        {
+          "type": "about_content",
+          "story": "Desde 2015 ofreciendo las mejores tendencias...",
+          "mission": "Hacer que cada cliente se sienta única y elegante",
+          "values": ["Calidad", "Estilo", "Servicio", "Innovación"]
         }
       ]
     },
@@ -127,30 +157,30 @@
       "title": "Contacto",
       "slug": "contacto",
       "is_home": false,
-      "meta_title": "Contacto - Boutique",
-      "meta_description": "Visita nuestra boutique o contáctanos online.",
-      "content": "<h1>Contacto</h1><p>Visítanos.</p>",
+      "meta_title": "Contacto - Boutique Elegance",
+      "meta_description": "Visítanos, llámanos o envíanos un mensaje. Estamos aquí para ayudarte.",
+      "content": "<h1>Contacto</h1><p>Estamos aquí para ti.</p>",
       "blocks": [
         {
-          "type": "page_header_minimal",
-          "title": "Contacto"
+          "type": "page_header",
+          "title": "Contacto",
+          "subtitle": "Estamos Aquí",
+          "description": "Para ayudarte con tu estilo"
         },
         {
           "type": "contact_info",
-          "address": "Calle Moda #123, Centro",
+          "address": "Av. Moda #321, Centro",
           "phone": "+1 234 567 890",
-          "email": "hola@boutique.com",
-          "hours": "Lunes a Sábado: 10:00 AM - 8:00 PM<br>Domingo: 11:00 AM - 6:00 PM",
+          "email": "info@boutiqueelegance.com",
+          "hours": "Lunes a Sábado: 10:00 - 20:00<br>Domingos: 12:00 - 18:00",
           "show_map": true
         },
         {
           "type": "contact_form",
-          "fields": ["name", "email", "subject", "message"],
-          "submit_text": "Enviar"
+          "fields": ["name", "email", "phone", "subject", "message"],
+          "submit_text": "Enviar Mensaje"
         }
       ]
     }
   ]
 }
-
-

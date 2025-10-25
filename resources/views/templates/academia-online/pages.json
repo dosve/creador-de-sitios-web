@@ -154,34 +154,22 @@
       ]
     },
     {
+      "title": "Blog",
+      "slug": "blog",
+      "is_home": false,
+      "meta_title": "Blog - Academia Online",
+      "meta_description": "Artículos, consejos y recursos para tu aprendizaje. Mantente actualizado con las últimas tendencias.",
+      "content": "<h1>Blog</h1><p>Artículos y recursos para tu aprendizaje.</p>",
+      "template": "academia-online.blog"
+    },
+    {
       "title": "Contacto",
       "slug": "contacto",
       "is_home": false,
       "meta_title": "Contacto - Academia Online",
       "meta_description": "¿Tienes preguntas? Estamos aquí para ayudarte.",
       "content": "<h1>Contacto</h1><p>Estamos aquí para ayudarte.</p>",
-      "blocks": [
-        {
-          "type": "page_header",
-          "title": "Contacto",
-          "subtitle": "¿Tienes Preguntas?",
-          "description": "Nuestro equipo está listo para ayudarte"
-        },
-        {
-          "type": "contact_form",
-          "fields": ["name", "email", "subject", "message"],
-          "submit_text": "Enviar Mensaje"
-        },
-        {
-          "type": "faq_section",
-          "title": "Preguntas Frecuentes",
-          "items": [
-            {"question": "¿Cómo me inscribo?", "answer": "..."},
-            {"question": "¿Hay certificados?", "answer": "..."},
-            {"question": "¿Cuánto duran los cursos?", "answer": "..."}
-          ]
-        }
-      ]
+      "template": "academia-online.contacto"
     }
   ]
 }

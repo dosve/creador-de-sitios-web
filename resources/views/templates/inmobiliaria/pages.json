@@ -4,193 +4,171 @@
       "title": "Inicio",
       "slug": "inicio",
       "is_home": true,
-      "meta_title": "Inmobiliaria - Encuentra tu Hogar Ideal",
-      "meta_description": "Propiedades en venta y alquiler. Casas, apartamentos, locales comerciales y más.",
-      "content": "<h1>Encuentra tu Hogar Ideal</h1><p>Miles de propiedades disponibles.</p>",
+      "meta_title": "Inmobiliaria Premium - Tu Hogar Ideal",
+      "meta_description": "Encuentra tu hogar ideal. Casas, departamentos y oficinas en las mejores ubicaciones.",
+      "content": "<h1>Tu Hogar Ideal</h1><p>Propiedades premium en las mejores ubicaciones.</p>",
       "blocks": [
         {
           "type": "hero",
-          "title": "Encuentra el Hogar de tus Sueños",
-          "subtitle": "Miles de propiedades en venta y alquiler en las mejores zonas",
-          "show_search_bar": true,
-          "search_fields": ["location", "type", "price_range", "bedrooms"]
+          "title": "Encuentra tu Hogar Ideal",
+          "subtitle": "Propiedades premium en las mejores ubicaciones de la ciudad",
+          "cta_primary_text": "Buscar Propiedades",
+          "cta_primary_link": "/propiedades",
+          "cta_secondary_text": "Vender Propiedad",
+          "cta_secondary_link": "/vender"
         },
         {
           "type": "property_search",
-          "quick_filters": ["Comprar", "Alquilar", "Casas", "Apartamentos"],
-          "show_map": true
+          "title": "Buscar Propiedades",
+          "filters": ["tipo", "ubicacion", "precio", "habitaciones", "banos"]
         },
         {
           "type": "featured_properties",
           "title": "Propiedades Destacadas",
-          "limit": 6,
-          "show_price": true,
-          "show_features": true,
-          "show_location": true
+          "limit": 6
         },
         {
-          "type": "stats",
-          "items": [
-            {"number": "5,000+", "label": "Propiedades"},
-            {"number": "2,000+", "label": "Clientes Satisfechos"},
-            {"number": "50+", "label": "Agentes"},
-            {"number": "15", "label": "Años de Experiencia"}
-          ]
-        },
-        {
-          "type": "services_realestate",
+          "type": "services",
           "title": "Nuestros Servicios",
           "items": [
-            {"icon": "home", "title": "Venta de Propiedades", "description": "Te ayudamos a vender tu propiedad"},
-            {"icon": "key", "title": "Alquiler", "description": "Gestión completa de alquileres"},
-            {"icon": "document", "title": "Asesoría Legal", "description": "Trámites y documentación"},
-            {"icon": "calculator", "title": "Crédito Hipotecario", "description": "Te ayudamos con el financiamiento"}
+            {"icon": "home", "title": "Compra y Venta", "description": "Asesoría especializada"},
+            {"icon": "key", "title": "Renta", "description": "Propiedades en renta"},
+            {"icon": "calculator", "title": "Avalúos", "description": "Valuación profesional"},
+            {"icon": "legal", "title": "Trámites Legales", "description": "Asesoría jurídica"}
           ]
         }
       ]
     },
     {
-      "title": "Propiedades en Venta",
-      "slug": "venta",
+      "title": "Propiedades",
+      "slug": "propiedades",
       "is_home": false,
-      "meta_title": "Propiedades en Venta",
-      "meta_description": "Explora todas las propiedades disponibles para la venta. Casas, apartamentos, terrenos y más.",
-      "content": "<h1>Propiedades en Venta</h1><p>Encuentra tu próxima inversión.</p>",
+      "meta_title": "Propiedades - Inmobiliaria Premium",
+      "meta_description": "Explora nuestro catálogo completo de propiedades: casas, departamentos y oficinas.",
+      "content": "<h1>Nuestras Propiedades</h1><p>Encuentra la propiedad perfecta.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Propiedades en Venta",
-          "subtitle": "Encuentra tu Próxima Inversión"
+          "title": "Nuestras Propiedades",
+          "subtitle": "Catálogo Completo",
+          "description": "Explora todas nuestras opciones disponibles"
         },
         {
-          "type": "property_filters",
-          "filters": {
-            "type": ["Casa", "Apartamento", "Terreno", "Local Comercial", "Oficina"],
-            "price": ["0-100k", "100k-200k", "200k-300k", "300k+"],
-            "bedrooms": ["1", "2", "3", "4+"],
-            "bathrooms": ["1", "2", "3+"],
-            "area": ["0-50m²", "50-100m²", "100-200m²", "200m²+"],
-            "features": ["Piscina", "Garaje", "Jardín", "Terraza"]
-          }
-        },
-        {
-          "type": "properties_grid",
-          "layout": "grid",
-          "columns": 3,
-          "show_map": true,
-          "show_compare": true,
-          "show_favorites": true,
-          "items_per_page": 12
+          "type": "property_grid",
+          "filters": ["tipo", "ubicacion", "precio", "habitaciones", "banos"],
+          "sort_options": ["precio_asc", "precio_desc", "fecha", "relevancia"],
+          "items_per_page": 12,
+          "show_map": true
         }
       ]
     },
     {
-      "title": "Propiedades en Alquiler",
-      "slug": "alquiler",
-      "is_home": false,
-      "meta_title": "Propiedades en Alquiler",
-      "meta_description": "Alquila tu próximo hogar u oficina. Variedad de propiedades disponibles.",
-      "content": "<h1>Propiedades en Alquiler</h1><p>Tu próximo hogar te espera.</p>",
-      "blocks": [
-        {
-          "type": "page_header",
-          "title": "Propiedades en Alquiler",
-          "subtitle": "Encuentra tu Próximo Hogar"
-        },
-        {
-          "type": "property_filters",
-          "filters": {
-            "type": ["Casa", "Apartamento", "Habitación", "Local", "Oficina"],
-            "rent": ["0-500", "500-1000", "1000-1500", "1500+"],
-            "bedrooms": ["1", "2", "3", "4+"],
-            "furnished": ["Amueblado", "Sin Amueblar"],
-            "pets": ["Se admiten mascotas"]
-          }
-        },
-        {
-          "type": "properties_grid",
-          "layout": "grid",
-          "columns": 3,
-          "show_map": true,
-          "items_per_page": 12
-        }
-      ]
-    },
-    {
-      "title": "Vende tu Propiedad",
+      "title": "Vender",
       "slug": "vender",
       "is_home": false,
-      "meta_title": "Vende tu Propiedad con Nosotros",
-      "meta_description": "Te ayudamos a vender tu propiedad rápido y al mejor precio.",
-      "content": "<h1>Vende tu Propiedad</h1><p>Te ayudamos a obtener el mejor precio.</p>",
+      "meta_title": "Vende tu Propiedad - Inmobiliaria Premium",
+      "meta_description": "Vende tu propiedad con nosotros. Servicio profesional y las mejores comisiones.",
+      "content": "<h1>Vende tu Propiedad</h1><p>Servicio profesional para vendedores.</p>",
       "blocks": [
         {
           "type": "page_header",
           "title": "Vende tu Propiedad",
-          "subtitle": "Te Ayudamos a Obtener el Mejor Precio"
+          "subtitle": "Servicio Profesional",
+          "description": "Te ayudamos a vender al mejor precio"
         },
         {
-          "type": "sell_benefits",
+          "type": "selling_services",
           "items": [
-            {"icon": "chart", "title": "Valoración Gratuita", "description": "Conoce el valor real de tu propiedad"},
-            {"icon": "camera", "title": "Fotografía Profesional", "description": "Mostramos tu propiedad en su mejor versión"},
-            {"icon": "megaphone", "title": "Marketing Digital", "description": "Máxima visibilidad en todos los canales"},
-            {"icon": "contract", "title": "Asesoría Legal", "description": "Te acompañamos en todo el proceso"}
+            {
+              "title": "Avalúo Gratuito",
+              "description": "Determinamos el valor real de tu propiedad",
+              "icon": "calculator"
+            },
+            {
+              "title": "Marketing Profesional",
+              "description": "Fotografía, videos y publicidad especializada",
+              "icon": "camera"
+            },
+            {
+              "title": "Asesoría Legal",
+              "description": "Te acompañamos en todo el proceso",
+              "icon": "legal"
+            },
+            {
+              "title": "Negociación",
+              "description": "Obtenemos el mejor precio para ti",
+              "icon": "handshake"
+            }
           ]
         },
         {
-          "type": "property_valuation_form",
-          "title": "Solicita tu Valoración Gratuita",
-          "fields": ["name", "email", "phone", "property_type", "address", "size", "description"],
-          "submit_text": "Solicitar Valoración"
+          "type": "contact_form",
+          "title": "Solicita tu Avalúo Gratuito",
+          "fields": ["name", "email", "phone", "property_type", "address", "message"],
+          "submit_text": "Solicitar Avalúo"
         }
       ]
     },
     {
-      "title": "Nuestros Agentes",
-      "slug": "agentes",
+      "title": "Renta",
+      "slug": "renta",
       "is_home": false,
-      "meta_title": "Nuestros Agentes Inmobiliarios",
-      "meta_description": "Conoce a nuestro equipo de agentes inmobiliarios expertos.",
-      "content": "<h1>Nuestros Agentes</h1><p>Expertos en bienes raíces.</p>",
+      "meta_title": "Propiedades en Renta - Inmobiliaria Premium",
+      "meta_description": "Encuentra propiedades en renta: casas, departamentos y oficinas.",
+      "content": "<h1>Propiedades en Renta</h1><p>Encuentra tu próximo hogar.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Nuestros Agentes",
-          "subtitle": "Expertos en Bienes Raíces"
+          "title": "Propiedades en Renta",
+          "subtitle": "Tu Próximo Hogar",
+          "description": "Casas, departamentos y oficinas disponibles"
         },
         {
-          "type": "agents_grid",
-          "layout": "cards",
-          "show_bio": true,
-          "show_specialties": true,
-          "show_contact": true,
-          "show_properties_count": true
+          "type": "rental_grid",
+          "filters": ["tipo", "ubicacion", "renta", "habitaciones"],
+          "show_availability": true,
+          "show_lease_terms": true
         }
       ]
     },
     {
-      "title": "Sobre Nosotros",
-      "slug": "sobre-nosotros",
+      "title": "Servicios",
+      "slug": "servicios",
       "is_home": false,
-      "meta_title": "Sobre Nosotros - Inmobiliaria",
-      "meta_description": "Conoce nuestra historia, misión y compromiso con nuestros clientes.",
-      "content": "<h1>Sobre Nosotros</h1><p>Nuestra historia.</p>",
+      "meta_title": "Servicios - Inmobiliaria Premium",
+      "meta_description": "Conoce todos nuestros servicios: compra, venta, renta, avalúos y más.",
+      "content": "<h1>Nuestros Servicios</h1><p>Servicios integrales inmobiliarios.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Sobre Nosotros",
-          "subtitle": "15 Años Conectando Personas con Hogares"
+          "title": "Nuestros Servicios",
+          "subtitle": "Servicios Integrales",
+          "description": "Todo lo que necesitas en bienes raíces"
         },
         {
-          "type": "about_content",
-          "show_timeline": true,
-          "show_values": true,
-          "values": ["Transparencia", "Profesionalismo", "Compromiso", "Confianza"]
-        },
-        {
-          "type": "team_photo",
-          "show_full_width": true
+          "type": "services_detailed",
+          "items": [
+            {
+              "title": "Compra y Venta",
+              "description": "Te ayudamos a encontrar o vender la propiedad perfecta",
+              "features": ["Asesoría personalizada", "Negociación profesional", "Trámites legales", "Financiamiento"]
+            },
+            {
+              "title": "Renta",
+              "description": "Propiedades en renta para todos los presupuestos",
+              "features": ["Búsqueda personalizada", "Verificación de inquilinos", "Contratos legales", "Mantenimiento"]
+            },
+            {
+              "title": "Avalúos",
+              "description": "Valuación profesional de propiedades",
+              "features": ["Avalúos certificados", "Reportes detallados", "Comparables de mercado", "Certificación oficial"]
+            },
+            {
+              "title": "Asesoría Legal",
+              "description": "Acompañamiento en todos los trámites legales",
+              "features": ["Contratos", "Escrituras", "Registro", "Asesoría fiscal"]
+            }
+          ]
         }
       ]
     },
@@ -198,32 +176,30 @@
       "title": "Contacto",
       "slug": "contacto",
       "is_home": false,
-      "meta_title": "Contacto - Inmobiliaria",
-      "meta_description": "Contáctanos para comprar, vender o alquilar propiedades.",
+      "meta_title": "Contacto - Inmobiliaria Premium",
+      "meta_description": "Contáctanos para encontrar tu propiedad ideal o vender la tuya.",
       "content": "<h1>Contacto</h1><p>Estamos para ayudarte.</p>",
       "blocks": [
         {
           "type": "page_header",
-          "title": "Contáctanos",
-          "subtitle": "Estamos Aquí para Ayudarte"
+          "title": "Contacto",
+          "subtitle": "Estamos Aquí",
+          "description": "Contáctanos para cualquier consulta"
         },
         {
           "type": "contact_form",
-          "fields": ["name", "email", "phone", "interest", "property_type", "budget", "message"],
-          "submit_text": "Enviar Consulta"
+          "fields": ["name", "email", "phone", "service", "message"],
+          "submit_text": "Enviar Mensaje"
         },
         {
           "type": "contact_info",
-          "address": "Av. Principal #123, Centro",
+          "address": "Av. Principal #456, Centro",
           "phone": "+1 234 567 890",
-          "whatsapp": "+1 234 567 890",
           "email": "info@inmobiliaria.com",
-          "hours": "Lunes a Viernes: 9:00 AM - 7:00 PM<br>Sábados: 9:00 AM - 2:00 PM",
+          "hours": "Lunes a Viernes: 9:00 - 19:00<br>Sábados: 9:00 - 15:00",
           "show_map": true
         }
       ]
     }
   ]
 }
-
-

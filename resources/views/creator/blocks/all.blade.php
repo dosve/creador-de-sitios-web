@@ -28,3 +28,16 @@
 @include('creator.blocks.advanced')
 ,
 @include('creator.blocks.templates')
+,
+@include('creator.blocks.wordpress-basic')
+,
+@include('creator.blocks.wordpress-media')
+,
+@include('creator.blocks.wordpress-layout')
+,
+@include('creator.blocks.wordpress-widgets')
+,
+@include('creator.blocks.wordpress-embed')
+,
+@include('creator.blocks.wordpress-forms')
+,

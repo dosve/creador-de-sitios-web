@@ -22,12 +22,12 @@ class PreviewController extends Controller
     {
         // Obtener sitio web de la sesión
         $website = Website::find(session('selected_website_id'));
-        
+
         if (!$website) {
             return redirect()->route('creator.select-website')
                 ->with('error', 'Por favor selecciona un sitio web primero');
         }
-        
+
         $this->authorize('view', $website);
 
         // Obtener páginas del sitio web
@@ -37,9 +37,9 @@ class PreviewController extends Controller
         $homePage = $pages->where('is_home', true)->first() ?? $pages->first();
 
         // Obtener menús del sitio web
-        $menus = $website->menus()->with(['items' => function($query) {
+        $menus = $website->menus()->with(['items' => function ($query) {
             $query->whereNull('parent_id')->where('is_active', true)->orderBy('order');
-        }, 'items.page', 'items.children' => function($query) {
+        }, 'items.page', 'items.children' => function ($query) {
             $query->where('is_active', true)->orderBy('order');
         }, 'items.children.page'])->get();
 
@@ -48,7 +48,7 @@ class PreviewController extends Controller
             $template = $website->template;
             if ($template) {
                 // Procesar la plantilla en tiempo real con modo preview
-                $processedContent = $this->processTemplateSimple($template->html_content, $website, $homePage, $menus);
+                $processedContent = $this->processTemplateSimple($template->html_content, $website, $homePage, $menus, $pages);
                 return response($processedContent);
             }
         }
@@ -76,12 +76,12 @@ class PreviewController extends Controller
     {
         // Obtener sitio web de la sesión
         $website = Website::find(session('selected_website_id'));
-        
+
         if (!$website) {
             return redirect()->route('creator.select-website')
                 ->with('error', 'Por favor selecciona un sitio web primero');
         }
-        
+
         $this->authorize('view', $website);
 
         // Verificar que la página pertenece al sitio web seleccionado
@@ -89,24 +89,27 @@ class PreviewController extends Controller
             abort(403, 'Esta página no pertenece al sitio web seleccionado');
         }
 
+        // Obtener todas las páginas del sitio para la navegación
+        $pages = $website->pages()->where('is_published', true)->orderBy('sort_order')->get();
+
         // Si el sitio web no tiene plantilla (página en blanco), usar vista sin navbar/footer
         if (!$website->template_id) {
-            return view('creator.preview.blank-page', compact('website', 'page'));
+            return view('creator.preview.blank-page', compact('website', 'page', 'pages'));
         }
 
         // Si tiene plantilla, procesar con el sistema de hooks
         $template = $website->template;
         if ($template) {
             // Obtener menús del sitio web
-            $menus = $website->menus()->with(['items' => function($query) {
+            $menus = $website->menus()->with(['items' => function ($query) {
                 $query->whereNull('parent_id')->where('is_active', true)->orderBy('order');
-            }, 'items.page', 'items.children' => function($query) {
+            }, 'items.page', 'items.children' => function ($query) {
                 $query->where('is_active', true)->orderBy('order');
             }, 'items.children.page'])->get();
-            
+
             // Procesar la plantilla en tiempo real con modo preview
             $processedContent = $this->processTemplateSimple($template->html_content, $website, $page, $menus);
-            
+
             return response($processedContent);
         }
 
@@ -126,7 +129,7 @@ class PreviewController extends Controller
     </div>
 </body>
 </html>';
-        
+
         return response($pageContent)->header('Content-Type', 'text/html');
     }
 
@@ -137,12 +140,12 @@ class PreviewController extends Controller
     {
         // Obtener sitio web de la sesión
         $website = Website::find(session('selected_website_id'));
-        
+
         if (!$website) {
             return redirect()->route('creator.select-website')
                 ->with('error', 'Por favor selecciona un sitio web primero');
         }
-        
+
         $this->authorize('view', $website);
 
         // Verificar que el post pertenece al sitio web seleccionado
@@ -164,20 +167,20 @@ class PreviewController extends Controller
             ->where('is_published', true)
             ->where('id', '!=', $blogPost->id)
             ->where('category_id', $blogPost->category_id)
-                ->latest()
-                ->take(3)
-                ->get();
+            ->latest()
+            ->take(3)
+            ->get();
 
         // Obtener menús
-        $menus = $website->menus()->with(['items' => function($query) {
+        $menus = $website->menus()->with(['items' => function ($query) {
             $query->whereNull('parent_id')->where('is_active', true)->orderBy('order');
-        }, 'items.page', 'items.children' => function($query) {
+        }, 'items.page', 'items.children' => function ($query) {
             $query->where('is_active', true)->orderBy('order');
         }, 'items.children.page'])->get();
 
         // Generar contenido del post usando la plantilla del sitio
         $postContent = $this->generateBlogPostContent($website, $blogPost, $relatedPosts);
-        
+
         // Procesar la plantilla del sitio con el contenido del post
         $templateContent = $this->processBlogPostTemplate($website, $homePage, $menus, $postContent, $blogPost, true);
 
@@ -191,12 +194,12 @@ class PreviewController extends Controller
     {
         // Obtener sitio web de la sesión
         $website = Website::find(session('selected_website_id'));
-        
+
         if (!$website) {
             return redirect()->route('creator.select-website')
                 ->with('error', 'Por favor selecciona un sitio web primero');
         }
-        
+
         $this->authorize('view', $website);
 
         // Obtener la página de inicio para usar como base
@@ -219,15 +222,15 @@ class PreviewController extends Controller
         $categories = $website->categories()->where('is_active', true)->get();
 
         // Obtener menús
-        $menus = $website->menus()->with(['items' => function($query) {
+        $menus = $website->menus()->with(['items' => function ($query) {
             $query->whereNull('parent_id')->where('is_active', true)->orderBy('order');
-        }, 'items.page', 'items.children' => function($query) {
+        }, 'items.page', 'items.children' => function ($query) {
             $query->where('is_active', true)->orderBy('order');
         }, 'items.children.page'])->get();
 
         // Generar contenido del blog usando la plantilla del sitio
         $blogContent = $this->generateBlogPageContent($website, $blogPosts, $categories);
-        
+
         // Procesar la plantilla del sitio con el contenido del blog
         $templateContent = $this->processBlogTemplate($website, $homePage, $menus, $blogContent, true);
 
@@ -241,12 +244,12 @@ class PreviewController extends Controller
     {
         // Obtener sitio web de la sesión
         $website = Website::find(session('selected_website_id'));
-        
+
         if (!$website) {
             return redirect()->route('creator.select-website')
                 ->with('error', 'Por favor selecciona un sitio web primero');
         }
-        
+
         $this->authorize('view', $website);
 
         // Obtener páginas para el menú de navegación
@@ -312,63 +315,67 @@ class PreviewController extends Controller
             $tempFileName = 'temp_template_' . uniqid() . '.blade.php';
             $tempFile = resource_path('views/' . $tempFileName);
             file_put_contents($tempFile, $templateContent);
-            
+
             // Preparar las variables para la vista
             $data = [
                 'website' => $website,
                 'homePage' => $homePage,
                 'menus' => $menus,
             ];
-            
+
             // Usar el view helper de Laravel para renderizar correctamente
             $viewName = basename($tempFileName, '.blade.php');
             $view = view($viewName, $data);
             $processedContent = $view->render();
-            
+
             // Limpiar archivos temporales
             if (file_exists($tempFile)) {
                 unlink($tempFile);
             }
-            
+
             return $processedContent;
-            
         } catch (\Exception $e) {
             // Si hay error, usar el método de reemplazo simple como fallback
             Log::error('Error procesando plantilla Blade: ' . $e->getMessage());
-            
+
             // Limpiar archivo temporal si existe
             if (isset($tempFile) && file_exists($tempFile)) {
                 unlink($tempFile);
             }
-            
+
             return $this->processTemplateSimple($templateContent, $website, $homePage, $menus);
         }
     }
-    
+
     /**
      * Procesamiento simple de plantilla usando sistema de hooks
      */
-    private function processTemplateSimple($templateContent, $website, $currentPage, $menus)
+    private function processTemplateSimple($templateContent, $website, $currentPage, $menus, $pages = null)
     {
         // Detectar si estamos en modo preview - incluir también las rutas simplificadas
-        $isPreview = request()->is('creator/websites/*/preview*') || 
-                     request()->is('creator/*') ||
-                     (auth()->check() && session('selected_website_id') == $website->id);
-        
+        $isPreview = request()->is('creator/websites/*/preview*') ||
+            request()->is('creator/*') ||
+            (auth()->check() && session('selected_website_id') == $website->id);
+
+        // Obtener páginas si no se proporcionaron
+        if (!$pages) {
+            $pages = $website->pages()->where('is_published', true)->orderBy('sort_order')->get();
+        }
+
         // Definir hooks disponibles
-        $hooks = $this->getTemplateHooks($website, $currentPage, $menus, $isPreview);
-        
+        $hooks = $this->getTemplateHooks($website, $currentPage, $menus, $isPreview, $pages);
+
         // Procesar hooks en el contenido
         $processedContent = $this->processHooks($templateContent, $hooks);
-        
+
         // Agregar barra de administrador al inicio del body
         $adminBar = view('components.admin-bar', compact('website'))->render();
         $processedContent = $this->injectAdminBar($processedContent, $adminBar);
-        
+
         // Si estamos en modo preview, agregar los scripts necesarios
         if ($isPreview) {
             $scriptsToAdd = [];
-            
+
             // Script de productos si tiene bloque de productos
             if ($this->hasProductsBlock($processedContent)) {
                 // Script de productos
@@ -376,14 +383,14 @@ class PreviewController extends Controller
                     'apiKey' => $website->api_key ?? '',
                     'apiBaseUrl' => $website->api_base_url ?? ''
                 ])->render();
-                
+
                 // Script del carrito
                 $cartScript = view('components.cart-script', [
                     'epaycoPublicKey' => $website->epayco_public_key ?? '',
                     'epaycoPrivateKey' => $website->epayco_private_key ?? '',
                     'epaycoCustomerId' => $website->epayco_customer_id ?? ''
                 ])->render();
-                
+
                 // SDK de Epayco con callback para verificar carga
                 $epaycoSDK = '
                     <script type="text/javascript">
@@ -401,12 +408,12 @@ class PreviewController extends Controller
                         document.head.appendChild(script);
                     </script>
                 ';
-                
+
                 $scriptsToAdd[] = $epaycoSDK;
                 $scriptsToAdd[] = $productsScript;
                 $scriptsToAdd[] = $cartScript;
             }
-            
+
             // Script de blog si tiene bloque de blog
             if ($this->hasBlogBlock($processedContent)) {
                 $blogScript = view('components.blog-script', [
@@ -414,11 +421,11 @@ class PreviewController extends Controller
                 ])->render();
                 $scriptsToAdd[] = $blogScript;
             }
-            
+
             // Combinar todos los scripts
             if (!empty($scriptsToAdd)) {
                 $combinedScripts = implode('', $scriptsToAdd);
-                
+
                 // Insertar los scripts antes del cierre de </body>
                 if (strpos($processedContent, '</body>') !== false) {
                     $processedContent = str_replace('</body>', $combinedScripts . '</body>', $processedContent);
@@ -427,14 +434,14 @@ class PreviewController extends Controller
                     $processedContent .= $combinedScripts;
                 }
             }
-            
+
             // Agregar la barra de administración
             $processedContent = $this->addAdminBar($processedContent, $website);
         }
-        
+
         return $processedContent;
     }
-    
+
     /**
      * Verificar si el contenido tiene un bloque de productos
      */
@@ -445,7 +452,7 @@ class PreviewController extends Controller
             || strpos($content, 'data-dynamic-products="true"') !== false
             || strpos($content, 'data-products-source="api"') !== false;
     }
-    
+
     /**
      * Verificar si el contenido tiene un bloque de blog
      */
@@ -463,7 +470,7 @@ class PreviewController extends Controller
     {
         $blogHtml = '<section class="blog-page py-12">';
         $blogHtml .= '<div class="container mx-auto px-4">';
-        
+
         // Header del blog
         $blogHtml .= '<div class="text-center mb-12">';
         $blogHtml .= '<h1 class="text-4xl font-bold text-gray-900 mb-4">Blog</h1>';
@@ -473,17 +480,17 @@ class PreviewController extends Controller
         if ($blogPosts->count() > 0) {
             // Grid de posts
             $blogHtml .= '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">';
-            
+
             foreach ($blogPosts as $post) {
                 $blogHtml .= '<article class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">';
                 $blogHtml .= '<div class="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">';
-                
+
                 if ($post->category) {
                     $blogHtml .= '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">';
                     $blogHtml .= htmlspecialchars($post->category->name);
                     $blogHtml .= '</span>';
                 }
-                
+
                 $blogHtml .= '</div>';
                 $blogHtml .= '<div class="p-6">';
                 $blogHtml .= '<div class="flex items-center text-sm text-gray-500 mb-2">';
@@ -491,16 +498,16 @@ class PreviewController extends Controller
                 $blogHtml .= '<span class="mx-2">•</span>';
                 $blogHtml .= '<span>' . ceil(str_word_count(strip_tags($post->content)) / 200) . ' min lectura</span>';
                 $blogHtml .= '</div>';
-                
+
                 $blogHtml .= '<h3 class="text-xl font-bold text-gray-900 mb-2 hover:text-blue-600">';
                 $blogHtml .= '<a href="/creator/websites/' . $website->id . '/preview/blog/' . $post->id . '">';
                 $blogHtml .= htmlspecialchars($post->title);
                 $blogHtml .= '</a>';
                 $blogHtml .= '</h3>';
-                
+
                 $excerpt = $post->excerpt ?: Str::limit(strip_tags($post->content), 150);
                 $blogHtml .= '<p class="text-gray-600 mb-4">' . htmlspecialchars($excerpt) . '</p>';
-                
+
                 if ($post->tags->count() > 0) {
                     $blogHtml .= '<div class="flex flex-wrap gap-1 mb-4">';
                     foreach ($post->tags->take(3) as $tag) {
@@ -510,7 +517,7 @@ class PreviewController extends Controller
                     }
                     $blogHtml .= '</div>';
                 }
-                
+
                 $blogHtml .= '<div class="flex items-center justify-between">';
                 $blogHtml .= '<div class="flex items-center">';
                 $blogHtml .= '<div class="w-6 h-6 bg-gray-300 rounded-full mr-2"></div>';
@@ -521,9 +528,9 @@ class PreviewController extends Controller
                 $blogHtml .= '</div>';
                 $blogHtml .= '</article>';
             }
-            
+
             $blogHtml .= '</div>';
-            
+
             // Paginación
             if ($blogPosts->hasPages()) {
                 $blogHtml .= '<div class="flex justify-center">';
@@ -542,10 +549,10 @@ class PreviewController extends Controller
             $blogHtml .= '<p class="text-gray-500">Pronto tendremos contenido interesante para compartir contigo.</p>';
             $blogHtml .= '</div>';
         }
-        
+
         $blogHtml .= '</div>';
         $blogHtml .= '</section>';
-        
+
         return $blogHtml;
     }
 
@@ -562,22 +569,22 @@ class PreviewController extends Controller
 
         // Obtener el contenido de la plantilla
         $templateContent = $template->html_content;
-        
+
         // Obtener hooks para la plantilla
         $hooks = $this->getTemplateHooks($website, $homePage, $menus, $isPreview);
-        
+
         // Agregar hook específico para el contenido del blog
         $hooks['CONTENIDO_PAGINA'] = $blogContent;
         $hooks['PAGINA_TITULO'] = 'Blog - ' . $website->name;
         $hooks['PAGINA_DESCRIPCION'] = 'Descubre nuestras últimas publicaciones y tendencias';
-        
+
         // Procesar hooks en el contenido
         $processedContent = $this->processHooks($templateContent, $hooks);
-        
+
         // Si estamos en modo preview, agregar los scripts necesarios
         if ($isPreview) {
             $scriptsToAdd = [];
-            
+
             // Script de blog si tiene contenido de blog
             if ($this->hasBlogBlock($processedContent)) {
                 $blogScript = view('components.blog-script', [
@@ -585,11 +592,11 @@ class PreviewController extends Controller
                 ])->render();
                 $scriptsToAdd[] = $blogScript;
             }
-            
+
             // Combinar todos los scripts
             if (!empty($scriptsToAdd)) {
                 $combinedScripts = implode('', $scriptsToAdd);
-                
+
                 // Insertar los scripts antes del cierre de </body>
                 if (strpos($processedContent, '</body>') !== false) {
                     $processedContent = str_replace('</body>', $combinedScripts . '</body>', $processedContent);
@@ -599,7 +606,7 @@ class PreviewController extends Controller
                 }
             }
         }
-        
+
         return $processedContent;
     }
 
@@ -610,7 +617,7 @@ class PreviewController extends Controller
     {
         $postHtml = '<section class="blog-post-page py-12">';
         $postHtml .= '<div class="container mx-auto px-4">';
-        
+
         // Header del post
         $postHtml .= '<div class="text-center mb-12">';
         if ($blogPost->category) {
@@ -618,15 +625,15 @@ class PreviewController extends Controller
             $postHtml .= htmlspecialchars($blogPost->category->name);
             $postHtml .= '</span>';
         }
-        
+
         $postHtml .= '<h1 class="text-4xl font-bold text-gray-900 mb-4">' . htmlspecialchars($blogPost->title) . '</h1>';
-        
+
         $postHtml .= '<div class="flex items-center justify-center text-sm text-gray-500 mb-6">';
         $postHtml .= '<span>' . $blogPost->created_at->format('d M, Y') . '</span>';
         $postHtml .= '<span class="mx-2">•</span>';
         $postHtml .= '<span>' . ceil(str_word_count(strip_tags($blogPost->content)) / 200) . ' min lectura</span>';
         $postHtml .= '</div>';
-        
+
         if ($blogPost->tags->count() > 0) {
             $postHtml .= '<div class="flex flex-wrap justify-center gap-2">';
             foreach ($blogPost->tags as $tag) {
@@ -642,19 +649,19 @@ class PreviewController extends Controller
         $postHtml .= '<div class="max-w-4xl mx-auto">';
         $postHtml .= '<div class="bg-white rounded-lg shadow-lg overflow-hidden">';
         $postHtml .= '<div class="p-8">';
-        
+
         // Excerpt si existe
         if ($blogPost->excerpt) {
             $postHtml .= '<div class="text-xl text-gray-600 mb-8 font-medium">';
             $postHtml .= htmlspecialchars($blogPost->excerpt);
             $postHtml .= '</div>';
         }
-        
+
         // Contenido del post
         $postHtml .= '<div class="prose prose-lg max-w-none">';
         $postHtml .= $blogPost->content;
         $postHtml .= '</div>';
-        
+
         // Tags al final
         if ($blogPost->tags->count() > 0) {
             $postHtml .= '<div class="mt-8 pt-8 border-t border-gray-200">';
@@ -668,17 +675,17 @@ class PreviewController extends Controller
             $postHtml .= '</div>';
             $postHtml .= '</div>';
         }
-        
+
         $postHtml .= '</div>';
         $postHtml .= '</div>';
         $postHtml .= '</div>';
-        
+
         // Posts relacionados
         if ($relatedPosts->count() > 0) {
             $postHtml .= '<div class="mt-12">';
             $postHtml .= '<h3 class="text-2xl font-bold text-gray-900 mb-6">Artículos relacionados</h3>';
             $postHtml .= '<div class="grid grid-cols-1 md:grid-cols-3 gap-6">';
-            
+
             foreach ($relatedPosts as $relatedPost) {
                 $postHtml .= '<article class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">';
                 $postHtml .= '<div class="w-full h-32 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">';
@@ -703,14 +710,14 @@ class PreviewController extends Controller
                 $postHtml .= '</div>';
                 $postHtml .= '</article>';
             }
-            
+
             $postHtml .= '</div>';
             $postHtml .= '</div>';
         }
-        
+
         $postHtml .= '</div>';
         $postHtml .= '</section>';
-        
+
         return $postHtml;
     }
 
@@ -727,18 +734,18 @@ class PreviewController extends Controller
 
         // Obtener el contenido de la plantilla
         $templateContent = $template->html_content;
-        
+
         // Obtener hooks para la plantilla
         $hooks = $this->getTemplateHooks($website, $homePage, $menus, $isPreview);
-        
+
         // Agregar hook específico para el contenido del post
         $hooks['CONTENIDO_PAGINA'] = $postContent;
         $hooks['PAGINA_TITULO'] = $blogPost->title . ' - ' . $website->name;
         $hooks['PAGINA_DESCRIPCION'] = $blogPost->excerpt ?: Str::limit(strip_tags($blogPost->content), 160);
-        
+
         // Procesar hooks en el contenido
         $processedContent = $this->processHooks($templateContent, $hooks);
-        
+
         // Agregar estilos CSS para el contenido del blog
         $blogStyles = '
         <style>
@@ -809,14 +816,14 @@ class PreviewController extends Controller
             font-weight: 600;
         }
         </style>';
-        
+
         // Insertar estilos en el head
         if (strpos($processedContent, '</head>') !== false) {
             $processedContent = str_replace('</head>', $blogStyles . '</head>', $processedContent);
         } else {
             $processedContent = $blogStyles . $processedContent;
         }
-        
+
         return $processedContent;
     }
 
@@ -829,10 +836,10 @@ class PreviewController extends Controller
         if (strpos($content, 'class="admin-bar"') !== false) {
             return $content; // Ya existe, no agregar otra
         }
-        
+
         // Generar el HTML de la barra de administración
         $adminBarHtml = view('components.admin-bar', compact('website'))->render();
-        
+
         // Insertar la barra de administración al inicio del body
         if (strpos($content, '<body') !== false) {
             // Buscar el tag <body> y agregar la barra después - SOLO UNA VEZ
@@ -841,15 +848,15 @@ class PreviewController extends Controller
             // Si no hay tag body, agregar al inicio del contenido
             $content = $adminBarHtml . $content;
         }
-        
+
         return $content;
     }
-    
-    
+
+
     /**
      * Definir todos los hooks disponibles para las plantillas
      */
-    private function getTemplateHooks($website, $currentPage, $menus, $isPreview = false)
+    private function getTemplateHooks($website, $currentPage, $menus, $isPreview = false, $pages = null)
     {
         return [
             // Hooks básicos del sitio web
@@ -857,30 +864,33 @@ class PreviewController extends Controller
             'SITIO_WEB_NOMBRE' => $website->name ?? "Mi Sitio Web",
             'SITIO_WEB_DESCRIPCION' => $website->description ?? "Descripción de mi sitio web",
             'ANIO_ACTUAL' => date("Y"),
-            
+
             // Hooks de la página actual
             'PAGINA_TITULO' => $currentPage->title ?? $website->name ?? "Mi Sitio Web",
             'PAGINA_DESCRIPCION' => $currentPage->meta_description ?? $website->description ?? "Descripción de mi sitio web",
-            
+
             // Hooks de menús
             'MENU_HEADER_ITEMS' => $this->generateHeaderMenuSimple($website, $menus, $isPreview, $currentPage),
             'MENU_FOOTER_ITEMS' => $this->generateFooterMenuSimple($website, $menus, $isPreview, $currentPage),
-            
+
+            // Hook de navegación entre páginas (solo en modo preview)
+            'NAVEGACION_PAGINAS' => $isPreview ? $this->generatePageNavigation($website, $currentPage, $pages) : '',
+
             // Hooks de contenido
             'CONTENIDO_PAGINA' => $this->getPageContent($currentPage, $isPreview),
-            
+
             // Hooks de credenciales API
             'API_KEY' => $website->api_key ?? '',
             'API_BASE_URL' => $website->api_base_url ?? '',
             'EPAYCO_PUBLIC_KEY' => $website->epayco_public_key ?? '',
             'EPAYCO_PRIVATE_KEY' => $website->epayco_private_key ?? '',
             'EPAYCO_CUSTOMER_ID' => $website->epayco_customer_id ?? '',
-            
+
             // Hooks de contacto
             'CONTACTO_EMAIL' => $website->contact_email ?? 'contacto@misitio.com',
             'CONTACTO_TELEFONO' => $website->contact_phone ?? '+1 (555) 123-4567',
             'CONTACTO_DIRECCION' => $website->contact_address ?? 'Ciudad, País',
-            
+
             // Hooks de redes sociales
             'FACEBOOK_URL' => $website->facebook_url ?? '#',
             'INSTAGRAM_URL' => $website->instagram_url ?? '#',
@@ -888,7 +898,110 @@ class PreviewController extends Controller
             'LINKEDIN_URL' => $website->linkedin_url ?? '#',
         ];
     }
-    
+
+    /**
+     * Generar navegación entre páginas para vista previa
+     */
+    private function generatePageNavigation($website, $currentPage, $pages)
+    {
+        if (!$pages || $pages->count() <= 1) {
+            return '';
+        }
+
+        $navigationHtml = '<div class="preview-navigation bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">';
+        $navigationHtml .= '<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">';
+        $navigationHtml .= '<div class="flex items-center justify-between h-16">';
+
+        // Logo/Nombre del sitio
+        $navigationHtml .= '<div class="flex items-center">';
+        $navigationHtml .= '<div class="flex-shrink-0">';
+        $navigationHtml .= '<h1 class="text-xl font-bold text-gray-900">' . htmlspecialchars($website->name) . '</h1>';
+        $navigationHtml .= '</div>';
+        $navigationHtml .= '</div>';
+
+        // Navegación de páginas
+        $navigationHtml .= '<div class="flex items-center space-x-1">';
+        $navigationHtml .= '<div class="hidden md:flex items-center space-x-1">';
+
+        foreach ($pages as $page) {
+            $isActive = $currentPage && $currentPage->id === $page->id;
+            $activeClass = $isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100';
+            $url = route('creator.preview.page', $page->id);
+
+            $navigationHtml .= '<a href="' . $url . '" class="px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ' . $activeClass . '">';
+            $navigationHtml .= htmlspecialchars($page->title);
+            $navigationHtml .= '</a>';
+        }
+
+        $navigationHtml .= '</div>';
+
+        // Menú móvil
+        $navigationHtml .= '<div class="md:hidden">';
+        $navigationHtml .= '<div class="relative">';
+        $navigationHtml .= '<button id="mobile-menu-button" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none">';
+        $navigationHtml .= '<span id="current-page-name">' . htmlspecialchars($currentPage ? $currentPage->title : 'Páginas') . '</span>';
+        $navigationHtml .= '<svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
+        $navigationHtml .= '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>';
+        $navigationHtml .= '</svg>';
+        $navigationHtml .= '</button>';
+
+        // Menú desplegable móvil
+        $navigationHtml .= '<div id="mobile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">';
+        $navigationHtml .= '<div class="py-1">';
+
+        foreach ($pages as $page) {
+            $isActive = $currentPage && $currentPage->id === $page->id;
+            $activeClass = $isActive ? 'bg-blue-50 text-blue-700' : '';
+            $url = route('creator.preview.page', $page->id);
+
+            $navigationHtml .= '<a href="' . $url . '" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ' . $activeClass . '">';
+            $navigationHtml .= htmlspecialchars($page->title);
+            $navigationHtml .= '</a>';
+        }
+
+        $navigationHtml .= '</div>';
+        $navigationHtml .= '</div>';
+        $navigationHtml .= '</div>';
+        $navigationHtml .= '</div>';
+        $navigationHtml .= '</div>';
+
+        // Botón de regreso al editor
+        $navigationHtml .= '<div class="flex items-center space-x-2">';
+        $navigationHtml .= '<a href="' . route('creator.pages.index') . '" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">';
+        $navigationHtml .= '<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
+        $navigationHtml .= '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>';
+        $navigationHtml .= '</svg>';
+        $navigationHtml .= 'Volver al Editor';
+        $navigationHtml .= '</a>';
+        $navigationHtml .= '</div>';
+
+        $navigationHtml .= '</div>';
+        $navigationHtml .= '</div>';
+        $navigationHtml .= '</div>';
+
+        // JavaScript para el menú móvil
+        $navigationHtml .= '<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const mobileMenuButton = document.getElementById("mobile-menu-button");
+            const mobileMenu = document.getElementById("mobile-menu");
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener("click", function() {
+                    mobileMenu.classList.toggle("hidden");
+                });
+                
+                document.addEventListener("click", function(event) {
+                    if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                        mobileMenu.classList.add("hidden");
+                    }
+                });
+            }
+        });
+        </script>';
+
+        return $navigationHtml;
+    }
+
     /**
      * Procesar hooks en el contenido de la plantilla
      */
@@ -898,19 +1011,19 @@ class PreviewController extends Controller
         foreach ($hooks as $hook => $value) {
             $content = str_replace($hook, $value, $content);
         }
-        
+
         // También procesar hooks con formato {{ HOOK }}
         foreach ($hooks as $hook => $value) {
             $content = str_replace('{{ ' . $hook . ' }}', $value, $content);
             $content = str_replace('{{' . $hook . '}}', $value, $content);
         }
-        
+
         // Limpiar cualquier hook que no haya sido reemplazado
         $content = preg_replace('/\{{\s*[A-Z_]+\s*\}\}/', '', $content);
-        
+
         return $content;
     }
-    
+
     /**
      * Inyectar la barra de administrador en el HTML
      */
@@ -921,25 +1034,25 @@ class PreviewController extends Controller
             $bodyTag = $matches[1];
             $html = str_replace($bodyTag, $bodyTag . $adminBar, $html);
         }
-        
+
         return $html;
     }
-    
+
     /**
      * Generar HTML del menú del header
      */
     private function generateHeaderMenu($website, $menus, $currentPage = null)
     {
         $headerMenu = $menus->where('location', 'header')->first();
-        
+
         // Obtener la URL actual
         $currentUrl = request()->path();
-        
+
         if ($headerMenu && $headerMenu->items->count() > 0) {
             $menuItems = '';
             foreach ($headerMenu->items as $item) {
                 $icon = $item->icon ? $item->icon . ' ' : '';
-                
+
                 // Detectar si este item está activo
                 $isActive = false;
                 if ($currentPage) {
@@ -950,34 +1063,34 @@ class PreviewController extends Controller
                         $isActive = true;
                     }
                 }
-                
+
                 $activeClass = $isActive ? ' font-bold' : '';
                 $menuItems .= '<a href="' . $item->final_url . '" target="' . $item->target . '" class="text-gray-600 hover:text-gray-900 transition-colors duration-200' . $activeClass . '">' . $icon . $item->title . '</a>';
             }
             return $menuItems;
         }
-        
+
         // Menú por defecto
         return '<a href="/" class="text-gray-600 hover:text-gray-900">Inicio</a>
                 <a href="/productos" class="text-gray-600 hover:text-gray-900">Productos</a>
                 <a href="/contacto" class="text-gray-600 hover:text-gray-900">Contacto</a>';
     }
-    
+
     /**
      * Generar HTML del menú del footer
      */
     private function generateFooterMenu($website, $menus, $currentPage = null)
     {
         $footerMenu = $menus->where('location', 'footer')->first();
-        
+
         // Obtener la URL actual
         $currentUrl = request()->path();
-        
+
         if ($footerMenu && $footerMenu->items->count() > 0) {
             $menuItems = '';
             foreach ($footerMenu->items as $item) {
                 $icon = $item->icon ? $item->icon . ' ' : '';
-                
+
                 // Detectar si este item está activo
                 $isActive = false;
                 if ($currentPage) {
@@ -988,19 +1101,19 @@ class PreviewController extends Controller
                         $isActive = true;
                     }
                 }
-                
+
                 $activeClass = $isActive ? ' font-bold' : '';
                 $menuItems .= '<li><a href="' . $item->final_url . '" target="' . $item->target . '" class="text-gray-400 hover:text-white transition-colors duration-200' . $activeClass . '">' . $icon . $item->title . '</a></li>';
             }
             return $menuItems;
         }
-        
+
         // Menú por defecto
         return '<li><a href="/" class="text-gray-400 hover:text-white">Inicio</a></li>
                 <li><a href="/productos" class="text-gray-400 hover:text-white">Productos</a></li>
                 <li><a href="/contacto" class="text-gray-400 hover:text-white">Contacto</a></li>';
     }
-    
+
     /**
      * Generar contenido de la página
      */
@@ -1013,7 +1126,7 @@ class PreviewController extends Controller
                         </div>
                     </div>';
         }
-        
+
         return '<section class="py-16 text-white bg-gradient-to-r from-blue-600 to-purple-600">
                     <div class="container px-4 mx-auto text-center">
                         <h2 class="mb-4 text-4xl font-bold">Bienvenido a tu sitio web</h2>
@@ -1029,7 +1142,7 @@ class PreviewController extends Controller
                     </div>
                 </section>';
     }
-    
+
     /**
      * Reemplazar el menú del header en el contenido
      */
@@ -1038,20 +1151,20 @@ class PreviewController extends Controller
         // Buscar y reemplazar TODAS las instancias del bloque del menú del header
         // Usar un patrón más simple y robusto
         $pattern = '/@if\(\$website->menus\(\)->where\("location", "header"\)->exists\(\)\)(.*?)@endif/s';
-        
+
         // Reemplazar TODAS las ocurrencias
         $content = preg_replace($pattern, $menuHtml, $content);
-        
+
         // También intentar con el patrón @else
         $patternWithElse = '/@if\(\$website->menus\(\)->where\("location", "header"\)->exists\(\)\)(.*?)@else(.*?)@endif/s';
         $content = preg_replace($patternWithElse, $menuHtml, $content);
-        
+
         // También reemplazar directamente las variables Blade que quedan
         $content = preg_replace('/\{\{\s*\$website->name\s*\?\?\s*"[^"]*"\s*\}\}/', $website->name ?? "Mi Sitio Web", $content);
-        
+
         return $content;
     }
-    
+
     /**
      * Reemplazar el menú del footer en el contenido
      */
@@ -1060,17 +1173,17 @@ class PreviewController extends Controller
         // Buscar y reemplazar TODAS las instancias del bloque del menú del footer
         // Usar un patrón más simple y robusto
         $pattern = '/@if\(\$website->menus\(\)->where\("location", "footer"\)->exists\(\)\)(.*?)@endif/s';
-        
+
         // Reemplazar TODAS las ocurrencias
         $content = preg_replace($pattern, $menuHtml, $content);
-        
+
         // También intentar con el patrón @else
         $patternWithElse = '/@if\(\$website->menus\(\)->where\("location", "footer"\)->exists\(\)\)(.*?)@else(.*?)@endif/s';
         $content = preg_replace($patternWithElse, $menuHtml, $content);
-        
+
         return $content;
     }
-    
+
     /**
      * Reemplazar el contenido de la página
      */
@@ -1083,17 +1196,17 @@ class PreviewController extends Controller
             '/@if\(\$homePage && \$homePage->html_content\)(.*?)@endif/s',
             '/@if\(\$homePage \&\& \$homePage->html_content\)(.*?)@endif/s',
         ];
-        
+
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, $content, $matches)) {
                 $content = str_replace($matches[0], $pageContent, $content);
                 break;
             }
         }
-        
+
         return $content;
     }
-    
+
     /**
      * Reemplazar variables Blade que puedan haber quedado sin procesar
      */
@@ -1102,58 +1215,58 @@ class PreviewController extends Controller
         // Reemplazar variables del website con patrones más amplios
         $content = preg_replace('/\{\{\s*\$website->name[^}]*\}\}/', $website->name ?? "Mi Sitio Web", $content);
         $content = preg_replace('/\{\{\s*\$website->description[^}]*\}\}/', $website->description ?? "Descripción de mi sitio web", $content);
-        
+
         // Reemplazar variables de la página de inicio
         $content = preg_replace('/\{\{\s*\$homePage->title[^}]*\}\}/', $homePage->title ?? $website->name ?? "Mi Sitio Web", $content);
         $content = preg_replace('/\{\{\s*\$homePage->meta_description[^}]*\}\}/', $homePage->meta_description ?? $website->description ?? "Descripción de mi sitio web", $content);
-        
+
         // Reemplazar fecha
         $content = preg_replace('/\{\{\s*date\([^}]*\)[^}]*\}\}/', date("Y"), $content);
-        
+
         // Reemplazar credenciales API que puedan haber quedado
         $content = preg_replace('/\{\{\s*\$website->api_key[^}]*\}\}/', $website->api_key ?? '', $content);
         $content = preg_replace('/\{\{\s*\$website->api_base_url[^}]*\}\}/', $website->api_base_url ?? '', $content);
         $content = preg_replace('/\{\{\s*\$website->epayco_public_key[^}]*\}\}/', $website->epayco_public_key ?? '', $content);
         $content = preg_replace('/\{\{\s*\$website->epayco_private_key[^}]*\}\}/', $website->epayco_private_key ?? '', $content);
         $content = preg_replace('/\{\{\s*\$website->epayco_customer_id[^}]*\}\}/', $website->epayco_customer_id ?? '', $content);
-        
+
         // Reemplazar cualquier variable Blade restante de forma más agresiva
         $content = preg_replace('/\{\{\s*\$website->name\s*\?\?\s*"[^"]*"\s*\}\}/', $website->name ?? "Mi Sitio Web", $content);
         $content = preg_replace('/\{\{\s*\$homePage->title\s*\?\?\s*\$website->name\s*\?\?\s*"[^"]*"\s*\}\}/', $homePage->title ?? $website->name ?? "Mi Sitio Web", $content);
         $content = preg_replace('/\{\{\s*\$homePage->meta_description\s*\?\?\s*\$website->description\s*\?\?\s*"[^"]*"\s*\}\}/', $homePage->meta_description ?? $website->description ?? "Descripción de mi sitio web", $content);
-        
+
         // Eliminar TODOS los bloques de menú que queden sin procesar
         $content = preg_replace('/@if\(\$website->menus\(\)->where\("location", "header"\)->exists\(\)\)(.*?)@endif/s', '', $content);
         $content = preg_replace('/@if\(\$website->menus\(\)->where\("location", "footer"\)->exists\(\)\)(.*?)@endif/s', '', $content);
-        
+
         // Eliminar cualquier directiva Blade restante
         $content = preg_replace('/@if\([^)]*\)/', '', $content);
         $content = preg_replace('/@foreach\([^)]*\)/', '', $content);
         $content = preg_replace('/@else/', '', $content);
         $content = preg_replace('/@endif/', '', $content);
         $content = preg_replace('/@endforeach/', '', $content);
-        
+
         // Eliminar cualquier variable Blade que quede
         $content = preg_replace('/\{\{[^}]*\}\}/', '', $content);
-        
+
         return $content;
     }
-    
+
     /**
      * Generar HTML simple del menú del header para plantillas simples
      */
     private function generateHeaderMenuSimple($website, $menus, $isPreview = false, $currentPage = null)
     {
         $headerMenu = $menus->where('location', 'header')->first();
-        
+
         // Obtener la URL actual
         $currentUrl = request()->path();
-        
+
         if ($headerMenu && $headerMenu->items->count() > 0) {
             $menuItems = '';
             foreach ($headerMenu->items as $item) {
                 $icon = $item->icon ? '<i class="' . $item->icon . ' mr-1"></i>' : '';
-                
+
                 // Detectar si este item está activo (corresponde a la página actual)
                 $isActive = false;
                 if ($currentPage) {
@@ -1166,22 +1279,22 @@ class PreviewController extends Controller
                         $isActive = true;
                     }
                 }
-                
+
                 // También verificar por URL si estamos en preview
                 if ($isPreview && !$isActive) {
                     $previewUrl = $this->generatePreviewUrl($item, $website);
                     // Normalizar las URLs para comparar
                     $normalizedPreviewUrl = trim(parse_url($previewUrl, PHP_URL_PATH), '/');
                     $normalizedCurrentUrl = trim($currentUrl, '/');
-                    
+
                     if ($normalizedPreviewUrl === $normalizedCurrentUrl) {
                         $isActive = true;
                     }
                 }
-                
+
                 // Agregar clase font-bold si está activo
                 $activeClass = $isActive ? ' font-bold' : '';
-                
+
                 // Si estamos en modo preview, crear enlaces que mantengan el contexto de preview
                 if ($isPreview) {
                     $previewUrl = $this->generatePreviewUrl($item, $website);
@@ -1192,28 +1305,28 @@ class PreviewController extends Controller
             }
             return $menuItems;
         }
-        
+
         // Menú por defecto (usar rutas simplificadas)
         return '<a href="/" class="text-gray-600 hover:text-gray-900">Inicio</a>
                 <a href="/productos" class="text-gray-600 hover:text-gray-900">Productos</a>
                 <a href="/contacto" class="text-gray-600 hover:text-gray-900">Contacto</a>';
     }
-    
+
     /**
      * Generar HTML simple del menú del footer para plantillas simples
      */
     private function generateFooterMenuSimple($website, $menus, $isPreview = false, $currentPage = null)
     {
         $footerMenu = $menus->where('location', 'footer')->first();
-        
+
         // Obtener la URL actual
         $currentUrl = request()->path();
-        
+
         if ($footerMenu && $footerMenu->items->count() > 0) {
             $menuItems = '';
             foreach ($footerMenu->items as $item) {
                 $icon = $item->icon ? '<i class="' . $item->icon . ' mr-1"></i>' : '';
-                
+
                 // Detectar si este item está activo (corresponde a la página actual)
                 $isActive = false;
                 if ($currentPage) {
@@ -1226,22 +1339,22 @@ class PreviewController extends Controller
                         $isActive = true;
                     }
                 }
-                
+
                 // También verificar por URL si estamos en preview
                 if ($isPreview && !$isActive) {
                     $previewUrl = $this->generatePreviewUrl($item, $website);
                     // Normalizar las URLs para comparar
                     $normalizedPreviewUrl = trim(parse_url($previewUrl, PHP_URL_PATH), '/');
                     $normalizedCurrentUrl = trim($currentUrl, '/');
-                    
+
                     if ($normalizedPreviewUrl === $normalizedCurrentUrl) {
                         $isActive = true;
                     }
                 }
-                
+
                 // Agregar clase font-bold si está activo
                 $activeClass = $isActive ? ' font-bold' : '';
-                
+
                 // Si estamos en modo preview, crear enlaces que mantengan el contexto de preview
                 if ($isPreview) {
                     $previewUrl = $this->generatePreviewUrl($item, $website);
@@ -1252,13 +1365,13 @@ class PreviewController extends Controller
             }
             return $menuItems;
         }
-        
+
         // Menú por defecto (usar rutas simplificadas)
         return '<li><a href="/" class="text-gray-400 hover:text-white">Inicio</a></li>
                 <li><a href="/productos" class="text-gray-400 hover:text-white">Productos</a></li>
                 <li><a href="/contacto" class="text-gray-400 hover:text-white">Contacto</a></li>';
     }
-    
+
     /**
      * Generar URL de preview para un item del menú
      */
@@ -1268,7 +1381,7 @@ class PreviewController extends Controller
         if ($item->target === '_blank' || strpos($item->final_url, 'http') === 0) {
             return $item->final_url;
         }
-        
+
         // Si el item apunta a una página específica del sitio web
         if ($item->page_id) {
             $page = \App\Models\Page::find($item->page_id);
@@ -1281,7 +1394,7 @@ class PreviewController extends Controller
                 return '/' . $page->slug;
             }
         }
-        
+
         // Si tiene URL personalizada, usarla
         if ($item->url) {
             // Si la URL no empieza con /, agregarla
@@ -1290,11 +1403,11 @@ class PreviewController extends Controller
             }
             return $item->url;
         }
-        
+
         // Para enlaces internos que no son páginas específicas, usar la ruta raíz
         return '/';
     }
-    
+
     /**
      * Obtener contenido de la página según el contexto
      */
@@ -1304,11 +1417,11 @@ class PreviewController extends Controller
         if ($isPreview && $page && $page->html_content) {
             return $page->html_content;
         }
-        
+
         // Si no, usar contenido por defecto
         return $this->getDefaultPageContent();
     }
-    
+
     /**
      * Obtener contenido por defecto de la página
      */
@@ -1329,5 +1442,4 @@ class PreviewController extends Controller
                     </div>
                 </section>';
     }
-
 }

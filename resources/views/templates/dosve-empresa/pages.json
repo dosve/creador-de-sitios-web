@@ -1,0 +1,269 @@
+{
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Dosve - Desarrollamos sistemas que impulsan tu negocio",
+      "meta_description": "Soluciones tecnológicas a la medida de tu empresa. Más de 10 años desarrollando software empresarial.",
+      "content": "<h1>Desarrollamos sistemas que impulsan tu negocio</h1><p>Soluciones tecnológicas a la medida de tu empresa</p>",
+      "blocks": [
+        {
+          "type": "hero",
+          "title": "Desarrollamos sistemas que impulsan tu negocio",
+          "subtitle": "Soluciones tecnológicas a la medida de tu empresa",
+          "cta_primary_text": "Conoce Nuestros Servicios",
+          "cta_primary_link": "#servicios",
+          "cta_secondary_text": "Ver Proyectos",
+          "cta_secondary_link": "#proyectos"
+        },
+        {
+          "type": "about",
+          "title": "Sobre Nosotros",
+          "description": "Dosve es una empresa de desarrollo de software con 10 años de experiencia, especializada en crear soluciones tecnológicas personalizadas que optimizan los procesos empresariales y potencian la productividad de nuestros clientes."
+        },
+        {
+          "type": "services",
+          "title": "Nuestros Servicios",
+          "subtitle": "Soluciones tecnológicas integrales",
+          "items": [
+            {
+              "title": "Desarrollo de Software a Medida",
+              "description": "Plataformas accesibles, seguras y optimizadas para cualquier dispositivo."
+            },
+            {
+              "title": "Aplicaciones Web",
+              "description": "Soluciones personalizadas según las necesidades de tu empresa."
+            },
+            {
+              "title": "Sistemas Empresariales (ERP / POS / CRM)",
+              "description": "Gestión completa de ventas, inventarios, contabilidad y clientes."
+            },
+            {
+              "title": "Aplicaciones Móviles",
+              "description": "Desarrollo para Android y iOS con conexión a sistemas empresariales."
+            }
+          ]
+        },
+        {
+          "type": "technologies",
+          "title": "Tecnologías que Usamos",
+          "items": [
+            {"name": "React", "icon": "react"},
+            {"name": "Laravel", "icon": "laravel"},
+            {"name": "Node.js", "icon": "nodejs"},
+            {"name": "JavaScript", "icon": "javascript"},
+            {"name": "MySQL", "icon": "mysql"},
+            {"name": "Google Cloud", "icon": "google-cloud"},
+            {"name": "GitHub", "icon": "github"},
+            {"name": "Inteligencia Artificial", "icon": "ai"}
+          ]
+        },
+        {
+          "type": "projects",
+          "title": "Nuestros Proyectos",
+          "subtitle": "Conoce nuestros últimos proyectos",
+          "items": [
+            {
+              "title": "Segundos App",
+              "description": "Solución móvil integral de entrega y servicios, conectando usuarios con proveedores locales.",
+              "image": "segundos-app.jpg"
+            },
+            {
+              "title": "Yo Compro Acacías",
+              "description": "Plataforma oficial municipal para visibilizar negocios locales y fortalecer la economía local.",
+              "image": "yo-compro-acacias.jpg"
+            },
+            {
+              "title": "Admin Negocios",
+              "description": "Sistema integral de gestión empresarial para manejar compras, ventas, inventarios y más.",
+              "image": "admin-negocios.jpg"
+            },
+            {
+              "title": "EME10",
+              "description": "Suite empresarial que optimiza gestión, comunicación y automatización con IA.",
+              "image": "eme10.jpg"
+            }
+          ]
+        },
+        {
+          "type": "values",
+          "title": "Nuestros Valores",
+          "items": [
+            {
+              "title": "Compromiso",
+              "description": "Priorizamos la comunicación y transparencia con cada cliente."
+            },
+            {
+              "title": "Confianza",
+              "description": "Cumplimos cada proyecto con responsabilidad y excelencia."
+            },
+            {
+              "title": "Innovación",
+              "description": "Incorporamos tecnologías modernas para ofrecer soluciones escalables."
+            },
+            {
+              "title": "Aprendizaje continuo",
+              "description": "Evolucionamos constantemente con las nuevas tendencias tecnológicas."
+            },
+            {
+              "title": "Eficiencia",
+              "description": "Optimizamos recursos y tiempos para maximizar resultados."
+            }
+          ]
+        },
+        {
+          "type": "why_choose_us",
+          "title": "¿Por qué Elegirnos?",
+          "items": [
+            {
+              "title": "Más de 10 años de experiencia",
+              "description": "Una trayectoria sólida desarrollando soluciones tecnológicas a nivel nacional."
+            },
+            {
+              "title": "Empresa legalmente constituida",
+              "description": "Operamos bajo los lineamientos legales, ofreciendo confianza y respaldo."
+            },
+            {
+              "title": "Cumplimiento y responsabilidad",
+              "description": "Respetamos los tiempos y acuerdos establecidos en cada proyecto."
+            },
+            {
+              "title": "Soporte permanente",
+              "description": "Brindamos acompañamiento técnico continuo a todos nuestros clientes."
+            },
+            {
+              "title": "Honestidad y transparencia",
+              "description": "Nuestras relaciones comerciales se basan en la confianza y la ética."
+            },
+            {
+              "title": "Tarifas justas y competitivas",
+              "description": "Ofrecemos precios equilibrados, acordes a la calidad de nuestros desarrollos."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "title": "Estamos listos para trabajar en tu proyecto",
+          "description": "Contamos con un equipo de profesionales experimentados y altamente capacitados, dispuesto a iniciar de inmediato el desarrollo de tu proyecto.",
+          "cta_text": "Contáctanos",
+          "cta_link": "#contacto"
+        }
+      ]
+    },
+    {
+      "title": "Servicios",
+      "slug": "servicios",
+      "is_home": false,
+      "meta_title": "Nuestros Servicios - Dosve",
+      "meta_description": "Desarrollo de software, aplicaciones web, sistemas empresariales y aplicaciones móviles.",
+      "content": "<h1>Nuestros Servicios</h1><p>Soluciones tecnológicas integrales para tu empresa</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestros Servicios",
+          "subtitle": "Soluciones tecnológicas integrales",
+          "description": "Ofrecemos servicios de desarrollo de software personalizados para optimizar los procesos de tu empresa"
+        },
+        {
+          "type": "services_detailed",
+          "items": [
+            {
+              "title": "Desarrollo de Software a Medida",
+              "description": "Plataformas accesibles, seguras y optimizadas para cualquier dispositivo.",
+              "features": ["Diseño personalizado", "Seguridad avanzada", "Optimización de rendimiento", "Soporte técnico"]
+            },
+            {
+              "title": "Aplicaciones Web",
+              "description": "Soluciones personalizadas según las necesidades de tu empresa.",
+              "features": ["Responsive design", "Integración con sistemas existentes", "Escalabilidad", "Mantenimiento continuo"]
+            },
+            {
+              "title": "Sistemas Empresariales (ERP / POS / CRM)",
+              "description": "Gestión completa de ventas, inventarios, contabilidad y clientes.",
+              "features": ["Gestión de inventarios", "Control de ventas", "Facturación electrónica", "Reportes en tiempo real"]
+            },
+            {
+              "title": "Aplicaciones Móviles",
+              "description": "Desarrollo para Android y iOS con conexión a sistemas empresariales.",
+              "features": ["Desarrollo nativo", "Integración con APIs", "Sincronización en tiempo real", "Actualizaciones automáticas"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Proyectos",
+      "slug": "proyectos",
+      "is_home": false,
+      "meta_title": "Nuestros Proyectos - Dosve",
+      "meta_description": "Conoce nuestros últimos proyectos de desarrollo de software y aplicaciones.",
+      "content": "<h1>Nuestros Proyectos</h1><p>Conoce nuestros últimos proyectos</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Nuestros Proyectos",
+          "subtitle": "Conoce nuestros últimos proyectos",
+          "description": "Proyectos exitosos que hemos desarrollado para nuestros clientes"
+        },
+        {
+          "type": "projects_grid",
+          "items": [
+            {
+              "title": "Segundos App",
+              "description": "Solución móvil integral de entrega y servicios, conectando usuarios con proveedores locales.",
+              "image": "segundos-app.jpg",
+              "technologies": ["React Native", "Node.js", "MongoDB"]
+            },
+            {
+              "title": "Yo Compro Acacías",
+              "description": "Plataforma oficial municipal para visibilizar negocios locales y fortalecer la economía local.",
+              "image": "yo-compro-acacias.jpg",
+              "technologies": ["Laravel", "Vue.js", "MySQL"]
+            },
+            {
+              "title": "Admin Negocios",
+              "description": "Sistema integral de gestión empresarial para manejar compras, ventas, inventarios y más.",
+              "image": "admin-negocios.jpg",
+              "technologies": ["Laravel", "React", "PostgreSQL"]
+            },
+            {
+              "title": "EME10",
+              "description": "Suite empresarial que optimiza gestión, comunicación y automatización con IA.",
+              "image": "eme10.jpg",
+              "technologies": ["Laravel", "Vue.js", "AI/ML"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Dosve",
+      "meta_description": "Contáctanos para desarrollar tu proyecto. Estamos listos para trabajar contigo.",
+      "content": "<h1>Contáctanos</h1><p>Estamos listos para trabajar en tu proyecto</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Contáctanos",
+          "subtitle": "Estamos listos para trabajar en tu proyecto",
+          "description": "Contamos con un equipo de profesionales experimentados y altamente capacitados"
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "phone", "company", "service", "message"],
+          "submit_text": "Enviar Mensaje"
+        },
+        {
+          "type": "contact_info",
+          "email": "gerencia@dosve.co",
+          "phone": "311 323 03 41",
+          "address": "Carrera 45a #16-05, Bogotá DC",
+          "website": "WWW.DOSVE.CO"
+        }
+      ]
+    }
+  ]
+}
