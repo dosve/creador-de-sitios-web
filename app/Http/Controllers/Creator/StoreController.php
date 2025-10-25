@@ -56,6 +56,15 @@ class StoreController extends Controller
                     $externalProducts = $apiResponse['data'];
                     $pagination = $apiResponse['pagination'] ?? null;
 
+                    // Construir URLs completas para las imágenes
+                    foreach ($externalProducts as &$product) {
+                        if (!empty($product['img'])) {
+                            // Construir URL completa de la imagen
+                            $baseImageUrl = rtrim($website->api_base_url, '/api');
+                            $product['img'] = $baseImageUrl . '/storage/productos/' . $product['img'];
+                        }
+                    }
+
                     // Corregir el current_page si la API no lo devuelve correctamente
                     if ($pagination && isset($pagination['current_page'])) {
                         $pagination['current_page'] = (int) $page;
