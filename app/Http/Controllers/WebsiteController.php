@@ -321,29 +321,14 @@ class WebsiteController extends Controller
 
     public function create()
     {
-        // Verificar si el usuario ya tiene un sitio web (solo para usuarios no admin)
-        if (!Auth::user()->isAdmin()) {
-            $existingWebsite = Auth::user()->websites()->first();
-            if ($existingWebsite) {
-                return redirect()->route('creator.select-website')
-                    ->with('error', 'Solo puedes crear un sitio web. Ya tienes un sitio web creado.');
-            }
-        }
-
+        // Límite de sitios web removido - los usuarios pueden crear múltiples sitios
         $templates = $this->templateService->active();
         return view('creator.websites.create', compact('templates'));
     }
 
     public function store(Request $request)
     {
-        // Verificar si el usuario ya tiene un sitio web (solo para usuarios no admin)
-        if (!Auth::user()->isAdmin()) {
-            $existingWebsite = Auth::user()->websites()->first();
-            if ($existingWebsite) {
-                return redirect()->route('creator.select-website')
-                    ->with('error', 'Solo puedes crear un sitio web. Ya tienes un sitio web creado.');
-            }
-        }
+        // Límite de sitios web removido - los usuarios pueden crear múltiples sitios
 
         $request->validate([
             'name' => 'required|string|max:255',

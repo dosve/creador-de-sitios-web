@@ -70,7 +70,6 @@
                 </div>
 
                 <!-- Create New Website Option -->
-                @if(auth()->user()->isAdmin() || $websites->count() == 0)
                 <div class="text-center">
                     <div class="bg-white border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer" 
                          onclick="createNewWebsite()">
@@ -83,20 +82,6 @@
                         <p class="text-sm text-gray-500">Comienza un nuevo proyecto web</p>
                     </div>
                 </div>
-                @else
-                <!-- Message for non-admin users who already have a website -->
-                <div class="text-center">
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-lg font-medium text-yellow-800 mb-2">Límite de sitios web alcanzado</h3>
-                        <p class="text-sm text-yellow-700">Solo puedes crear un sitio web. Contacta al administrador si necesitas crear más sitios.</p>
-                    </div>
-                </div>
-                @endif
             </div>
 
             <!-- Hidden Form for Website Selection -->
