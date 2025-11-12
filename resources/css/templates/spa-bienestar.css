@@ -1,0 +1,112 @@
+/* ========================================
+   SPA BIENESTAR - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --spa-bienestar-primary: #3b82f6;
+  --spa-bienestar-secondary: #1f2937;
+  --spa-bienestar-accent: #10b981;
+  --spa-bienestar-background: #ffffff;
+  --spa-bienestar-text: #111827;
+  --spa-bienestar-font-heading: 'Inter', sans-serif;
+  --spa-bienestar-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.spa_bienestar_template {
+  font-family: var(--spa-bienestar-font-body);
+  background-color: var(--spa-bienestar-background);
+  color: var(--spa-bienestar-text);
+}
+
+.spa_bienestar_template h1,
+.spa_bienestar_template h2,
+.spa_bienestar_template h3,
+.spa_bienestar_template h4,
+.spa_bienestar_template h5,
+.spa_bienestar_template h6 {
+  font-family: var(--spa-bienestar-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.spa-bienestar-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.spa-bienestar-logo {
+  color: var(--spa-bienestar-primary);
+  font-family: var(--spa-bienestar-font-heading);
+  font-weight: 700;
+}
+
+/* Botones específicos */
+.spa-bienestar-btn-primary {
+  background-color: var(--spa-bienestar-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.spa-bienestar-btn-primary:hover {
+  background-color: var(--spa-bienestar-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Cards */
+.spa-bienestar-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.spa-bienestar-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Footer específico */
+.spa-bienestar-footer {
+  background: var(--spa-bienestar-secondary);
+  color: white;
+}
+
+.spa-bienestar-footer a {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.spa-bienestar-footer a:hover {
+  color: var(--spa-bienestar-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .spa-bienestar-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes spa-bienestar-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.spa-bienestar-animate {
+  animation: spa-bienestar-fadeIn 0.6s ease-out;
+}

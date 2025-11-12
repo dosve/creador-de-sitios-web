@@ -85,6 +85,10 @@
         © {{ date('Y') }} {{ $website->name ?? 'Boutique' }}.
         {{ $footerConfig['copyright_text'] ?? 'Todos los derechos reservados.' }}
       </p>
+      <p class="mt-2 text-xs text-gray-600">
+        Creado con <a href="https://eme10.com" target="_blank" class="text-gray-400 hover:text-white transition-colors font-medium">EME10</a> | 
+        <a href="https://adminnegocios.com" target="_blank" class="text-gray-400 hover:text-white transition-colors font-medium">Admin Negocios</a>
+      </p>
     </div>
   </div>
 </footer>

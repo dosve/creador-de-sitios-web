@@ -44,22 +44,22 @@
             {{-- Columna 3: Contacto --}}
             <div>
                 <h5 class="mb-4 text-xl font-semibold">Contacto</h5>
-                @if(!empty($website->contact_email))
+                @if(!empty($templateConfig->settings['contact_email']))
                 <p class="text-gray-400 mb-2">
                     <i class="fas fa-envelope mr-2"></i>
-                    {{ $website->contact_email }}
+                    {{ $templateConfig->settings['contact_email'] }}
                 </p>
                 @endif
-                @if(!empty($website->contact_phone))
+                @if(!empty($templateConfig->settings['contact_phone']))
                 <p class="text-gray-400 mb-2">
                     <i class="fas fa-phone mr-2"></i>
-                    {{ $website->contact_phone }}
+                    {{ $templateConfig->settings['contact_phone'] }}
                 </p>
                 @endif
-                @if(!empty($website->contact_address))
+                @if(!empty($templateConfig->settings['contact_address']))
                 <p class="text-gray-400">
                     <i class="fas fa-map-marker-alt mr-2"></i>
-                    {{ $website->contact_address }}
+                    {{ $templateConfig->settings['contact_address'] }}
                 </p>
                 @endif
             </div>
@@ -69,6 +69,10 @@
         @if($footerConfig['show_copyright'] ?? true)
         <div class="pt-8 mt-8 text-center text-gray-400 border-t border-gray-700">
             <p>&copy; {{ date('Y') }} {{ $website->name }}. {{ $footerConfig['copyright_text'] ?? 'Todos los derechos reservados.' }}</p>
+            <p class="mt-2 text-sm text-gray-500">
+                Creado con <a href="https://eme10.com" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">EME10</a> | 
+                Administra tu negocio con <a href="https://adminnegocios.com" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">Admin Negocios</a>
+            </p>
         </div>
         @endif
     </div>

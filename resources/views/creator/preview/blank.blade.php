@@ -96,5 +96,7 @@
             epaycoCustomerId: window.epaycoCustomerId ? 'Configurado' : 'No configurado'
         });
     </script>
+    <!-- Componente para cargar productos dinámicamente -->
+    <x-products-script :apiKey="$website->api_key" :apiBaseUrl="$website->api_base_url" />
 </body>
 </html>

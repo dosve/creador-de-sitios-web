@@ -1,0 +1,112 @@
+/* ========================================
+   MUSICO BANDA - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --musico-banda-primary: #3b82f6;
+  --musico-banda-secondary: #1f2937;
+  --musico-banda-accent: #10b981;
+  --musico-banda-background: #ffffff;
+  --musico-banda-text: #111827;
+  --musico-banda-font-heading: 'Inter', sans-serif;
+  --musico-banda-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.musico_banda_template {
+  font-family: var(--musico-banda-font-body);
+  background-color: var(--musico-banda-background);
+  color: var(--musico-banda-text);
+}
+
+.musico_banda_template h1,
+.musico_banda_template h2,
+.musico_banda_template h3,
+.musico_banda_template h4,
+.musico_banda_template h5,
+.musico_banda_template h6 {
+  font-family: var(--musico-banda-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.musico-banda-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.musico-banda-logo {
+  color: var(--musico-banda-primary);
+  font-family: var(--musico-banda-font-heading);
+  font-weight: 700;
+}
+
+/* Botones específicos */
+.musico-banda-btn-primary {
+  background-color: var(--musico-banda-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.musico-banda-btn-primary:hover {
+  background-color: var(--musico-banda-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Cards */
+.musico-banda-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.musico-banda-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Footer específico */
+.musico-banda-footer {
+  background: var(--musico-banda-secondary);
+  color: white;
+}
+
+.musico-banda-footer a {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.musico-banda-footer a:hover {
+  color: var(--musico-banda-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .musico-banda-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes musico-banda-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.musico-banda-animate {
+  animation: musico-banda-fadeIn 0.6s ease-out;
+}

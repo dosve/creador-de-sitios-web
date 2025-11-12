@@ -1,10 +1,5 @@
-{{--
-    Componente para cargar productos dinámicamente desde la API externa
-    
-    @param string $apiKey - API Key del usuario
-    @param string $apiBaseUrl - URL base de la API externa
---}}
-@props(['apiKey' => '', 'apiBaseUrl' => ''])
+
+@props(['apiKey' => '', 'apiBaseUrl' => '', 'templateSlug' => 'default', 'colors' => []])
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -16,12 +11,109 @@ document.addEventListener("DOMContentLoaded", function() {
     let hasMoreProducts = true;
     let allProducts = [];
     
+    // Configuración de estilos por plantilla
+    const templateSlug = "{{ $templateSlug }}";
+    const templateColors = {
+        primary: "{{ $colors['primary'] ?? '#2563eb' }}",
+        secondary: "{{ $colors['secondary'] ?? '#7c3aed' }}",
+        accent: "{{ $colors['accent'] ?? '#10b981' }}",
+        background: "{{ $colors['background'] ?? '#f9fafb' }}",
+        text: "{{ $colors['text'] ?? '#111827' }}"
+    };
+    
+    console.log("🎨 Plantilla activa:", templateSlug, "Colores:", templateColors);
+    
+    // Función para obtener estilos según la plantilla activa
+    function getTemplateStyles() {
+        const styles = {
+            // Tienda Virtual - Estilos EXACTOS de las páginas prediseñadas
+            'tienda-virtual': {
+                card: 'bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden',
+                cardContent: 'p-5',
+                title: 'mb-1 text-lg font-semibold text-gray-900',
+                description: 'mb-3 text-sm text-gray-600',
+                price: 'text-2xl font-bold',
+                priceColor: '#1f2937', // Gris oscuro como en el diseño original
+                button: 'px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors duration-200',
+                buttonBg: '#6366f1', // Indigo-600 (morado)
+                buttonHover: '#4f46e5', // Indigo-700 (morado oscuro)
+                searchButton: 'inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500',
+                searchInput: 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+            },
+            
+            // Tienda Minimalista - Estilo Apple con negro
+            'tienda-minimalista': {
+                card: 'bg-white border border-gray-100 rounded-2xl hover:shadow-xl transition-all duration-500 overflow-hidden',
+                cardContent: 'p-8',
+                title: 'mb-3 text-xl font-semibold text-gray-900',
+                description: 'mb-6 text-sm text-gray-500 line-clamp-2',
+                price: 'text-2xl font-bold',
+                priceColor: '#000000',
+                button: 'px-6 py-3 text-sm font-semibold text-white rounded-full transition-all duration-300',
+                buttonBg: '#000000',
+                buttonHover: '#1a1a1a',
+                searchButton: 'inline-flex items-center px-6 py-3 text-sm font-semibold text-white rounded-full focus:outline-none',
+                searchInput: 'block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-full leading-5 bg-white placeholder-gray-400 focus:outline-none focus:placeholder-gray-300 focus:ring-2 focus:ring-black focus:border-black'
+            },
+            
+            // Estilos por defecto para otras plantillas
+            'default': {
+                card: 'bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden',
+                cardContent: 'p-6',
+                title: 'mb-2 text-lg font-semibold text-gray-900',
+                description: 'mb-4 text-sm text-gray-600 line-clamp-2',
+                price: 'text-lg font-bold',
+                priceColor: templateColors.primary,
+                button: 'px-4 py-2 text-sm font-medium text-white rounded-md transition-colors duration-200',
+                buttonBg: templateColors.primary,
+                buttonHover: templateColors.secondary,
+                searchButton: 'inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-md border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2',
+                searchInput: 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1'
+            }
+        };
+        
+        // Retornar estilos de la plantilla activa o default
+        return styles[templateSlug] || styles['default'];
+    }
+    
+    // Obtener estilos para la plantilla actual
+    const currentStyles = getTemplateStyles();
+    console.log("✅ Estilos cargados para plantilla:", templateSlug);
+    
+    // Función para formatear precios al estilo colombiano (miles con punto, decimales con coma)
+    function formatPrice(price) {
+        // Convertir a número y asegurar 2 decimales
+        const number = parseFloat(price);
+        
+        // Separar parte entera y decimal
+        const parts = number.toFixed(2).split('.');
+        const integerPart = parts[0];
+        const decimalPart = parts[1];
+        
+        // Formatear parte entera con puntos para miles
+        const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        
+        // Retornar con formato colombiano
+        return `${formattedInteger},${decimalPart}`;
+    }
+    
+    // Debug: Verificar variables del componente
+    console.log("🔧 DEBUG COMPONENTE PRODUCTOS:");
+    console.log("  - apiKey desde PHP:", "{{ addslashes($apiKey) }}" ? 'Configurada' : 'No configurada');
+    console.log("  - apiBaseUrl desde PHP:", "{{ addslashes($apiBaseUrl) }}" || 'No configurada');
+    console.log("  - window.websiteApiKey:", window.websiteApiKey ? 'Configurada' : 'No configurada');
+    console.log("  - window.websiteApiUrl:", window.websiteApiUrl || 'No configurada');
+    
     // Función para cargar productos reales desde la API
     function loadRealProductsInPreview(page = 1, append = false) {
         if (isLoading) return;
         
         isLoading = true;
         console.log("🚀 Iniciando carga de productos en vista previa de página... (Página " + page + ")");
+        console.log("🔧 Variables disponibles:", {
+            apiKey: window.websiteApiKey ? 'Configurada (' + window.websiteApiKey.length + ' caracteres)' : 'No configurada',
+            apiUrl: window.websiteApiUrl || 'No configurada'
+        });
         
         // Buscar contenedores de productos
         let productsContainers = document.querySelectorAll("#products-container");
@@ -209,26 +301,47 @@ document.addEventListener("DOMContentLoaded", function() {
             
             // Si hay imagen, construir la URL completa con el servidor
             if (image) {
-                // Construir la URL completa usando el servidor de la API
-                const imageUrl = `https://servidor.adminnegocios.com/storage/productos/thumbnail/${image}`;
+                // Construir la URL completa usando el servidor de la API (máxima calidad)
+                const imageUrl = `https://servidor.adminnegocios.com/storage/productos/${image}`;
                 
                 imageHtml = `
-                    <div class="mb-4 aspect-w-16 aspect-h-9">
+                    <div class="relative h-56">
                         <img src="${imageUrl}" 
                              alt="${title}" 
-                             class="object-cover w-full h-48 rounded-lg"
+                             class="w-full h-full object-cover"
                              loading="lazy"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <div class="flex items-center justify-center w-full h-48 bg-gray-200 rounded-lg" style="display:none;">
+                        <div class="flex items-center justify-center w-full h-full bg-gray-200" style="display:none;">
                             <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
                         </div>
+                        <button class="absolute top-3 right-3 w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                        </button>
                     </div>
                 `;
                 
                 // Debug: mostrar la URL construida
                 console.log("🔗 URL construida:", image, "→", imageUrl);
+            } else {
+                // Si no hay imagen, mostrar placeholder con corazón
+                imageHtml = `
+                    <div class="relative h-56">
+                        <div class="flex items-center justify-center w-full h-full bg-gray-200">
+                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <button class="absolute top-3 right-3 w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
             }
             
             // HTML para la categoría
@@ -263,9 +376,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     </div>
                 `;
             } else {
-                // Producto no está en el carrito - mostrar botón de agregar
+                // Producto no está en el carrito - mostrar botón de agregar con estilos dinámicos
                 cartButtonHtml = `
-                    <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 add-to-cart" 
+                    <button class="${currentStyles.button} add-to-cart" 
+                            style="background-color: ${currentStyles.buttonBg}; transition: background-color 0.3s;"
+                            onmouseover="this.style.backgroundColor='${currentStyles.buttonHover}'" 
+                            onmouseout="this.style.backgroundColor='${currentStyles.buttonBg}'"
                             data-id="${product.id || ""}" 
                             data-name="${title}" 
                             data-price="${price}" 
@@ -278,16 +394,18 @@ document.addEventListener("DOMContentLoaded", function() {
                 `;
             }
             
-            // Construir el HTML del producto
+            // Construir el HTML del producto con estilos dinámicos
             productsHtml += `
-                <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div class="${currentStyles.card}">
                     ${imageHtml}
-                    <h3 class="mb-2 text-lg font-semibold text-gray-900">${title}</h3>
-                    ${categoryHtml}
-                    <p class="mb-4 text-sm text-gray-600 line-clamp-2">${description}</p>
-                    <div class="flex items-center justify-between">
-                        <span class="text-lg font-bold text-green-600">$${price}</span>
-                        ${cartButtonHtml}
+                    <div class="${currentStyles.cardContent || 'p-5'}">
+                        <h3 class="${currentStyles.title}">${title}</h3>
+                        ${categoryHtml}
+                        <p class="${currentStyles.description}">${description}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="${currentStyles.price}" style="color: ${currentStyles.priceColor}">$${formatPrice(price)}</span>
+                            ${cartButtonHtml}
+                        </div>
                     </div>
                 </div>
             `;
@@ -539,7 +657,7 @@ document.addEventListener("DOMContentLoaded", function() {
             return; // Ya existe
         }
         
-        // Crear buscador
+        // Crear buscador con estilos dinámicos según la plantilla
         const searchContainer = document.createElement("div");
         searchContainer.className = "product-search-container mb-6 col-span-full";
         searchContainer.innerHTML = `
@@ -552,20 +670,23 @@ document.addEventListener("DOMContentLoaded", function() {
                             </svg>
                         </div>
                         <input type="text" id="product-search-input" placeholder="Buscar productos..." 
-                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                               class="${currentStyles.searchInput}">
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <select id="category-filter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                    <select id="category-filter" class="${currentStyles.searchInput.replace('pl-10', 'pl-3').replace('pr-3', 'pr-3')}">
                         <option value="">Todas las categorías</option>
                     </select>
-                    <select id="sort-filter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                    <select id="sort-filter" class="${currentStyles.searchInput.replace('pl-10', 'pl-3').replace('pr-3', 'pr-3')}">
                         <option value="recent">Más recientes</option>
                         <option value="name">Nombre A-Z</option>
                         <option value="price_low">Precio: Menor a Mayor</option>
                         <option value="price_high">Precio: Mayor a Menor</option>
                     </select>
-                    <button id="search-btn" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button id="search-btn" class="${currentStyles.searchButton}" 
+                            style="background-color: ${currentStyles.buttonBg}; transition: background-color 0.3s;"
+                            onmouseover="this.style.backgroundColor='${currentStyles.buttonHover}'" 
+                            onmouseout="this.style.backgroundColor='${currentStyles.buttonBg}'">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
@@ -818,20 +939,32 @@ document.addEventListener("DOMContentLoaded", function() {
         ];
 
         const productsHtml = exampleProducts.map(product => `
-            <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-                <div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
-                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
+            <div class="${currentStyles.card}">
+                <div class="relative h-56">
+                    <div class="flex items-center justify-center w-full h-full bg-gray-200">
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <button class="absolute top-3 right-3 w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-md">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                        </button>
                 </div>
-                <h3 class="mb-2 text-lg font-semibold text-gray-900">${product.title}</h3>
-                <span class="inline-block px-2 py-1 mb-2 text-xs text-blue-800 bg-blue-100 rounded-full">${product.category}</span>
-                <p class="mb-4 text-sm text-gray-600">${product.description}</p>
-                <div class="flex items-center justify-between">
-                    <span class="text-lg font-bold text-green-600">$${product.price}</span>
-                    <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
-                        Ver Producto
-                    </button>
+                <div class="${currentStyles.cardContent || 'p-5'}">
+                    <h3 class="${currentStyles.title}">${product.title}</h3>
+                    <span class="inline-block px-2 py-1 mb-2 text-xs text-blue-800 bg-blue-100 rounded-full">${product.category}</span>
+                    <p class="${currentStyles.description}">${product.description}</p>
+                    <div class="flex items-center justify-between">
+                        <span class="${currentStyles.price}" style="color: ${currentStyles.priceColor}">$${formatPrice(product.price)}</span>
+                        <button class="${currentStyles.button}" 
+                                style="background-color: ${currentStyles.buttonBg}; transition: background-color 0.3s;"
+                                onmouseover="this.style.backgroundColor='${currentStyles.buttonHover}'" 
+                                onmouseout="this.style.backgroundColor='${currentStyles.buttonBg}'">
+                            Ver Producto
+                        </button>
+                    </div>
                 </div>
             </div>
         `).join("");

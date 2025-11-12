@@ -1,4 +1,4 @@
-@props(['website'])
+@props(['website', 'page' => null])
 
 <!-- Barra de administración - ID: {{ uniqid() }} -->
 <div class="admin-bar" data-admin-bar-id="{{ uniqid() }}">
@@ -23,13 +23,31 @@
                     Panel de Administración
                 </a>
                 
-                <a href="#" id="edit-current-page" class="admin-bar-link">
+                <button id="edit-current-page" class="admin-bar-link" style="background: transparent; border: none;" title="Abrir editor de la página actual">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                         <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
                     Editar página actual
-                </a>
+                </button>
+                
+                @if(auth()->user()->role === 'admin')
+                    <a href="{{ route('admin.template-configuration.index', $website) }}" class="admin-bar-link" title="Configurar plantilla">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m15.5-6.5L12 12l-4.5-4.5M12 12l4.5 4.5L12 12l-4.5 4.5"/>
+                        </svg>
+                        Configurar Plantilla
+                    </a>
+                @else
+                    <a href="{{ route('creator.template-configuration.index') }}" class="admin-bar-link" title="Configurar plantilla">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m15.5-6.5L12 12l-4.5-4.5M12 12l4.5 4.5L12 12l-4.5 4.5"/>
+                        </svg>
+                        Configurar Plantilla
+                    </a>
+                @endif
                 
                 <div class="admin-bar-dropdown">
                     <a href="#" class="admin-bar-link" id="add-content-btn">
@@ -233,6 +251,20 @@
 </style>
 
 <script>
+// Pasar el ID de la página al JavaScript
+// Intentar obtener la página desde los atributos del componente o de la variable directa
+@php
+    $componentPage = $attributes->get('page');
+@endphp
+
+@if($componentPage && $componentPage->id)
+    console.log('DEBUG: Setting page ID to', {{ $componentPage->id }});
+    window.currentPageId = {{ $componentPage->id }};
+@else
+    console.log('DEBUG: Page not available');
+    window.currentPageId = null;
+@endif
+
 document.addEventListener('DOMContentLoaded', function() {
     // Dropdown menu toggle
     const addContentBtn = document.getElementById('add-content-btn');
@@ -260,93 +292,89 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Edit current page button
+    // Edit current page button - Abre directamente el editor
     const editCurrentPageBtn = document.getElementById('edit-current-page');
     
     if (editCurrentPageBtn) {
         editCurrentPageBtn.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Obtener la URL actual
-            const currentUrl = window.location.pathname;
-            
-            // Obtener el website del objeto
-            const website = @json($website);
-            if (!website || !website.id) {
-                alert('No se pudo detectar el sitio web actual');
-                return;
-            }
-            
-            // Determinar la ruta de edición basada en la URL actual
-            let editUrl = '';
-            
-            // Obtener el slug del sitio web de la URL
-            const urlParts = currentUrl.split('/');
-            const websiteSlug = urlParts[1]; // El primer segmento después del /
-            
-            if (currentUrl.includes('/blog/') && currentUrl !== '/blog') {
-                // Es un post del blog individual - ir a la lista de blogs
-                editUrl = `/creator/blog`;
-            } else if (currentUrl.endsWith('/blog') || currentUrl.includes('/blog')) {
-                // Es la lista del blog - ir a la lista de blogs
-                editUrl = `/creator/blog`;
-            } else if (currentUrl === '/' || currentUrl === `/${websiteSlug}`) {
-                // Es la página de inicio - buscar la página de inicio
-                fetch('/creator/api/current-page', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        url: currentUrl,
-                        website_slug: websiteSlug
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.page_id) {
-                        window.open(`/creator/pages/${data.page_id}/editor`, '_blank');
-                    } else {
-                        window.open('/creator/pages', '_blank');
-                    }
-                })
-                .catch(() => {
-                    window.open('/creator/pages', '_blank');
-                });
-                return;
-            } else {
-                // Es una página específica - buscar por slug
-                const pageSlug = urlParts[urlParts.length - 1]; // El último segmento de la URL
+            // Si tenemos window.currentPageId, usarlo directamente
+            if (window.currentPageId) {
+                const pageId = window.currentPageId;
+                const ruta = `http://127.0.0.1:8000/creator/pages/${pageId}/editor`;
                 
-                fetch('/creator/api/current-page', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        url: currentUrl,
-                        website_slug: websiteSlug,
-                        page_slug: pageSlug
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.page_id) {
-                        window.open(`/creator/pages/${data.page_id}/editor`, '_blank');
-                    } else {
-                        window.open('/creator/pages', '_blank');
-                    }
-                })
-                .catch(() => {
-                    window.open('/creator/pages', '_blank');
-                });
+                // Mostrar en consola que se está abriendo el editor
+                console.log('%c🚀 Abriendo editor de página...', 'color: #00ff00; font-size: 14px; font-weight: bold;');
+                console.log('%c📝 URL del editor: ' + ruta, 'color: #ffffff; background: #000000; padding: 5px; font-size: 12px;');
+                
+                // Abrir el editor directamente
+                window.open(ruta, '_blank');
                 return;
             }
             
-            // Para blogs, abrir la lista
-            window.open(editUrl, '_blank');
+            // Si no tenemos pageId, obtenerlo via fetch
+            const currentUrl = window.location.pathname;
+            const urlParts = currentUrl.split('/');
+            const websiteSlug = urlParts[1];
+            const pageSlug = urlParts[urlParts.length - 1];
+            
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfToken) {
+                console.error('❌ No se pudo obtener el token CSRF');
+                console.log('🔄 Intentando método alternativo...');
+                
+                // Buscar el pageId en el data attribute del body
+                const body = document.body;
+                const pageId = body.getAttribute('data-page-id');
+                
+                if (pageId && pageId !== '') {
+                    const ruta = `http://127.0.0.1:8000/creator/pages/${pageId}/editor`;
+                    
+                    console.log('%c🚀 Abriendo editor de página (método alternativo)...', 'color: #00ff00; font-size: 14px; font-weight: bold;');
+                    console.log('%c📝 URL del editor: ' + ruta, 'color: #ffffff; background: #000000; padding: 5px; font-size: 12px;');
+                    
+                    // Abrir el editor directamente
+                    window.open(ruta, '_blank');
+                    return;
+                } else {
+                    console.error('❌ No se pudo obtener el ID de la página');
+                    alert('❌ No se pudo obtener el ID de la página para abrir el editor');
+                    return;
+                }
+            }
+            
+            fetch('/creator/api/current-page', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken.getAttribute('content')
+                },
+                body: JSON.stringify({
+                    url: currentUrl,
+                    website_slug: websiteSlug,
+                    page_slug: pageSlug
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.page_id) {
+                    const ruta = `http://127.0.0.1:8000/creator/pages/${data.page_id}/editor`;
+                    
+                    console.log('%c🚀 Abriendo editor de página...', 'color: #00ff00; font-size: 14px; font-weight: bold;');
+                    console.log('%c📝 URL del editor: ' + ruta, 'color: #ffffff; background: #000000; padding: 5px; font-size: 12px;');
+                    
+                    // Abrir el editor directamente
+                    window.open(ruta, '_blank');
+                } else {
+                    console.error('❌ No se pudo obtener el ID de la página');
+                    alert('❌ No se pudo obtener el ID de la página para abrir el editor');
+                }
+            })
+            .catch((error) => {
+                console.error('❌ Error al obtener el ID de la página:', error);
+                alert('❌ Error al obtener el ID de la página para abrir el editor');
+            });
         });
     }
 });

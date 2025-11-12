@@ -15,6 +15,11 @@
             <a href="{{ route('admin.pages.create', $website) }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
                 Nueva Página
             </a>
+            @if($website->template_id)
+                <a href="{{ route('admin.websites.import.pages', [$website, $website->template_id]) }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                    Importar Páginas
+                </a>
+            @endif
             <a href="{{ route('admin.websites.show', $website) }}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400">
                 Volver al Sitio
             </a>

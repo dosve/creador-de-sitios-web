@@ -1,0 +1,44 @@
+[
+  {
+    "title": "Inicio",
+    "slug": "inicio",
+    "is_home": true,
+    "meta_title": "Inicio - Plantilla Demo",
+    "meta_description": "Plantilla base con menú grueso y footer blanco",
+    "content": []
+  },
+  {
+    "title": "Productos",
+    "slug": "productos",
+    "is_home": false,
+    "meta_title": "Productos - Plantilla Demo",
+    "meta_description": "Listado de productos de ejemplo",
+    "content": []
+  },
+  {
+    "title": "Categorías",
+    "slug": "categorias",
+    "is_home": false,
+    "meta_title": "Categorías - Plantilla Demo",
+    "meta_description": "Explora por categorías",
+    "content": []
+  },
+  {
+    "title": "Contacto",
+    "slug": "contacto",
+    "is_home": false,
+    "meta_title": "Contacto - Plantilla Demo",
+    "meta_description": "Formulario de contacto",
+    "content": []
+  },
+  {
+    "title": "Nosotros",
+    "slug": "nosotros",
+    "is_home": false,
+    "meta_title": "Nosotros - Plantilla Demo",
+    "meta_description": "Información sobre la empresa",
+    "content": []
+  }
+]
+
+

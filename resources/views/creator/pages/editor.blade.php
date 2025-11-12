@@ -71,14 +71,36 @@
           visibility: visible !important;
         }
 
-        /* Estilos para sectores expandibles */
+        /* === ESTILOS MEJORADOS PARA SECTORES - ESTILO ELEMENTOR === */
+        
+        /* Sectores (acordeones) */
+        .gjs-sm-sector {
+          border-bottom: 1px solid #e5e7eb !important;
+          margin: 0 !important;
+          background: #ffffff !important;
+        }
+        
+        /* Títulos de sectores - estilo Elementor */
         .gjs-sm-sector .gjs-sm-title {
           cursor: pointer !important;
           user-select: none !important;
+          padding: 14px 16px !important;
+          background: #f9fafb !important;
+          font-weight: 600 !important;
+          font-size: 12px !important;
+          color: #374151 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.5px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          transition: all 0.2s ease !important;
+          border: none !important;
         }
 
         .gjs-sm-sector .gjs-sm-title:hover {
           background-color: #f3f4f6 !important;
+          color: #2563eb !important;
         }
 
         /* Asegurar que los sectores colapsados oculten su contenido */
@@ -89,27 +111,52 @@
         .gjs-sm-properties {
           display: block !important;
           visibility: visible !important;
+          padding: 16px !important;
+          background: #ffffff !important;
         }
 
         .gjs-sm-sector:not(.gjs-sm-open) .gjs-sm-properties {
           display: none !important;
         }
+        
+        /* Propiedades individuales */
+        .gjs-sm-property {
+          margin-bottom: 16px !important;
+        }
+        
+        .gjs-sm-property:last-child {
+          margin-bottom: 0 !important;
+        }
+        
+        /* Labels de propiedades */
+        .gjs-sm-label {
+          font-size: 12px !important;
+          font-weight: 500 !important;
+          color: #374151 !important;
+          margin-bottom: 6px !important;
+        }
 
         /* Estilos para dropdowns del StyleManager */
         .gjs-sm-field select {
           background: #ffffff !important;
-          border: 1px solid #e5e7eb !important;
+          border: 1px solid #d1d5db !important;
           border-radius: 4px !important;
-          padding: 4px 8px !important;
+          padding: 7px 10px !important;
           color: #111827 !important;
           font-size: 13px !important;
-          border-bottom: 1px solid #e5e7eb !important;
+          width: 100% !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
         }
 
         .gjs-sm-field select:focus {
           outline: none !important;
           border-color: #2563eb !important;
-          box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1) !important;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+        }
+        
+        .gjs-sm-field select:hover {
+          border-color: #9ca3af !important;
         }
 
         /* Eliminar líneas/bordes no deseados */
@@ -150,19 +197,57 @@
         }
 
         /* Estilos para inputs del StyleManager */
-        .gjs-sm-field input {
+        .gjs-sm-field input[type="text"],
+        .gjs-sm-field input[type="number"] {
           background: #ffffff !important;
-          border: 1px solid #e5e7eb !important;
+          border: 1px solid #d1d5db !important;
           border-radius: 4px !important;
-          padding: 4px 8px !important;
+          padding: 7px 10px !important;
           color: #111827 !important;
           font-size: 13px !important;
+          width: 100% !important;
+          transition: all 0.2s ease !important;
         }
 
         .gjs-sm-field input:focus {
           outline: none !important;
           border-color: #2563eb !important;
-          box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1) !important;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+        }
+        
+        /* Color picker */
+        .gjs-sm-field input[type="color"] {
+          height: 36px !important;
+          width: 60px !important;
+          border: 1px solid #d1d5db !important;
+          border-radius: 4px !important;
+          cursor: pointer !important;
+          padding: 3px !important;
+        }
+        
+        /* Sliders / Range inputs */
+        .gjs-sm-field input[type="range"] {
+          width: 100% !important;
+          height: 5px !important;
+          border-radius: 3px !important;
+          background: #e5e7eb !important;
+          outline: none !important;
+          margin: 8px 0 !important;
+        }
+        
+        .gjs-sm-field input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none !important;
+          width: 16px !important;
+          height: 16px !important;
+          border-radius: 50% !important;
+          background: #2563eb !important;
+          cursor: pointer !important;
+          transition: all 0.2s ease !important;
+        }
+        
+        .gjs-sm-field input[type="range"]::-webkit-slider-thumb:hover {
+          background: #1d4ed8 !important;
+          transform: scale(1.1) !important;
         }
 
         /* Eliminar líneas adicionales y separadores no deseados */
@@ -196,10 +281,218 @@
         .gjs-sm-radio-item + .gjs-sm-radio-item {
           border-left: none !important;
         }
+        
+        /* === ESTILOS DEL CONTENEDOR DE WIDGETS === */
+        
+        /* Contenedor general con scroll */
+        .styles-container-widget {
+          max-height: calc(100vh - 300px) !important;
+          overflow-y: auto !important;
+          overflow-x: hidden !important;
+          background: #ffffff !important;
+        }
+        
+        /* Scrollbar personalizado estilo moderno */
+        .styles-container-widget::-webkit-scrollbar {
+          width: 8px !important;
+        }
+        
+        .styles-container-widget::-webkit-scrollbar-track {
+          background: #f1f5f9 !important;
+          border-radius: 4px !important;
+        }
+        
+        .styles-container-widget::-webkit-scrollbar-thumb {
+          background: #cbd5e1 !important;
+          border-radius: 4px !important;
+          transition: background 0.2s ease !important;
+        }
+        
+        .styles-container-widget::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8 !important;
+        }
+        
+        /* Scrollbar para FireFox */
+        .styles-container-widget {
+          scrollbar-width: thin !important;
+          scrollbar-color: #cbd5e1 #f1f5f9 !important;
+        }
+        
+        /* Contenedor principal del StyleManager */
+        .gjs-sm-sectors {
+          background: #ffffff !important;
+        }
 
 
         /* Canvas alrededor del lienzo (fuera del iframe) */
         .gjs-editor-cont, .gjs-cv-canvas{ background:#f3f4f6; }
+
+        /* ===== Estilos para Layer Manager (Capas) ===== */
+        .gjs-layer {
+          background: #ffffff !important;
+          border: 1px solid #e5e7eb !important;
+          border-radius: 4px !important;
+          margin-bottom: 4px !important;
+          padding: 6px 8px !important;
+          transition: all 0.2s !important;
+        }
+
+        .gjs-layer:hover {
+          background: #f9fafb !important;
+          border-color: #d1d5db !important;
+        }
+
+        .gjs-layer.gjs-selected {
+          background: #eff6ff !important;
+          border-color: #2563eb !important;
+          box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1) !important;
+        }
+
+        .gjs-layer-title {
+          color: #374151 !important;
+          font-size: 13px !important;
+          font-weight: 500 !important;
+        }
+
+        .gjs-layer-count {
+          color: #9ca3af !important;
+          font-size: 11px !important;
+        }
+
+        /* Iconos de visibilidad y edición en capas */
+        .gjs-layer-vis, .gjs-layer-caret {
+          color: #6b7280 !important;
+        }
+
+        .gjs-layer-vis:hover, .gjs-layer-caret:hover {
+          color: #2563eb !important;
+        }
+
+        /* Indentación para capas anidadas */
+        .gjs-layer-children {
+          padding-left: 16px !important;
+          border-left: 2px solid #e5e7eb !important;
+          margin-left: 8px !important;
+          margin-top: 4px !important;
+        }
+
+        /* ===== Estilos para Trait Manager (Propiedades) ===== */
+        .gjs-trt-trait {
+          background: #ffffff !important;
+          border: 1px solid #e5e7eb !important;
+          border-radius: 4px !important;
+          margin-bottom: 8px !important;
+          padding: 8px !important;
+        }
+
+        .gjs-trt-trait__wrp-label {
+          color: #374151 !important;
+          font-size: 12px !important;
+          font-weight: 500 !important;
+          margin-bottom: 4px !important;
+        }
+
+        .gjs-field input, .gjs-field textarea, .gjs-field select {
+          background: #ffffff !important;
+          border: 1px solid #d1d5db !important;
+          border-radius: 4px !important;
+          padding: 6px 8px !important;
+          color: #111827 !important;
+          font-size: 13px !important;
+          width: 100% !important;
+        }
+
+        .gjs-field input:focus, .gjs-field textarea:focus, .gjs-field select:focus {
+          outline: none !important;
+          border-color: #2563eb !important;
+          box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1) !important;
+        }
+
+        /* Mensaje cuando no hay selección */
+        .layers-container:empty::before,
+        .traits-container:empty::before {
+          content: 'Selecciona un componente para ver sus propiedades';
+          display: block;
+          padding: 16px;
+          text-align: center;
+          color: #9ca3af;
+          font-size: 13px;
+        }
+
+        .layers-container:not(:empty)::before,
+        .traits-container:not(:empty)::before {
+          content: none;
+        }
+
+        /* ===== Estilos para Traits Personalizados ===== */
+        .custom-trait {
+          background: #ffffff !important;
+          border: 1px solid #e5e7eb !important;
+          border-radius: 6px !important;
+          margin-bottom: 12px !important;
+          padding: 12px !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .custom-trait .gjs-trt-label {
+          color: #374151 !important;
+          font-size: 13px !important;
+          font-weight: 600 !important;
+          margin-bottom: 6px !important;
+          display: block !important;
+        }
+
+        .custom-trait .gjs-trt-field {
+          width: 100% !important;
+        }
+
+        .custom-trait .gjs-trt-input,
+        .custom-trait .gjs-trt-textarea,
+        .custom-trait .gjs-trt-select {
+          width: 100% !important;
+          padding: 8px 10px !important;
+          border: 1px solid #d1d5db !important;
+          border-radius: 6px !important;
+          font-size: 14px !important;
+          background: #ffffff !important;
+          transition: all 0.2s ease !important;
+        }
+
+        .custom-trait .gjs-trt-input:focus,
+        .custom-trait .gjs-trt-textarea:focus,
+        .custom-trait .gjs-trt-select:focus {
+          outline: none !important;
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+
+        .custom-trait .gjs-trt-checkbox {
+          margin-right: 8px !important;
+          transform: scale(1.1) !important;
+        }
+
+        .custom-trait .gjs-trt-button {
+          width: 100% !important;
+          padding: 10px 16px !important;
+          background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+          color: white !important;
+          border: none !important;
+          border-radius: 6px !important;
+          cursor: pointer !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+          transition: all 0.2s ease !important;
+        }
+
+        .custom-trait .gjs-trt-button:hover {
+          background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+        }
+
+        .custom-trait .gjs-trt-button:active {
+          transform: translateY(0) !important;
+        }
 
         /* Bloques con colores de categoría */
         .gjs-block-section { background: #e3f2fd; border: 2px dashed #2196f3; }
@@ -214,6 +507,8 @@
         .gjs-block-map { background: #e3f2fd; border: 2px dashed #2196f3; }
         .gjs-block-gallery { background: #fce4ec; border: 2px dashed #e91e63; }
         .gjs-block-products { background: #e8f5e8; border: 2px dashed #4caf50; }
+
+        /* Los estilos para bloquear iframes se inyectan via JavaScript en el canvas */
 
         .gjs-block {
             width: auto;
@@ -317,12 +612,41 @@
                             </svg>
                         </button>
                         
+                        <button id="config-btn" class="px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2" title="Configuración de la Página">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Configuración
+                        </button>
+                        
                         <button id="save-btn" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
                             Guardar
                         </button>
                         @if($editableType === 'page')
-                        <a href="{{ route('creator.preview.page', [$website, $editable]) }}" target="_blank" class="px-4 py-2 text-sm text-white bg-gray-600 rounded-md hover:bg-gray-700">
+                        {{-- Botón Vista Previa - Lleva a la vista pública del sitio web --}}
+                        @php
+                            // Si es la página de inicio, llevar a la raíz del sitio
+                            if ($editable->is_home ?? false) {
+                                $previewUrl = route('website.show', [$website->slug]);
+                            } else {
+                                $previewUrl = route('website.page.show', [$website->slug, $editable->slug]);
+                            }
+                        @endphp
+                        <a href="{{ $previewUrl }}" target="_blank" class="px-4 py-2 text-sm font-medium text-white transition-colors bg-green-600 rounded-md hover:bg-green-700 flex items-center gap-2" title="Ver esta página en el sitio web público">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
                             Vista Previa
+                        </a>
+                        
+                        {{-- Botón Ver Sitio Completo --}}
+                        <a href="{{ route('website.show', [$website->slug]) }}" target="_blank" class="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2" title="Ver el sitio web completo">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                            </svg>
+                            Ver Sitio
                         </a>
                         @endif
                     </div>
@@ -343,14 +667,8 @@
                         <button class="px-1 py-3 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent tab-button hover:text-gray-700" data-panel="layers">
                             Capas
                         </button>
-                        <button class="px-1 py-3 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent tab-button hover:text-gray-700" data-panel="styles">
-                            Estilos
-                        </button>
                         <button class="px-1 py-3 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent tab-button hover:text-gray-700" data-panel="traits">
                             Propiedades
-                        </button>
-                        <button class="px-1 py-3 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent tab-button hover:text-gray-700" data-panel="config">
-                            Configuración
                         </button>
                     </nav>
                 </div>
@@ -363,104 +681,63 @@
                     <div id="layers-panel" class="hidden p-4 panel-content">
                         <div class="layers-container"></div>
                     </div>
-                    <div id="styles-panel" class="hidden p-4 panel-content">
-                        <div class="styles-container"></div>
-                    </div>
-                    <div id="traits-panel" class="hidden p-4 panel-content">
-                        <div class="traits-container"></div>
-                    </div>
-                    <div id="config-panel" class="hidden p-4 panel-content">
-                        <div class="config-container">
-                            <h3 class="mb-4 text-lg font-semibold text-gray-900">Configuración de la Página</h3>
+                    <div id="traits-panel" class="hidden panel-content">
+                        <!-- Pestañas estilo Elementor: Contenido | Estilo | Avanzado -->
+                        <div id="widget-tabs" class="border-b border-gray-200">
+                            <nav class="flex items-center" aria-label="Widget Tabs">
+                                <button class="flex-1 px-4 py-3 text-sm font-medium text-center text-blue-600 border-b-2 border-blue-500 widget-tab-button active" data-widget-tab="content">
+                                    Contenido
+                                </button>
+                                <button class="flex-1 px-4 py-3 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent widget-tab-button hover:text-gray-700" data-widget-tab="style">
+                                    Estilo
+                                </button>
+                                <button class="flex-1 px-4 py-3 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent widget-tab-button hover:text-gray-700" data-widget-tab="advanced">
+                                    Avanzado
+                                </button>
+                            </nav>
+                        </div>
+                        
+                        <!-- Contenido de pestañas -->
+                        <div class="p-4 overflow-auto">
+                            <!-- Pestaña Contenido -->
+                            <div id="widget-content-tab" class="widget-tab-content">
+                                <div class="traits-container"></div>
+                                <div id="no-widget-selected" class="flex items-center justify-center py-12 text-center">
+                                    <div>
+                                        <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
+                                        </svg>
+                                        <p class="text-sm font-medium text-gray-900">Selecciona un elemento</p>
+                                        <p class="mt-1 text-xs text-gray-500">Haz clic en cualquier elemento del canvas para editarlo</p>
+                                    </div>
+                                </div>
+                            </div>
                             
-                            <!-- Configuración General -->
-                            <div class="mb-6">
-                                <h4 class="mb-3 text-sm font-medium text-gray-700">General</h4>
-                                <div class="space-y-3">
+                            <!-- Pestaña Estilo -->
+                            <div id="widget-style-tab" class="hidden widget-tab-content">
+                                <div class="styles-container-widget"></div>
+                            </div>
+                            
+                            <!-- Contenedor oculto para el StyleManager original (necesario para la inicialización) -->
+                            <div class="styles-container" style="display: none;"></div>
+                            
+                            <!-- Pestaña Avanzado -->
+                            <div id="widget-advanced-tab" class="hidden widget-tab-content">
+                                <div class="space-y-4">
                                     <div>
-                                        <label class="block mb-1 text-sm text-gray-600">Título de la página</label>
-                                        <input type="text" id="page-title" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Mi página" value="{{ $editable->title ?? '' }}">
+                                        <label class="block mb-2 text-sm font-medium text-gray-700">Clases CSS</label>
+                                        <input type="text" id="widget-classes" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="mi-clase personalizada">
+                                        <p class="mt-1 text-xs text-gray-500">Agrega clases CSS personalizadas separadas por espacios</p>
                                     </div>
                                     <div>
-                                        <label class="block mb-1 text-sm text-gray-600">URL (Slug)</label>
-                                        <input type="text" id="page-slug" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="mi-pagina" value="{{ $editable->slug ?? '' }}">
-                                        <p class="mt-1 text-xs text-gray-500">La URL será: {{ url('/') }}/{{ $website->slug ?? 'sitio' }}/<span id="slug-preview">{{ $editable->slug ?? 'mi-pagina' }}</span></p>
+                                        <label class="block mb-2 text-sm font-medium text-gray-700">ID del Elemento</label>
+                                        <input type="text" id="widget-id" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="mi-id">
                                     </div>
                                     <div>
-                                        <label class="block mb-1 text-sm text-gray-600">Descripción</label>
-                                        <textarea id="page-description" rows="3" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Descripción de la página"></textarea>
+                                        <label class="block mb-2 text-sm font-medium text-gray-700">CSS Personalizado</label>
+                                        <textarea id="widget-custom-css" rows="6" class="w-full px-3 py-2 text-sm font-mono border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="/* Tu CSS aquí */"></textarea>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Configuración de Estado -->
-                            <div class="mb-6">
-                                <h4 class="mb-3 text-sm font-medium text-gray-700">Estado de la Página</h4>
-                                <div class="space-y-3">
-                                    <div class="flex items-center">
-                                        <input type="checkbox" id="is-published" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" {{ ($editable->is_published ?? false) ? 'checked' : '' }}>
-                                        <label for="is-published" class="ml-2 text-sm text-gray-600">Página publicada</label>
-                                    </div>
-                                    <div class="flex items-center">
-                                        <input type="checkbox" id="is-home" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" {{ ($editable->is_home ?? false) ? 'checked' : '' }}>
-                                        <label for="is-home" class="ml-2 text-sm text-gray-600">Página de inicio</label>
-                                        <p class="ml-2 text-xs text-gray-500">(Esta será la página principal del sitio)</p>
-                                    </div>
-                                    <div class="flex items-center">
-                                        <input type="checkbox" id="enable-store" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
-                                        <label for="enable-store" class="ml-2 text-sm text-gray-600">Habilitar tienda virtual</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Configuración SEO -->
-                            <div class="mb-6">
-                                <h4 class="mb-3 text-sm font-medium text-gray-700">SEO</h4>
-                                <div class="space-y-3">
-                                    <div>
-                                        <label class="block mb-1 text-sm text-gray-600">Meta título</label>
-                                        <input type="text" id="meta-title" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Título para SEO">
-                                    </div>
-                                    <div>
-                                        <label class="block mb-1 text-sm text-gray-600">Meta descripción</label>
-                                        <textarea id="meta-description" rows="2" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Descripción para SEO"></textarea>
-                                    </div>
-                                    <div>
-                                        <label class="block mb-1 text-sm text-gray-600">Palabras clave</label>
-                                        <input type="text" id="meta-keywords" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="palabra1, palabra2, palabra3">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Configuración de Estilos -->
-                            <div class="mb-6">
-                                <h4 class="mb-3 text-sm font-medium text-gray-700">Estilos Globales</h4>
-                                <div class="space-y-3">
-                                    <div>
-                                        <label class="block mb-1 text-sm text-gray-600">Color principal</label>
-                                        <input type="color" id="primary-color" class="w-full h-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="#2563eb">
-                                    </div>
-                                    <div>
-                                        <label class="block mb-1 text-sm text-gray-600">Fuente principal</label>
-                                        <select id="primary-font" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                            <option value="Inter">Inter</option>
-                                            <option value="Roboto">Roboto</option>
-                                            <option value="Open Sans">Open Sans</option>
-                                            <option value="Lato">Lato</option>
-                                            <option value="Poppins">Poppins</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Botones de Acción -->
-                            <div class="space-y-2">
-                                <button id="apply-config" class="w-full px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    Aplicar Configuración
-                                </button>
-                                <button id="reset-config" class="w-full px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
-                                    Restablecer
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -480,14 +757,142 @@
                 <div id="gjs" style="height: 100%; display: none;"></div>
             </div>
         </div>
+        
+        <!-- Modal de Configuración -->
+        <div id="config-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black bg-opacity-50">
+            <div class="flex items-center justify-center min-h-screen px-4 py-8">
+                <div class="relative w-full max-w-2xl bg-white rounded-lg shadow-xl">
+                    <!-- Header del Modal -->
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-900">Configuración de la Página</h2>
+                        <button id="close-config-modal" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Contenido del Modal -->
+                    <div class="px-6 py-4 overflow-y-auto max-h-[70vh]">
+                        <!-- Configuración General -->
+                        <div class="mb-6">
+                            <h4 class="mb-3 text-sm font-medium text-gray-700">General</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block mb-1 text-sm text-gray-600">Título de la página</label>
+                                    <input type="text" id="page-title" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Mi página" value="{{ $editable->title ?? '' }}">
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-sm text-gray-600">URL (Slug)</label>
+                                    <input type="text" id="page-slug" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="mi-pagina" value="{{ $editable->slug ?? '' }}">
+                                    <p class="mt-1 text-xs text-gray-500">La URL será: {{ url('/') }}/{{ $website->slug ?? 'sitio' }}/<span id="slug-preview">{{ $editable->slug ?? 'mi-pagina' }}</span></p>
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-sm text-gray-600">Descripción</label>
+                                    <textarea id="page-description" rows="3" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Descripción de la página"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración de Estado -->
+                        <div class="mb-6">
+                            <h4 class="mb-3 text-sm font-medium text-gray-700">Estado de la Página</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="is-published" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" {{ ($editable->is_published ?? false) ? 'checked' : '' }}>
+                                    <label for="is-published" class="ml-2 text-sm text-gray-600">Página publicada</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="is-home" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" {{ ($editable->is_home ?? false) ? 'checked' : '' }}>
+                                    <label for="is-home" class="ml-2 text-sm text-gray-600">Página de inicio</label>
+                                    <p class="ml-2 text-xs text-gray-500">(Esta será la página principal del sitio)</p>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="enable-store" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                                    <label for="enable-store" class="ml-2 text-sm text-gray-600">Habilitar tienda virtual</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración SEO -->
+                        <div class="mb-6">
+                            <h4 class="mb-3 text-sm font-medium text-gray-700">SEO</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block mb-1 text-sm text-gray-600">Meta título</label>
+                                    <input type="text" id="meta-title" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Título para SEO">
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-sm text-gray-600">Meta descripción</label>
+                                    <textarea id="meta-description" rows="2" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Descripción para SEO"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-sm text-gray-600">Palabras clave</label>
+                                    <input type="text" id="meta-keywords" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="palabra1, palabra2, palabra3">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración de Estilos -->
+                        <div class="mb-6">
+                            <h4 class="mb-3 text-sm font-medium text-gray-700">Estilos Globales</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block mb-1 text-sm text-gray-600">Ancho del Contenido</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="range" id="content-width" min="600" max="1600" value="1140" step="10" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="number" id="content-width-value" min="600" max="1600" value="1140" class="w-20 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <span class="text-sm text-gray-500">px</span>
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500">Define el ancho máximo del contenido de la página</p>
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-sm text-gray-600">Espacio entre Widgets</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="range" id="widget-space" min="0" max="100" value="20" step="5" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="number" id="widget-space-value" min="0" max="100" value="20" class="w-20 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <span class="text-sm text-gray-500">px</span>
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500">Espacio vertical entre elementos</p>
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-sm text-gray-600">Color principal</label>
+                                    <input type="color" id="primary-color" class="w-full h-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="#2563eb">
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-sm text-gray-600">Fuente principal</label>
+                                    <select id="primary-font" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="Inter">Inter</option>
+                                        <option value="Roboto">Roboto</option>
+                                        <option value="Open Sans">Open Sans</option>
+                                        <option value="Lato">Lato</option>
+                                        <option value="Poppins">Poppins</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer del Modal -->
+                    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
+                        <button id="reset-config" class="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                            Restablecer
+                        </button>
+                        <button id="apply-config" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Aplicar Configuración
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Campos ocultos para contenido existente -->
     @if($editable->html_content)
-        <input type="hidden" id="page-html-content" value="{{ $editable->html_content }}">
+        <input type="hidden" id="page-html-content" value="{{ htmlspecialchars($editable->html_content, ENT_QUOTES) }}">
     @endif
     @if($editable->css_content)
-        <input type="hidden" id="page-css-content" value="{{ $editable->css_content }}">
+        <input type="hidden" id="page-css-content" value="{{ htmlspecialchars($editable->css_content, ENT_QUOTES) }}">
     @endif
 
     <script>
@@ -529,8 +934,19 @@
 
       console.log('GrapesJS disponible:', grapesjs);
       
-      // Inicializar el editor
-      initializeEditor();
+      // Inicializar el editor (con pequeño retraso para asegurar que todo esté cargado)
+      if (typeof initializeEditor === 'function') {
+        initializeEditor();
+      } else {
+        console.error('initializeEditor no está definida. Esperando...');
+        setTimeout(function() {
+          if (typeof initializeEditor === 'function') {
+            initializeEditor();
+          } else {
+            console.error('initializeEditor sigue sin estar definida después del timeout');
+          }
+        }, 100);
+      }
       
 
       // Funcionalidad de las pestañas del sidebar
@@ -559,6 +975,51 @@
         });
       });
 
+      // Funcionalidad de las pestañas de widgets (Contenido | Estilo | Avanzado)
+      document.querySelectorAll('.widget-tab-button').forEach(tab => {
+        tab.addEventListener('click', function() {
+          const tabId = this.getAttribute('data-widget-tab');
+          
+          // Remover clase active de todas las pestañas de widgets
+          document.querySelectorAll('.widget-tab-button').forEach(t => {
+            t.classList.remove('active', 'text-blue-600', 'border-blue-500');
+            t.classList.add('text-gray-500', 'border-transparent');
+          });
+          document.querySelectorAll('.widget-tab-content').forEach(p => p.classList.add('hidden'));
+          
+          // Agregar clase active a la pestaña seleccionada
+          this.classList.add('active', 'text-blue-600', 'border-blue-500');
+          this.classList.remove('text-gray-500', 'border-transparent');
+          document.getElementById('widget-' + tabId + '-tab').classList.remove('hidden');
+        });
+      });
+
+      // Funcionalidad del modal de configuración
+      const configBtn = document.getElementById('config-btn');
+      const configModal = document.getElementById('config-modal');
+      const closeConfigModal = document.getElementById('close-config-modal');
+      
+      if (configBtn) {
+        configBtn.addEventListener('click', function() {
+          configModal.classList.remove('hidden');
+        });
+      }
+      
+      if (closeConfigModal) {
+        closeConfigModal.addEventListener('click', function() {
+          configModal.classList.add('hidden');
+        });
+      }
+      
+      // Cerrar modal al hacer clic fuera de él
+      if (configModal) {
+        configModal.addEventListener('click', function(e) {
+          if (e.target === configModal) {
+            configModal.classList.add('hidden');
+          }
+        });
+      }
+
       // Funcionalidad del panel de configuración
       const applyConfigBtn = document.getElementById('apply-config');
       const resetConfigBtn = document.getElementById('reset-config');
@@ -569,6 +1030,30 @@
       if (slugInput && slugPreview) {
         slugInput.addEventListener('input', function() {
           slugPreview.textContent = this.value || 'mi-pagina';
+        });
+      }
+      
+      // Sincronizar sliders de ancho de contenido y espacio entre widgets
+      const contentWidthSlider = document.getElementById('content-width');
+      const contentWidthValue = document.getElementById('content-width-value');
+      const widgetSpaceSlider = document.getElementById('widget-space');
+      const widgetSpaceValue = document.getElementById('widget-space-value');
+      
+      if (contentWidthSlider && contentWidthValue) {
+        contentWidthSlider.addEventListener('input', function() {
+          contentWidthValue.value = this.value;
+        });
+        contentWidthValue.addEventListener('input', function() {
+          contentWidthSlider.value = this.value;
+        });
+      }
+      
+      if (widgetSpaceSlider && widgetSpaceValue) {
+        widgetSpaceSlider.addEventListener('input', function() {
+          widgetSpaceValue.value = this.value;
+        });
+        widgetSpaceValue.addEventListener('input', function() {
+          widgetSpaceSlider.value = this.value;
         });
       }
       
@@ -584,6 +1069,8 @@
             metaTitle: document.getElementById('meta-title').value,
             metaDescription: document.getElementById('meta-description').value,
             metaKeywords: document.getElementById('meta-keywords').value,
+            contentWidth: document.getElementById('content-width-value').value,
+            widgetSpace: document.getElementById('widget-space-value').value,
             primaryColor: document.getElementById('primary-color').value,
             primaryFont: document.getElementById('primary-font').value
           };
@@ -598,9 +1085,19 @@
               :root {
                 --primary-color: ${config.primaryColor};
                 --primary-font: '${config.primaryFont}', sans-serif;
+                --content-width: ${config.contentWidth}px;
+                --widget-space: ${config.widgetSpace}px;
               }
               body {
                 font-family: var(--primary-font);
+              }
+              .container, .container-simple {
+                max-width: var(--content-width);
+                margin-left: auto;
+                margin-right: auto;
+              }
+              .section-container, .gjs-block {
+                margin-bottom: var(--widget-space);
               }
             `;
             
@@ -616,11 +1113,13 @@
             this.classList.remove('bg-blue-600', 'hover:bg-blue-700');
             this.classList.add('bg-green-600');
             
+            // Cerrar el modal después de aplicar
             setTimeout(() => {
+              configModal.classList.add('hidden');
               this.textContent = 'Aplicar Configuración';
               this.classList.remove('bg-green-600');
               this.classList.add('bg-blue-600', 'hover:bg-blue-700');
-            }, 2000);
+            }, 1000);
           }
         });
       }
@@ -637,6 +1136,10 @@
           document.getElementById('meta-title').value = '';
           document.getElementById('meta-description').value = '';
           document.getElementById('meta-keywords').value = '';
+          document.getElementById('content-width').value = '1140';
+          document.getElementById('content-width-value').value = '1140';
+          document.getElementById('widget-space').value = '20';
+          document.getElementById('widget-space-value').value = '20';
           document.getElementById('primary-color').value = '#2563eb';
           document.getElementById('primary-font').value = 'Inter';
           
@@ -1072,6 +1575,21 @@ ${formatHtml(html)}
 
     });
     </script>
+
+    <!-- Configuración de credenciales API para productos -->
+    <script>
+        // Configurar las credenciales API del sitio web
+        window.websiteApiKey = "{{ $website->api_key }}";
+        window.websiteApiUrl = "{{ $website->api_base_url }}";
+        
+        console.log('🔧 Configuración de API cargada en editor:', {
+            apiKey: window.websiteApiKey ? 'Configurada' : 'No configurada',
+            apiUrl: window.websiteApiUrl || 'No configurada'
+        });
+    </script>
+    
+    <!-- Componente para cargar productos dinámicamente -->
+    <x-products-script :apiKey="$website->api_key" :apiBaseUrl="$website->api_base_url" />
 
 </body>
 </html>

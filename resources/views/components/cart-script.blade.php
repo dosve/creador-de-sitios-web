@@ -7,11 +7,40 @@
     - Cálculos automáticos de totales
     - Integración con botones "Agregar al Carrito"
 --}}
-@props(['epaycoPublicKey' => '', 'epaycoPrivateKey' => '', 'epaycoCustomerId' => ''])
+@props(['epaycoPublicKey' => '', 'epaycoPrivateKey' => '', 'epaycoCustomerId' => '', 'templateSlug' => 'default', 'colors' => []])
 
 <script>
         document.addEventListener("DOMContentLoaded", function() {
             console.log("🛒 Inicializando carrito de compras...");
+            
+            // Configuración de estilos por plantilla para el carrito
+            const templateSlug = "{{ $templateSlug }}";
+            const templateColors = {
+                primary: "{{ $colors['primary'] ?? '#2563eb' }}",
+                secondary: "{{ $colors['secondary'] ?? '#7c3aed' }}",
+                accent: "{{ $colors['accent'] ?? '#10b981' }}",
+                background: "{{ $colors['background'] ?? '#f9fafb' }}",
+                text: "{{ $colors['text'] ?? '#111827' }}"
+            };
+            
+            console.log("🎨 Carrito - Plantilla activa:", templateSlug);
+            
+            // Función para formatear precios al estilo colombiano (miles con punto, decimales con coma)
+            function formatPrice(price) {
+                // Convertir a número y asegurar 2 decimales
+                const number = parseFloat(price);
+                
+                // Separar parte entera y decimal
+                const parts = number.toFixed(2).split('.');
+                const integerPart = parts[0];
+                const decimalPart = parts[1];
+                
+                // Formatear parte entera con puntos para miles
+                const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                
+                // Retornar con formato colombiano
+                return `${formattedInteger},${decimalPart}`;
+            }
             
             // Filtrar logs de errores irrelevantes
             const originalConsoleError = console.error;
@@ -104,9 +133,12 @@
                     <div class="border-t bg-gray-50 p-4">
                         <div class="flex justify-between items-center mb-4">
                             <span class="text-lg font-semibold">Total:</span>
-                            <span id="cart-total" class="text-xl font-bold text-green-600">$0.00</span>
+                            <span id="cart-total" class="text-xl font-bold" style="color: ${templateColors.primary}">$0.00</span>
                         </div>
-                        <button id="checkout-btn" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold" disabled>
+                        <button id="checkout-btn" class="w-full text-white py-3 rounded-lg transition-colors font-semibold" 
+                                style="background-color: ${templateColors.primary}"
+                                onmouseover="this.style.backgroundColor='${templateColors.secondary}'" 
+                                onmouseout="this.style.backgroundColor='${templateColors.primary}'" disabled>
                             Proceder al Pago
                         </button>
                     </div>
@@ -197,7 +229,7 @@
         const checkoutBtn = document.querySelector("#checkout-btn");
         if (totalElement) {
             const totals = computeTotals(cart);
-            totalElement.textContent = `$${totals.gross.toFixed(2)}`;
+            totalElement.textContent = `$${formatPrice(totals.gross)}`;
         }
         if (checkoutBtn) {
             checkoutBtn.disabled = cart.length === 0;
@@ -266,8 +298,8 @@
                     ${imageHtml}
                     <div class="flex-1">
                         <h3 class="font-semibold text-sm">${item.name}</h3>
-                        <p class="text-green-600 font-bold text-sm">$${item.price.toFixed(2)}</p>
-                        <p class="text-gray-500 text-xs">Total: $${itemTotal.toFixed(2)}</p>
+                        <p class="text-green-600 font-bold text-sm">$${formatPrice(item.price)}</p>
+                        <p class="text-gray-500 text-xs">Total: $${formatPrice(itemTotal)}</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <button onclick="updateQuantity(${index}, -1)" class="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-sm">-</button>
@@ -296,7 +328,7 @@
             // Construir la URL completa de la imagen si existe
             let imageUrl = null;
             if (productData.image) {
-                imageUrl = `https://servidor.adminnegocios.com/storage/productos/thumbnail/${productData.image}`;
+                imageUrl = `https://servidor.adminnegocios.com/storage/productos/${productData.image}`;
                 console.log("🔗 URL de imagen construida al agregar:", imageUrl);
             }
             

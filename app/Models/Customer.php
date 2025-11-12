@@ -20,11 +20,13 @@ class Customer extends Model
         'postal_code',
         'country',
         'admin_negocios_id',
+        'is_authenticated',
     ];
 
     protected function casts(): array
     {
         return [
+            'is_authenticated' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -41,6 +43,11 @@ class Customer extends Model
         return $this->hasMany(Order::class);
     }
 
+    public function websiteCustomer()
+    {
+        return $this->belongsTo(WebsiteCustomer::class, 'admin_negocios_id', 'admin_negocios_user_id')
+            ->where('website_id', $this->website_id);
+    }
 
     // Scopes
     public function scopeByWebsite($query, $websiteId)

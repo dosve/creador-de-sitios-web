@@ -1,0 +1,112 @@
+/* ========================================
+   INMOBILIARIA - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --inmobiliaria-primary: #3b82f6;
+  --inmobiliaria-secondary: #1f2937;
+  --inmobiliaria-accent: #10b981;
+  --inmobiliaria-background: #ffffff;
+  --inmobiliaria-text: #111827;
+  --inmobiliaria-font-heading: 'Inter', sans-serif;
+  --inmobiliaria-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.inmobiliaria_template {
+  font-family: var(--inmobiliaria-font-body);
+  background-color: var(--inmobiliaria-background);
+  color: var(--inmobiliaria-text);
+}
+
+.inmobiliaria_template h1,
+.inmobiliaria_template h2,
+.inmobiliaria_template h3,
+.inmobiliaria_template h4,
+.inmobiliaria_template h5,
+.inmobiliaria_template h6 {
+  font-family: var(--inmobiliaria-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.inmobiliaria-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.inmobiliaria-logo {
+  color: var(--inmobiliaria-primary);
+  font-family: var(--inmobiliaria-font-heading);
+  font-weight: 700;
+}
+
+/* Botones específicos */
+.inmobiliaria-btn-primary {
+  background-color: var(--inmobiliaria-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.inmobiliaria-btn-primary:hover {
+  background-color: var(--inmobiliaria-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Cards */
+.inmobiliaria-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.inmobiliaria-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Footer específico */
+.inmobiliaria-footer {
+  background: var(--inmobiliaria-secondary);
+  color: white;
+}
+
+.inmobiliaria-footer a {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.inmobiliaria-footer a:hover {
+  color: var(--inmobiliaria-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .inmobiliaria-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes inmobiliaria-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.inmobiliaria-animate {
+  animation: inmobiliaria-fadeIn 0.6s ease-out;
+}

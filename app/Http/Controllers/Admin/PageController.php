@@ -101,6 +101,15 @@ class PageController extends Controller
             'grapesjs_data' => 'nullable|string',
         ]);
 
+        // Log para debugging
+        \Log::info('💾 CSS RECIBIDO EN SERVIDOR:', [
+            'page_id' => $page->id,
+            'css_length' => strlen($request->css_content ?? ''),
+            'css_preview' => substr($request->css_content ?? '', 0, 500),
+            'has_important' => str_contains($request->css_content ?? '', '!important'),
+            'custom_ids' => preg_match_all('/#[a-z]+-\d+-\d+/', $request->css_content ?? '', $matches) ? $matches[0] : []
+        ]);
+
         $page->update([
             'html_content' => $request->html_content,
             'css_content' => $request->css_content,

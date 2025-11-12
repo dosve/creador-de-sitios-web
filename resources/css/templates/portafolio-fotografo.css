@@ -1,0 +1,112 @@
+/* ========================================
+   PORTAFOLIO FOTOGRAFO - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --portafolio-fotografo-primary: #3b82f6;
+  --portafolio-fotografo-secondary: #1f2937;
+  --portafolio-fotografo-accent: #10b981;
+  --portafolio-fotografo-background: #ffffff;
+  --portafolio-fotografo-text: #111827;
+  --portafolio-fotografo-font-heading: 'Inter', sans-serif;
+  --portafolio-fotografo-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.portafolio_fotografo_template {
+  font-family: var(--portafolio-fotografo-font-body);
+  background-color: var(--portafolio-fotografo-background);
+  color: var(--portafolio-fotografo-text);
+}
+
+.portafolio_fotografo_template h1,
+.portafolio_fotografo_template h2,
+.portafolio_fotografo_template h3,
+.portafolio_fotografo_template h4,
+.portafolio_fotografo_template h5,
+.portafolio_fotografo_template h6 {
+  font-family: var(--portafolio-fotografo-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.portafolio-fotografo-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.portafolio-fotografo-logo {
+  color: var(--portafolio-fotografo-primary);
+  font-family: var(--portafolio-fotografo-font-heading);
+  font-weight: 700;
+}
+
+/* Botones específicos */
+.portafolio-fotografo-btn-primary {
+  background-color: var(--portafolio-fotografo-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.portafolio-fotografo-btn-primary:hover {
+  background-color: var(--portafolio-fotografo-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Cards */
+.portafolio-fotografo-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.portafolio-fotografo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Footer específico */
+.portafolio-fotografo-footer {
+  background: var(--portafolio-fotografo-secondary);
+  color: white;
+}
+
+.portafolio-fotografo-footer a {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.portafolio-fotografo-footer a:hover {
+  color: var(--portafolio-fotografo-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .portafolio-fotografo-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes portafolio-fotografo-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.portafolio-fotografo-animate {
+  animation: portafolio-fotografo-fadeIn 0.6s ease-out;
+}

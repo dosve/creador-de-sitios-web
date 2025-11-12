@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "total_templates": 18,
+  "total_templates": 19,
   "last_updated": "2025-01-27",
   "templates": [
     {
@@ -344,6 +344,22 @@
       "features": ["Servicios de desarrollo", "Portfolio de proyectos", "Tecnologías utilizadas", "Equipo de desarrollo", "Casos de éxito"],
       "ideal_for": ["Empresas de software", "Desarrolladores", "Agencias de desarrollo", "Consultoras tecnológicas"],
       "preview_url": "/templates/dosve-empresa/preview"
+    },
+    {
+      "id": 19,
+      "name": "Plantilla Demo",
+      "slug": "plantilla-demo",
+      "category": "basic",
+      "description": "Plantilla base con menú grueso y footer blanco.",
+      "is_premium": false,
+      "is_active": true,
+      "has_predefined_pages": true,
+      "pages_count": 5,
+      "pages": ["Inicio", "Productos", "Categorías", "Contacto", "Nosotros"],
+      "colors": { "primary": "#111827", "secondary": "#e5e7eb" },
+      "features": ["Menú grueso", "Footer blanco", "Base limpia"],
+      "ideal_for": ["Sitios de prueba", "Demos", "Bases personalizadas"],
+      "preview_url": "/templates/plantilla-demo/preview"
     }
   ],
   "categories": {
@@ -409,11 +425,11 @@
     },
     "basic": {
       "name": "Básicas",
-      "templates": ["plantilla-basica"]
+      "templates": ["plantilla-basica", "plantilla-demo"]
     }
   },
   "statistics": {
-    "total_templates": 18,
+    "total_templates": 19,
     "total_pages": 99,
     "avg_pages_per_template": 5.5,
     "total_block_types": 50,
@@ -421,6 +437,12 @@
     "premium_templates": 0
   }
 }
+
+
+
+
+
+
 
 
 

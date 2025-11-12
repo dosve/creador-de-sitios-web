@@ -1,0 +1,312 @@
+/* ========================================
+   AGENCIA CREATIVA - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --agencia-primary: #7c3aed;
+  --agencia-secondary: #ec4899;
+  --agencia-accent: #f59e0b;
+  --agencia-background: #ffffff;
+  --agencia-text: #1f2937;
+  --agencia-font-heading: 'Poppins', sans-serif;
+  --agencia-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.agencia-template {
+  font-family: var(--agencia-font-body);
+  background-color: var(--agencia-background);
+  color: var(--agencia-text);
+}
+
+.agencia-template h1,
+.agencia-template h2,
+.agencia-template h3,
+.agencia-template h4,
+.agencia-template h5,
+.agencia-template h6 {
+  font-family: var(--agencia-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.agencia-header {
+  background: white;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.agencia-logo {
+  background: linear-gradient(135deg, var(--agencia-primary) 0%, var(--agencia-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: var(--agencia-font-heading);
+  font-weight: 700;
+}
+
+/* Botones específicos */
+.agencia-btn-primary {
+  background: linear-gradient(135deg, var(--agencia-primary) 0%, var(--agencia-secondary) 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.agencia-btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.agencia-btn-primary:hover::before {
+  left: 100%;
+}
+
+.agencia-btn-primary:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+}
+
+/* Cards de portfolio */
+.agencia-portfolio-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.agencia-portfolio-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--agencia-primary) 0%, var(--agencia-secondary) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.agencia-portfolio-card:hover::before {
+  opacity: 0.1;
+}
+
+.agencia-portfolio-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(124, 58, 237, 0.15);
+}
+
+/* Secciones específicas */
+.agencia-hero {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.agencia-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.05) 0%, transparent 70%);
+  animation: agencia-float 20s ease-in-out infinite;
+}
+
+@keyframes agencia-float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-30px, -30px) rotate(180deg); }
+}
+
+/* Servicios */
+.agencia-service-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(124, 58, 237, 0.1);
+  position: relative;
+}
+
+.agencia-service-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, var(--agencia-primary) 0%, var(--agencia-secondary) 100%);
+  border-radius: 12px 12px 0 0;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.agencia-service-card:hover::after {
+  transform: scaleX(1);
+}
+
+.agencia-service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.15);
+}
+
+/* Footer específico */
+.agencia-footer {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  color: white;
+  position: relative;
+}
+
+.agencia-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--agencia-primary), transparent);
+}
+
+.agencia-footer a {
+  color: #d1d5db;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.agencia-footer a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg, var(--agencia-primary) 0%, var(--agencia-secondary) 100%);
+  transition: width 0.3s ease;
+}
+
+.agencia-footer a:hover::after {
+  width: 100%;
+}
+
+.agencia-footer a:hover {
+  color: var(--agencia-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .agencia-hero {
+    padding: 2rem 0;
+  }
+  
+  .agencia-portfolio-card {
+    margin-bottom: 1rem;
+  }
+  
+  .agencia-service-card {
+    padding: 1.5rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes agencia-slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes agencia-slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.agencia-animate-left {
+  animation: agencia-slideInLeft 0.6s ease-out;
+}
+
+.agencia-animate-right {
+  animation: agencia-slideInRight 0.6s ease-out;
+}
+
+/* Estilos para elementos de formulario */
+.agencia-form input,
+.agencia-form textarea,
+.agencia-form select {
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px 18px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.agencia-form input:focus,
+.agencia-form textarea:focus,
+.agencia-form select:focus {
+  border-color: var(--agencia-primary);
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Efectos de partículas para hero */
+.agencia-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.agencia-particle {
+  position: absolute;
+  background: var(--agencia-primary);
+  border-radius: 50%;
+  opacity: 0.1;
+  animation: agencia-particle-float 15s infinite linear;
+}
+
+@keyframes agencia-particle-float {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.1;
+  }
+  90% {
+    opacity: 0.1;
+  }
+  100% {
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}

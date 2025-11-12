@@ -23,14 +23,14 @@
             {{-- Columna 3: Contacto --}}
             <div>
                 <h4 class="mb-4 text-lg font-semibold">Contacto</h4>
-                @if(!empty($website->contact_email))
-                <p class="text-gray-400 mb-2">Email: {{ $website->contact_email }}</p>
+                @if(!empty($templateConfig->settings['contact_email']))
+                <p class="text-gray-400 mb-2">Email: {{ $templateConfig->settings['contact_email'] }}</p>
                 @else
                 <p class="text-gray-400 mb-2">Email: contacto@misitio.com</p>
                 @endif
                 
-                @if(!empty($website->contact_phone))
-                <p class="text-gray-400 mb-2">Teléfono: {{ $website->contact_phone }}</p>
+                @if(!empty($templateConfig->settings['contact_phone']))
+                <p class="text-gray-400 mb-2">Teléfono: {{ $templateConfig->settings['contact_phone'] }}</p>
                 @else
                 <p class="text-gray-400 mb-2">Teléfono: +1 234 567 890</p>
                 @endif
@@ -44,6 +44,10 @@
         {{-- Copyright --}}
         <div class="pt-8 mt-8 text-center text-gray-400 border-t border-gray-700">
             <p>&copy; {{ date('Y') }} {{ $website->name ?? 'Mi Sitio Web' }}. Todos los derechos reservados.</p>
+            <p class="mt-2 text-sm text-gray-500">
+                Creado con <a href="https://eme10.com" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">EME10</a> | 
+                Gestión con <a href="https://adminnegocios.com" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">Admin Negocios</a>
+            </p>
         </div>
     </div>
 </footer>

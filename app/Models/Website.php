@@ -16,6 +16,8 @@ class Website extends Model
         'description',
         'domain',
         'subdomain',
+        'logo',
+        'favicon',
         'is_published',
         'settings',
         'seo_settings',
@@ -25,6 +27,10 @@ class Website extends Model
         'epayco_public_key',
         'epayco_private_key',
         'epayco_customer_id',
+        'facebook_url',
+        'instagram_url',
+        'twitter_url',
+        'linkedin_url',
     ];
 
     protected function casts(): array

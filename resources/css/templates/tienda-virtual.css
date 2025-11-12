@@ -1,0 +1,304 @@
+/* ========================================
+   TIENDA VIRTUAL - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --tienda-primary: #6366f1;
+  --tienda-secondary: #4f46e5;
+  --tienda-accent: #f59e0b;
+  --tienda-background: #ffffff;
+  --tienda-text: #1f2937;
+  --tienda-font-heading: 'Inter', sans-serif;
+  --tienda-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.tienda-template {
+  font-family: var(--tienda-font-body);
+  background-color: var(--tienda-background);
+  color: var(--tienda-text);
+}
+
+.tienda-template h1,
+.tienda-template h2,
+.tienda-template h3,
+.tienda-template h4,
+.tienda-template h5,
+.tienda-template h6 {
+  font-family: var(--tienda-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.tienda-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.tienda-logo {
+  color: var(--tienda-primary);
+  font-family: var(--tienda-font-heading);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+/* Carrito de compras */
+.tienda-cart-icon {
+  position: relative;
+  color: var(--tienda-text);
+  transition: color 0.2s ease;
+}
+
+.tienda-cart-icon:hover {
+  color: var(--tienda-primary);
+}
+
+.tienda-cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--tienda-primary);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Botones específicos */
+.tienda-btn-primary {
+  background-color: var(--tienda-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.tienda-btn-primary:hover {
+  background-color: var(--tienda-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.tienda-btn-add-cart {
+  background-color: var(--tienda-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+.tienda-btn-add-cart:hover {
+  background-color: var(--tienda-secondary);
+  transform: translateY(-1px);
+}
+
+/* Cards de productos */
+.tienda-product-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #f3f4f6;
+  overflow: hidden;
+}
+
+.tienda-product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.tienda-product-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.tienda-product-card:hover .tienda-product-image {
+  transform: scale(1.05);
+}
+
+.tienda-product-info {
+  padding: 1.5rem;
+}
+
+.tienda-product-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--tienda-text);
+}
+
+.tienda-product-price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--tienda-primary);
+  margin-bottom: 1rem;
+}
+
+.tienda-product-rating {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.tienda-star {
+  color: #fbbf24;
+  margin-right: 2px;
+}
+
+/* Filtros y búsqueda */
+.tienda-filters {
+  background: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.tienda-search-input {
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 16px;
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+
+.tienda-search-input:focus {
+  border-color: var(--tienda-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Hero específico */
+.tienda-hero {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  padding: 4rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.tienda-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="tienda-pattern" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23tienda-pattern)"/></svg>');
+  opacity: 0.3;
+}
+
+/* Footer específico */
+.tienda-footer {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  color: white;
+  padding: 3rem 0 1rem;
+}
+
+.tienda-footer a {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.tienda-footer a:hover {
+  color: var(--tienda-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tienda-hero {
+    padding: 2rem 0;
+  }
+  
+  .tienda-product-card {
+    margin-bottom: 1rem;
+  }
+  
+  .tienda-filters {
+    padding: 1rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes tienda-slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tienda-animate {
+  animation: tienda-slideInUp 0.6s ease-out;
+}
+
+/* Estilos para elementos de formulario */
+.tienda-form input,
+.tienda-form textarea,
+.tienda-form select {
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.tienda-form input:focus,
+.tienda-form textarea:focus,
+.tienda-form select:focus {
+  border-color: var(--tienda-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Grid de productos */
+.tienda-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+/* Badges y etiquetas */
+.tienda-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.tienda-badge-new {
+  background-color: var(--tienda-primary);
+  color: white;
+}
+
+.tienda-badge-sale {
+  background-color: #ef4444;
+  color: white;
+}
+
+.tienda-badge-out {
+  background-color: #6b7280;
+  color: white;
+}

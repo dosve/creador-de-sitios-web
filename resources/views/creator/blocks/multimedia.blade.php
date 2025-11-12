@@ -15,18 +15,58 @@
 {
   id: 'youtube',
   label: 'YouTube',
-  category: 'Multimedia', attributes: {
+  category: 'Multimedia', 
+  attributes: {
     class: 'gjs-block-video'
+  },
+  content: {
+    type: 'youtube-video',
+    name: 'YouTube',
+    draggable: true,
+    droppable: false,
+    selectable: true,
+    editable: true,
+    removable: true,
+    hoverable: true,
+    layerable: true,
+    attributes: {
+      'data-gjs-type': 'youtube-video',
+      'data-gjs-name': 'YouTube',
+      class: 'mb-8 youtube-container',
+      style: 'position: relative; cursor: pointer;'
+    },
+    components: [
+      {
+        tagName: 'div',
+        selectable: false,
+        hoverable: false,
+        draggable: false,
+        removable: false,
+        editable: false,
+        attributes: {
+          class: 'relative overflow-hidden rounded-lg',
+          style: 'padding-bottom: 56.25%;'
+        },
+        components: [
+          {
+            tagName: 'iframe',
+            selectable: false,
+            hoverable: false,
+            draggable: false,
+            removable: false,
+            editable: false,
+            attributes: {
+              class: 'absolute top-0 left-0 w-full h-full',
+              src: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+              frameborder: '0',
+              allowfullscreen: '',
+              allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+            }
+          }
+        ]
+      }
+    ]
   }
-  , content: `<div class="mb-8 youtube-container">
-    <div class="relative h-0 overflow-hidden pb-9/16">
-        <iframe class="absolute top-0 left-0 w-full h-full rounded-lg" 
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
-                frameborder="0" 
-                allowfullscreen>
-        </iframe>
-    </div>
-  </div>`
 },
 {
   id: 'gallery',

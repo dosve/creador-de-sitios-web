@@ -1,0 +1,112 @@
+/* ========================================
+   EVENTO CONFERENCIA - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --evento-conferencia-primary: #3b82f6;
+  --evento-conferencia-secondary: #1f2937;
+  --evento-conferencia-accent: #10b981;
+  --evento-conferencia-background: #ffffff;
+  --evento-conferencia-text: #111827;
+  --evento-conferencia-font-heading: 'Inter', sans-serif;
+  --evento-conferencia-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.evento_conferencia_template {
+  font-family: var(--evento-conferencia-font-body);
+  background-color: var(--evento-conferencia-background);
+  color: var(--evento-conferencia-text);
+}
+
+.evento_conferencia_template h1,
+.evento_conferencia_template h2,
+.evento_conferencia_template h3,
+.evento_conferencia_template h4,
+.evento_conferencia_template h5,
+.evento_conferencia_template h6 {
+  font-family: var(--evento-conferencia-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.evento-conferencia-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.evento-conferencia-logo {
+  color: var(--evento-conferencia-primary);
+  font-family: var(--evento-conferencia-font-heading);
+  font-weight: 700;
+}
+
+/* Botones específicos */
+.evento-conferencia-btn-primary {
+  background-color: var(--evento-conferencia-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.evento-conferencia-btn-primary:hover {
+  background-color: var(--evento-conferencia-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Cards */
+.evento-conferencia-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.evento-conferencia-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Footer específico */
+.evento-conferencia-footer {
+  background: var(--evento-conferencia-secondary);
+  color: white;
+}
+
+.evento-conferencia-footer a {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.evento-conferencia-footer a:hover {
+  color: var(--evento-conferencia-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .evento-conferencia-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes evento-conferencia-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.evento-conferencia-animate {
+  animation: evento-conferencia-fadeIn 0.6s ease-out;
+}

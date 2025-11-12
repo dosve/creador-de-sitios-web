@@ -16,6 +16,10 @@
     </div>
     <div class="pt-8 mt-8 border-t border-gray-900 text-center text-sm text-gray-500">
       <p>© {{date('Y')}} {{$website->name??'Banda'}}. {{$footerConfig['copyright_text']??'Todos los derechos reservados.'}}</p>
+      <p class="mt-2 text-xs text-gray-600">
+        Creado con <a href="https://eme10.com" target="_blank" class="text-red-400 hover:text-red-300 transition-colors font-bold">EME10</a> | 
+        <a href="https://adminnegocios.com" target="_blank" class="text-red-400 hover:text-red-300 transition-colors font-bold">Admin Negocios</a>
+      </p>
     </div>
   </div>
 </footer>

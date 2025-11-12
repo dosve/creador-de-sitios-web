@@ -39,6 +39,12 @@ class StoreController extends Controller
 
         // Verificar si hay configuración de API externa
         if ($website->api_key && $website->api_base_url) {
+            Log::info('StoreController: Iniciando consulta a API externa', [
+                'website_id' => $website->id,
+                'api_key_length' => strlen($website->api_key),
+                'api_base_url' => $website->api_base_url
+            ]);
+            
             try {
                 $apiService = new ExternalApiService($website->api_key, $website->api_base_url);
 
@@ -46,15 +52,35 @@ class StoreController extends Controller
                 $perPage = $request->get('per_page', 12);
                 $page = $request->get('page', 1);
 
+                Log::info('StoreController: Parámetros de consulta', [
+                    'per_page' => $perPage,
+                    'page' => $page,
+                    'estado' => 1
+                ]);
+
                 $apiResponse = $apiService->getProducts([
                     'paginate' => $perPage,
                     'page' => $page,
                     'estado' => 1
                 ]);
 
+                Log::info('StoreController: Respuesta de API recibida', [
+                    'response_is_null' => is_null($apiResponse),
+                    'response_type' => gettype($apiResponse),
+                    'has_success_key' => isset($apiResponse['success']),
+                    'success_value' => $apiResponse['success'] ?? 'no_key',
+                    'has_data_key' => isset($apiResponse['data']),
+                    'data_count' => isset($apiResponse['data']) ? count($apiResponse['data']) : 'no_data_key'
+                ]);
+
                 if ($apiResponse && isset($apiResponse['success']) && $apiResponse['success']) {
                     $externalProducts = $apiResponse['data'];
                     $pagination = $apiResponse['pagination'] ?? null;
+
+                    Log::info('StoreController: Procesando productos de API', [
+                        'products_count' => count($externalProducts),
+                        'has_pagination' => !is_null($pagination)
+                    ]);
 
                     // Construir URLs completas para las imágenes
                     foreach ($externalProducts as &$product) {
@@ -71,8 +97,24 @@ class StoreController extends Controller
                     }
 
                     $useExternalApi = true;
+                    
+                    Log::info('StoreController: API externa configurada como activa', [
+                        'useExternalApi' => $useExternalApi,
+                        'final_products_count' => count($externalProducts)
+                    ]);
+                } else {
+                    Log::warning('StoreController: API no devolvió datos válidos', [
+                        'apiResponse' => $apiResponse,
+                        'success_key_exists' => isset($apiResponse['success']),
+                        'success_value' => $apiResponse['success'] ?? 'no_key'
+                    ]);
                 }
             } catch (\Exception $e) {
+                Log::error('StoreController: Error al conectar con API externa', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
                 // Si falla la API externa, usar productos locales
                 $products = $website->blogPosts()
                     ->where('is_product', true)
@@ -80,6 +122,11 @@ class StoreController extends Controller
                     ->latest()
                     ->get();
             }
+        } else {
+            Log::info('StoreController: No hay configuración de API', [
+                'has_api_key' => !empty($website->api_key),
+                'has_api_url' => !empty($website->api_base_url)
+            ]);
         }
 
         // Si no hay API externa o falló, usar productos locales

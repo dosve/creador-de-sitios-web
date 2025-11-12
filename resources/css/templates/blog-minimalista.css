@@ -1,0 +1,112 @@
+/* ========================================
+   BLOG MINIMALISTA - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --blog-minimalista-primary: #3b82f6;
+  --blog-minimalista-secondary: #1f2937;
+  --blog-minimalista-accent: #10b981;
+  --blog-minimalista-background: #ffffff;
+  --blog-minimalista-text: #111827;
+  --blog-minimalista-font-heading: 'Inter', sans-serif;
+  --blog-minimalista-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.blog_minimalista_template {
+  font-family: var(--blog-minimalista-font-body);
+  background-color: var(--blog-minimalista-background);
+  color: var(--blog-minimalista-text);
+}
+
+.blog_minimalista_template h1,
+.blog_minimalista_template h2,
+.blog_minimalista_template h3,
+.blog_minimalista_template h4,
+.blog_minimalista_template h5,
+.blog_minimalista_template h6 {
+  font-family: var(--blog-minimalista-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.blog-minimalista-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.blog-minimalista-logo {
+  color: var(--blog-minimalista-primary);
+  font-family: var(--blog-minimalista-font-heading);
+  font-weight: 700;
+}
+
+/* Botones específicos */
+.blog-minimalista-btn-primary {
+  background-color: var(--blog-minimalista-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.blog-minimalista-btn-primary:hover {
+  background-color: var(--blog-minimalista-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Cards */
+.blog-minimalista-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.blog-minimalista-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Footer específico */
+.blog-minimalista-footer {
+  background: var(--blog-minimalista-secondary);
+  color: white;
+}
+
+.blog-minimalista-footer a {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.blog-minimalista-footer a:hover {
+  color: var(--blog-minimalista-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .blog-minimalista-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes blog-minimalista-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.blog-minimalista-animate {
+  animation: blog-minimalista-fadeIn 0.6s ease-out;
+}

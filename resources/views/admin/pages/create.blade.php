@@ -51,7 +51,7 @@
             <!-- Tipo de Página -->
             <div>
                 <label class="block mb-3 text-sm font-medium text-gray-700">Tipo de Página</label>
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <!-- Página en Blanco -->
                     <div class="relative">
                         <input type="radio" name="page_type" id="page_type_blank" value="blank" 
@@ -105,6 +105,35 @@
                             </div>
                         </label>
                     </div>
+
+                    <!-- Importar Páginas Prediseñadas -->
+                    @if($website->template_id)
+                    <div class="relative">
+                        <input type="radio" name="page_type" id="page_type_import" value="import" 
+                               {{ old('page_type') === 'import' ? 'checked' : '' }}
+                               class="sr-only peer">
+                        <label for="page_type_import" 
+                               class="relative flex flex-col items-center p-6 transition-all duration-300 border-2 border-gray-200 cursor-pointer rounded-xl peer-checked:border-green-500 peer-checked:bg-gradient-to-br peer-checked:from-green-50 peer-checked:to-green-100 peer-checked:shadow-lg peer-checked:shadow-green-200 peer-checked:scale-105 hover:border-gray-300 hover:shadow-md">
+                            <!-- Borde destacado cuando está seleccionado -->
+                            <div class="absolute inset-0 border-2 border-transparent rounded-xl peer-checked:border-green-400 peer-checked:shadow-inner"></div>
+                            
+                            <div class="flex items-center justify-center w-16 h-16 mb-4 transition-all duration-300 bg-gray-100 rounded-xl peer-checked:bg-green-500 peer-checked:shadow-lg">
+                                <svg class="w-8 h-8 text-gray-600 transition-all duration-300 peer-checked:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 transition-all duration-300 peer-checked:text-green-800">Importar Páginas</h3>
+                            <p class="mt-2 text-sm text-center text-gray-500 transition-all duration-300 peer-checked:text-green-600">Usar páginas prediseñadas de la plantilla</p>
+                            
+                            <!-- Badge de seleccionado -->
+                            <div class="absolute w-6 h-6 transition-all duration-300 bg-gray-300 rounded-full -top-2 -right-2 peer-checked:bg-green-500 peer-checked:scale-110">
+                                <svg class="w-4 h-4 text-white transition-all duration-300 opacity-0 peer-checked:opacity-100" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </label>
+                    </div>
+                    @endif
                 </div>
                 @error('page_type')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -179,32 +208,26 @@ document.getElementById('title').addEventListener('input', function() {
     document.getElementById('slug').value = slug;
 });
 
-// Manejar el cambio de tipo de página
+// Manejar selección de tipo de página
 document.addEventListener('DOMContentLoaded', function() {
     const pageTypeInputs = document.querySelectorAll('input[name="page_type"]');
     const templateSelector = document.getElementById('template_selector');
-    const templateSelect = document.getElementById('template_id');
+    const importButton = document.getElementById('page_type_import');
     
-    function toggleTemplateSelector() {
-        const selectedType = document.querySelector('input[name="page_type"]:checked');
-        
-        if (selectedType && selectedType.value === 'template') {
-            templateSelector.classList.remove('hidden');
-            templateSelect.required = true;
-        } else {
-            templateSelector.classList.add('hidden');
-            templateSelect.required = false;
-            templateSelect.value = '';
-        }
-    }
-    
-    // Agregar event listeners a los radio buttons
     pageTypeInputs.forEach(input => {
-        input.addEventListener('change', toggleTemplateSelector);
+        input.addEventListener('change', function() {
+            if (this.value === 'template') {
+                templateSelector.classList.remove('hidden');
+            } else {
+                templateSelector.classList.add('hidden');
+            }
+            
+            if (this.value === 'import') {
+                // Redirigir a la página de importación
+                window.location.href = '{{ route("admin.websites.import.pages", [$website, $website->template_id]) }}';
+            }
+        });
     });
-    
-    // Ejecutar al cargar la página
-    toggleTemplateSelector();
 });
 </script>
 @endsection

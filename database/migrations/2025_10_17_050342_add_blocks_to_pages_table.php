@@ -12,7 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pages', function (Blueprint $table) {
-            $table->json('blocks')->nullable()->after('content');
+            if (!Schema::hasColumn('pages', 'blocks')) {
+                // La tabla usa 'html_content', no 'content'
+                if (Schema::hasColumn('pages', 'html_content')) {
+                    $table->json('blocks')->nullable()->after('html_content');
+                } else {
+                    $table->json('blocks')->nullable();
+                }
+            }
         });
     }
 
@@ -22,7 +29,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('pages', function (Blueprint $table) {
-            $table->dropColumn('blocks');
+            if (Schema::hasColumn('pages', 'blocks')) {
+                $table->dropColumn('blocks');
+            }
         });
     }
 };

@@ -3,38 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>{{$website->name??'Blog'}}</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{{ $page->title ?? $website->name ?? "Mi Sitio Web" }}</title>
+  <meta name="description" content="{{ $page->meta_description ?? $website->description ?? "Descripción de mi sitio web" }}">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Merriweather', serif
+      font-family: "Inter", sans-serif;
     }
-
-    .font-heading {
-      font-family: 'Lora', serif
-    }
-
     .container {
-      max-width: {
-          {
-          $customization['layout']['container_width']??'740px'
-        }
-      }
+      max-width: {{ $customization["layout"]["container_width"] ?? "1200px" }};
     }
-
   </style>
+  
+  {{-- Estilos CSS personalizados de la página --}}
+  @if($page && $page->css_content)
+    <style>
+      {!! $page->css_content !!}
+    </style>
+  @endif
 </head>
-<body class="bg-white text-gray-900">@php $h=$customization['header']??[];@endphp @include('templates.blog-minimalista.header')<main class="py-16">
-    <div class="container px-6 mx-auto">
-      <article class="mb-16">
-        <h2 class="font-heading text-4xl md:text-5xl font-bold mb-6 leading-tight">Título del Artículo Principal</h2>
-        <div class="flex items-center text-sm text-gray-500 mb-8"><span>Por Autor</span><span class="mx-2">•</span><span>15 min lectura</span></div>
-        <div class="prose prose-lg max-w-none">
-          <p class="text-xl leading-relaxed mb-6">Este es un blog minimalista centrado en la lectura. El diseño limpio permite que el contenido sea el protagonista.</p>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+<body class="bg-gray-50" data-page-id="{{ $page ? $page->id : '' }}">
+  {{-- Barra de administración para propietarios logueados --}}
+  @if(Auth::check() && (Auth::user()->role === "admin" || Auth::user()->id === $website->user_id))
+    <x-admin-bar :website="$website" />
+  @endif
+  
+  {{-- Header de la plantilla --}}
+  @include('templates.blog-minimalista.header')
+  
+  {{-- Contenido específico de la página --}}
+  <main class="min-h-screen">
+    @if($page && $page->html_content)
+      {!! $page->html_content !!}
+    @else
+      <section class="py-20 bg-white">
+        <div class="container px-6 mx-auto">
+          <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+              {{ $page->title ?? "Página" }}
+            </h1>
+            <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              {{ $page->meta_description ?? "Contenido de la página" }}
+            </p>
+          </div>
         </div>
-      </article>
-    </div>
-  </main>@php $f=$customization['footer']??[];@endphp @include('templates.blog-minimalista.footer')</body>
+      </section>
+    @endif
+  </main>
+  
+  {{-- Footer de la plantilla --}}
+  @include('templates.blog-minimalista.footer')
+  
+  {{-- Scripts globales para funcionalidad dinámica --}}
+  <x-global-scripts :website="$website" :customization="$customization ?? []" />
+</body>
 </html>

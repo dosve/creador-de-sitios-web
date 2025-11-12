@@ -1,45 +1,71 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $page->title ?? $website->name ?? 'Mi Sitio Web' }}</title>
-    <meta name="description" content="{{ $page->meta_description ?? $website->description ?? 'Descripción de mi sitio web' }}">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    @include('templates.partials.customization-vars')
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{{ $page->title ?? $website->name ?? "Mi Sitio Web" }}</title>
+  <meta name="description" content="{{ $page->meta_description ?? $website->description ?? "Descripción de mi sitio web" }}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  {{-- CSS específico de la plantilla --}}
+  @php
+    $templateCssHelper = new \App\Helpers\TemplateCssHelper();
+  @endphp
+  @if($templateCssHelper::hasCss('plantilla-basica'))
+    {!! $templateCssHelper::renderCss('plantilla-basica', $customization ?? []) !!}
+  @endif
+  
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+    }
+    .container {
+      max-width: {{ $customization["layout"]["container_width"] ?? "1200px" }};
+    }
+  </style>
+  
+  {{-- Estilos CSS personalizados de la página --}}
+  @if($page && $page->css_content)
+    <style>
+      {!! $page->css_content !!}
+    </style>
+  @endif
 </head>
-<body class="bg-gray-50">
-    {{-- Barra de administración para propietarios logueados --}}
-    @if(Auth::check() && (Auth::user()->role === 'admin' || Auth::user()->id === $website->user_id))
-        <x-admin-bar :website="$website" />
-    @endif
-    
-    @include('templates.plantilla-basica.header')
-
-    <main class="min-h-screen py-16">
-        <div class="container px-4 mx-auto">
-            <div class="text-center">
-                @if($page && $page->html_content)
-                    {!! $page->html_content !!}
-                @else
-                    <h2 class="mb-6 text-4xl font-bold text-gray-900">Bienvenido a tu sitio web</h2>
-                    <p class="max-w-2xl mx-auto mb-8 text-lg text-gray-600">
-                        Esta es tu página de inicio. Puedes editar este contenido desde el panel de administración.
-                    </p>
-                    <div class="flex justify-center gap-4">
-                        <a href="/{{ $website->slug }}/productos" class="px-6 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                            Ver Productos
-                        </a>
-                        <a href="/{{ $website->slug }}/contacto" class="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                            Contactar
-                        </a>
-                    </div>
-                @endif
-            </div>
+<body class="bg-gray-50 basica-template" data-page-id="{{ $page ? $page->id : '' }}">
+  {{-- Barra de administración para propietarios logueados --}}
+  @if(Auth::check() && (Auth::user()->role === "admin" || Auth::user()->id === $website->user_id))
+    <x-admin-bar :website="$website" />
+  @endif
+  
+  {{-- Header de la plantilla --}}
+  @include('templates.plantilla-basica.header')
+  
+  {{-- Contenido específico de la página --}}
+  <main class="min-h-screen">
+    @if($page && $page->html_content)
+      {!! $page->html_content !!}
+    @else
+      <section class="py-20 bg-white">
+        <div class="container px-6 mx-auto">
+          <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+              {{ $page->title ?? "Página" }}
+            </h1>
+            <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              {{ $page->meta_description ?? "Contenido de la página" }}
+            </p>
+          </div>
         </div>
-    </main>
-
-    @include('templates.plantilla-basica.footer')
+      </section>
+    @endif
+  </main>
+  
+  {{-- Footer de la plantilla --}}
+  @include('templates.plantilla-basica.footer')
+  
+  {{-- Scripts globales para funcionalidad dinámica --}}
+  <x-global-scripts :website="$website" :customization="$customization ?? []" />
 </body>
 </html>

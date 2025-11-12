@@ -28,6 +28,10 @@
     </div>
   </div>@endif<div class="pt-8 mt-8 border-t border-purple-800 text-center text-sm text-purple-300">
     <p>© {{date('Y')}} {{$website->name??'Evento'}}. {{$footerConfig['copyright_text']??'Todos los derechos reservados.'}}</p>
+    <p class="mt-2 text-xs text-purple-400">
+      Creado con <a href="https://eme10.com" target="_blank" class="text-purple-200 hover:text-white transition-colors font-medium">EME10</a> | 
+      <a href="https://adminnegocios.com" target="_blank" class="text-purple-200 hover:text-white transition-colors font-medium">Admin Negocios</a>
+    </p>
   </div>
   </div>
 </footer>

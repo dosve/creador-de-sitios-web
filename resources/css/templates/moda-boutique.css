@@ -1,0 +1,112 @@
+/* ========================================
+   MODA BOUTIQUE - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --moda-boutique-primary: #3b82f6;
+  --moda-boutique-secondary: #1f2937;
+  --moda-boutique-accent: #10b981;
+  --moda-boutique-background: #ffffff;
+  --moda-boutique-text: #111827;
+  --moda-boutique-font-heading: 'Inter', sans-serif;
+  --moda-boutique-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.moda_boutique_template {
+  font-family: var(--moda-boutique-font-body);
+  background-color: var(--moda-boutique-background);
+  color: var(--moda-boutique-text);
+}
+
+.moda_boutique_template h1,
+.moda_boutique_template h2,
+.moda_boutique_template h3,
+.moda_boutique_template h4,
+.moda_boutique_template h5,
+.moda_boutique_template h6 {
+  font-family: var(--moda-boutique-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.moda-boutique-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.moda-boutique-logo {
+  color: var(--moda-boutique-primary);
+  font-family: var(--moda-boutique-font-heading);
+  font-weight: 700;
+}
+
+/* Botones específicos */
+.moda-boutique-btn-primary {
+  background-color: var(--moda-boutique-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.moda-boutique-btn-primary:hover {
+  background-color: var(--moda-boutique-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Cards */
+.moda-boutique-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.moda-boutique-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Footer específico */
+.moda-boutique-footer {
+  background: var(--moda-boutique-secondary);
+  color: white;
+}
+
+.moda-boutique-footer a {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.moda-boutique-footer a:hover {
+  color: var(--moda-boutique-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .moda-boutique-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes moda-boutique-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.moda-boutique-animate {
+  animation: moda-boutique-fadeIn 0.6s ease-out;
+}

@@ -54,25 +54,47 @@
       <div>
         <h3 class="text-lg font-bold mb-6">Contacto</h3>
         <ul class="space-y-4 text-amber-200">
+          @if(!empty($templateConfig->settings['contact_address']))
           <li class="flex items-start space-x-3">
             <svg class="w-5 h-5 text-amber-400 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
             </svg>
-            <span>Calle Principal 123, Ciudad</span>
+            <span>{{ $templateConfig->settings['contact_address'] }}</span>
           </li>
+          @endif
+          
+          @if(!empty($templateConfig->settings['contact_phone']))
+          <li class="flex items-start space-x-3">
+            <svg class="w-5 h-5 text-amber-400 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+            </svg>
+            <a href="tel:{{ str_replace(' ', '', $templateConfig->settings['contact_phone']) }}" class="hover:text-amber-50 transition-colors">{{ $templateConfig->settings['contact_phone'] }}</a>
+          </li>
+          @else
           <li class="flex items-start space-x-3">
             <svg class="w-5 h-5 text-amber-400 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
             </svg>
             <a href="tel:+123456789" class="hover:text-amber-50 transition-colors">+1 234 567 89</a>
           </li>
+          @endif
+          
+          @if(!empty($templateConfig->settings['contact_email']))
+          <li class="flex items-start space-x-3">
+            <svg class="w-5 h-5 text-amber-400 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+            <a href="mailto:{{ $templateConfig->settings['contact_email'] }}" class="hover:text-amber-50 transition-colors">{{ $templateConfig->settings['contact_email'] }}</a>
+          </li>
+          @else
           <li class="flex items-start space-x-3">
             <svg class="w-5 h-5 text-amber-400 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
             </svg>
             <a href="mailto:info@restaurante.com" class="hover:text-amber-50 transition-colors">info@restaurante.com</a>
           </li>
+          @endif
         </ul>
       </div>
     </div>
@@ -82,6 +104,10 @@
       <p class="text-sm text-amber-200">
         © {{ date('Y') }} {{ $website->name ?? 'Restaurante' }}.
         {{ $footerConfig['copyright_text'] ?? 'Todos los derechos reservados.' }}
+      </p>
+      <p class="mt-2 text-xs text-amber-300">
+        Creado con <a href="https://eme10.com" target="_blank" class="text-amber-100 hover:text-amber-50 transition-colors font-medium">EME10</a> | 
+        <a href="https://adminnegocios.com" target="_blank" class="text-amber-100 hover:text-amber-50 transition-colors font-medium">Admin Negocios</a>
       </p>
     </div>
   </div>

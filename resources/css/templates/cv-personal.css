@@ -1,0 +1,112 @@
+/* ========================================
+   CV PERSONAL - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --cv-personal-primary: #3b82f6;
+  --cv-personal-secondary: #1f2937;
+  --cv-personal-accent: #10b981;
+  --cv-personal-background: #ffffff;
+  --cv-personal-text: #111827;
+  --cv-personal-font-heading: 'Inter', sans-serif;
+  --cv-personal-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.cv_personal_template {
+  font-family: var(--cv-personal-font-body);
+  background-color: var(--cv-personal-background);
+  color: var(--cv-personal-text);
+}
+
+.cv_personal_template h1,
+.cv_personal_template h2,
+.cv_personal_template h3,
+.cv_personal_template h4,
+.cv_personal_template h5,
+.cv_personal_template h6 {
+  font-family: var(--cv-personal-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.cv-personal-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.cv-personal-logo {
+  color: var(--cv-personal-primary);
+  font-family: var(--cv-personal-font-heading);
+  font-weight: 700;
+}
+
+/* Botones específicos */
+.cv-personal-btn-primary {
+  background-color: var(--cv-personal-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.cv-personal-btn-primary:hover {
+  background-color: var(--cv-personal-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Cards */
+.cv-personal-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.cv-personal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Footer específico */
+.cv-personal-footer {
+  background: var(--cv-personal-secondary);
+  color: white;
+}
+
+.cv-personal-footer a {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.cv-personal-footer a:hover {
+  color: var(--cv-personal-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cv-personal-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes cv-personal-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cv-personal-animate {
+  animation: cv-personal-fadeIn 0.6s ease-out;
+}

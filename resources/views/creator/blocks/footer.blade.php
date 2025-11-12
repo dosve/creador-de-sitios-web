@@ -56,6 +56,10 @@
         </div>
         <div class="pt-8 mt-8 text-center border-t border-gray-700">
             <p class="text-sm text-gray-400">&copy; 2025 Mi Sitio Web. Todos los derechos reservados.</p>
+            <p class="mt-2 text-xs text-gray-500">
+                Creado con <a href="https://eme10.com" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">EME10</a> | 
+                Gestión con <a href="https://adminnegocios.com" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">Admin Negocios</a>
+            </p>
         </div>
     </div>
   </footer>`

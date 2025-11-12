@@ -33,6 +33,15 @@
             </div>
             <div class="flex items-center space-x-4">
                 <span class="text-sm text-yellow-700">{{ $page->title ?? 'Página' }} - {{ $website->name ?? 'Mi Sitio Web' }}</span>
+                @if($page)
+                    <button onclick="mostrarRutaEditor({{ $page->id }})" 
+                       class="inline-flex items-center px-3 py-1 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Editar Página
+                    </button>
+                @endif
                 <a href="{{ route('creator.dashboard') }}" 
                    class="inline-flex items-center px-3 py-1 text-sm font-medium text-yellow-700 bg-white border border-yellow-300 rounded-md hover:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,5 +85,64 @@
     </main>
 
     @yield('scripts')
+    
+    <!-- Configuración de credenciales API para productos -->
+    <script>
+        console.log('🚀 SCRIPT INICIADO - blank-page');
+        console.log('📄 Página:', '{{ $page->title ?? "Sin título" }}');
+        console.log('🌐 Website:', '{{ $website->name ?? "Sin nombre" }}');
+        console.log('📝 Tiene contenido HTML:', {{ $page->html_content ? 'true' : 'false' }});
+        console.log('🎨 Template ID:', '{{ $website->template_id ?? "Sin plantilla" }}');
+        console.log('🎨 Tiene plantilla:', {{ $website->template_id ? 'true' : 'false' }});
+        
+        // ===========================
+        // MOSTRAR RUTA DEL EDITOR
+        // ===========================
+        @if($page)
+            console.log('');
+            console.log('═══════════════════════════════════════════');
+            console.log('✏️ RUTA PARA EDITAR ESTA PÁGINA:');
+            console.log('http://127.0.0.1:8000/creator/pages/{{ $page->id }}/editor');
+            console.log('═══════════════════════════════════════════');
+            console.log('');
+        @endif
+        
+        // Configurar las credenciales API del sitio web
+        window.websiteApiKey = "{{ $website->api_key }}";
+        window.websiteApiUrl = "{{ $website->api_base_url }}";
+        
+        console.log('🔧 Configuración de API cargada en blank-page:', {
+            apiKey: window.websiteApiKey ? 'Configurada' : 'No configurada',
+            apiUrl: window.websiteApiUrl || 'No configurada'
+        });
+        
+        // Debug: verificar contenido de la página
+        console.log('📄 Contenido HTML de la página:');
+        console.log('{{ addslashes($page->html_content ?? "Sin contenido") }}');
+        
+        // Debug: verificar si hay contenedores de productos
+        setTimeout(() => {
+            console.log('🔍 Buscando contenedores de productos...');
+            const containers = document.querySelectorAll('#products-container, [data-dynamic-products="true"] .grid, .products-list .grid');
+            console.log('📦 Contenedores encontrados:', containers.length);
+            containers.forEach((container, index) => {
+                console.log(`📦 Contenedor ${index + 1}:`, container);
+            });
+            
+            // Buscar también por otros selectores
+            const allContainers = document.querySelectorAll('*');
+            console.log('🔍 Todos los elementos en la página:', allContainers.length);
+            
+            // Buscar elementos que contengan "product" en su clase o ID
+            const productElements = document.querySelectorAll('[class*="product"], [id*="product"]');
+            console.log('🛍️ Elementos relacionados con productos:', productElements.length);
+            productElements.forEach((el, index) => {
+                console.log(`🛍️ Elemento ${index + 1}:`, el);
+            });
+        }, 1000);
+    </script>
+    
+    <!-- Componente para cargar productos dinámicamente -->
+    <x-products-script :apiKey="$website->api_key" :apiBaseUrl="$website->api_base_url" />
 </body>
 </html>

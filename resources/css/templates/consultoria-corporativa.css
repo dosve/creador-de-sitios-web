@@ -1,0 +1,112 @@
+/* ========================================
+   CONSULTORIA CORPORATIVA - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --consultoria-corporativa-primary: #3b82f6;
+  --consultoria-corporativa-secondary: #1f2937;
+  --consultoria-corporativa-accent: #10b981;
+  --consultoria-corporativa-background: #ffffff;
+  --consultoria-corporativa-text: #111827;
+  --consultoria-corporativa-font-heading: 'Inter', sans-serif;
+  --consultoria-corporativa-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.consultoria_corporativa_template {
+  font-family: var(--consultoria-corporativa-font-body);
+  background-color: var(--consultoria-corporativa-background);
+  color: var(--consultoria-corporativa-text);
+}
+
+.consultoria_corporativa_template h1,
+.consultoria_corporativa_template h2,
+.consultoria_corporativa_template h3,
+.consultoria_corporativa_template h4,
+.consultoria_corporativa_template h5,
+.consultoria_corporativa_template h6 {
+  font-family: var(--consultoria-corporativa-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.consultoria-corporativa-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.consultoria-corporativa-logo {
+  color: var(--consultoria-corporativa-primary);
+  font-family: var(--consultoria-corporativa-font-heading);
+  font-weight: 700;
+}
+
+/* Botones específicos */
+.consultoria-corporativa-btn-primary {
+  background-color: var(--consultoria-corporativa-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.consultoria-corporativa-btn-primary:hover {
+  background-color: var(--consultoria-corporativa-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Cards */
+.consultoria-corporativa-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.consultoria-corporativa-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Footer específico */
+.consultoria-corporativa-footer {
+  background: var(--consultoria-corporativa-secondary);
+  color: white;
+}
+
+.consultoria-corporativa-footer a {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.consultoria-corporativa-footer a:hover {
+  color: var(--consultoria-corporativa-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .consultoria-corporativa-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes consultoria-corporativa-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.consultoria-corporativa-animate {
+  animation: consultoria-corporativa-fadeIn 0.6s ease-out;
+}

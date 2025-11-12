@@ -1,0 +1,112 @@
+/* ========================================
+   MEDICO CLINICA - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --medico-clinica-primary: #3b82f6;
+  --medico-clinica-secondary: #1f2937;
+  --medico-clinica-accent: #10b981;
+  --medico-clinica-background: #ffffff;
+  --medico-clinica-text: #111827;
+  --medico-clinica-font-heading: 'Inter', sans-serif;
+  --medico-clinica-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.medico_clinica_template {
+  font-family: var(--medico-clinica-font-body);
+  background-color: var(--medico-clinica-background);
+  color: var(--medico-clinica-text);
+}
+
+.medico_clinica_template h1,
+.medico_clinica_template h2,
+.medico_clinica_template h3,
+.medico_clinica_template h4,
+.medico_clinica_template h5,
+.medico_clinica_template h6 {
+  font-family: var(--medico-clinica-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.medico-clinica-header {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.medico-clinica-logo {
+  color: var(--medico-clinica-primary);
+  font-family: var(--medico-clinica-font-heading);
+  font-weight: 700;
+}
+
+/* Botones específicos */
+.medico-clinica-btn-primary {
+  background-color: var(--medico-clinica-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.medico-clinica-btn-primary:hover {
+  background-color: var(--medico-clinica-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Cards */
+.medico-clinica-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.medico-clinica-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Footer específico */
+.medico-clinica-footer {
+  background: var(--medico-clinica-secondary);
+  color: white;
+}
+
+.medico-clinica-footer a {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.medico-clinica-footer a:hover {
+  color: var(--medico-clinica-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .medico-clinica-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes medico-clinica-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.medico-clinica-animate {
+  animation: medico-clinica-fadeIn 0.6s ease-out;
+}

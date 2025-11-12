@@ -1,0 +1,11 @@
+{
+  "name": "Plantilla Demo",
+  "slug": "plantilla-demo",
+  "category": "basic",
+  "description": "Plantilla base con menú grueso y footer blanco.",
+  "is_active": true,
+  "preview_image": "/images/templates/plantilla-demo/preview.jpg",
+  "version": "1.0.0"
+}
+
+

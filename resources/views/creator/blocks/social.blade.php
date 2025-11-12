@@ -1,4 +1,4 @@
-{{-- Bloques de Redes Sociales y Otros --}}
+{{-- Bloques de Social de Elementor --}}
 {
   id: 'social-links',
   label: 'Redes Sociales',
@@ -57,7 +57,10 @@
         </div>
     </div>
   </section>`
-},
+}
+
+{{-- STATS: NO está en Elementor FREE (comentado)
+,
 {
   id: 'stats',
   label: 'Estadísticas',
@@ -84,3 +87,4 @@
     </div>
   </section>`
 }
+--}}

@@ -83,22 +83,29 @@ class MenuItem extends Model
         // Si está vinculado a una página
         if ($this->page_id && $this->page) {
             $website = $this->page->website;
+            $currentHost = request()->getHost();
             
-            // Verificar si tiene dominio personalizado
-            $customDomain = $website->domains()
-                ->where('is_verified', true)
-                ->where('status', 'active')
-                ->where('is_primary', true)
-                ->first();
+            // Verificar si estamos en un dominio personalizado de ESTE sitio
+            $isCustomDomain = false;
+            if ($currentHost !== 'creadorweb.eme10.com' && $currentHost !== 'localhost' && $currentHost !== '127.0.0.1') {
+                // Verificar si el host actual es un dominio de ESTE website
+                $domain = $website->domains()
+                    ->where('domain', $currentHost)
+                    ->where('is_verified', true)
+                    ->where('status', 'active')
+                    ->first();
+                
+                $isCustomDomain = ($domain !== null);
+            }
             
-            if ($customDomain) {
-                // Con dominio personalizado, no usar slug del sitio
+            if ($isCustomDomain) {
+                // Estamos en el dominio personalizado - URL corta SIN slug del sitio
                 if ($this->page->is_home) {
                     return '/';
                 }
                 return '/' . $this->page->slug;
             } else {
-                // Sin dominio personalizado, usar slug del sitio
+                // Estamos en creadorweb.eme10.com - usar slug del sitio
                 $websiteSlug = $website->slug;
                 
                 if ($this->page->is_home) {

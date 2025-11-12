@@ -74,18 +74,37 @@ class PreviewController extends Controller
      */
     public function page(Request $request, Page $page)
     {
+        // LOG: Debug del flujo de carga de página
+        \Log::info("=== PREVIEW CONTROLLER DEBUG ===");
+        \Log::info("Página: " . $page->title . " (ID: " . $page->id . ")");
+        \Log::info("Slug: " . $page->slug);
+        
+        // Log directo a archivo para debug
+        file_put_contents(storage_path('logs/debug.log'), "=== PREVIEW CONTROLLER DEBUG ===\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Página: " . $page->title . " (ID: " . $page->id . ")\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Slug: " . $page->slug . "\n", FILE_APPEND);
+        
         // Obtener sitio web de la sesión
         $website = Website::find(session('selected_website_id'));
 
         if (!$website) {
+            \Log::info("ERROR: No se encontró sitio web en sesión");
+            file_put_contents(storage_path('logs/debug.log'), "ERROR: No se encontró sitio web en sesión\n", FILE_APPEND);
             return redirect()->route('creator.select-website')
                 ->with('error', 'Por favor selecciona un sitio web primero');
         }
+
+        \Log::info("Sitio web: " . $website->name . " (ID: " . $website->id . ")");
+        \Log::info("Template ID: " . ($website->template_id ?? 'NULL'));
+        
+        file_put_contents(storage_path('logs/debug.log'), "Sitio web: " . $website->name . " (ID: " . $website->id . ")\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Template ID: " . ($website->template_id ?? 'NULL') . "\n", FILE_APPEND);
 
         $this->authorize('view', $website);
 
         // Verificar que la página pertenece al sitio web seleccionado
         if ($page->website_id !== $website->id) {
+            \Log::info("ERROR: La página no pertenece al sitio web");
             abort(403, 'Esta página no pertenece al sitio web seleccionado');
         }
 
@@ -94,12 +113,18 @@ class PreviewController extends Controller
 
         // Si el sitio web no tiene plantilla (página en blanco), usar vista sin navbar/footer
         if (!$website->template_id) {
+            \Log::info("FLUJO: Sin plantilla - usando blank-page");
+            file_put_contents(storage_path('logs/debug.log'), "FLUJO: Sin plantilla - usando blank-page\n", FILE_APPEND);
             return view('creator.preview.blank-page', compact('website', 'page', 'pages'));
         }
 
         // Si tiene plantilla, procesar con el sistema de hooks
+        \Log::info("FLUJO: Con plantilla - procesando template");
+        file_put_contents(storage_path('logs/debug.log'), "FLUJO: Con plantilla - procesando template\n", FILE_APPEND);
         $template = $website->template;
         if ($template) {
+            \Log::info("Template encontrado: " . $template->name . " (ID: " . $template->id . ")");
+            file_put_contents(storage_path('logs/debug.log'), "Template encontrado: " . $template->name . " (ID: " . $template->id . ")\n", FILE_APPEND);
             // Obtener menús del sitio web
             $menus = $website->menus()->with(['items' => function ($query) {
                 $query->whereNull('parent_id')->where('is_active', true)->orderBy('order');
@@ -108,8 +133,10 @@ class PreviewController extends Controller
             }, 'items.children.page'])->get();
 
             // Procesar la plantilla en tiempo real con modo preview
+            \Log::info("Procesando plantilla con processTemplateSimple");
             $processedContent = $this->processTemplateSimple($template->html_content, $website, $page, $menus);
 
+            \Log::info("Plantilla procesada, retornando respuesta");
             return response($processedContent);
         }
 
@@ -376,43 +403,55 @@ class PreviewController extends Controller
         if ($isPreview) {
             $scriptsToAdd = [];
 
-            // Script de productos si tiene bloque de productos
-            if ($this->hasProductsBlock($processedContent)) {
-                // Script de productos
-                $productsScript = view('components.products-script', [
-                    'apiKey' => $website->api_key ?? '',
-                    'apiBaseUrl' => $website->api_base_url ?? ''
-                ])->render();
+            // Scripts de productos y carrito - SIEMPRE incluir para todas las plantillas
+            // Configurar variables JavaScript globales
+            $apiConfigScript = '
+                <script>
+                    console.log("🔧 Configurando variables API en processTemplateSimple");
+                    window.websiteApiKey = "' . addslashes($website->api_key ?? '') . '";
+                    window.websiteApiUrl = "' . addslashes($website->api_base_url ?? '') . '";
+                    console.log("🔧 Variables configuradas:", {
+                        apiKey: window.websiteApiKey ? "Configurada" : "No configurada",
+                        apiUrl: window.websiteApiUrl || "No configurada"
+                    });
+                </script>
+            ';
+            
+            // Script de productos
+            $productsScript = view('components.products-script', [
+                'apiKey' => $website->api_key ?? '',
+                'apiBaseUrl' => $website->api_base_url ?? ''
+            ])->render();
 
-                // Script del carrito
-                $cartScript = view('components.cart-script', [
-                    'epaycoPublicKey' => $website->epayco_public_key ?? '',
-                    'epaycoPrivateKey' => $website->epayco_private_key ?? '',
-                    'epaycoCustomerId' => $website->epayco_customer_id ?? ''
-                ])->render();
+            // Script del carrito
+            $cartScript = view('components.cart-script', [
+                'epaycoPublicKey' => $website->epayco_public_key ?? '',
+                'epaycoPrivateKey' => $website->epayco_private_key ?? '',
+                'epaycoCustomerId' => $website->epayco_customer_id ?? ''
+            ])->render();
 
-                // SDK de Epayco con callback para verificar carga
-                $epaycoSDK = '
-                    <script type="text/javascript">
-                        console.log("🔄 Cargando SDK de Epayco...");
-                        var script = document.createElement("script");
-                        script.type = "text/javascript";
-                        script.src = "https://checkout.epayco.co/checkout.js";
-                        script.onload = function() {
-                            console.log("✅ SDK de Epayco cargado correctamente");
-                            console.log("🔍 ePayco disponible:", typeof ePayco !== "undefined");
-                        };
-                        script.onerror = function() {
-                            console.error("❌ Error cargando SDK de Epayco");
-                        };
-                        document.head.appendChild(script);
-                    </script>
-                ';
+            // SDK de Epayco con callback para verificar carga
+            $epaycoSDK = '
+                <script type="text/javascript">
+                    console.log("🔄 Cargando SDK de Epayco...");
+                    var script = document.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = "https://checkout.epayco.co/checkout.js";
+                    script.onload = function() {
+                        console.log("✅ SDK de Epayco cargado correctamente");
+                        console.log("🔍 ePayco disponible:", typeof ePayco !== "undefined");
+                    };
+                    script.onerror = function() {
+                        console.error("❌ Error cargando SDK de Epayco");
+                    };
+                    document.head.appendChild(script);
+                </script>
+            ';
 
-                $scriptsToAdd[] = $epaycoSDK;
-                $scriptsToAdd[] = $productsScript;
-                $scriptsToAdd[] = $cartScript;
-            }
+            $scriptsToAdd[] = $apiConfigScript;
+            $scriptsToAdd[] = $epaycoSDK;
+            $scriptsToAdd[] = $productsScript;
+            $scriptsToAdd[] = $cartScript;
 
             // Script de blog si tiene bloque de blog
             if ($this->hasBlogBlock($processedContent)) {

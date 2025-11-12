@@ -1,5 +1,5 @@
 {{-- Header para Plantilla Básica --}}
-<header class="bg-white border-b shadow-sm">
+<header class="basica-header">
     <div class="container px-4 py-6 mx-auto">
         <div class="flex items-center justify-between">
             {{-- Logo --}}
@@ -7,7 +7,7 @@
                 @if(!empty($website->logo))
                     <img src="{{ asset('storage/' . $website->logo) }}" alt="{{ $website->name }}" class="h-10">
                 @else
-                    <h1 class="text-2xl font-bold text-gray-900">{{ $website->name ?? 'Mi Sitio Web' }}</h1>
+                    <h1 class="basica-logo text-2xl font-bold">{{ $website->name ?? 'Mi Sitio Web' }}</h1>
                 @endif
             </div>
             

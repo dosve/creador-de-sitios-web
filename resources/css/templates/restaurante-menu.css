@@ -1,0 +1,304 @@
+/* ========================================
+   RESTAURANTE MENÚ - Estilos Específicos
+   ======================================== */
+
+/* Variables CSS específicas de la plantilla */
+:root {
+  --restaurante-primary: #f59e0b;
+  --restaurante-secondary: #d97706;
+  --restaurante-accent: #ef4444;
+  --restaurante-background: #ffffff;
+  --restaurante-text: #111827;
+  --restaurante-font-heading: 'Playfair Display', serif;
+  --restaurante-font-body: 'Inter', sans-serif;
+}
+
+/* Estilos base */
+.restaurante-template {
+  font-family: var(--restaurante-font-body);
+  background-color: var(--restaurante-background);
+  color: var(--restaurante-text);
+}
+
+.restaurante-template h1,
+.restaurante-template h2,
+.restaurante-template h3,
+.restaurante-template h4,
+.restaurante-template h5,
+.restaurante-template h6 {
+  font-family: var(--restaurante-font-heading);
+  font-weight: 600;
+}
+
+/* Header específico */
+.restaurante-header {
+  background: white;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.restaurante-logo {
+  color: var(--restaurante-primary);
+  font-family: var(--restaurante-font-heading);
+  font-weight: 700;
+  font-size: 1.75rem;
+}
+
+/* Botones específicos */
+.restaurante-btn-primary {
+  background-color: var(--restaurante-primary);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.restaurante-btn-primary:hover {
+  background-color: var(--restaurante-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+/* Hero específico */
+.restaurante-hero {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+              url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="restaurante-pattern" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="2" fill="%23f59e0b" opacity="0.1"/><circle cx="40" cy="40" r="1" fill="%23f59e0b" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23restaurante-pattern)"/></svg>');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 6rem 0;
+  text-align: center;
+  position: relative;
+}
+
+.restaurante-hero h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.restaurante-hero p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Cards de menú */
+.restaurante-menu-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #f3f4f6;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.restaurante-menu-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.restaurante-menu-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.restaurante-menu-card:hover .restaurante-menu-image {
+  transform: scale(1.05);
+}
+
+.restaurante-menu-content {
+  padding: 1.5rem;
+}
+
+.restaurante-menu-title {
+  font-family: var(--restaurante-font-heading);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--restaurante-text);
+  margin-bottom: 0.5rem;
+}
+
+.restaurante-menu-description {
+  color: #6b7280;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.restaurante-menu-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--restaurante-primary);
+  margin-bottom: 1rem;
+}
+
+.restaurante-menu-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.restaurante-menu-badge-popular {
+  background-color: var(--restaurante-accent);
+  color: white;
+}
+
+.restaurante-menu-badge-new {
+  background-color: var(--restaurante-primary);
+  color: white;
+}
+
+.restaurante-menu-badge-vegetarian {
+  background-color: #10b981;
+  color: white;
+}
+
+/* Categorías de menú */
+.restaurante-category {
+  margin-bottom: 3rem;
+}
+
+.restaurante-category-title {
+  font-family: var(--restaurante-font-heading);
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--restaurante-text);
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.restaurante-category-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(135deg, var(--restaurante-primary) 0%, var(--restaurante-secondary) 100%);
+  border-radius: 2px;
+}
+
+/* Footer específico */
+.restaurante-footer {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  color: white;
+  padding: 3rem 0 1rem;
+}
+
+.restaurante-footer a {
+  color: #d1d5db;
+  transition: color 0.2s ease;
+}
+
+.restaurante-footer a:hover {
+  color: var(--restaurante-primary);
+}
+
+/* Horarios de atención */
+.restaurante-hours {
+  background: var(--restaurante-primary);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.restaurante-hours-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .restaurante-hero {
+    padding: 3rem 0;
+  }
+  
+  .restaurante-hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .restaurante-menu-card {
+    margin-bottom: 1rem;
+  }
+  
+  .restaurante-category-title {
+    font-size: 2rem;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes restaurante-fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.restaurante-animate {
+  animation: restaurante-fadeInUp 0.6s ease-out;
+}
+
+/* Estilos para elementos de formulario */
+.restaurante-form input,
+.restaurante-form textarea,
+.restaurante-form select {
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.restaurante-form input:focus,
+.restaurante-form textarea:focus,
+.restaurante-form select:focus {
+  border-color: var(--restaurante-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+/* Grid de menú */
+.restaurante-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+/* Estilos para reservas */
+.restaurante-reservation {
+  background: #f9fafb;
+  padding: 3rem;
+  border-radius: 12px;
+  margin: 3rem 0;
+}
+
+.restaurante-reservation h3 {
+  font-family: var(--restaurante-font-heading);
+  font-size: 2rem;
+  color: var(--restaurante-text);
+  text-align: center;
+  margin-bottom: 2rem;
+}

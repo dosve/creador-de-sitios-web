@@ -18,9 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         
         // Agregar middleware global para sincronización con Auth EME10
-        $middleware->web(append: [
-            \App\Http\Middleware\SyncAuthEME10::class,
-        ]);
+        // TEMPORALMENTE DESHABILITADO - Causa errores 404 en auth.eme10.com
+        // $middleware->web(append: [
+        //     \App\Http\Middleware\SyncAuthEME10::class,
+        // ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -120,11 +120,23 @@ class TemplateController extends Controller
         $website = new class($slug, $templateName) {
             public $name;
             public $slug;
+            public $user_id;
+            public $api_key;
+            public $api_base_url;
+            public $epayco_public_key;
+            public $epayco_private_key;
+            public $epayco_customer_id;
 
             public function __construct($slug, $name)
             {
                 $this->slug = $slug;
                 $this->name = $name;
+                $this->user_id = null; // No hay usuario en el preview
+                $this->api_key = '';
+                $this->api_base_url = '';
+                $this->epayco_public_key = '';
+                $this->epayco_private_key = '';
+                $this->epayco_customer_id = '';
             }
 
             public function menus()
@@ -383,11 +395,23 @@ class TemplateController extends Controller
         $website = new class($slug, $templateName) {
             public $name;
             public $slug;
+            public $user_id;
+            public $api_key;
+            public $api_base_url;
+            public $epayco_public_key;
+            public $epayco_private_key;
+            public $epayco_customer_id;
 
             public function __construct($slug, $name)
             {
                 $this->slug = $slug;
                 $this->name = $name;
+                $this->user_id = null; // No hay usuario en el preview
+                $this->api_key = '';
+                $this->api_base_url = '';
+                $this->epayco_public_key = '';
+                $this->epayco_private_key = '';
+                $this->epayco_customer_id = '';
             }
 
             public function menus()
@@ -430,11 +454,23 @@ class TemplateController extends Controller
         $website = new class($slug, $templateName) {
             public $name;
             public $slug;
+            public $user_id;
+            public $api_key;
+            public $api_base_url;
+            public $epayco_public_key;
+            public $epayco_private_key;
+            public $epayco_customer_id;
 
             public function __construct($slug, $name)
             {
                 $this->slug = $slug;
                 $this->name = $name;
+                $this->user_id = null; // No hay usuario en el preview
+                $this->api_key = '';
+                $this->api_base_url = '';
+                $this->epayco_public_key = '';
+                $this->epayco_private_key = '';
+                $this->epayco_customer_id = '';
             }
 
             public function menus()

@@ -26,6 +26,38 @@
                 </button>
                 @endif
                 
+                {{-- Usuario / Login --}}
+                <div class="relative" id="user-menu-container">
+                    {{-- Menú de invitado (no autenticado) --}}
+                    <div id="guest-menu" class="hidden">
+                        <button id="login-button" class="p-2 text-gray-600 hover:text-gray-900">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    {{-- Menú de usuario autenticado --}}
+                    <div id="user-menu" class="hidden">
+                        <button id="user-menu-button" class="flex items-center space-x-2 p-2 text-gray-600 hover:text-gray-900">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            <span id="user-name" class="hidden md:inline text-sm font-medium"></span>
+                        </button>
+                        
+                        {{-- Dropdown --}}
+                        <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                            <a href="/{{ $website->slug ?? '' }}/my-orders" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                Mis Órdenes
+                            </a>
+                            <button id="logout-button" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                Cerrar Sesión
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
                 {{-- Carrito de compras --}}
                 @if($headerConfig['show_cart'] ?? true)
                 <button id="cart-button" class="relative p-2 text-gray-800 hover:text-gray-900">

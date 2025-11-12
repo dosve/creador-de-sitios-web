@@ -1,5 +1,8 @@
 <?php
 
+// LOG: Debug de rutas
+file_put_contents(storage_path('logs/debug.log'), "=== RUTAS CARGADAS ===\n", FILE_APPEND);
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Creator\DashboardController as CreatorDashboard;
@@ -15,6 +18,7 @@ use App\Http\Controllers\SeoController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\TagController as AdminTagController;
 use App\Http\Controllers\Admin\ComponentController;
+use App\Http\Controllers\ContentImportController;
 use App\Http\Controllers\Admin\DomainController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\PlanController;
@@ -23,8 +27,30 @@ use App\Http\Controllers\Admin\PageController as AdminPageController;
 // Ruta raíz - mostrar el sitio web real
 Route::get('/', [App\Http\Controllers\WebsiteController::class, 'showRoot'])->name('website.root');
 
+// Ruta para servir CSS de plantillas
+Route::get('/template-css/{template}', function($template) {
+    $cssPath = resource_path("views/templates/{$template}/styles.css");
+    
+    if (!file_exists($cssPath)) {
+        abort(404);
+    }
+    
+    $cssContent = file_get_contents($cssPath);
+    
+    return response($cssContent)
+        ->header('Content-Type', 'text/css')
+        ->header('Cache-Control', 'public, max-age=3600');
+})->name('template.css');
+
 // Ruta de bienvenida/landing page
 Route::get('/bienvenida', [App\Http\Controllers\WelcomeController::class, 'index'])->name('welcome');
+
+// Ruta temporal para test
+Route::get('/test-pages', function() {
+    $website = \App\Models\Website::first();
+    $pages = $website ? $website->pages()->latest()->get() : collect();
+    return view('creator.pages.test', compact('website', 'pages'));
+})->name('test.pages');
 
 // Ruta pública de planes
 Route::get('/planes', function () {
@@ -79,6 +105,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/websites/{website}/pages/{page}/editor', [AdminPageController::class, 'editor'])->name('pages.editor');
     Route::post('/websites/{website}/pages/{page}/save-editor', [AdminPageController::class, 'saveEditor'])->name('pages.save-editor');
     Route::get('/websites/{website}/pages/{page}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
+    
+    // Importación de contenido
+    Route::get('/websites/{website}/import/pages/{templateSlug}', [ContentImportController::class, 'showImportPages'])->name('websites.import.pages');
+    Route::post('/websites/{website}/import/pages/{templateSlug}', [ContentImportController::class, 'importPages'])->name('websites.import.pages');
+    Route::get('/websites/{website}/import/blocks/{templateSlug}', [ContentImportController::class, 'showImportBlocks'])->name('websites.import.blocks');
+    Route::post('/websites/{website}/import/blocks/{templateSlug}', [ContentImportController::class, 'importBlocks'])->name('websites.import.blocks');
     Route::get('/websites/{website}/pages/{page}', [AdminPageController::class, 'show'])->name('pages.show');
     Route::put('/websites/{website}/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
     Route::delete('/websites/{website}/pages/{page}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
@@ -159,6 +191,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Configuraciones
     Route::get('/settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+
+    // Configuración de plantillas
+    Route::get('/websites/{website}/template-configuration', [App\Http\Controllers\Admin\TemplateConfigurationController::class, 'index'])->name('template-configuration.index');
+    Route::get('/websites/{website}/template-configuration/{templateSlug}', [App\Http\Controllers\Admin\TemplateConfigurationController::class, 'show'])->name('template-configuration.show');
+    Route::put('/websites/{website}/template-configuration/{templateSlug}', [App\Http\Controllers\Admin\TemplateConfigurationController::class, 'update'])->name('template-configuration.update');
+    Route::post('/websites/{website}/template-configuration/{templateSlug}/customization', [App\Http\Controllers\Admin\TemplateConfigurationController::class, 'updateCustomization'])->name('template-configuration.update-customization');
+    Route::post('/websites/{website}/template-configuration/{templateSlug}/settings', [App\Http\Controllers\Admin\TemplateConfigurationController::class, 'updateSettings'])->name('template-configuration.update-settings');
+    Route::post('/websites/{website}/template-configuration/{templateSlug}/reset', [App\Http\Controllers\Admin\TemplateConfigurationController::class, 'reset'])->name('template-configuration.reset');
 });
 
 // Rutas para usuarios creadores
@@ -214,6 +254,34 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('pages/{page}/editor', [PageController::class, 'editor'])->name('pages.editor');
         Route::post('pages/{page}/save', [PageController::class, 'saveContent'])->name('pages.save');
         Route::post('pages/{page}/set-home', [App\Http\Controllers\Creator\PageController::class, 'setHome'])->name('pages.set-home');
+        
+        // Importación de páginas prediseñadas
+        Route::get('pages/import/{website}', [App\Http\Controllers\Creator\PageController::class, 'showImport'])->name('pages.import');
+        Route::post('pages/import/{website}', [App\Http\Controllers\Creator\PageController::class, 'importPages'])->name('pages.import');
+        Route::get('pages/template-pages/{website}', [App\Http\Controllers\Creator\PageController::class, 'getTemplatePages'])->name('pages.template-pages');
+
+        // Importación universal de páginas por categoría
+        Route::get('pages/import-categories/{website}', [App\Http\Controllers\UniversalPageImportController::class, 'showCategories'])->name('pages.import.categories');
+        Route::get('pages/import-category/{website}/{category}', [App\Http\Controllers\UniversalPageImportController::class, 'showPagesForCategory'])->name('pages.import.category');
+        Route::get('pages/import-template/{website}/{template}', [App\Http\Controllers\UniversalPageImportController::class, 'showTemplatePages'])->name('pages.import.template');
+        Route::post('pages/import-store/{website}', [App\Http\Controllers\UniversalPageImportController::class, 'importPages'])->name('pages.import.store');
+        
+        // Vista previa de páginas
+        Route::get('pages/preview/{website}/{pageSlug}', [App\Http\Controllers\UniversalPageImportController::class, 'previewPage'])->name('pages.preview');
+        Route::get('pages/preview/{website}/{pageSlug}/{templateSlug}', [App\Http\Controllers\UniversalPageImportController::class, 'previewPage'])->name('pages.preview.template');
+        
+        // Vista previa del navegador de páginas
+        Route::get('pages/navigator-preview/{pageSlug}', [App\Http\Controllers\PageNavigatorPreviewController::class, 'show'])->name('pages.navigator-preview');
+        
+        // Vista previa limpia (sin plantilla de administrador)
+        Route::get('pages/preview/{pageSlug}', [App\Http\Controllers\PagePreviewController::class, 'show'])->name('pages.preview.clean');
+            
+        // Rutas AJAX para importación universal
+        Route::get('api/pages/recommended/{category}', [App\Http\Controllers\UniversalPageImportController::class, 'getRecommendedPages'])->name('api.pages.recommended');
+        Route::get('api/pages/templates/{category}', [App\Http\Controllers\UniversalPageImportController::class, 'getTemplatesForCategory'])->name('api.pages.templates');
+        Route::get('api/pages/template-pages/{template}', [App\Http\Controllers\UniversalPageImportController::class, 'getTemplatePages'])->name('api.pages.template-pages');
+        Route::get('api/pages/all-available', [App\Http\Controllers\UniversalPageImportController::class, 'getAllAvailablePages'])->name('api.pages.all-available');
+
 
         // Rutas de menús (usan sesión en lugar de parámetro website)
         Route::resource('menus', App\Http\Controllers\Creator\MenuController::class);
@@ -373,6 +441,15 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('integrations/admin-negocios', [App\Http\Controllers\Creator\IntegrationController::class, 'adminNegocios'])->name('integrations.admin-negocios');
         Route::post('integrations/admin-negocios', [App\Http\Controllers\Creator\IntegrationController::class, 'adminNegociosStore'])->name('integrations.admin-negocios.store');
         Route::post('integrations/admin-negocios/test-api', [App\Http\Controllers\Creator\IntegrationController::class, 'testApiConnection'])->name('integrations.admin-negocios.test-api');
+
+        // Configuración de plantillas para creator (rutas simplificadas)
+        Route::get('template-configuration', [App\Http\Controllers\Creator\TemplateConfigurationController::class, 'index'])->name('template-configuration.index');
+        Route::get('template-configuration/{templateSlug}', [App\Http\Controllers\Creator\TemplateConfigurationController::class, 'show'])->name('template-configuration.show');
+        Route::put('template-configuration/{templateSlug}', [App\Http\Controllers\Creator\TemplateConfigurationController::class, 'update'])->name('template-configuration.update');
+        Route::post('template-configuration/{templateSlug}/customization', [App\Http\Controllers\Creator\TemplateConfigurationController::class, 'updateCustomization'])->name('template-configuration.update-customization');
+        Route::post('template-configuration/{templateSlug}/settings', [App\Http\Controllers\Creator\TemplateConfigurationController::class, 'updateSettings'])->name('template-configuration.update-settings');
+        Route::post('template-configuration/{templateSlug}/reset', [App\Http\Controllers\Creator\TemplateConfigurationController::class, 'reset'])->name('template-configuration.reset');
+        Route::post('template-configuration/{templateSlug}/remove-logo', [App\Http\Controllers\Creator\TemplateConfigurationController::class, 'removeLogo'])->name('template-configuration.remove-logo');
     });
 });
 
@@ -381,6 +458,27 @@ Route::get('/response', [App\Http\Controllers\PaymentController::class, 'handleR
 Route::get('/payment/success', [App\Http\Controllers\PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/pending', [App\Http\Controllers\PaymentController::class, 'pending'])->name('payment.pending');
 Route::get('/payment/error', [App\Http\Controllers\PaymentController::class, 'error'])->name('payment.error');
+
+// ==========================================
+// RUTAS PÚBLICAS DE TIENDA - Checkout y Autenticación de Clientes
+// ==========================================
+
+// Autenticación de clientes desde la tienda pública
+Route::prefix('customer')->name('customer.')->group(function () {
+    Route::post('/login', [App\Http\Controllers\CustomerAuthController::class, 'login'])->name('login');
+    Route::post('/register', [App\Http\Controllers\CustomerAuthController::class, 'register'])->name('register');
+    Route::post('/logout', [App\Http\Controllers\CustomerAuthController::class, 'logout'])->name('logout');
+    Route::get('/check', [App\Http\Controllers\CustomerAuthController::class, 'check'])->name('check');
+    Route::get('/me', [App\Http\Controllers\CustomerAuthController::class, 'me'])->name('me');
+});
+
+// Rutas de checkout público
+Route::prefix('{website:slug}')->name('checkout.')->group(function () {
+    Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'index'])->name('index');
+    Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processCheckout'])->name('process');
+    Route::get('/order/{orderNumber}', [App\Http\Controllers\CheckoutController::class, 'showOrder'])->name('order.show');
+    Route::get('/my-orders', [App\Http\Controllers\CheckoutController::class, 'myOrders'])->name('my-orders');
+});
 
 // Redirección después del login
 Route::get('/home', function () {
@@ -396,39 +494,27 @@ Route::get('/home', function () {
 //     return view('welcome');
 // })->name('welcome');
 
-// Rutas públicas del sitio web (antes que las rutas con auth para evitar conflictos)
-Route::get('/{website:slug}', [WebsiteController::class, 'showPublic'])->name('website.show');
-Route::get('/{website:slug}/{page:slug}', [WebsiteController::class, 'showPagePublic'])->name('website.page.show');
-Route::get('/{website:slug}/blog', [App\Http\Controllers\Creator\BlogPostController::class, 'publicIndex'])->name('website.blog.index');
-Route::get('/{website:slug}/blog/{blogPost:slug}', [App\Http\Controllers\Creator\BlogPostController::class, 'publicShow'])->name('website.blog.show');
-
-// Rutas para dominios personalizados (sin slug del sitio)
-Route::get('/blog', [App\Http\Controllers\Creator\BlogPostController::class, 'publicIndexByDomain'])->name('website.blog.domain');
-Route::get('/blog/{blogPost:slug}', [App\Http\Controllers\Creator\BlogPostController::class, 'publicShowByDomain'])->name('website.blog.show.domain');
-Route::get('/{page:slug}', [WebsiteController::class, 'showPageByDomain'])->name('website.page.domain');
-
-// Rutas específicas para plantillas (deben ir antes de las rutas genéricas)
+// Rutas específicas para plantillas
 Route::get('/template/{template}', [App\Http\Controllers\TemplatePreviewController::class, 'index'])->name('template.preview');
 Route::get('/template/{template}/blog', [App\Http\Controllers\TemplatePreviewController::class, 'blog'])->name('template.blog');
 Route::get('/template/{template}/contacto', [App\Http\Controllers\TemplatePreviewController::class, 'contact'])->name('template.contact');
-Route::get('/template/{template}/{page}', [App\Http\Controllers\TemplatePreviewController::class, 'page'])->name('template.page');
+Route::get('/template/{template}/{page}', [App\Http\Controllers\TemplatePageController::class, 'show'])->name('template.page');
 
-// Rutas específicas para academia online (deben ir antes de las rutas genéricas)
+// Rutas específicas para academia online
 Route::get('/academia-online', [App\Http\Controllers\TemplatePreviewController::class, 'index'])->name('academia.index');
 Route::get('/academia-online/blog', [App\Http\Controllers\TemplatePreviewController::class, 'blog'])->name('academia.blog');
 Route::get('/academia-online/contacto', [App\Http\Controllers\TemplatePreviewController::class, 'contact'])->name('academia.contacto');
 
-// Rutas para páginas de plantillas
-Route::get('/template/{template}/{page}', [App\Http\Controllers\TemplatePageController::class, 'show'])->name('template.page');
+// ==========================================
+// RUTAS PARA CREADORWEB.EME10.COM (con 2 segmentos) - DEBEN IR PRIMERO
+// ==========================================
+// Rutas públicas del sitio web CON 2 segmentos: /website/page
+Route::get('/{website:slug}/{page:slug}', [WebsiteController::class, 'showPagePublic'])->name('website.page.show');
+Route::get('/{website:slug}/blog', [App\Http\Controllers\Creator\BlogPostController::class, 'publicIndex'])->name('website.blog.index');
+Route::get('/{website:slug}/blog/{blogPost:slug}', [App\Http\Controllers\Creator\BlogPostController::class, 'publicShow'])->name('website.blog.show');
 
-// Rutas para el sitio seleccionado en sesión (usuario logueado)
-Route::middleware('auth')->group(function () {
-    // Ruta para el blog del sitio seleccionado
-    Route::get('/blog', [WebsiteController::class, 'showBlog'])->name('website.blog');
-    Route::get('/blog/{slug}', [WebsiteController::class, 'showBlogPost'])->name('website.blog.post');
-
-    // Ruta para mostrar páginas del sitio seleccionado por slug (debe ir al final)
-    Route::get('/{slug}', [WebsiteController::class, 'showPageBySlug'])
-        ->where('slug', '^(?!creator|admin|login|register|logout|bienvenida|api|mi-siito-web|sitio|template|academia-online).*')
-        ->name('website.page.slug');
-});
+// Ruta del sitio web principal (homepage) - 1 segmento: /website
+// Esta ruta maneja tanto creadorweb.eme10.com/website como dominios personalizados/pagina
+Route::get('/{slug}', [WebsiteController::class, 'showPageOrWebsite'])
+    ->name('website.show')
+    ->where('slug', '^(?!creator|admin|login|register|logout|bienvenida|api|storage|css|js|fonts|images|blog|template|academia-online).*');

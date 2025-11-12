@@ -1,0 +1,239 @@
+{
+  "category": "ecommerce",
+  "name": "Páginas de Tienda Online",
+  "description": "Páginas especializadas para tiendas online y e-commerce",
+  "pages": [
+    {
+      "title": "Inicio",
+      "slug": "inicio",
+      "is_home": true,
+      "meta_title": "Tienda Online - Productos de Calidad",
+      "meta_description": "Descubre nuestra amplia selección de productos de calidad. Envío gratis y garantía de satisfacción.",
+      "content": "<h1>Bienvenido a Nuestra Tienda</h1><p>Productos de calidad al mejor precio.</p>",
+      "blocks": [
+        {
+          "type": "hero_slider",
+          "slides": [
+            {
+              "title": "Nueva Colección",
+              "subtitle": "Descubre las últimas tendencias",
+              "cta_text": "Ver Colección",
+              "cta_link": "/productos"
+            }
+          ]
+        },
+        {
+          "type": "featured_products",
+          "title": "Productos Destacados",
+          "limit": 8
+        },
+        {
+          "type": "categories",
+          "title": "Categorías",
+          "layout": "grid"
+        },
+        {
+          "type": "features",
+          "items": [
+            {"icon": "truck", "title": "Envío Gratis", "description": "En compras mayores a $50"},
+            {"icon": "shield", "title": "Compra Segura", "description": "Protección total"},
+            {"icon": "refresh", "title": "Devoluciones", "description": "30 días para devolver"},
+            {"icon": "support", "title": "Soporte 24/7", "description": "Estamos para ayudarte"}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Productos",
+      "slug": "productos",
+      "is_home": false,
+      "meta_title": "Productos - Catálogo Completo",
+      "meta_description": "Explora nuestro catálogo completo de productos con los mejores precios y calidad.",
+      "content": "<h1>Nuestros Productos</h1><p>Encuentra lo que buscas.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Productos",
+          "subtitle": "Catálogo Completo",
+          "description": "Explora nuestra amplia selección"
+        },
+        {
+          "type": "product_grid",
+          "filters": ["category", "price", "brand"],
+          "sort_options": ["featured", "price_asc", "price_desc", "newest"],
+          "items_per_page": 12
+        }
+      ]
+    },
+    {
+      "title": "Categorías",
+      "slug": "categorias",
+      "is_home": false,
+      "meta_title": "Categorías de Productos",
+      "meta_description": "Navega por nuestras categorías de productos para encontrar exactamente lo que necesitas.",
+      "content": "<h1>Categorías</h1><p>Organiza por tipo.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Categorías",
+          "subtitle": "Organiza por Tipo",
+          "description": "Encuentra productos por categoría"
+        },
+        {
+          "type": "categories_grid",
+          "layout": "grid",
+          "show_descriptions": true,
+          "show_product_count": true
+        }
+      ]
+    },
+    {
+      "title": "Carrito",
+      "slug": "carrito",
+      "is_home": false,
+      "meta_title": "Carrito de Compras",
+      "meta_description": "Revisa tu carrito de compras y completa tu pedido.",
+      "content": "<h1>Carrito de Compras</h1>",
+      "blocks": [
+        {
+          "type": "cart",
+          "show_summary": true,
+          "show_recommended": true
+        }
+      ]
+    },
+    {
+      "title": "Checkout",
+      "slug": "checkout",
+      "is_home": false,
+      "meta_title": "Finalizar Compra",
+      "meta_description": "Completa tu pedido de forma rápida y segura.",
+      "content": "<h1>Finalizar Compra</h1>",
+      "blocks": [
+        {
+          "type": "checkout_form",
+          "steps": ["shipping", "payment", "confirmation"],
+          "payment_methods": ["card", "paypal", "transfer"]
+        }
+      ]
+    },
+    {
+      "title": "Ofertas",
+      "slug": "ofertas",
+      "is_home": false,
+      "meta_title": "Ofertas Especiales - Descuentos",
+      "meta_description": "Aprovecha nuestras ofertas especiales y descuentos exclusivos.",
+      "content": "<h1>Ofertas Especiales</h1><p>Descuentos increíbles.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Ofertas Especiales",
+          "subtitle": "Descuentos Increíbles",
+          "description": "Aprovecha nuestras mejores ofertas"
+        },
+        {
+          "type": "product_grid",
+          "filters": ["discount"],
+          "sort_options": ["discount_desc", "price_asc"],
+          "items_per_page": 12,
+          "show_discount": true
+        }
+      ]
+    },
+    {
+      "title": "Nuevos Productos",
+      "slug": "nuevos",
+      "is_home": false,
+      "meta_title": "Productos Nuevos - Últimas Llegadas",
+      "meta_description": "Descubre los productos más recientes que hemos añadido a nuestra tienda.",
+      "content": "<h1>Productos Nuevos</h1><p>Últimas llegadas.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Productos Nuevos",
+          "subtitle": "Últimas Llegadas",
+          "description": "Los productos más recientes"
+        },
+        {
+          "type": "product_grid",
+          "filters": ["new"],
+          "sort_options": ["newest"],
+          "items_per_page": 12,
+          "show_new_badge": true
+        }
+      ]
+    },
+    {
+      "title": "Marcas",
+      "slug": "marcas",
+      "is_home": false,
+      "meta_title": "Marcas Disponibles",
+      "meta_description": "Conoce las marcas que trabajamos y sus productos.",
+      "content": "<h1>Marcas</h1><p>Las mejores marcas.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Marcas",
+          "subtitle": "Las Mejores Marcas",
+          "description": "Trabajamos con las mejores marcas del mercado"
+        },
+        {
+          "type": "brands_grid",
+          "layout": "grid",
+          "show_logos": true,
+          "show_product_count": true
+        }
+      ]
+    },
+    {
+      "title": "Sobre Nosotros",
+      "slug": "sobre-nosotros",
+      "is_home": false,
+      "meta_title": "Sobre Nosotros - Nuestra Historia",
+      "meta_description": "Conoce nuestra historia, misión y compromiso con la calidad.",
+      "content": "<h1>Sobre Nosotros</h1><p>Nuestra historia y compromiso.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Sobre Nosotros",
+          "subtitle": "Nuestra Historia",
+          "description": "Comprometidos con la calidad y tu satisfacción"
+        },
+        {
+          "type": "about_content",
+          "story": "Desde 2010 ofreciendo productos de calidad...",
+          "mission": "Ofrecer la mejor experiencia de compra online",
+          "values": ["Calidad", "Confianza", "Servicio", "Innovación"]
+        }
+      ]
+    },
+    {
+      "title": "Contacto",
+      "slug": "contacto",
+      "is_home": false,
+      "meta_title": "Contacto - Atención al Cliente",
+      "meta_description": "¿Tienes preguntas? Estamos aquí para ayudarte.",
+      "content": "<h1>Contacto</h1><p>Estamos aquí para ayudarte.</p>",
+      "blocks": [
+        {
+          "type": "page_header",
+          "title": "Contacto",
+          "subtitle": "Atención al Cliente",
+          "description": "¿Tienes preguntas? Contáctanos"
+        },
+        {
+          "type": "contact_form",
+          "fields": ["name", "email", "subject", "message"],
+          "submit_text": "Enviar Mensaje"
+        },
+        {
+          "type": "contact_info",
+          "email": "info@tienda.com",
+          "phone": "+1 234 567 890",
+          "whatsapp": "+1 234 567 890",
+          "hours": "Lunes a Sábado, 9:00 - 20:00"
+        }
+      ]
+    }
+  ]
+}

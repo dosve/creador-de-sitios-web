@@ -2,60 +2,61 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ $website->name ?? 'Gimnasio' }}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{{ $page->title ?? $website->name ?? "Mi Sitio Web" }}</title>
+  <meta name="description" content="{{ $page->meta_description ?? $website->description ?? "Descripción de mi sitio web" }}">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Roboto', sans-serif
+      font-family: "Inter", sans-serif;
     }
-
-    .font-heading {
-      font-family: 'Bebas Neue', sans-serif
-    }
-
     .container {
-      max-width: {
-          {
-          $customization['layout']['container_width']??'1280px'
-        }
-      }
+      max-width: {{ $customization["layout"]["container_width"] ?? "1200px" }};
     }
-
   </style>
+  
+  {{-- Estilos CSS personalizados de la página --}}
+  @if($page && $page->css_content)
+    <style>
+      {!! $page->css_content !!}
+    </style>
+  @endif
 </head>
-<body class="bg-gray-900 text-white">@php $h=$customization['header']??[];@endphp @include('templates.gimnasio-fitness.header')
-  <section class="relative h-screen flex items-center bg-gradient-to-br from-red-900 to-gray-900">
-    <div class="container px-6 mx-auto">
-      <h1 class="font-heading text-7xl md:text-9xl font-bold mb-6">TRANSFORMA<br>TU CUERPO</h1>
-      <p class="text-2xl mb-8 text-red-200">Alcanza tus metas con nosotros</p><a href="#planes" class="inline-block px-12 py-4 bg-red-600 hover:bg-red-700 transition-colors font-bold text-xl">PRUEBA GRATIS</a>
-    </div>
-  </section>
-  <section class="py-20 bg-gray-800">
-    <div class="container px-6 mx-auto">
-      <div class="text-center mb-16">
-        <h2 class="font-heading text-6xl mb-4">CLASES</h2>
-      </div>
-      <div class="grid md:grid-cols-3 gap-8">@for($i=0;$i<3;$i++)<div class="bg-gray-900 p-8 hover:bg-red-900 transition-colors cursor-pointer">
-          <h3 class="font-heading text-3xl mb-3">CLASE {{$i+1}}</h3>
-          <p class="text-gray-400">Entrenamiento intensivo</p>
-      </div>@endfor
-    </div>
-    </div>
-  </section>
-  <section id="planes" class="py-20 bg-gradient-to-br from-gray-900 to-black">
-    <div class="container px-6 mx-auto">
-      <div class="text-center mb-16">
-        <h2 class="font-heading text-6xl mb-4">PLANES</h2>
-      </div>
-      <div class="grid md:grid-cols-3 gap-8">@for($i=0;$i<3;$i++)<div class="bg-gray-800 p-8 rounded-lg border-2 border-gray-700 hover:border-red-600 transition-colors">
-          <h3 class="font-heading text-4xl mb-4">PLAN {{$i+1}}</h3>
-          <div class="text-5xl font-bold mb-6">${{($i+1)*30}}<span class="text-lg">/mes</span></div>
-          <ul class="space-y-3 mb-8 text-gray-400">@for($j=0;$j<3;$j++)<li>✓ Beneficio {{$j+1}}</li>@endfor</ul><button class="w-full py-4 bg-red-600 hover:bg-red-700 transition-colors font-bold">COMPRAR</button></div>@endfor
-    </div>
-    </div>
-  </section>
-  @php $f=$customization['footer']??[];@endphp @include('templates.gimnasio-fitness.footer')
+<body class="bg-gray-50" data-page-id="{{ $page ? $page->id : '' }}">
+  {{-- Barra de administración para propietarios logueados --}}
+  @if(Auth::check() && (Auth::user()->role === "admin" || Auth::user()->id === $website->user_id))
+    <x-admin-bar :website="$website" />
+  @endif
+  
+  {{-- Header de la plantilla --}}
+  @include('templates.gimnasio-fitness.header')
+  
+  {{-- Contenido específico de la página --}}
+  <main class="min-h-screen">
+    @if($page && $page->html_content)
+      {!! $page->html_content !!}
+    @else
+      <section class="py-20 bg-white">
+        <div class="container px-6 mx-auto">
+          <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+              {{ $page->title ?? "Página" }}
+            </h1>
+            <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              {{ $page->meta_description ?? "Contenido de la página" }}
+            </p>
+          </div>
+        </div>
+      </section>
+    @endif
+  </main>
+  
+  {{-- Footer de la plantilla --}}
+  @include('templates.gimnasio-fitness.footer')
+  
+  {{-- Scripts globales para funcionalidad dinámica --}}
+  <x-global-scripts :website="$website" :customization="$customization ?? []" />
 </body>
 </html>

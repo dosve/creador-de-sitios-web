@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Website;
 use App\Models\Page;
+use App\Models\TemplateConfiguration;
 use App\Services\TemplateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,6 +33,11 @@ class WebsiteController extends Controller
         \Log::info("=== SHOWROOT DEBUG ===");
         \Log::info("Host: " . $host);
         \Log::info("Request URL: " . request()->fullUrl());
+        
+        // Log directo a archivo para debug
+        file_put_contents(storage_path('logs/debug.log'), "=== SHOWROOT DEBUG ===\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Host: " . $host . "\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Request URL: " . request()->fullUrl() . "\n", FILE_APPEND);
         
         // 1. PRIORIDAD: Buscar por dominio personalizado verificado
         // EXCLUIR: creadorweb.eme10.com debe mostrar la aplicación del creador
@@ -102,25 +108,54 @@ class WebsiteController extends Controller
      */
     public function showPageBySlug($slug)
     {
+        // LOG: Debug del flujo de WebsiteController
+        \Log::info("=== WEBSITE CONTROLLER DEBUG ===");
+        \Log::info("Slug solicitado: " . $slug);
+        \Log::info("Usuario autenticado: " . (Auth::check() ? 'Sí' : 'No'));
+        \Log::info("Sitio seleccionado: " . (session('selected_website_id') ?? 'NULL'));
+        
+        // Log directo a archivo para debug
+        file_put_contents(storage_path('logs/debug.log'), "=== WEBSITE CONTROLLER DEBUG ===\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Slug solicitado: " . $slug . "\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Usuario autenticado: " . (Auth::check() ? 'Sí' : 'No') . "\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Sitio seleccionado: " . (session('selected_website_id') ?? 'NULL') . "\n", FILE_APPEND);
+        
+        file_put_contents(storage_path('logs/debug.log'), "=== WEBSITE CONTROLLER DEBUG ===\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Slug solicitado: " . $slug . "\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Usuario autenticado: " . (Auth::check() ? 'Sí' : 'No') . "\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Sitio seleccionado: " . (session('selected_website_id') ?? 'NULL') . "\n", FILE_APPEND);
+        
         // Si el usuario está logueado Y tiene un sitio seleccionado
         if (Auth::check() && session('selected_website_id')) {
             $website = Website::find(session('selected_website_id'));
+            
+            \Log::info("Sitio encontrado: " . ($website ? $website->name : 'NULL'));
+            file_put_contents(storage_path('logs/debug.log'), "Sitio encontrado: " . ($website ? $website->name : 'NULL') . "\n", FILE_APPEND);
             
             // Verificar que el sitio existe y pertenece al usuario
             if ($website && ($website->user_id === Auth::id() || Auth::user()->isAdmin())) {
                 // Buscar la página por slug en el sitio seleccionado
                 $page = $website->pages()->where('slug', $slug)->where('is_published', true)->first();
                 
+                \Log::info("Página encontrada: " . ($page ? $page->title : 'NULL'));
+                file_put_contents(storage_path('logs/debug.log'), "Página encontrada: " . ($page ? $page->title : 'NULL') . "\n", FILE_APPEND);
+                
                 if ($page) {
+                    \Log::info("Llamando a PreviewController::page");
+                    file_put_contents(storage_path('logs/debug.log'), "Llamando a PreviewController::page\n", FILE_APPEND);
                     // Mostrar la página usando el PreviewController
                     return app(\App\Http\Controllers\Creator\PreviewController::class)->page(request(), $page);
                 }
                 
                 // Si no se encuentra la página, retornar 404
+                \Log::info("ERROR: Página no encontrada: " . $slug);
+                file_put_contents(storage_path('logs/debug.log'), "ERROR: Página no encontrada: " . $slug . "\n", FILE_APPEND);
                 abort(404, 'Página no encontrada: ' . $slug);
             }
         }
         
+        \Log::info("ERROR: Usuario no autenticado o sin sitio seleccionado");
+        file_put_contents(storage_path('logs/debug.log'), "ERROR: Usuario no autenticado o sin sitio seleccionado\n", FILE_APPEND);
         // Si no está logueado o no tiene sitio seleccionado, redirigir a bienvenida
         return redirect()->route('welcome');
     }
@@ -178,6 +213,15 @@ class WebsiteController extends Controller
      */
     public function showPublic(Website $website)
     {
+        // LOG: Debug del flujo de showPublic
+        \Log::info("=== SHOW PUBLIC DEBUG ===");
+        \Log::info("Website: " . $website->name . " (ID: " . $website->id . ")");
+        \Log::info("Request URL: " . request()->fullUrl());
+        
+        file_put_contents(storage_path('logs/debug.log'), "=== SHOW PUBLIC DEBUG ===\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Website: " . $website->name . " (ID: " . $website->id . ")\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Request URL: " . request()->fullUrl() . "\n", FILE_APPEND);
+        
         // Verificar si el sitio web está publicado
         if (!$website->is_published) {
             // Si no está publicado, verificar si el usuario es administrador o propietario
@@ -215,11 +259,27 @@ class WebsiteController extends Controller
                 $customization = $template['customization'] ?? [];
                 $templateFile = $template['templates']['home'] ?? 'template';
                 $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
+                
+                // Obtener o crear la configuración de la plantilla
+                $templateConfig = TemplateConfiguration::firstOrCreate(
+                    [
+                        'website_id' => $website->id,
+                        'template_slug' => $template['slug']
+                    ],
+                    [
+                        'configuration' => TemplateConfiguration::getDefaultConfiguration($template['slug']),
+                        'customization' => [],
+                        'settings' => [],
+                        'is_active' => true
+                    ]
+                );
+                
                 return view($viewPath, [
                     'website' => $website,
                     'page' => $homePage,
                     'pages' => $pages,
-                    'customization' => $customization
+                    'customization' => $customization,
+                    'templateConfig' => $templateConfig
                 ]);
             }
         }
@@ -356,13 +416,7 @@ class WebsiteController extends Controller
                         ->with('error', 'La plantilla seleccionada no existe o no está disponible');
                 }
                 
-                // Verificar si la plantilla está siendo usada por otros sitios web
-                $sitesUsingTemplate = Website::where('template_id', $templateSlug)->count();
-                if ($sitesUsingTemplate > 0) {
-                    return redirect()->back()
-                        ->withInput()
-                        ->with('error', 'Esta plantilla ya está siendo utilizada por otro sitio web. Por favor selecciona una diferente.');
-                }
+                // Permitido: una misma plantilla puede ser usada por múltiples sitios
             }
         }
         // Si template_type es 'blank', templateSlug permanece null
@@ -483,6 +537,19 @@ class WebsiteController extends Controller
      */
     public function showPagePublic(Website $website, Page $page)
     {
+        // LOG: Debug del flujo de showPagePublic
+        \Log::info("=== SHOW PAGE PUBLIC DEBUG ===");
+        \Log::info("Website: " . $website->name . " (ID: " . $website->id . ")");
+        \Log::info("Page: " . $page->title . " (ID: " . $page->id . ")");
+        \Log::info("Request URL: " . request()->fullUrl());
+        
+        file_put_contents(storage_path('logs/debug.log'), "=== SHOW PAGE PUBLIC DEBUG ===\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Website: " . $website->name . " (ID: " . $website->id . ")\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Page: " . $page->title . " (ID: " . $page->id . ")\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Request URL: " . request()->fullUrl() . "\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Template ID: " . ($website->template_id ?? 'NULL') . "\n", FILE_APPEND);
+        file_put_contents(storage_path('logs/debug.log'), "Tiene plantilla: " . ($website->template_id ? 'Sí' : 'No') . "\n", FILE_APPEND);
+        
         // Verificar que la página pertenece al sitio web
         if ($page->website_id !== $website->id) {
             abort(404);
@@ -539,11 +606,26 @@ class WebsiteController extends Controller
                 $templateFile = $template['templates'][$templateType] ?? $template['templates']['page'] ?? 'template';
                 $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
                 
+                // Obtener o crear la configuración de la plantilla
+                $templateConfig = TemplateConfiguration::firstOrCreate(
+                    [
+                        'website_id' => $website->id,
+                        'template_slug' => $template['slug']
+                    ],
+                    [
+                        'configuration' => TemplateConfiguration::getDefaultConfiguration($template['slug']),
+                        'customization' => [],
+                        'settings' => [],
+                        'is_active' => true
+                    ]
+                );
+                
                 return view($viewPath, [
                     'website' => $website,
                     'page' => $page,
                     'pages' => $pages,
-                    'customization' => $customization
+                    'customization' => $customization,
+                    'templateConfig' => $templateConfig
                 ]);
             }
         }
@@ -553,23 +635,80 @@ class WebsiteController extends Controller
     }
 
     /**
+     * Método unificado que determina si mostrar página de dominio personalizado o sitio del creador
+     */
+    public function showPageOrWebsite($slug)
+    {
+        $host = request()->getHost();
+        
+        \Log::info("=== SHOWPAGEORWEBSITE ===");
+        \Log::info("Host: " . $host);
+        \Log::info("Slug: " . $slug);
+        
+        // Si es dominio personalizado (NO creadorweb.eme10.com)
+        if ($host !== 'creadorweb.eme10.com' && $host !== 'localhost' && $host !== '127.0.0.1') {
+            \Log::info("→ Detectado dominio personalizado, usando showPageByDomain");
+            return $this->showPageByDomain($slug);
+        }
+        
+        // Si es creadorweb.eme10.com, buscar website por slug
+        \Log::info("→ Detectado creadorweb.eme10.com, usando showPublic");
+        $website = Website::where('slug', $slug)->firstOrFail();
+        return $this->showPublic($website);
+    }
+    
+    /**
      * Mostrar una página del sitio por dominio personalizado (sin slug del sitio)
      */
     public function showPageByDomain($slug)
     {
         $host = request()->getHost();
         
-        // Buscar el sitio por dominio personalizado
-        $domain = \App\Models\Domain::where('domain', $host)
-            ->where('is_verified', true)
-            ->where('status', 'active')
-            ->first();
+        \Log::info("=== SHOWPAGEBYDOMAIN DEBUG ===");
+        \Log::info("Host: " . $host);
+        \Log::info("Slug de página: " . $slug);
+        \Log::info("Usuario autenticado: " . (Auth::check() ? 'SÍ' : 'NO'));
         
-        if (!$domain || !$domain->website) {
-            abort(404);
+        // Si es creadorweb.eme10.com, intentar con el sitio en sesión (si está autenticado)
+        if ($host === 'creadorweb.eme10.com' || $host === 'localhost' || $host === '127.0.0.1') {
+            \Log::info("⚠️ Host es creadorweb.eme10.com");
+            
+            if (!Auth::check()) {
+                \Log::info("❌ Usuario NO autenticado - redirigiendo a login");
+                return redirect()->route('login');
+            }
+            
+            // Usuario autenticado - usar el sitio en sesión
+            if (!session('selected_website_id')) {
+                \Log::info("❌ No hay sitio seleccionado");
+                abort(404, 'No hay sitio seleccionado');
+            }
+            
+            $website = Website::find(session('selected_website_id'));
+            if (!$website) {
+                abort(404, 'Sitio no encontrado');
+            }
+            
+            \Log::info("✅ Usando sitio de sesión: " . $website->name);
+        } else {
+            // Es un dominio personalizado - buscar en la tabla de dominios
+            $domain = \App\Models\Domain::where('domain', $host)
+                ->where('is_verified', true)
+                ->where('status', 'active')
+                ->first();
+            
+            \Log::info("Dominio encontrado: " . ($domain ? 'SÍ (ID: '.$domain->id.')' : 'NO'));
+            
+            if (!$domain || !$domain->website) {
+                \Log::error("❌ Dominio no encontrado o sin website asociado");
+                abort(404, 'Dominio no configurado');
+            }
+            
+            $website = $domain->website;
+            \Log::info("Website del dominio: ID " . $website->id . " - " . $website->name);
         }
         
-        $website = $domain->website;
+        \Log::info("🔍 Buscando página con slug: '" . $slug . "' en website ID: " . $website->id);
         
         // Buscar la página por slug
         $page = $website->pages()
@@ -578,8 +717,17 @@ class WebsiteController extends Controller
             ->first();
         
         if (!$page) {
-            abort(404);
+            // Buscar TODAS las páginas para debug
+            $allPages = $website->pages()->get();
+            \Log::error("❌ Página NO encontrada. Slug buscado: '" . $slug . "'");
+            \Log::info("📋 Total de páginas en el sitio: " . $allPages->count());
+            \Log::info("📋 Todas las páginas:", $allPages->pluck('slug', 'title')->toArray());
+            \Log::info("📋 Páginas publicadas:", $website->pages()->where('is_published', true)->pluck('slug', 'title')->toArray());
+            
+            abort(404, 'Página "' . $slug . '" no encontrada o no publicada');
         }
+        
+        \Log::info("✅ Página encontrada: " . $page->title . " (ID: " . $page->id . ")");
         
         // Obtener páginas del sitio web
         $pages = $website->pages()->where('is_published', true)->orderBy('sort_order')->get();
@@ -600,11 +748,26 @@ class WebsiteController extends Controller
                 $templateFile = $template['templates'][$templateType] ?? $template['templates']['page'] ?? 'template';
                 $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
                 
+                // Obtener o crear la configuración de la plantilla
+                $templateConfig = TemplateConfiguration::firstOrCreate(
+                    [
+                        'website_id' => $website->id,
+                        'template_slug' => $template['slug']
+                    ],
+                    [
+                        'configuration' => TemplateConfiguration::getDefaultConfiguration($template['slug']),
+                        'customization' => [],
+                        'settings' => [],
+                        'is_active' => true
+                    ]
+                );
+                
                 return view($viewPath, [
                     'website' => $website,
                     'page' => $page,
                     'pages' => $pages,
-                    'customization' => $customization
+                    'customization' => $customization,
+                    'templateConfig' => $templateConfig
                 ]);
             }
         }
