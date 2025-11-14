@@ -523,7 +523,7 @@ curl -X POST http://adminnegocios.test/api/register \
 
 ## Archivos Relacionados
 
-- **Script principal:** `resources/views/components/user-auth-script.blade.php`
+- **Script principal:** `resources/views/components/auth/user-auth-script.blade.php`
 - **Controlador:** `app/Http/Controllers/CustomerAuthController.php`
 - **Rutas:** `routes/web.php` (POST `/customer/register`)
 - **Modelo:** `app/Models/WebsiteCustomer.php`

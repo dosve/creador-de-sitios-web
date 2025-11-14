@@ -79,4 +79,4 @@
 />
 
 <!-- Script de autenticación de usuario -->
-<x-user-auth-script :website="$website" />
+<x-auth.user-auth-script :website="$website" />

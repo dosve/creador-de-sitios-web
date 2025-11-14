@@ -39,6 +39,17 @@
     <x-admin-bar :website="$website" />
   @endif
   
+  {{-- Configuración del header basado en la página y la plantilla --}}
+  @php
+    $headerConfig = array_merge(
+      $customization['header'] ?? [],
+      [
+        // Si la página tiene enable_store desactivado, ocultar el carrito
+        'show_cart' => ($page->enable_store ?? false) && ($customization['header']['show_cart'] ?? true)
+      ]
+    );
+  @endphp
+  
   {{-- Header de la plantilla --}}
   @include('templates.tienda-minimalista.header')
   

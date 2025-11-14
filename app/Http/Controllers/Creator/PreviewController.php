@@ -424,10 +424,16 @@ class PreviewController extends Controller
             ])->render();
 
             // Script del carrito
-            $cartScript = view('components.cart-script', [
-                'epaycoPublicKey' => $website->epayco_public_key ?? '',
-                'epaycoPrivateKey' => $website->epayco_private_key ?? '',
-                'epaycoCustomerId' => $website->epayco_customer_id ?? ''
+            $cartScript = view('components.cart.script', [
+                'templateSlug' => $website->template_id ?? 'default',
+                'colors' => [],
+                'paymentHandler' => 'epayco'
+            ])->render();
+
+            $paymentHandler = view('components.payments.epayco.handler', [
+                'publicKey' => $website->epayco_public_key ?? '',
+                'privateKey' => $website->epayco_private_key ?? '',
+                'customerId' => $website->epayco_customer_id ?? ''
             ])->render();
 
             // SDK de Epayco con callback para verificar carga
@@ -452,6 +458,7 @@ class PreviewController extends Controller
             $scriptsToAdd[] = $epaycoSDK;
             $scriptsToAdd[] = $productsScript;
             $scriptsToAdd[] = $cartScript;
+            $scriptsToAdd[] = $paymentHandler;
 
             // Script de blog si tiene bloque de blog
             if ($this->hasBlogBlock($processedContent)) {

@@ -42,4 +42,8 @@ return [
         'redirect_uri' => env('AUTH_EME10_REDIRECT_URI', env('APP_URL') . '/auth/oauth/callback'),
     ],
 
+    'admin_negocios' => [
+        'app_key' => env('ADMIN_NEGOCIOS_APP_KEY', '123456789'),
+    ],
+
 ];

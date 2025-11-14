@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\CheckRole::class,
             'require.selected.website' => \App\Http\Middleware\RequireSelectedWebsite::class,
             'sync.auth.eme10' => \App\Http\Middleware\SyncAuthEME10::class,
+            'prevent.back' => \App\Http\Middleware\PreventBackHistory::class,
         ]);
         
         // Agregar middleware global para sincronización con Auth EME10

@@ -470,14 +470,26 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/logout', [App\Http\Controllers\CustomerAuthController::class, 'logout'])->name('logout');
     Route::get('/check', [App\Http\Controllers\CustomerAuthController::class, 'check'])->name('check');
     Route::get('/me', [App\Http\Controllers\CustomerAuthController::class, 'me'])->name('me');
+    Route::get('/addresses', [App\Http\Controllers\CustomerProfileController::class, 'apiAddresses'])->name('addresses.index');
+    Route::post('/addresses', [App\Http\Controllers\CustomerProfileController::class, 'apiStoreAddress'])->name('addresses.store');
 });
 
-// Rutas de checkout público
-Route::prefix('{website:slug}')->name('checkout.')->group(function () {
-    Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'index'])->name('index');
-    Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processCheckout'])->name('process');
-    Route::get('/order/{orderNumber}', [App\Http\Controllers\CheckoutController::class, 'showOrder'])->name('order.show');
-    Route::get('/my-orders', [App\Http\Controllers\CheckoutController::class, 'myOrders'])->name('my-orders');
+// Rutas de checkout y perfil de cliente público
+Route::prefix('{website:slug}')->name('customer.')->group(function () {
+    // Checkout
+    Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processCheckout'])->name('checkout.process');
+    Route::get('/order/{orderNumber}', [App\Http\Controllers\CheckoutController::class, 'showOrder'])->name('order.show')->middleware('prevent.back');
+    
+    // Perfil de cliente (requieren autenticación)
+    Route::get('/my-orders', [App\Http\Controllers\CheckoutController::class, 'myOrders'])->name('my-orders')->middleware('prevent.back');
+    Route::get('/profile', [App\Http\Controllers\CustomerProfileController::class, 'index'])->name('profile')->middleware('prevent.back');
+    Route::put('/profile', [App\Http\Controllers\CustomerProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [App\Http\Controllers\CustomerProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::get('/addresses', [App\Http\Controllers\CustomerProfileController::class, 'addresses'])->name('addresses')->middleware('prevent.back');
+    Route::post('/addresses', [App\Http\Controllers\CustomerProfileController::class, 'storeAddress'])->name('addresses.store');
+    Route::put('/addresses/{id}', [App\Http\Controllers\CustomerProfileController::class, 'updateAddress'])->name('addresses.update');
+    Route::delete('/addresses/{id}', [App\Http\Controllers\CustomerProfileController::class, 'deleteAddress'])->name('addresses.delete');
 });
 
 // Redirección después del login

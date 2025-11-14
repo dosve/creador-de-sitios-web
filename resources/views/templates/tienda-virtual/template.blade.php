@@ -17,20 +17,13 @@
     {!! $templateCssHelper::renderCss('tienda-virtual', $customization ?? []) !!}
   @endif
   
-  <style>
-    body {
-      font-family: "Inter", sans-serif;
-    }
-    .container {
-      max-width: {{ $customization["layout"]["container_width"] ?? "1200px" }};
-    }
-  </style>
-  
   {{-- Estilos CSS personalizados de la página --}}
   @if($page && $page->css_content)
-    <style>
-      {!! $page->css_content !!}
-    </style>
+    @php
+      echo '<style>';
+      echo $page->css_content;
+      echo '</style>';
+    @endphp
   @endif
 </head>
 <body class="bg-gray-50 tienda-template" data-page-id="{{ $page ? $page->id : '' }}">
@@ -39,8 +32,42 @@
     <x-admin-bar :website="$website" />
   @endif
   
+  {{-- Configuración del header basado en la página y la plantilla --}}
+  @php
+    $headerConfig = array_merge(
+      $customization['header'] ?? [],
+      [
+        // Si la página tiene enable_store activado, mostrar el carrito
+        'show_cart' => ($page->enable_store ?? false) && ($customization['header']['show_cart'] ?? true)
+      ]
+    );
+  @endphp
+  
   {{-- Header de la plantilla --}}
   @include('templates.tienda-virtual.header')
+  
+  {{-- Mensajes Flash --}}
+  @if(session('error'))
+  <div class="bg-red-50 border-l-4 border-red-500 p-4 mx-auto max-w-7xl mt-4">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <p class="text-red-800">{{ session('error') }}</p>
+    </div>
+  </div>
+  @endif
+  
+  @if(session('success'))
+  <div class="bg-green-50 border-l-4 border-green-500 p-4 mx-auto max-w-7xl mt-4">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <p class="text-green-800">{{ session('success') }}</p>
+    </div>
+  </div>
+  @endif
   
   {{-- Contenido específico de la página --}}
   <main class="min-h-screen">
@@ -67,5 +94,20 @@
   
   {{-- Scripts globales para funcionalidad dinámica --}}
   <x-global-scripts :website="$website" :customization="$customization ?? []" />
+
+  @if($page->enable_store ?? false)
+    <script src="https://checkout.epayco.co/checkout.js" defer></script>
+    @include('components.payments.epayco.handler', [
+        'publicKey' => $website->epayco_public_key ?? '',
+        'privateKey' => $website->epayco_private_key ?? '',
+        'customerId' => $website->epayco_customer_id ?? ''
+    ])
+    @include('components.cart.script', [
+        'templateSlug' => 'tienda-virtual',
+        'colors' => $customization['colors'] ?? [],
+        'paymentHandler' => 'epayco',
+        'websiteSlug' => $website->slug
+    ])
+  @endif
 </body>
 </html>
