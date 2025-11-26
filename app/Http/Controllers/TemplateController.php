@@ -152,6 +152,20 @@ class TemplateController extends Controller
                     }
                 };
             }
+
+            public function pages()
+            {
+                return new class {
+                    public function where($field, $value)
+                    {
+                        return $this;
+                    }
+                    public function exists()
+                    {
+                        return false; // No hay páginas en preview
+                    }
+                };
+            }
         };
 
         // Para la vista previa, no necesitamos páginas específicas

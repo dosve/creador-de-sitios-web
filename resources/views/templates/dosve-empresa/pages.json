@@ -19,14 +19,66 @@
         },
         {
           "type": "about",
-          "title": "Sobre Nosotros",
-          "description": "Dosve es una empresa de desarrollo de software con 10 años de experiencia, especializada en crear soluciones tecnológicas personalizadas que optimizan los procesos empresariales y potencian la productividad de nuestros clientes."
+          "title": "Empresa",
+          "subtitle": "Día a día trabajamos para ofrecerles a nuestros clientes las más modernas soluciones tecnológicas.",
+          "description": "Dosve es una empresa de desarrollo de software con 10 años de experiencia, especializada en crear soluciones tecnológicas personalizadas que optimizan los procesos empresariales y potencian la productividad de nuestros clientes. Nacimos en 2015 en Acacías, Meta, y hoy contamos también con presencia en Bogotá, desde donde ampliamos nuestro alcance para atender proyectos a nivel nacional. Nuestro objetivo es ofrecer herramientas digitales accesibles, seguras y adaptadas a las necesidades de cada negocio. A lo largo de estos años, hemos trabajado junto a empresas privadas e instituciones públicas, brindando productos innovadores y confiables que generan resultados reales.",
+          "milestones": [
+            {
+              "year": "2015",
+              "description": "Desarrollamos nuestra primera plataforma web"
+            },
+            {
+              "year": "2017",
+              "description": "Creamos nuestra primera app móvil"
+            },
+            {
+              "year": "2018",
+              "description": "Producimos nuestro primer video viral para Facebook"
+            },
+            {
+              "year": "2020",
+              "description": "Lanzamos nuestra primera tienda virtual"
+            }
+          ],
+          "mission": "Diseñar y desarrollar sistemas inteligentes que ayuden a las empresas a automatizar, controlar y escalar sus operaciones, ofreciendo soluciones eficientes, seguras y de fácil uso",
+          "vision": "Ser una empresa líder en desarrollo de software empresarial en Colombia, reconocida por la innovación, la calidad de sus productos y su compromiso con el crecimiento tecnológico de sus clientes."
+        },
+        {
+          "type": "values",
+          "title": "Nuestros Valores",
+          "subtitle": "Reconocemos la importancia de incorporar prácticas éticas en nuestra gestión empresarial, ya que las consideramos como un elemento significativo dentro de la toma de decisiones y para la mejora continua de nuestra empresa.",
+          "items": [
+            {
+              "title": "Compromiso",
+              "description": "Cumplimos cada proyecto con responsabilidad y excelencia."
+            },
+            {
+              "title": "Innovación",
+              "description": "Incorporamos tecnologías modernas para ofrecer soluciones escalables."
+            },
+            {
+              "title": "Confianza",
+              "description": "Priorizamos la comunicación y transparencia con cada cliente."
+            },
+            {
+              "title": "Eficiencia",
+              "description": "Optimizamos recursos y tiempos para maximizar resultados."
+            },
+            {
+              "title": "Aprendizaje continuo",
+              "description": "Evolucionamos constantemente con las nuevas tendencias tecnológicas."
+            }
+          ]
         },
         {
           "type": "services",
           "title": "Nuestros Servicios",
           "subtitle": "Soluciones tecnológicas integrales",
           "items": [
+            {
+              "title": "Automatización e Inteligencia Artificial",
+              "description": "Optimización de procesos repetitivos y comunicación empresarial automatizada."
+            },
             {
               "title": "Desarrollo de Software a Medida",
               "description": "Plataformas accesibles, seguras y optimizadas para cualquier dispositivo."
@@ -66,63 +118,46 @@
           "items": [
             {
               "title": "Segundos App",
-              "description": "Solución móvil integral de entrega y servicios, conectando usuarios con proveedores locales.",
+              "description": "Segundos App es una solución móvil integral de entrega y servicios: desde compras de supermercado hasta mantenimiento técnico, conectando usuarios con proveedores locales. Facilita la transacción segura y eficiente, posicionándose como un puente digital entre comercios y clientes.",
               "image": "segundos-app.jpg"
             },
             {
-              "title": "Yo Compro Acacías",
-              "description": "Plataforma oficial municipal para visibilizar negocios locales y fortalecer la economía local.",
-              "image": "yo-compro-acacias.jpg"
-            },
-            {
               "title": "Admin Negocios",
-              "description": "Sistema integral de gestión empresarial para manejar compras, ventas, inventarios y más.",
+              "description": "Admin Negocios es un sistema integral de gestión empresarial que permite a las empresas manejar compras, ventas, inventarios, proveedores, clientes y nóminas desde una única plataforma. Su enfoque está en simplificar operaciones diarias y centralizar la información clave para una mejor administración.",
               "image": "admin-negocios.jpg"
             },
             {
+              "title": "Yo Compro Acacías",
+              "description": "Yo Compro Acacías es una plataforma oficial municipal diseñada para visibilizar negocios locales: restaurantes, tiendas, servicios. Funciona como un catálogo digital para que los habitantes descubran y consuman dentro de su propio municipio, fortaleciendo la economía local.",
+              "image": "yo-compro-acacias.jpg"
+            },
+            {
               "title": "EME10",
-              "description": "Suite empresarial que optimiza gestión, comunicación y automatización con IA.",
+              "description": "EME10 es una suite empresarial que optimiza gestión, comunicación y automatización. Integra herramientas de CRM, control de inventarios, facturación, gestión de proyectos, soporte técnico y marketing automatizado en una sola plataforma. Su objetivo es centralizar operaciones, aumentar la productividad y facilitar decisiones usando inteligencia artificial y flujos automatizados.",
               "image": "eme10.jpg"
             }
           ]
         },
         {
-          "type": "values",
-          "title": "Nuestros Valores",
-          "items": [
-            {
-              "title": "Compromiso",
-              "description": "Priorizamos la comunicación y transparencia con cada cliente."
-            },
-            {
-              "title": "Confianza",
-              "description": "Cumplimos cada proyecto con responsabilidad y excelencia."
-            },
-            {
-              "title": "Innovación",
-              "description": "Incorporamos tecnologías modernas para ofrecer soluciones escalables."
-            },
-            {
-              "title": "Aprendizaje continuo",
-              "description": "Evolucionamos constantemente con las nuevas tendencias tecnológicas."
-            },
-            {
-              "title": "Eficiencia",
-              "description": "Optimizamos recursos y tiempos para maximizar resultados."
-            }
-          ]
+          "type": "cta",
+          "title": "Estamos listos para trabajar en tu proyecto",
+          "description": "En Dosve nos apasiona acompañar a nuestros clientes en cada etapa de su transformación digital. Nos unimos a sus proyectos como aliados estratégicos, aportando nuestra experiencia y conocimiento para impulsar el crecimiento y la innovación de su empresa o negocio. Estamos listos para reunirnos y conversar sobre esa idea que tienes en mente. Contamos con un equipo de profesionales experimentados y altamente capacitados, dispuesto a iniciar de inmediato el desarrollo de tu proyecto, cumpliendo con todas las expectativas, requisitos y tiempos establecidos.",
+          "cta_text": "Contáctanos",
+          "cta_link": "#contacto"
         },
         {
           "type": "why_choose_us",
           "title": "¿Por qué Elegirnos?",
+          "subtitle": "Contamos con toda la capacidad para desarrollar su proyecto de manera exitosa.",
+          "description": "Somos un equipo profesional, experimentado y comprometido con el éxito de cada desarrollo. En Dosve trabajamos bajo altos estándares de calidad, cumpliendo con todos los requisitos, tiempos y objetivos acordados. Nos mantenemos en constante comunicación con nuestros clientes para garantizar transparencia, seguimiento y resultados eficientes.",
           "items": [
-            {
-              "title": "Más de 10 años de experiencia",
-              "description": "Una trayectoria sólida desarrollando soluciones tecnológicas a nivel nacional."
-            },
             {
               "title": "Empresa legalmente constituida",
               "description": "Operamos bajo los lineamientos legales, ofreciendo confianza y respaldo."
+            },
+            {
+              "title": "Más de 10 años de experiencia",
+              "description": "Una trayectoria sólida desarrollando soluciones tecnológicas a nivel nacional."
             },
             {
               "title": "Cumplimiento y responsabilidad",
@@ -139,99 +174,10 @@
             {
               "title": "Tarifas justas y competitivas",
               "description": "Ofrecemos precios equilibrados, acordes a la calidad de nuestros desarrollos."
-            }
-          ]
-        },
-        {
-          "type": "cta",
-          "title": "Estamos listos para trabajar en tu proyecto",
-          "description": "Contamos con un equipo de profesionales experimentados y altamente capacitados, dispuesto a iniciar de inmediato el desarrollo de tu proyecto.",
-          "cta_text": "Contáctanos",
-          "cta_link": "#contacto"
-        }
-      ]
-    },
-    {
-      "title": "Servicios",
-      "slug": "servicios",
-      "is_home": false,
-      "meta_title": "Nuestros Servicios - Dosve",
-      "meta_description": "Desarrollo de software, aplicaciones web, sistemas empresariales y aplicaciones móviles.",
-      "content": "<h1>Nuestros Servicios</h1><p>Soluciones tecnológicas integrales para tu empresa</p>",
-      "blocks": [
-        {
-          "type": "page_header",
-          "title": "Nuestros Servicios",
-          "subtitle": "Soluciones tecnológicas integrales",
-          "description": "Ofrecemos servicios de desarrollo de software personalizados para optimizar los procesos de tu empresa"
-        },
-        {
-          "type": "services_detailed",
-          "items": [
-            {
-              "title": "Desarrollo de Software a Medida",
-              "description": "Plataformas accesibles, seguras y optimizadas para cualquier dispositivo.",
-              "features": ["Diseño personalizado", "Seguridad avanzada", "Optimización de rendimiento", "Soporte técnico"]
             },
             {
-              "title": "Aplicaciones Web",
-              "description": "Soluciones personalizadas según las necesidades de tu empresa.",
-              "features": ["Responsive design", "Integración con sistemas existentes", "Escalabilidad", "Mantenimiento continuo"]
-            },
-            {
-              "title": "Sistemas Empresariales (ERP / POS / CRM)",
-              "description": "Gestión completa de ventas, inventarios, contabilidad y clientes.",
-              "features": ["Gestión de inventarios", "Control de ventas", "Facturación electrónica", "Reportes en tiempo real"]
-            },
-            {
-              "title": "Aplicaciones Móviles",
-              "description": "Desarrollo para Android y iOS con conexión a sistemas empresariales.",
-              "features": ["Desarrollo nativo", "Integración con APIs", "Sincronización en tiempo real", "Actualizaciones automáticas"]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Proyectos",
-      "slug": "proyectos",
-      "is_home": false,
-      "meta_title": "Nuestros Proyectos - Dosve",
-      "meta_description": "Conoce nuestros últimos proyectos de desarrollo de software y aplicaciones.",
-      "content": "<h1>Nuestros Proyectos</h1><p>Conoce nuestros últimos proyectos</p>",
-      "blocks": [
-        {
-          "type": "page_header",
-          "title": "Nuestros Proyectos",
-          "subtitle": "Conoce nuestros últimos proyectos",
-          "description": "Proyectos exitosos que hemos desarrollado para nuestros clientes"
-        },
-        {
-          "type": "projects_grid",
-          "items": [
-            {
-              "title": "Segundos App",
-              "description": "Solución móvil integral de entrega y servicios, conectando usuarios con proveedores locales.",
-              "image": "segundos-app.jpg",
-              "technologies": ["React Native", "Node.js", "MongoDB"]
-            },
-            {
-              "title": "Yo Compro Acacías",
-              "description": "Plataforma oficial municipal para visibilizar negocios locales y fortalecer la economía local.",
-              "image": "yo-compro-acacias.jpg",
-              "technologies": ["Laravel", "Vue.js", "MySQL"]
-            },
-            {
-              "title": "Admin Negocios",
-              "description": "Sistema integral de gestión empresarial para manejar compras, ventas, inventarios y más.",
-              "image": "admin-negocios.jpg",
-              "technologies": ["Laravel", "React", "PostgreSQL"]
-            },
-            {
-              "title": "EME10",
-              "description": "Suite empresarial que optimiza gestión, comunicación y automatización con IA.",
-              "image": "eme10.jpg",
-              "technologies": ["Laravel", "Vue.js", "AI/ML"]
+              "title": "Actualización tecnológica constante",
+              "description": "Adoptamos las últimas herramientas y metodologías para mantener soluciones modernas y escalables."
             }
           ]
         }
@@ -248,8 +194,8 @@
         {
           "type": "page_header",
           "title": "Contáctanos",
-          "subtitle": "Estamos listos para trabajar en tu proyecto",
-          "description": "Contamos con un equipo de profesionales experimentados y altamente capacitados"
+          "subtitle": "Brindamos las mejores soluciones tecnológicas para su negocio",
+          "description": "Estamos listos para reunirnos y conversar sobre esa idea que tienes en mente"
         },
         {
           "type": "contact_form",
@@ -267,3 +213,4 @@
     }
   ]
 }
+

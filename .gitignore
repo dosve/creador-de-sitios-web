@@ -23,3 +23,8 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 *.http
+productos_imagenes/
+script/
+debug_html/
+requirements.txt
+progreso_scraper.json
