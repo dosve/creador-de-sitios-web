@@ -26,11 +26,12 @@ class CustomerAuthController extends Controller
             'email' => 'required|email',
             'password' => 'required',
             'website_slug' => 'required',
+            'captcha_token' => 'nullable|string', // CAPTCHA token opcional
         ]);
 
         // Buscar el website
         $website = Website::where('slug', $request->website_slug)->first();
-        
+
         if (!$website) {
             return response()->json([
                 'success' => false,
@@ -49,7 +50,7 @@ class CustomerAuthController extends Controller
         try {
             // Intentar login en AdminNegocios
             $apiUrl = rtrim($website->api_base_url, '/');
-            
+
             Log::info('Intentando login de cliente', [
                 'email' => $request->email,
                 'api_url' => $apiUrl,
@@ -59,6 +60,7 @@ class CustomerAuthController extends Controller
             $response = Http::timeout(10)->post($apiUrl . '/login', [
                 'email' => $request->email,
                 'password' => $request->password,
+                'captcha_token' => $request->captcha_token, // Enviar CAPTCHA token a AdminNegocios
             ]);
 
             $data = $response->json();
@@ -79,6 +81,12 @@ class CustomerAuthController extends Controller
             $user = $data['user'];
             $token = $data['token'];
 
+            // Construir nombre completo desde firstName y lastName
+            $fullName = trim(($user['firstName'] ?? '') . ' ' . ($user['lastName'] ?? ''));
+            if (empty($fullName)) {
+                $fullName = $user['email'];
+            }
+
             // Registrar o actualizar en website_customers
             $websiteCustomer = WebsiteCustomer::updateOrCreate(
                 [
@@ -87,7 +95,7 @@ class CustomerAuthController extends Controller
                 ],
                 [
                     'email' => $user['email'],
-                    'name' => $user['name'] ?? $user['email'],
+                    'name' => $fullName,
                     'phone' => $user['phone'] ?? null,
                 ]
             );
@@ -103,7 +111,7 @@ class CustomerAuthController extends Controller
             Session::put('customer_data', [
                 'id' => $user['id'],
                 'email' => $user['email'],
-                'name' => $user['name'] ?? $user['email'],
+                'name' => $fullName,
                 'phone' => $user['phone'] ?? null,
             ]);
 
@@ -120,14 +128,13 @@ class CustomerAuthController extends Controller
                     'id' => $websiteCustomer->id,
                     'admin_negocios_id' => $user['id'],
                     'email' => $user['email'],
-                    'name' => $user['name'] ?? $user['email'],
+                    'name' => $fullName,
                     'phone' => $user['phone'] ?? null,
                     'total_orders' => $websiteCustomer->total_orders,
                     'total_spent' => $websiteCustomer->total_spent,
                 ],
                 'token' => $token, // Para usar en futuras peticiones si es necesario
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error en login de cliente', [
                 'email' => $request->email,
@@ -231,10 +238,11 @@ class CustomerAuthController extends Controller
             'password' => 'required|string|min:6',
             'phone' => 'nullable|string|max:20',
             'website_slug' => 'required',
+            'captcha_token' => 'nullable|string', // CAPTCHA token opcional
         ]);
 
         $website = Website::where('slug', $request->website_slug)->first();
-        
+
         if (!$website) {
             return response()->json([
                 'success' => false,
@@ -251,13 +259,21 @@ class CustomerAuthController extends Controller
 
         try {
             $apiUrl = rtrim($website->api_base_url, '/');
-            
+
+            // Separar el nombre en firstName y lastName
+            $nameParts = explode(' ', $request->name, 2);
+            $firstName = $nameParts[0] ?? $request->name;
+            $lastName = $nameParts[1] ?? '';
+
             // Intentar registro en AdminNegocios
             $response = Http::timeout(10)->post($apiUrl . '/register', [
-                'name' => $request->name,
+                'firstName' => $firstName,
+                'lastName' => $lastName,
                 'email' => $request->email,
                 'password' => $request->password,
+                'password_confirmation' => $request->password, // AdminNegocios requiere confirmación
                 'phone' => $request->phone,
+                'captcha_token' => $request->captcha_token, // Enviar CAPTCHA token
             ]);
 
             $data = $response->json();
@@ -271,7 +287,6 @@ class CustomerAuthController extends Controller
 
             // Registro exitoso, hacer login automático
             return $this->login($request);
-
         } catch (\Exception $e) {
             Log::error('Error en registro de cliente', [
                 'email' => $request->email,
@@ -285,4 +300,3 @@ class CustomerAuthController extends Controller
         }
     }
 }
-

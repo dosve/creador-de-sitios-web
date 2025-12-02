@@ -96,7 +96,7 @@
                                         </div>
                                     </div>
                                     <div class="flex space-x-2">
-                                        <a href="{{ route('creator.pages.editor', [$selectedWebsite, $page]) }}" class="text-sm font-medium text-green-600 hover:text-green-800">
+                                        <a href="{{ route('creator.pages.editor', $page) }}" class="text-sm font-medium text-green-600 hover:text-green-800">
                                             Editar
                                         </a>
                                     </div>

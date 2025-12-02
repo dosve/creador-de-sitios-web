@@ -122,7 +122,7 @@ El ícono se encuentra en cada header con esta estructura:
 
 ### 2. JavaScript Automático
 
-El archivo `components/user-auth-script.blade.php` se encarga de:
+El archivo `components/auth/user-auth-script.blade.php` se encarga de:
 
 - ✅ Verificar automáticamente si el usuario está autenticado
 - ✅ Mostrar el menú correcto (invitado o autenticado)
@@ -316,7 +316,7 @@ En el archivo del header, añade más links en el dropdown:
 **Posible causa:** El script de autenticación no se está cargando.
 
 **Solución:**
-1. Verificar que existe `components/user-auth-script.blade.php`
+1. Verificar que existe `components/auth/user-auth-script.blade.php`
 2. Verificar que está incluido en `components/global-scripts.blade.php`
 3. Verificar que el header incluye `<x-global-scripts :website="$website" />`
 
@@ -358,7 +358,7 @@ Si creas una nueva plantilla y quieres agregar el ícono de usuario:
 
 Ver archivos de implementación:
 - Headers: `resources/views/templates/{plantilla}/header.blade.php`
-- Script: `resources/views/components/user-auth-script.blade.php`
+- Script: `resources/views/components/auth/user-auth-script.blade.php`
 - Scripts globales: `resources/views/components/global-scripts.blade.php`
 - Controlador: `app/Http/Controllers/CustomerAuthController.php`
 - Rutas: `routes/web.php` (sección de `/customer/*`)

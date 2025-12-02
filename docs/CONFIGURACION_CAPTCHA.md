@@ -55,7 +55,7 @@ Si quieres seguir usando las claves de prueba, no necesitas hacer nada. Ya está
 
 #### 1. Actualizar el Frontend
 
-Edita: `resources/views/components/user-auth-script.blade.php`
+Edita: `resources/views/components/auth/user-auth-script.blade.php`
 
 Cambia esta línea:
 ```javascript

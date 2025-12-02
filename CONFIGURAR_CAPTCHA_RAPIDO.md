@@ -57,7 +57,7 @@ Si quieres **protección real** contra bots, necesitas tus propias claves:
 
 ### **PASO 2: Configurar el Frontend**
 
-**Archivo:** `creador-web-eme10/resources/views/components/user-auth-script.blade.php`
+**Archivo:** `creador-web-eme10/resources/views/components/auth/user-auth-script.blade.php`
 
 **Línea 8 - Cambiar esto:**
 ```javascript
@@ -156,7 +156,7 @@ Debería mostrar: **"Por favor, completa el CAPTCHA"**
 ### Frontend (Creador de Tiendas)
 ```
 📁 creador-web-eme10/
-   └── resources/views/components/user-auth-script.blade.php
+   └── resources/views/components/auth/user-auth-script.blade.php
        └── Línea 8: RECAPTCHA_SITE_KEY = 'TU_CLAVE'
 ```
 

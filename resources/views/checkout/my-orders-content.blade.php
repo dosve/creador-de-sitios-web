@@ -1,8 +1,4 @@
-@extends('layouts.public')
-
-@section('title', 'Mis Órdenes - ' . ($website->name ?? 'Tienda'))
-
-@section('content')
+{{-- Contenido de Mis Órdenes (sin layout, para incluir en plantilla) --}}
 <div class="min-h-screen bg-gray-50 py-8">
     <div class="container mx-auto px-4 max-w-6xl">
         {{-- Header --}}
@@ -10,19 +6,6 @@
             <h1 class="text-3xl font-bold text-gray-900 mb-2">Mis Órdenes</h1>
             <p class="text-gray-600">Revisa el estado y detalles de tus compras</p>
         </div>
-
-        {{-- Mensajes --}}
-        @if(session('success'))
-        <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
-            {{ session('success') }}
-        </div>
-        @endif
-
-        @if(session('error'))
-        <div class="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
-            {{ session('error') }}
-        </div>
-        @endif
 
         {{-- Lista de Órdenes --}}
         @if($orders->count() > 0)
@@ -186,5 +169,4 @@ window.addEventListener('pageshow', function(event) {
     }
 });
 </script>
-@endsection
 

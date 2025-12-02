@@ -29,37 +29,8 @@
         </button>
         @endif
 
-        {{-- User Menu --}}
-        <div class="relative" id="user-menu-container">
-          {{-- Guest Menu --}}
-          <div id="guest-menu" class="hidden">
-            <button id="login-button" class="text-gray-700 hover:text-black transition-colors">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-              </svg>
-            </button>
-          </div>
-          
-          {{-- Authenticated User Menu --}}
-          <div id="user-menu" class="hidden">
-            <button id="user-menu-button" class="flex items-center space-x-2 text-gray-700 hover:text-black transition-colors">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-              </svg>
-              <span id="user-name" class="hidden md:inline text-sm font-medium"></span>
-            </button>
-            
-            {{-- Dropdown --}}
-            <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1">
-              <a href="/{{ $website->slug ?? '' }}/my-orders" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                Mis Órdenes
-              </a>
-              <button id="logout-button" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                Cerrar Sesión
-              </button>
-            </div>
-          </div>
-        </div>
+        {{-- User Menu (Componente descentralizado) --}}
+        <x-auth.user-menu-button :website="$website" buttonClass="text-gray-700 hover:text-black transition-colors" />
 
         {{-- Cart --}}
         @if($headerConfig['show_cart'] ?? true)

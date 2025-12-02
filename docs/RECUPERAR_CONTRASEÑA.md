@@ -686,7 +686,7 @@ MAIL_PASSWORD=tu-sendgrid-api-key
 ## 📁 Archivos Modificados
 
 ### Actualizado:
-✅ `resources/views/components/user-auth-script.blade.php`
+✅ `resources/views/components/auth/user-auth-script.blade.php`
    - Agregado modal de recuperar contraseña (3 pasos)
    - Función `showForgotPasswordModal()`
    - Función `createForgotPasswordModal()`

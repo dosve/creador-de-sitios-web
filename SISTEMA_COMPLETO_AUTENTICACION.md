@@ -172,7 +172,7 @@ Relaciona usuarios de AdminNegocios con tiendas.
 - `checkout/order.blade.php` - Detalle de orden
 
 **Scripts:**
-- `components/user-auth-script.blade.php` - Script completo de autenticación
+- `components/auth/user-auth-script.blade.php` - Script completo de autenticación
 
 ### 5. MODALES ✅
 

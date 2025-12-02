@@ -8,7 +8,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\WebsiteCustomer;
 use App\Services\ExternalApiService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -317,24 +319,71 @@ class CheckoutController extends Controller
             ->first();
 
         if (!$order) {
+            $order = $this->fetchExternalOrder($website, $orderNumber);
+        }
+
+        if (!$order) {
             abort(404, 'Orden no encontrada');
         }
 
         // Verificar que el usuario tenga acceso a esta orden
         $isAuthenticated = Session::has('customer_logged_in') && Session::get('customer_logged_in');
         
-        if ($isAuthenticated) {
+        if ($isAuthenticated && isset($order->customer->admin_negocios_id)) {
             $customerAdminNegociosId = Session::get('customer_admin_negocios_id');
             
             if ($order->customer->admin_negocios_id != $customerAdminNegociosId) {
                 abort(403, 'No tienes acceso a esta orden');
             }
-        } else {
+        } elseif (!$isAuthenticated) {
             // Si no está autenticado, verificar por email en la sesión o parámetro
             $email = $request->input('email');
             
             if ($order->customer->email != $email) {
                 abort(403, 'No tienes acceso a esta orden');
+            }
+        }
+
+        if ($website->template_id) {
+            $templateService = app(\App\Services\TemplateService::class);
+            $template = $templateService->find($website->template_id);
+            
+            if ($template) {
+                $customization = $template['customization'] ?? [];
+                
+                $page = (object)[
+                    'id' => null,
+                    'title' => 'Orden #' . $order->order_number,
+                    'slug' => 'order-' . $order->order_number,
+                    'meta_description' => 'Detalle de tu compra',
+                    'html_content' => view('checkout.order-content', compact('website', 'order'))->render(),
+                    'css_content' => null,
+                    'enable_store' => true,
+                ];
+                
+                $templateFile = $template['templates']['page'] ?? 'template';
+                $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
+                
+                $templateConfig = \App\Models\TemplateConfiguration::firstOrCreate(
+                    [
+                        'website_id' => $website->id,
+                        'template_slug' => $template['slug']
+                    ],
+                    [
+                        'configuration' => \App\Models\TemplateConfiguration::getDefaultConfiguration($template['slug']),
+                        'customization' => [],
+                        'settings' => [],
+                        'is_active' => true
+                    ]
+                );
+                
+                return view($viewPath, [
+                    'website' => $website,
+                    'page' => $page,
+                    'pages' => $website->pages()->where('is_published', true)->get(),
+                    'customization' => $customization,
+                    'templateConfig' => $templateConfig
+                ]);
             }
         }
 
@@ -354,21 +403,274 @@ class CheckoutController extends Controller
 
         // Verificar autenticación
         if (!Session::has('customer_logged_in') || !Session::get('customer_logged_in')) {
-            return redirect()->route('customer.login', ['website' => $websiteSlug])
+            // Redirigir a la página de inicio del sitio web
+            return redirect()->route('website.show', $websiteSlug)
                 ->with('error', 'Debes iniciar sesión para ver tus órdenes');
         }
 
         $customerAdminNegociosId = Session::get('customer_admin_negocios_id');
 
-        $orders = Order::where('website_id', $website->id)
-            ->whereHas('customer', function($query) use ($customerAdminNegociosId) {
-                $query->where('admin_negocios_id', $customerAdminNegociosId);
-            })
-            ->with(['customer', 'items'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $orders = $this->fetchExternalOrders($request, $website, $customerAdminNegociosId);
 
+        if (!$orders) {
+            $orders = Order::where('website_id', $website->id)
+                ->whereHas('customer', function($query) use ($customerAdminNegociosId) {
+                    $query->where('admin_negocios_id', $customerAdminNegociosId);
+                })
+                ->with(['customer', 'items'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        }
+
+        // Usar la plantilla del sitio web para consistencia visual
+        if ($website->template_id) {
+            $templateService = app(\App\Services\TemplateService::class);
+            $template = $templateService->find($website->template_id);
+            
+            if ($template) {
+                $customization = $template['customization'] ?? [];
+                
+                // Crear una página virtual para "Mis Órdenes"
+                $page = (object)[
+                    'id' => null,
+                    'title' => 'Mis Órdenes',
+                    'slug' => 'my-orders',
+                    'meta_description' => 'Revisa el estado y detalles de tus compras',
+                    'html_content' => view('checkout.my-orders-content', compact('website', 'orders'))->render(),
+                    'css_content' => null,
+                    'enable_store' => true, // Mostrar carrito
+                ];
+                
+                $templateFile = $template['templates']['page'] ?? 'template';
+                $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
+                
+                $templateConfig = \App\Models\TemplateConfiguration::firstOrCreate(
+                    [
+                        'website_id' => $website->id,
+                        'template_slug' => $template['slug']
+                    ],
+                    [
+                        'configuration' => \App\Models\TemplateConfiguration::getDefaultConfiguration($template['slug']),
+                        'customization' => [],
+                        'settings' => [],
+                        'is_active' => true
+                    ]
+                );
+                
+                return view($viewPath, [
+                    'website' => $website,
+                    'page' => $page,
+                    'pages' => $website->pages()->where('is_published', true)->get(),
+                    'customization' => $customization,
+                    'templateConfig' => $templateConfig
+                ]);
+            }
+        }
+        
+        // Fallback al layout genérico si no tiene plantilla
         return view('checkout.my-orders', compact('website', 'orders'));
+    }
+
+    /**
+     * Obtener órdenes desde AdminNegocios para el cliente autenticado
+     */
+    protected function fetchExternalOrders(Request $request, Website $website, ?int $customerAdminNegociosId): ?LengthAwarePaginator
+    {
+        if (!$website->api_base_url || !$website->api_key || !$customerAdminNegociosId) {
+            return null;
+        }
+
+        $token = Session::get('customer_token');
+        $appKey = config('services.admin_negocios.app_key');
+        $apiUrl = rtrim($website->api_base_url, '/') . '/segundos/pedidos';
+
+        try {
+            $response = Http::timeout(15)
+                ->withHeaders([
+                    'Authorization' => $token ? 'Bearer ' . $token : '',
+                    'X-API-Key' => $website->api_key,
+                    'X-App-Key' => $appKey,
+                    'Accept' => 'application/json',
+                ])
+                ->get($apiUrl, [
+                    'user_id' => $customerAdminNegociosId,
+                    'page' => $request->input('page', 1),
+                ]);
+
+            if (!$response->successful()) {
+                Log::warning('No se pudieron obtener órdenes externas', [
+                    'status' => $response->status(),
+                    'body' => $response->json(),
+                ]);
+
+                return null;
+            }
+
+            $payload = $response->json();
+            $ordersData = collect($payload['data'] ?? [])->map(function ($order) {
+                return $this->transformExternalOrder($order);
+            });
+
+            return new LengthAwarePaginator(
+                $ordersData,
+                $payload['total'] ?? $ordersData->count(),
+                $payload['per_page'] ?? 10,
+                $payload['current_page'] ?? 1,
+                [
+                    'path' => $request->url(),
+                    'query' => $request->query(),
+                ]
+            );
+        } catch (\Exception $e) {
+            Log::error('Error consumiendo órdenes externas', [
+                'error' => $e->getMessage(),
+                'website_id' => $website->id,
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Obtener los detalles de una orden remota
+     */
+    protected function fetchExternalOrder(Website $website, $orderNumber): ?object
+    {
+        if (!$website->api_base_url || !$website->api_key) {
+            return null;
+        }
+
+        $token = Session::get('customer_token');
+        $appKey = config('services.admin_negocios.app_key');
+        $apiUrl = rtrim($website->api_base_url, '/') . '/segundos/pedidos/' . $orderNumber;
+
+        try {
+            $response = Http::timeout(15)
+                ->withHeaders([
+                    'Authorization' => $token ? 'Bearer ' . $token : '',
+                    'X-API-Key' => $website->api_key,
+                    'X-App-Key' => $appKey,
+                    'Accept' => 'application/json',
+                ])
+                ->get($apiUrl);
+
+            if (!$response->successful()) {
+                Log::warning('No se pudo obtener la orden externa', [
+                    'status' => $response->status(),
+                    'order_number' => $orderNumber,
+                ]);
+
+                return null;
+            }
+
+            $payload = $response->json();
+            $data = $payload['data'] ?? $payload;
+
+            return $this->transformExternalOrder($data);
+        } catch (\Exception $e) {
+            Log::error('Error consumiendo orden externa', [
+                'error' => $e->getMessage(),
+                'order_number' => $orderNumber,
+                'website_id' => $website->id,
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Unificar la estructura de pedidos externos con la esperada por las vistas
+     */
+    protected function transformExternalOrder(array $order): object
+    {
+        $createdAt = $order['created_at'] ?? $order['fecha_solicitud'] ?? now()->toDateTimeString();
+        $products = collect($order['productos'] ?? []);
+        $subtotal = $products->sum(function ($item) {
+            $price = $item['precio'] ?? 0;
+            $quantity = $item['cantidad'] ?? 1;
+            return $price * $quantity;
+        });
+
+        $shipping = $order['delivery_fee'] ?? 0;
+        $total = $order['total'] ?? ($subtotal + $shipping);
+
+        $items = $products->map(function ($item) {
+            $rawName = $item['producto']
+                ?? ($item['product']['producto'] ?? null)
+                ?? ($item['product']['name'] ?? null)
+                ?? ($item['product_name'] ?? null)
+                ?? 'Producto';
+
+            if (is_array($rawName)) {
+                $rawName = $rawName['producto']
+                    ?? $rawName['name']
+                    ?? (is_array($rawName['product'] ?? null) ? ($rawName['product']['name'] ?? 'Producto') : 'Producto');
+            }
+
+            return (object)[
+                'product_name' => is_string($rawName) ? $rawName : 'Producto',
+                'quantity' => $item['cantidad'] ?? 1,
+                'price' => $item['precio'] ?? 0,
+                'total' => ($item['precio'] ?? 0) * ($item['cantidad'] ?? 1),
+            ];
+        });
+
+        $customer = $order['user'] ?? [];
+        $customerName = trim(($customer['firstName'] ?? '') . ' ' . ($customer['lastName'] ?? ''));
+
+        return (object)[
+            'order_number' => $order['id'] ?? $order['order_number'] ?? 'N/A',
+            'status' => $this->mapExternalOrderStatus($order['estado'] ?? null),
+            'payment_status' => $this->mapExternalPaymentStatus($order['estado'] ?? null),
+            'payment_method' => $order['medio_pago'] ?? 'online',
+            'created_at' => Carbon::parse($createdAt),
+            'items' => $items,
+            'subtotal' => $subtotal,
+            'tax_amount' => $order['tax'] ?? 0,
+            'shipping_amount' => $shipping,
+            'total' => $total,
+            'currency' => $order['currency'] ?? 'COP',
+            'notes' => $order['observaciones'] ?? null,
+            'customer' => (object)[
+                'name' => $customerName ?: ($customer['email'] ?? 'Cliente'),
+                'email' => $customer['email'] ?? 'N/A',
+                'phone' => $customer['phone'] ?? null,
+                'admin_negocios_id' => $customer['id'] ?? null,
+            ],
+            'shipping_address' => [
+                'address' => $order['direccion'] ?? ($order['shipping_address']['address'] ?? ''),
+                'city' => $order['ciudad'] ?? '',
+                'state' => $order['barrio'] ?? '',
+                'country' => $order['pais'] ?? 'Colombia',
+            ],
+            'billing_address' => [
+                'address' => $order['billing_address']['address'] ?? ($order['direccion'] ?? ''),
+                'city' => $order['billing_address']['city'] ?? ($order['ciudad'] ?? ''),
+                'state' => $order['billing_address']['state'] ?? ($order['barrio'] ?? ''),
+                'country' => $order['billing_address']['country'] ?? 'Colombia',
+            ],
+        ];
+    }
+
+    protected function mapExternalOrderStatus(?string $status): string
+    {
+        return match ($status) {
+            'solicitado' => 'pending',
+            'aceptado', 'listo' => 'processing',
+            'asignado', 'en_camino' => 'shipped',
+            'entregado' => 'delivered',
+            'cancelado' => 'cancelled',
+            default => 'pending',
+        };
+    }
+
+    protected function mapExternalPaymentStatus(?string $status): string
+    {
+        return match ($status) {
+            'entregado' => 'paid',
+            'cancelado' => 'refunded',
+            default => 'pending',
+        };
     }
 }
 

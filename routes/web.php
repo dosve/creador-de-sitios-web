@@ -28,15 +28,15 @@ use App\Http\Controllers\Admin\PageController as AdminPageController;
 Route::get('/', [App\Http\Controllers\WebsiteController::class, 'showRoot'])->name('website.root');
 
 // Ruta para servir CSS de plantillas
-Route::get('/template-css/{template}', function($template) {
+Route::get('/template-css/{template}', function ($template) {
     $cssPath = resource_path("views/templates/{$template}/styles.css");
-    
+
     if (!file_exists($cssPath)) {
         abort(404);
     }
-    
+
     $cssContent = file_get_contents($cssPath);
-    
+
     return response($cssContent)
         ->header('Content-Type', 'text/css')
         ->header('Cache-Control', 'public, max-age=3600');
@@ -46,7 +46,7 @@ Route::get('/template-css/{template}', function($template) {
 Route::get('/bienvenida', [App\Http\Controllers\WelcomeController::class, 'index'])->name('welcome');
 
 // Ruta temporal para test
-Route::get('/test-pages', function() {
+Route::get('/test-pages', function () {
     $website = \App\Models\Website::first();
     $pages = $website ? $website->pages()->latest()->get() : collect();
     return view('creator.pages.test', compact('website', 'pages'));
@@ -105,7 +105,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/websites/{website}/pages/{page}/editor', [AdminPageController::class, 'editor'])->name('pages.editor');
     Route::post('/websites/{website}/pages/{page}/save-editor', [AdminPageController::class, 'saveEditor'])->name('pages.save-editor');
     Route::get('/websites/{website}/pages/{page}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
-    
+
     // Importación de contenido
     Route::get('/websites/{website}/import/pages/{templateSlug}', [ContentImportController::class, 'showImportPages'])->name('websites.import.pages');
     Route::post('/websites/{website}/import/pages/{templateSlug}', [ContentImportController::class, 'importPages'])->name('websites.import.pages');
@@ -254,7 +254,7 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('pages/{page}/editor', [PageController::class, 'editor'])->name('pages.editor');
         Route::post('pages/{page}/save', [PageController::class, 'saveContent'])->name('pages.save');
         Route::post('pages/{page}/set-home', [App\Http\Controllers\Creator\PageController::class, 'setHome'])->name('pages.set-home');
-        
+
         // Importación de páginas prediseñadas
         Route::get('pages/import/{website}', [App\Http\Controllers\Creator\PageController::class, 'showImport'])->name('pages.import');
         Route::post('pages/import/{website}', [App\Http\Controllers\Creator\PageController::class, 'importPages'])->name('pages.import');
@@ -265,17 +265,17 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('pages/import-category/{website}/{category}', [App\Http\Controllers\UniversalPageImportController::class, 'showPagesForCategory'])->name('pages.import.category');
         Route::get('pages/import-template/{website}/{template}', [App\Http\Controllers\UniversalPageImportController::class, 'showTemplatePages'])->name('pages.import.template');
         Route::post('pages/import-store/{website}', [App\Http\Controllers\UniversalPageImportController::class, 'importPages'])->name('pages.import.store');
-        
+
         // Vista previa de páginas
         Route::get('pages/preview/{website}/{pageSlug}', [App\Http\Controllers\UniversalPageImportController::class, 'previewPage'])->name('pages.preview');
         Route::get('pages/preview/{website}/{pageSlug}/{templateSlug}', [App\Http\Controllers\UniversalPageImportController::class, 'previewPage'])->name('pages.preview.template');
-        
+
         // Vista previa del navegador de páginas
         Route::get('pages/navigator-preview/{pageSlug}', [App\Http\Controllers\PageNavigatorPreviewController::class, 'show'])->name('pages.navigator-preview');
-        
+
         // Vista previa limpia (sin plantilla de administrador)
         Route::get('pages/preview/{pageSlug}', [App\Http\Controllers\PagePreviewController::class, 'show'])->name('pages.preview.clean');
-            
+
         // Rutas AJAX para importación universal
         Route::get('api/pages/recommended/{category}', [App\Http\Controllers\UniversalPageImportController::class, 'getRecommendedPages'])->name('api.pages.recommended');
         Route::get('api/pages/templates/{category}', [App\Http\Controllers\UniversalPageImportController::class, 'getTemplatesForCategory'])->name('api.pages.templates');
@@ -470,14 +470,26 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/logout', [App\Http\Controllers\CustomerAuthController::class, 'logout'])->name('logout');
     Route::get('/check', [App\Http\Controllers\CustomerAuthController::class, 'check'])->name('check');
     Route::get('/me', [App\Http\Controllers\CustomerAuthController::class, 'me'])->name('me');
+    Route::get('/addresses', [App\Http\Controllers\CustomerProfileController::class, 'apiAddresses'])->name('addresses.index');
+    Route::post('/addresses', [App\Http\Controllers\CustomerProfileController::class, 'apiStoreAddress'])->name('addresses.store');
 });
 
-// Rutas de checkout público
-Route::prefix('{website:slug}')->name('checkout.')->group(function () {
-    Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'index'])->name('index');
-    Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processCheckout'])->name('process');
-    Route::get('/order/{orderNumber}', [App\Http\Controllers\CheckoutController::class, 'showOrder'])->name('order.show');
-    Route::get('/my-orders', [App\Http\Controllers\CheckoutController::class, 'myOrders'])->name('my-orders');
+// Rutas de checkout y perfil de cliente público
+Route::prefix('{website:slug}')->name('customer.')->group(function () {
+    // Checkout
+    Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processCheckout'])->name('checkout.process');
+    Route::get('/order/{orderNumber}', [App\Http\Controllers\CheckoutController::class, 'showOrder'])->name('order.show')->middleware('prevent.back');
+
+    // Perfil de cliente (requieren autenticación)
+    Route::get('/my-orders', [App\Http\Controllers\CheckoutController::class, 'myOrders'])->name('my-orders')->middleware('prevent.back');
+    Route::get('/profile', [App\Http\Controllers\CustomerProfileController::class, 'index'])->name('profile')->middleware('prevent.back');
+    Route::put('/profile', [App\Http\Controllers\CustomerProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [App\Http\Controllers\CustomerProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::get('/addresses', [App\Http\Controllers\CustomerProfileController::class, 'addresses'])->name('addresses')->middleware('prevent.back');
+    Route::post('/addresses', [App\Http\Controllers\CustomerProfileController::class, 'storeAddress'])->name('addresses.store');
+    Route::put('/addresses/{id}', [App\Http\Controllers\CustomerProfileController::class, 'updateAddress'])->name('addresses.update');
+    Route::delete('/addresses/{id}', [App\Http\Controllers\CustomerProfileController::class, 'deleteAddress'])->name('addresses.delete');
 });
 
 // Redirección después del login

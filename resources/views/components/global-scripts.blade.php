@@ -70,7 +70,7 @@
     :templateSlug="$templateSlug"
     :colors="$colors"
 />
-<x-cart-script 
+<x-cart.script 
     :epaycoPublicKey="$website->epayco_public_key" 
     :epaycoPrivateKey="$website->epayco_private_key" 
     :epaycoCustomerId="$website->epayco_customer_id"
@@ -79,4 +79,4 @@
 />
 
 <!-- Script de autenticación de usuario -->
-<x-user-auth-script :website="$website" />
+<x-auth.user-auth-script :website="$website" />
