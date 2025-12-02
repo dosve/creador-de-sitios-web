@@ -102,12 +102,12 @@
         'privateKey' => $website->epayco_private_key ?? '',
         'customerId' => $website->epayco_customer_id ?? ''
     ])
-    @include('components.cart.script', [
-        'templateSlug' => 'tienda-virtual',
-        'colors' => $customization['colors'] ?? [],
-        'paymentHandler' => 'epayco',
-        'websiteSlug' => $website->slug
-    ])
+    <x-cart.script 
+        :templateSlug="'tienda-virtual'"
+        :colors="$customization['colors'] ?? []"
+        :paymentHandler="'epayco'"
+        :websiteSlug="$website->slug"
+    />
   @endif
 </body>
 </html>
