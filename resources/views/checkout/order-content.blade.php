@@ -73,12 +73,12 @@
                             <div class="flex items-start space-x-4 pb-4 @if(!$loop->last) border-b border-gray-200 @endif">
                                 {{-- Imagen del producto --}}
                                 <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                    @if($item->product_image)
+                                    @if(isset($item->product_image) && $item->product_image)
                                         <img src="{{ $item->product_image }}" 
                                              alt="{{ $item->product_name }}"
                                              class="w-full h-full object-cover"
                                              onerror="this.parentElement.innerHTML='<svg class=\'w-10 h-10 text-gray-400\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4\'></path></svg>'">
-                                    @elseif($item->product && $item->product->featured_image)
+                                    @elseif(isset($item->product) && $item->product && isset($item->product->featured_image) && $item->product->featured_image)
                                         @php
                                             $imageUrl = $item->product->featured_image;
                                             // Si no es una URL completa, usar Storage::url

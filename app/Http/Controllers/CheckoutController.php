@@ -658,11 +658,20 @@ class CheckoutController extends Controller
                     ?? (is_array($rawName['product'] ?? null) ? ($rawName['product']['name'] ?? 'Producto') : 'Producto');
             }
 
+            // Obtener la imagen del producto
+            $productImage = $item['product_image'] 
+                ?? $item['imagen']
+                ?? ($item['product']['imagen'] ?? null)
+                ?? ($item['product']['image'] ?? null)
+                ?? ($item['product']['featured_image'] ?? null)
+                ?? null;
+
             return (object)[
                 'product_name' => is_string($rawName) ? $rawName : 'Producto',
                 'quantity' => $item['cantidad'] ?? 1,
                 'price' => $item['precio'] ?? 0,
                 'total' => ($item['precio'] ?? 0) * ($item['cantidad'] ?? 1),
+                'product_image' => $productImage,
             ];
         });
 

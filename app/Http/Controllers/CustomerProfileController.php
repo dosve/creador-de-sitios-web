@@ -285,9 +285,17 @@ class CustomerProfileController extends Controller
             'postal_code' => 'nullable|string|max:20',
             'country' => 'required|string|max:100',
             'phone' => 'nullable|string|max:20',
+            'reference' => 'nullable|string|max:255',
         ]);
         
-        // TODO: Implementar guardado de dirección en AdminNegocios o localmente
+        $created = $this->createCustomerAddress($website, $request);
+
+        if (!$created) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo crear la dirección'
+            ], 500);
+        }
         
         return response()->json([
             'success' => true,
@@ -300,7 +308,34 @@ class CustomerProfileController extends Controller
      */
     public function updateAddress(Request $request, $websiteSlug, $id)
     {
-        // TODO: Implementar actualización de dirección
+        $website = Website::where('slug', $websiteSlug)->firstOrFail();
+        
+        if (!Session::has('customer_logged_in') || !Session::get('customer_logged_in')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No hay sesión activa'
+            ], 401);
+        }
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'required|string|max:500',
+            'city' => 'required|string|max:100',
+            'state' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:20',
+            'country' => 'required|string|max:100',
+            'phone' => 'nullable|string|max:20',
+            'reference' => 'nullable|string|max:255',
+        ]);
+        
+        $updated = $this->updateCustomerAddress($website, $id, $request);
+
+        if (!$updated) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo actualizar la dirección'
+            ], 500);
+        }
         
         return response()->json([
             'success' => true,
@@ -313,7 +348,23 @@ class CustomerProfileController extends Controller
      */
     public function deleteAddress($websiteSlug, $id)
     {
-        // TODO: Implementar eliminación de dirección
+        $website = Website::where('slug', $websiteSlug)->firstOrFail();
+        
+        if (!Session::has('customer_logged_in') || !Session::get('customer_logged_in')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No hay sesión activa'
+            ], 401);
+        }
+        
+        $deleted = $this->deleteCustomerAddress($website, $id);
+
+        if (!$deleted) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo eliminar la dirección'
+            ], 500);
+        }
         
         return response()->json([
             'success' => true,
@@ -537,6 +588,107 @@ class CustomerProfileController extends Controller
             ]);
 
             return collect();
+        }
+    }
+
+    /**
+     * Actualizar dirección del cliente en AdminNegocios
+     */
+    private function updateCustomerAddress(Website $website, $addressId, Request $request)
+    {
+        $token = Session::get('customer_token');
+        $customerAdminNegociosId = Session::get('customer_admin_negocios_id');
+        $appKey = config('services.admin_negocios.app_key');
+
+        if (!$website->api_base_url || !$token || !$customerAdminNegociosId) {
+            return null;
+        }
+
+        try {
+            $payload = [
+                'direccion' => $request->address,
+                'ciudad' => $request->city,
+                'barrio' => $request->state,
+                'postal_code' => $request->postal_code,
+                'pais' => $request->country,
+                'referencia' => $request->reference,
+                'phone' => $request->phone,
+                'alias' => $request->name,
+                'latitud' => $request->input('lat'),
+                'longitud' => $request->input('lng'),
+            ];
+
+            $response = Http::timeout(15)
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . $token,
+                    'X-API-Key' => $website->api_key,
+                    'X-App-Key' => $appKey,
+                    'Accept' => 'application/json',
+                ])
+                ->put(rtrim($website->api_base_url, '/') . '/segundos/direcciones/' . $addressId, $payload);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('No se pudo actualizar dirección externa', [
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Error actualizando dirección externa', [
+                'error' => $e->getMessage(),
+                'website_id' => $website->id,
+                'address_id' => $addressId,
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Eliminar dirección del cliente en AdminNegocios
+     */
+    private function deleteCustomerAddress(Website $website, $addressId)
+    {
+        $token = Session::get('customer_token');
+        $customerAdminNegociosId = Session::get('customer_admin_negocios_id');
+        $appKey = config('services.admin_negocios.app_key');
+
+        if (!$website->api_base_url || !$token || !$customerAdminNegociosId) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(15)
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . $token,
+                    'X-API-Key' => $website->api_key,
+                    'X-App-Key' => $appKey,
+                    'Accept' => 'application/json',
+                ])
+                ->delete(rtrim($website->api_base_url, '/') . '/segundos/direcciones/' . $addressId);
+
+            if ($response->successful()) {
+                return true;
+            }
+
+            Log::warning('No se pudo eliminar dirección externa', [
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Error eliminando dirección externa', [
+                'error' => $e->getMessage(),
+                'website_id' => $website->id,
+                'address_id' => $addressId,
+            ]);
+
+            return false;
         }
     }
 }
