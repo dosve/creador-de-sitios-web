@@ -66,14 +66,42 @@
                         <h4 class="text-sm font-medium text-gray-700 mb-3">Productos:</h4>
                         <div class="space-y-2">
                             @foreach($order->items as $item)
-                            <div class="flex justify-between items-center text-sm">
-                                <div class="flex-1">
-                                    <span class="text-gray-900">{{ $item->product_name }}</span>
-                                    <span class="text-gray-500 ml-2">x{{ $item->quantity }}</span>
+                            <div class="flex items-center space-x-3 text-sm">
+                                {{-- Imagen del producto en miniatura --}}
+                                <div class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                    @if($item->product_image)
+                                        <img src="{{ $item->product_image }}" 
+                                             alt="{{ $item->product_name }}"
+                                             class="w-full h-full object-cover"
+                                             onerror="this.parentElement.innerHTML='<svg class=\'w-6 h-6 text-gray-400\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4\'></path></svg>'">
+                                    @elseif($item->product && $item->product->featured_image)
+                                        @php
+                                            $imageUrl = $item->product->featured_image;
+                                            // Si no es una URL completa, usar Storage::url
+                                            if (!str_starts_with($imageUrl, 'http')) {
+                                                $imageUrl = Storage::url($imageUrl);
+                                            }
+                                        @endphp
+                                        <img src="{{ $imageUrl }}" 
+                                             alt="{{ $item->product_name }}"
+                                             class="w-full h-full object-cover"
+                                             onerror="this.parentElement.innerHTML='<svg class=\'w-6 h-6 text-gray-400\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4\'></path></svg>'">
+                                    @else
+                                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                        </svg>
+                                    @endif
                                 </div>
-                                <span class="text-gray-900 font-medium">
-                                    ${{ number_format($item->total, 0, ',', '.') }}
-                                </span>
+                                
+                                <div class="flex-1 flex justify-between items-center">
+                                    <div>
+                                        <span class="text-gray-900">{{ $item->product_name }}</span>
+                                        <span class="text-gray-500 ml-2">x{{ $item->quantity }}</span>
+                                    </div>
+                                    <span class="text-gray-900 font-medium">
+                                        ${{ number_format($item->total, 0, ',', '.') }}
+                                    </span>
+                                </div>
                             </div>
                             @endforeach
                         </div>

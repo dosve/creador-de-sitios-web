@@ -9,15 +9,9 @@ $finalUrl = $item->final_url;
 $isExternal = \Illuminate\Support\Str::startsWith($finalUrl ?? '', ['http://', 'https://', '//']);
 
 if (!$isExternal) {
-$finalUrl = ltrim($finalUrl ?? '', '/');
-
-if ($finalUrl === '') {
-$finalUrl = trim($website->slug, '/');
-} else {
-$finalUrl = trim($website->slug, '/') . '/' . $finalUrl;
-}
-
-$finalUrl = url($finalUrl);
+    // El método final_url ya retorna la URL correcta con el slug del website incluido
+    // Solo necesitamos convertirlo a URL completa si no es externo
+    $finalUrl = url($finalUrl);
 }
 @endphp
 <a href="{{ $finalUrl }}"

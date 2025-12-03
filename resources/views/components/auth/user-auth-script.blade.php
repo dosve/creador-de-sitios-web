@@ -168,10 +168,15 @@
                     <div id="login-error" class="hidden p-3 mb-4 text-sm text-red-700 border border-red-200 rounded-lg bg-red-50"></div>
                     
                     <button 
-                        type="submit" 
-                        class="w-full py-3 font-semibold text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
+                        type="submit"
+                        id="login-submit-btn"
+                        class="w-full py-3 font-semibold text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center"
                     >
-                        Iniciar Sesión
+                        <span id="login-btn-text">Iniciar Sesión</span>
+                        <svg id="login-spinner" class="hidden w-5 h-5 ml-2 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
                     </button>
                 </form>
                 
@@ -270,32 +275,64 @@
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
         const errorDiv = document.getElementById('login-error');
+        const submitBtn = document.getElementById('login-submit-btn');
+        const btnText = document.getElementById('login-btn-text');
+        const spinner = document.getElementById('login-spinner');
 
         // Ocultar errores previos
         if (errorDiv) {
             errorDiv.classList.add('hidden');
         }
+        
+        // Mostrar estado de carga
+        if (submitBtn) submitBtn.disabled = true;
+        if (btnText) btnText.textContent = 'Iniciando sesión...';
+        if (spinner) spinner.classList.remove('hidden');
 
         // Obtener token de reCAPTCHA
         let captchaToken = null;
+        console.log('🔐 Verificando reCAPTCHA:', {
+            grecaptchaDisponible: typeof grecaptcha !== 'undefined',
+            widgetId: window.loginRecaptchaWidget,
+            siteKey: RECAPTCHA_SITE_KEY
+        });
+        
         if (typeof grecaptcha !== 'undefined' && window.loginRecaptchaWidget !== undefined) {
             try {
                 captchaToken = grecaptcha.getResponse(window.loginRecaptchaWidget);
+                console.log('✅ Token de reCAPTCHA obtenido:', {
+                    tokenLength: captchaToken ? captchaToken.length : 0,
+                    tokenPreview: captchaToken ? captchaToken.substring(0, 20) + '...' : 'vacío'
+                });
 
                 if (!captchaToken) {
+                    console.error('❌ reCAPTCHA no completado');
                     if (errorDiv) {
                         errorDiv.textContent = 'Por favor, completa el CAPTCHA';
                         errorDiv.classList.remove('hidden');
                     }
+                    // Restaurar estado del botón
+                    if (submitBtn) submitBtn.disabled = false;
+                    if (btnText) btnText.textContent = 'Iniciar Sesión';
+                    if (spinner) spinner.classList.add('hidden');
                     return;
                 }
             } catch (e) {
-                console.warn('Error obteniendo respuesta de reCAPTCHA:', e);
+                console.error('❌ Error obteniendo respuesta de reCAPTCHA:', e);
                 // Continuar sin CAPTCHA en caso de error
             }
+        } else {
+            console.warn('⚠️ reCAPTCHA no disponible, continuando sin validación');
         }
 
         try {
+            console.log('📤 Enviando petición de login:', {
+                email: email,
+                website_slug: WEBSITE_SLUG,
+                hasCaptchaToken: !!captchaToken,
+                captchaTokenLength: captchaToken ? captchaToken.length : 0
+            });
+            
             const response = await fetch('/customer/login', {
                 method: 'POST',
                 headers: {
@@ -310,7 +347,13 @@
                 })
             });
 
+            console.log('📥 Respuesta del servidor:', {
+                status: response.status,
+                ok: response.ok
+            });
+
             const data = await response.json();
+            console.log('📋 Datos de respuesta:', data);
 
             if (data.success) {
                 // Login exitoso
@@ -332,6 +375,11 @@
                     errorDiv.textContent = data.message || 'Error al iniciar sesión';
                     errorDiv.classList.remove('hidden');
                 }
+                
+                // Restaurar estado del botón
+                if (submitBtn) submitBtn.disabled = false;
+                if (btnText) btnText.textContent = 'Iniciar Sesión';
+                if (spinner) spinner.classList.add('hidden');
 
                 // Resetear reCAPTCHA
                 if (typeof grecaptcha !== 'undefined' && window.loginRecaptchaWidget !== undefined) {
@@ -348,6 +396,11 @@
                 errorDiv.textContent = 'Error al procesar el login. Por favor, intenta nuevamente.';
                 errorDiv.classList.remove('hidden');
             }
+            
+            // Restaurar estado del botón
+            if (submitBtn) submitBtn.disabled = false;
+            if (btnText) btnText.textContent = 'Iniciar Sesión';
+            if (spinner) spinner.classList.add('hidden');
 
             // Resetear reCAPTCHA
             if (typeof grecaptcha !== 'undefined' && window.loginRecaptchaWidget !== undefined) {
@@ -1259,4 +1312,9 @@
             }
         }
     }
+    
+    // Exponer funciones globalmente para que puedan ser llamadas desde otros componentes
+    window.showLoginModal = showLoginModal;
+    window.showRegisterModal = showRegisterModal;
+    window.checkUserAuth = checkUserAuth;
 </script>

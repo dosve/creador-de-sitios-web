@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let isLoading = false;
     let hasMoreProducts = true;
     let allProducts = [];
+    let renderedProductsCount = 0; // Contador de productos ya renderizados
     
     // Configuración de estilos por plantilla
     const templateSlug = "{{ $templateSlug }}";
@@ -267,28 +268,41 @@ document.addEventListener("DOMContentLoaded", function() {
         // Si es append, solo renderizar los productos nuevos (los últimos agregados)
         let productsToRender = products;
         if (append) {
-            // Calcular cuántos productos nuevos hay
-            const existingProducts = container.querySelectorAll('.p-6').length;
-            const newProductsCount = products.length - existingProducts;
+            // Usar el contador de productos renderizados para saber cuántos nuevos hay
+            const newProductsCount = products.length - renderedProductsCount;
             if (newProductsCount > 0) {
-                productsToRender = products.slice(-newProductsCount);
-                console.log("📦 Renderizando solo", newProductsCount, "productos nuevos");
+                productsToRender = products.slice(renderedProductsCount);
+                console.log("📦 Renderizando solo", newProductsCount, "productos nuevos (desde índice", renderedProductsCount, ")");
             } else {
                 console.log("⚠️ No hay productos nuevos para renderizar");
                 return;
             }
+        } else {
+            // Si no es append, reiniciar el contador
+            renderedProductsCount = 0;
         }
         
         productsToRender.forEach(product => {
                     const title = product.producto || "Producto sin nombre";
                     const description = product.descripcion || "Sin descripción";
                     const price = product.precio || "0.00";
-                    const image = product.img || null;
+                    
+                    // Obtener imagen del nuevo sistema (múltiples imágenes)
+                    // Prioridad: imagenes[0] (nuevo sistema), luego img (compatibilidad con sistema antiguo)
+                    let image = null;
+                    if (product.imagenes && product.imagenes.length > 0) {
+                        // Nuevo sistema: usar la primera imagen (orden 0)
+                        image = product.imagenes[0].imagen;
+                    } else if (product.img) {
+                        // Sistema antiguo: compatibilidad con campo img
+                        image = product.img;
+                    }
+                    
                     const category = product.categoria ? product.categoria.categoria : null;
                     const iva = product.iva || "0";
                     
                     // Debug: ver qué URL de imagen está llegando desde la API
-                    console.log("🖼️ Imagen del producto:", title, "→", image);
+                    console.log("🖼️ Imagen del producto:", title, "→", image, "| Imagenes disponibles:", product.imagenes ? product.imagenes.length : 0);
             
             // HTML para la imagen
             let imageHtml = `
@@ -299,16 +313,17 @@ document.addEventListener("DOMContentLoaded", function() {
                 </div>
             `;
             
-            // Si hay imagen, construir la URL completa con el servidor
+            // Construir la URL de la imagen si existe
+            let imageUrl = "";
             if (image) {
                 // Construir la URL completa usando el servidor de la API (máxima calidad)
-                const imageUrl = `https://servidor.adminnegocios.com/storage/productos/${image}`;
+                imageUrl = `https://servidor.adminnegocios.com/storage/productos/${image}`;
                 
                 imageHtml = `
-                    <div class="relative h-56">
+                    <div class="relative aspect-square w-full bg-gray-50">
                         <img src="${imageUrl}" 
                              alt="${title}" 
-                             class="w-full h-full object-cover"
+                             class="w-full h-full object-contain p-2"
                              loading="lazy"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                         <div class="flex items-center justify-center w-full h-full bg-gray-200" style="display:none;">
@@ -329,7 +344,7 @@ document.addEventListener("DOMContentLoaded", function() {
             } else {
                 // Si no hay imagen, mostrar placeholder con corazón
                 imageHtml = `
-                    <div class="relative h-56">
+                    <div class="relative aspect-square w-full">
                         <div class="flex items-center justify-center w-full h-full bg-gray-200">
                             <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -388,7 +403,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             data-descripcion="${product.descripcion || ""}" 
                             data-existencia="${product.existencia || ""}" 
                             data-iva="${iva}"
-                            data-image="${image || ""}">
+                            data-image="${imageUrl || ""}">
                         Agregar al Carrito
                     </button>
                 `;
@@ -419,7 +434,9 @@ document.addEventListener("DOMContentLoaded", function() {
             container.innerHTML = productsHtml;
         }
         
-        console.log("✅ Productos reales renderizados correctamente");
+        // Actualizar el contador de productos renderizados
+        renderedProductsCount = products.length;
+        console.log("✅ Productos reales renderizados correctamente. Total renderizados:", renderedProductsCount);
         
         // Actualizar las tarjetas con los productos que ya están en el carrito
         updateAllProductCardsFromCart();
@@ -636,7 +653,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 document.querySelector(".products-list .grid");
                 
                 if (container) {
-                    renderRealProducts(container, allProducts, false);
+                    renderRealProducts(container, allProducts, true);
                 }
             }
             
@@ -866,6 +883,7 @@ document.addEventListener("DOMContentLoaded", function() {
             // Actualizar variables globales
             allProducts = products;
             currentPage = 1;
+            renderedProductsCount = 0; // Resetear el contador al hacer búsqueda
             hasMoreProducts = products.length >= 12; // Si hay menos de 12, no hay más páginas
             
             if (products.length > 0) {
@@ -940,7 +958,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const productsHtml = exampleProducts.map(product => `
             <div class="${currentStyles.card}">
-                <div class="relative h-56">
+                <div class="relative aspect-square w-full">
                     <div class="flex items-center justify-center w-full h-full bg-gray-200">
                         <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -949,8 +967,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     <button class="absolute top-3 right-3 w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-md">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                        </button>
+                        </svg>
+                    </button>
                 </div>
                 <div class="${currentStyles.cardContent || 'p-5'}">
                     <h3 class="${currentStyles.title}">${product.title}</h3>

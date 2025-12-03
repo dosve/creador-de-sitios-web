@@ -352,6 +352,7 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::post('media', [App\Http\Controllers\Creator\MediaFileController::class, 'store'])->name('media.store');
         Route::delete('media/{mediaFile}', [App\Http\Controllers\Creator\MediaFileController::class, 'destroy'])->name('media.destroy');
         Route::get('media/{mediaFile}/url', [App\Http\Controllers\Creator\MediaFileController::class, 'getFileUrl'])->name('media.url');
+        Route::get('media/api/list', [App\Http\Controllers\Creator\MediaFileController::class, 'apiList'])->name('media.api.list');
 
         // Rutas de SEO (usan sesión en lugar de parámetro website)
         Route::get('seo', [App\Http\Controllers\Creator\SeoController::class, 'index'])->name('seo.index');
@@ -423,6 +424,10 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('config/api', [App\Http\Controllers\Creator\ApiConfigController::class, 'show'])->name('config.api');
         Route::put('config/api', [App\Http\Controllers\Creator\ApiConfigController::class, 'update'])->name('config.api.update');
         Route::post('config/api/test', [App\Http\Controllers\Creator\ApiConfigController::class, 'test'])->name('config.api.test');
+        
+        // Rutas de configuración de métodos de pago (usan sesión)
+        Route::get('config/payment-methods', [App\Http\Controllers\Creator\PaymentMethodsConfigController::class, 'index'])->name('config.payment-methods');
+        Route::put('config/payment-methods', [App\Http\Controllers\Creator\PaymentMethodsConfigController::class, 'update'])->name('config.payment-methods.update');
 
         // API para obtener la página actual
         Route::post('api/current-page', [App\Http\Controllers\Creator\ApiController::class, 'getCurrentPage'])->name('api.current-page');
@@ -431,6 +436,8 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('store/products', [App\Http\Controllers\Creator\StoreController::class, 'products'])->name('store.products');
         Route::get('store/categories', [App\Http\Controllers\Creator\StoreController::class, 'categories'])->name('store.categories');
         Route::get('store/orders', [App\Http\Controllers\Creator\StoreController::class, 'orders'])->name('store.orders');
+        Route::get('store/orders/{orderId}', [App\Http\Controllers\Creator\StoreController::class, 'getOrderDetails'])->name('store.orders.details');
+        Route::post('store/orders/{orderId}/update-status', [App\Http\Controllers\Creator\StoreController::class, 'updateOrderStatus'])->name('store.orders.update-status');
 
         // Rutas de usuarios (usan sesión)
         Route::get('users', [App\Http\Controllers\Creator\UserController::class, 'index'])->name('users.index');
@@ -441,6 +448,10 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('integrations/admin-negocios', [App\Http\Controllers\Creator\IntegrationController::class, 'adminNegocios'])->name('integrations.admin-negocios');
         Route::post('integrations/admin-negocios', [App\Http\Controllers\Creator\IntegrationController::class, 'adminNegociosStore'])->name('integrations.admin-negocios.store');
         Route::post('integrations/admin-negocios/test-api', [App\Http\Controllers\Creator\IntegrationController::class, 'testApiConnection'])->name('integrations.admin-negocios.test-api');
+        
+        // Rutas de integración Wompi
+        Route::get('integrations/wompi', [App\Http\Controllers\Creator\WompiIntegrationController::class, 'index'])->name('integrations.wompi');
+        Route::post('integrations/wompi', [App\Http\Controllers\Creator\WompiIntegrationController::class, 'store'])->name('integrations.wompi.store');
 
         // Configuración de plantillas para creator (rutas simplificadas)
         Route::get('template-configuration', [App\Http\Controllers\Creator\TemplateConfigurationController::class, 'index'])->name('template-configuration.index');
@@ -476,6 +487,9 @@ Route::prefix('customer')->name('customer.')->group(function () {
 
 // Rutas de checkout y perfil de cliente público
 Route::prefix('{website:slug}')->name('customer.')->group(function () {
+    // API para verificar autenticación del cliente
+    Route::get('/api/check-auth', [App\Http\Controllers\CustomerAuthController::class, 'checkAuth'])->name('api.check-auth');
+    
     // Checkout
     Route::get('/checkout', [App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/process', [App\Http\Controllers\CheckoutController::class, 'processCheckout'])->name('checkout.process');
@@ -490,6 +504,23 @@ Route::prefix('{website:slug}')->name('customer.')->group(function () {
     Route::post('/addresses', [App\Http\Controllers\CustomerProfileController::class, 'storeAddress'])->name('addresses.store');
     Route::put('/addresses/{id}', [App\Http\Controllers\CustomerProfileController::class, 'updateAddress'])->name('addresses.update');
     Route::delete('/addresses/{id}', [App\Http\Controllers\CustomerProfileController::class, 'deleteAddress'])->name('addresses.delete');
+});
+
+// Rutas de webhooks y respuestas de pasarelas de pago (sin autenticación)
+Route::prefix('payment')->name('payment.')->group(function () {
+    // ePayco
+    Route::post('/epayco/webhook', [App\Http\Controllers\EpaycoWebhookController::class, 'handleWebhook'])->name('epayco.webhook');
+    Route::get('/epayco/response', [App\Http\Controllers\EpaycoWebhookController::class, 'paymentResponse'])->name('epayco.response');
+    Route::post('/epayco/confirmation', [App\Http\Controllers\EpaycoWebhookController::class, 'paymentConfirmation'])->name('epayco.confirmation');
+    
+    // Wompi
+    Route::post('/wompi/webhook', [App\Http\Controllers\WompiWebhookController::class, 'handleWebhook'])->name('wompi.webhook');
+    Route::get('/wompi/response', [App\Http\Controllers\WompiWebhookController::class, 'paymentResponse'])->name('wompi.response');
+    
+    // Página genérica de error de pago
+    Route::get('/error', function() {
+        return view('payment.error', ['message' => 'Hubo un problema con el pago. Por favor intenta nuevamente.']);
+    })->name('error');
 });
 
 // Redirección después del login

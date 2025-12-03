@@ -20,7 +20,7 @@
         <!-- Grid de productos clásico -->
         <section class="mt-10 pb-16">
             <div class="max-w-7xl mx-auto px-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     @for($i = 1; $i <= 8; $i++)
                         @include('creator.pages.templates.tienda-virtual.partials.product-card', ['index' => $i])
                     @endfor

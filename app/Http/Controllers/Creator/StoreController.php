@@ -166,7 +166,7 @@ class StoreController extends Controller
             ]);
         }
 
-        return view('creator.store.products', compact('products', 'externalProducts', 'useExternalApi', 'pagination'));
+        return view('creator.store.products', compact('products', 'externalProducts', 'useExternalApi', 'pagination', 'website'));
     }
 
     /**
@@ -230,7 +230,7 @@ class StoreController extends Controller
                 ->get();
         }
 
-        return view('creator.store.categories', compact('categories', 'externalCategories', 'useExternalApi', 'pagination'));
+        return view('creator.store.categories', compact('categories', 'externalCategories', 'useExternalApi', 'pagination', 'website'));
     }
 
     /**
@@ -291,7 +291,7 @@ class StoreController extends Controller
             } catch (\Exception $e) {
                 // Si falla la API externa, usar pedidos locales
                 $orders = $website->orders()
-                    ->with(['customer', 'items'])
+                    ->with(['customer', 'items.product'])
                     ->latest()
                     ->get();
             }
@@ -300,11 +300,82 @@ class StoreController extends Controller
         // Si no hay API externa o falló, usar pedidos locales
         if (!$useExternalApi) {
             $orders = $website->orders()
-                ->with(['customer', 'items'])
+                ->with(['customer', 'items.product'])
                 ->latest()
                 ->get();
+        } else {
+            // Si usa API externa pero no hay pedidos, también cargar los locales
+            if (empty($externalOrders)) {
+                $orders = $website->orders()
+                    ->with(['customer', 'items.product'])
+                    ->latest()
+                    ->get();
+            }
         }
 
-        return view('creator.store.orders', compact('orders', 'externalOrders', 'useExternalApi', 'pagination'));
+        return view('creator.store.orders', compact('orders', 'externalOrders', 'useExternalApi', 'pagination', 'website'));
+    }
+
+    public function getOrderDetails($orderId)
+    {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return response()->json(['error' => 'Sitio web no encontrado'], 404);
+        }
+        
+        $this->authorize('view', $website);
+
+        // Buscar la orden en la base de datos local
+        $order = $website->orders()
+            ->with(['customer', 'items.product'])
+            ->find($orderId);
+
+        if (!$order) {
+            return response()->json(['error' => 'Orden no encontrada'], 404);
+        }
+
+        // Renderizar la vista parcial con los detalles
+        $html = view('creator.store.partials.order-details', compact('order'))->render();
+        
+        return response()->json(['success' => true, 'html' => $html]);
+    }
+
+    public function updateOrderStatus(Request $request, $orderId)
+    {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return response()->json(['error' => 'Sitio web no encontrado'], 404);
+        }
+        
+        $this->authorize('view', $website);
+
+        $request->validate([
+            'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
+            'payment_status' => 'nullable|in:pending,paid,failed,refunded',
+        ]);
+
+        // Buscar la orden en la base de datos local
+        $order = $website->orders()->find($orderId);
+
+        if (!$order) {
+            return response()->json(['error' => 'Orden no encontrada'], 404);
+        }
+
+        // Actualizar el estado
+        $order->status = $request->status;
+        
+        if ($request->has('payment_status')) {
+            $order->payment_status = $request->payment_status;
+        }
+        
+        $order->save();
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Estado actualizado correctamente',
+            'order' => $order
+        ]);
     }
 }

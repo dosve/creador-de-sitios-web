@@ -54,7 +54,10 @@ class CustomerAuthController extends Controller
             Log::info('Intentando login de cliente', [
                 'email' => $request->email,
                 'api_url' => $apiUrl,
-                'website_id' => $website->id
+                'website_id' => $website->id,
+                'has_captcha_token' => !empty($request->captcha_token),
+                'captcha_token_length' => $request->captcha_token ? strlen($request->captcha_token) : 0,
+                'captcha_token_preview' => $request->captcha_token ? substr($request->captcha_token, 0, 20) . '...' : null
             ]);
 
             $response = Http::timeout(10)->post($apiUrl . '/login', [
@@ -65,9 +68,16 @@ class CustomerAuthController extends Controller
 
             $data = $response->json();
 
+            Log::info('Respuesta del servidor AdminNegocios', [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'data' => $data
+            ]);
+
             if (!$response->successful() || !isset($data['success']) || !$data['success']) {
                 Log::warning('Login fallido desde tienda', [
                     'email' => $request->email,
+                    'response_status' => $response->status(),
                     'response' => $data
                 ]);
 
@@ -298,5 +308,18 @@ class CustomerAuthController extends Controller
                 'message' => 'Error al procesar el registro. Por favor, intenta nuevamente.'
             ], 500);
         }
+    }
+    
+    /**
+     * Verificar si el usuario está autenticado
+     */
+    public function checkAuth(Request $request)
+    {
+        $isAuthenticated = Session::has('customer_logged_in') && Session::get('customer_logged_in');
+        
+        return response()->json([
+            'authenticated' => $isAuthenticated,
+            'user' => $isAuthenticated ? Session::get('customer_data') : null
+        ]);
     }
 }

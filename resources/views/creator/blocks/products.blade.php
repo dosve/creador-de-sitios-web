@@ -8,7 +8,7 @@
   , content: `<section class="py-16 bg-gray-50 products-list" data-products-source="api" data-dynamic-products="true">
     <div class="container px-4 mx-auto">
       <h2 class="mb-12 text-3xl font-bold text-center text-gray-900">Nuestros Productos</h2>
-      <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" id="products-container">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4" id="products-container">
         <!-- Los productos se cargarán dinámicamente aquí -->
         <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
           <div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
@@ -50,6 +50,21 @@
           <p class="mb-4 text-sm text-gray-600">Los productos reales se mostrarán en la vista previa</p>
           <div class="flex items-center justify-between">
             <span class="text-lg font-bold text-green-600">$199.99</span>
+                                        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                            Ver Producto
+                                        </button>
+          </div>
+        </div>
+        <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div class="flex items-center justify-center w-full h-48 mb-4 bg-gray-200 rounded-lg">
+            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <h3 class="mb-2 text-lg font-semibold text-gray-900">Producto de Ejemplo 4</h3>
+          <p class="mb-4 text-sm text-gray-600">Los productos reales se mostrarán en la vista previa</p>
+          <div class="flex items-center justify-between">
+            <span class="text-lg font-bold text-green-600">$249.99</span>
                                         <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
                                             Ver Producto
                                         </button>

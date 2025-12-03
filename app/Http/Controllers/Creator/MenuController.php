@@ -44,7 +44,7 @@ class MenuController extends Controller
 
         $menus = $website->menus()->with('items')->get();
 
-        return view('creator.menus.index', compact('menus'));
+        return view('creator.menus.index', compact('menus', 'website'));
     }
 
     /**
@@ -60,7 +60,7 @@ class MenuController extends Controller
         
         $this->authorize('update', $website);
 
-        return view('creator.menus.create');
+        return view('creator.menus.create', compact('website'));
     }
 
     /**
@@ -118,7 +118,7 @@ class MenuController extends Controller
 
         $pages = $website->pages()->where('is_published', true)->get();
 
-        return view('creator.menus.show', compact('menu', 'pages'));
+        return view('creator.menus.show', compact('menu', 'pages', 'website'));
     }
 
     /**
@@ -138,7 +138,7 @@ class MenuController extends Controller
             abort(403);
         }
 
-        return view('creator.menus.edit', compact('menu'));
+        return view('creator.menus.edit', compact('menu', 'website'));
     }
 
     /**

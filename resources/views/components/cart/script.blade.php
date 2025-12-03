@@ -2,7 +2,10 @@
     'templateSlug' => 'default',
     'colors' => [],
     'paymentHandler' => 'epayco',
-    'websiteSlug' => ''
+    'websiteSlug' => '',
+    'allowCashOnDelivery' => true,
+    'allowOnlinePayment' => true,
+    'cashOnDeliveryInstructions' => ''
 ])
 
 <script>
@@ -17,7 +20,10 @@
             text: "{{ $colors['text'] ?? '#111827' }}"
         },
         paymentHandler: "{{ $paymentHandler }}",
-        websiteSlug: "{{ $websiteSlug }}"
+        websiteSlug: "{{ $websiteSlug }}",
+        allowCashOnDelivery: {{ $allowCashOnDelivery ? 'true' : 'false' }},
+        allowOnlinePayment: {{ $allowOnlinePayment ? 'true' : 'false' }},
+        cashOnDeliveryInstructions: `{{ $cashOnDeliveryInstructions ?? '' }}`
     };
 
     const CartState = {
@@ -25,7 +31,8 @@
         checkoutData: JSON.parse(localStorage.getItem('cartCheckoutData') || '{}'),
         addresses: [],
         selectedAddressId: null,
-        isLoadingAddresses: false
+        isLoadingAddresses: false,
+        selectedPaymentMethod: null // 'cash_on_delivery' o 'online_payment'
     };
 
     if (CartState.checkoutData?.addressId) {
@@ -197,10 +204,14 @@
                         <span id="cart-total" class="text-2xl font-bold" style="color:${templateConfig.colors.primary}">$0</span>
                     </div>
                     <button id="checkout-btn"
-                            class="w-full py-3 text-white font-semibold rounded-lg disabled:bg-gray-300"
+                            class="w-full py-3 text-white font-semibold rounded-lg disabled:bg-gray-300 flex items-center justify-center"
                             style="background-color:${templateConfig.colors.primary}"
                             disabled>
-                        Proceder al Pago
+                        <span id="checkout-btn-text">Proceder al Pago</span>
+                        <svg id="checkout-btn-spinner" class="hidden w-5 h-5 ml-2 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -308,16 +319,20 @@
 
         const modal = document.createElement('div');
         modal.id = 'checkout-modal';
-        modal.className = 'fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50';
+        modal.className = 'fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 p-4';
         modal.innerHTML = `
-            <div class="relative w-full max-w-2xl p-6 bg-white rounded-lg shadow-xl">
-                <button id="close-checkout-modal" class="absolute text-gray-400 top-4 right-4 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-                <h2 class="mb-2 text-2xl font-bold text-gray-900">Datos para el envío</h2>
-                <p class="mb-4 text-sm text-gray-600">Selecciona una dirección de entrega o crea una nueva.</p>
+            <div class="relative w-full max-w-2xl bg-white rounded-lg shadow-xl flex flex-col max-h-[90vh]">
+                <div class="flex-shrink-0 p-6 pb-4 border-b">
+                    <button id="close-checkout-modal" class="absolute text-gray-400 top-4 right-4 hover:text-gray-600 z-10">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    <h2 class="mb-2 text-2xl font-bold text-gray-900">Datos para el envío</h2>
+                    <p class="text-sm text-gray-600">Selecciona una dirección de entrega o crea una nueva.</p>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto px-6 py-4">
 
                 <div id="address-section" class="space-y-3 mb-6">
                     <div id="address-loading" class="text-sm text-gray-500">Cargando direcciones...</div>
@@ -375,8 +390,12 @@
                     </div>
                     <div id="new-address-error" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-lg"></div>
                     <div class="flex justify-end">
-                        <button id="save-new-address" class="px-4 py-2 text-white rounded-lg" style="background-color:${templateConfig.colors.primary}">
-                            Guardar dirección
+                        <button id="save-new-address" class="px-4 py-2 text-white rounded-lg flex items-center justify-center" style="background-color:${templateConfig.colors.primary}">
+                            <span id="save-address-btn-text">Guardar dirección</span>
+                            <svg id="save-address-spinner" class="hidden w-5 h-5 ml-2 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -385,14 +404,76 @@
                     <label class="block text-sm font-medium text-gray-700">Notas o indicaciones</label>
                     <textarea id="checkout-notes" class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Ej. Torre 2, apto 401"></textarea>
                 </div>
-                <div class="mb-4 text-sm text-gray-700">
-                    <span class="font-semibold">Total a pagar:</span>
-                    <span id="checkout-modal-total" class="text-lg font-bold text-gray-900"></span>
+                
+                <!-- Selección de Método de Pago -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Método de pago</label>
+                    <div class="space-y-3">
+                        ${templateConfig.allowCashOnDelivery ? `
+                        <label class="relative flex items-start p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 payment-method-option" data-method="cash_on_delivery">
+                            <input type="radio" name="payment_method" value="cash_on_delivery" 
+                                   class="mt-1 h-4 w-4 text-green-600 focus:ring-green-500"
+                                   ${!templateConfig.allowOnlinePayment ? 'checked' : ''}>
+                            <div class="ml-3 flex-1">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                    <span class="block text-sm font-medium text-gray-900">Pago contra entrega</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1 ml-7">Paga en efectivo cuando recibas tu pedido</p>
+                                ${templateConfig.cashOnDeliveryInstructions ? `
+                                    <div class="ml-7 mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
+                                        ${templateConfig.cashOnDeliveryInstructions}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </label>
+                        ` : ''}
+                        
+                        ${templateConfig.allowOnlinePayment ? `
+                        <label class="relative flex items-start p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 payment-method-option" data-method="online_payment">
+                            <input type="radio" name="payment_method" value="online_payment" 
+                                   class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                   ${!templateConfig.allowCashOnDelivery ? 'checked' : ''}>
+                            <div class="ml-3 flex-1">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                    </svg>
+                                    <span class="block text-sm font-medium text-gray-900">Pago en línea</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1 ml-7">Tarjeta de crédito, débito, PSE y más</p>
+                                <div class="flex items-center ml-7 mt-2 space-x-2">
+                                    <span class="text-xs text-gray-500">Procesado por:</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                        ${templateConfig.paymentHandler === 'wompi' ? 'Wompi' : 'ePayco'}
+                                    </span>
+                                </div>
+                            </div>
+                        </label>
+                        ` : ''}
+                    </div>
+                    <div id="payment-method-error" class="hidden mt-2 text-sm text-red-600"></div>
                 </div>
-                <div id="checkout-modal-error" class="hidden mb-4 text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-lg"></div>
-                <div class="flex justify-end space-between">
-                    <button id="cancel-checkout-modal" class="mr-3 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">Cancelar</button>
-                    <button id="confirm-checkout-modal" class="px-4 py-2 text-white rounded-lg" style="background-color:${templateConfig.colors.primary}">Confirmar</button>
+                </div>
+                
+                <div class="flex-shrink-0 p-6 pt-4 border-t bg-gray-50">
+                    <div class="mb-4 text-sm text-gray-700">
+                        <span class="font-semibold">Total a pagar:</span>
+                        <span id="checkout-modal-total" class="text-lg font-bold text-gray-900"></span>
+                    </div>
+                    <div id="checkout-modal-error" class="hidden mb-4 text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-lg"></div>
+                    <div class="flex justify-end space-between">
+                        <button id="cancel-checkout-modal" class="mr-3 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">Cancelar</button>
+                        <button id="confirm-checkout-modal" class="px-4 py-2 text-white rounded-lg flex items-center justify-center" style="background-color:${templateConfig.colors.primary}">
+                            <span id="confirm-btn-text">Confirmar</span>
+                            <svg id="confirm-spinner" class="hidden w-5 h-5 ml-2 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -407,6 +488,62 @@
     }
 
     async function openCheckoutModal() {
+        // Obtener elementos del botón de checkout
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const checkoutBtnText = document.getElementById('checkout-btn-text');
+        const checkoutBtnSpinner = document.getElementById('checkout-btn-spinner');
+        
+        // Mostrar estado de carga
+        if (checkoutBtn) checkoutBtn.disabled = true;
+        if (checkoutBtnText) checkoutBtnText.textContent = 'Verificando...';
+        if (checkoutBtnSpinner) checkoutBtnSpinner.classList.remove('hidden');
+        
+        // VALIDACIÓN 1: Verificar si el usuario ha iniciado sesión
+        const isLoggedIn = await checkIfUserIsLoggedIn();
+        
+        if (!isLoggedIn) {
+            console.log('⚠️ Usuario no autenticado, mostrando modal de login');
+            
+            // Restaurar estado del botón
+            if (checkoutBtn) checkoutBtn.disabled = false;
+            if (checkoutBtnText) checkoutBtnText.textContent = 'Proceder al Pago';
+            if (checkoutBtnSpinner) checkoutBtnSpinner.classList.add('hidden');
+            
+            // Cerrar el carrito
+            closeSidebar();
+            // Mostrar el modal de login (si existe la función global)
+            if (typeof window.showLoginModal === 'function') {
+                window.showLoginModal();
+            } else {
+                alert('Por favor inicia sesión para continuar con tu compra');
+            }
+            return;
+        }
+        
+        console.log('✅ Usuario autenticado, continuando con checkout...');
+        
+        // Actualizar texto del botón
+        if (checkoutBtnText) checkoutBtnText.textContent = 'Cargando direcciones...';
+        
+        // VALIDACIÓN 2: Cargar direcciones y verificar si tiene alguna
+        await loadAddresses(true); // Forzar recarga
+        
+        if (CartState.addresses.length === 0) {
+            console.log('⚠️ Usuario no tiene direcciones, mostrando mensaje');
+            
+            // Restaurar estado del botón
+            if (checkoutBtn) checkoutBtn.disabled = false;
+            if (checkoutBtnText) checkoutBtnText.textContent = 'Proceder al Pago';
+            if (checkoutBtnSpinner) checkoutBtnSpinner.classList.add('hidden');
+            
+            // Mostrar modal pidiendo que configure una dirección
+            showAddressRequiredModal();
+            return;
+        }
+        
+        console.log('✅ Usuario tiene', CartState.addresses.length, 'dirección(es), abriendo modal de checkout');
+        
+        // Si todo está bien, abrir el modal de checkout normal
         ensureCheckoutModal();
         const totals = computeTotals();
         const modal = document.getElementById('checkout-modal');
@@ -419,17 +556,113 @@
 
         notesField.value = CartState.checkoutData.notes || '';
 
-        await loadAddresses();
         renderAddressSection();
 
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         document.body.style.overflow = 'hidden';
+        
+        // Restaurar estado del botón después de abrir el modal
+        if (checkoutBtn) checkoutBtn.disabled = false;
+        if (checkoutBtnText) checkoutBtnText.textContent = 'Proceder al Pago';
+        if (checkoutBtnSpinner) checkoutBtnSpinner.classList.add('hidden');
+    }
+    
+    // Función para verificar si el usuario está logueado
+    async function checkIfUserIsLoggedIn() {
+        try {
+            // Obtener el slug del website desde la URL actual o de la configuración
+            const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
+            
+            console.log('🔍 Verificando autenticación para:', websiteSlug);
+            
+            const response = await fetch(`/${websiteSlug}/api/check-auth`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ Respuesta de autenticación:', data);
+                return data.authenticated === true;
+            }
+            
+            console.warn('⚠️ No se pudo verificar autenticación, status:', response.status);
+            return false;
+        } catch (error) {
+            console.error('❌ Error verificando autenticación:', error);
+            return false;
+        }
+    }
+    
+    // Función auxiliar para obtener el slug desde la URL
+    function getWebsiteSlugFromUrl() {
+        // La URL es algo como: /mashcol o /mashcol/productos
+        const pathParts = window.location.pathname.split('/').filter(p => p);
+        return pathParts[0] || '';
+    }
+    
+    // Función para mostrar modal cuando no tiene direcciones
+    function showAddressRequiredModal() {
+        // Crear modal personalizado para pedir configurar dirección
+        const existingModal = document.getElementById('address-required-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        const modal = document.createElement('div');
+        modal.id = 'address-required-modal';
+        modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+        modal.innerHTML = `
+            <div class="relative w-full max-w-md p-6 bg-white rounded-lg shadow-xl">
+                <div class="text-center mb-6">
+                    <div class="mx-auto mb-4 w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="mb-2 text-xl font-bold text-gray-900">Dirección de entrega requerida</h3>
+                    <p class="text-gray-600">Para continuar con tu compra, necesitas configurar al menos una dirección de entrega.</p>
+                </div>
+                <div class="flex flex-col space-y-3">
+                    <button id="go-to-addresses" class="w-full px-4 py-3 text-white rounded-lg font-semibold" style="background-color:${templateConfig.colors.primary}">
+                        Configurar dirección
+                    </button>
+                    <button id="close-address-required" class="w-full px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Event listeners
+        document.getElementById('go-to-addresses').addEventListener('click', () => {
+            const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
+            window.location.href = `/${websiteSlug}/addresses`;
+        });
+        
+        document.getElementById('close-address-required').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        // Cerrar al hacer clic fuera del modal
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
     }
 
     async function loadAddresses(force = false) {
-        if (!templateConfig.websiteSlug) {
-            console.warn('No se definió el slug del sitio para cargar direcciones.');
+        const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
+        
+        if (!websiteSlug) {
+            console.warn('No se pudo determinar el slug del sitio para cargar direcciones.');
             return;
         }
 
@@ -439,7 +672,8 @@
         renderAddressSection();
 
         try {
-            const response = await fetch(`/customer/addresses?website=${encodeURIComponent(templateConfig.websiteSlug)}`, {
+            console.log('📍 Cargando direcciones para website:', websiteSlug);
+            const response = await fetch(`/customer/addresses?website=${encodeURIComponent(websiteSlug)}`, {
                 headers: { 'Accept': 'application/json' }
             });
 
@@ -526,6 +760,9 @@
     }
 
     async function saveNewAddress() {
+        const saveBtn = document.getElementById('save-new-address');
+        const saveBtnText = document.getElementById('save-address-btn-text');
+        const saveSpinner = document.getElementById('save-address-spinner');
         const confirmBtn = document.getElementById('confirm-checkout-modal');
         const errorBox = document.getElementById('new-address-error');
         if (errorBox) errorBox.classList.add('hidden');
@@ -548,6 +785,10 @@
         }
 
         try {
+            // Mostrar estado de carga en el botón de guardar
+            if (saveBtn) saveBtn.disabled = true;
+            if (saveBtnText) saveBtnText.textContent = 'Guardando...';
+            if (saveSpinner) saveSpinner.classList.remove('hidden');
             if (confirmBtn) confirmBtn.disabled = true;
             const response = await fetch('/customer/addresses', {
                 method: 'POST',
@@ -575,6 +816,10 @@
             console.error('Error guardando dirección:', error);
             showNewAddressError(error.message);
         } finally {
+            // Restaurar estado de los botones
+            if (saveBtn) saveBtn.disabled = false;
+            if (saveBtnText) saveBtnText.textContent = 'Guardar dirección';
+            if (saveSpinner) saveSpinner.classList.add('hidden');
             if (confirmBtn) confirmBtn.disabled = CartState.addresses.length === 0;
         }
     }
@@ -589,8 +834,16 @@
     function confirmCheckoutData() {
         const notesField = document.getElementById('checkout-notes');
         const errorLabel = document.getElementById('checkout-modal-error');
+        const paymentMethodError = document.getElementById('payment-method-error');
+        const confirmBtn = document.getElementById('confirm-checkout-modal');
+        const btnText = document.getElementById('confirm-btn-text');
+        const spinner = document.getElementById('confirm-spinner');
 
         if (!notesField) return;
+
+        // Limpiar errores previos
+        if (errorLabel) errorLabel.classList.add('hidden');
+        if (paymentMethodError) paymentMethodError.classList.add('hidden');
 
         if (!CartState.selectedAddressId) {
             if (errorLabel) {
@@ -609,6 +862,27 @@
             return;
         }
 
+        // Validar selección de método de pago
+        const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked');
+        if (!selectedPaymentMethod) {
+            if (paymentMethodError) {
+                paymentMethodError.textContent = 'Por favor selecciona un método de pago';
+                paymentMethodError.classList.remove('hidden');
+            }
+            // Scroll hacia el error
+            paymentMethodError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        CartState.selectedPaymentMethod = selectedPaymentMethod.value;
+        console.log('💳 Método de pago seleccionado:', CartState.selectedPaymentMethod);
+
+        // Mostrar estado de carga
+        if (confirmBtn) confirmBtn.disabled = true;
+        if (btnText) btnText.textContent = 'Procesando pago...';
+        if (spinner) spinner.classList.remove('hidden');
+        if (errorLabel) errorLabel.classList.add('hidden');
+
         CartState.checkoutData = {
             addressId: selectedAddress.id,
             address: selectedAddress.address,
@@ -616,12 +890,24 @@
             state: selectedAddress.state,
             phone: selectedAddress.phone,
             name: selectedAddress.name,
-            notes: notesField.value.trim()
+            notes: notesField.value.trim(),
+            paymentMethod: CartState.selectedPaymentMethod
         };
 
         localStorage.setItem('cartCheckoutData', JSON.stringify(CartState.checkoutData));
-        toggleCheckoutModal(false);
-        proceedToPayment();
+        
+        // Pequeño delay para que se vea el loading
+        setTimeout(() => {
+            toggleCheckoutModal(false);
+            proceedToPayment();
+            
+            // Restaurar estado del botón (por si hay error y vuelve)
+            setTimeout(() => {
+                if (confirmBtn) confirmBtn.disabled = false;
+                if (btnText) btnText.textContent = 'Confirmar';
+                if (spinner) spinner.classList.add('hidden');
+            }, 1000);
+        }, 300);
     }
 
     function toggleCheckoutModal(show) {
@@ -644,15 +930,112 @@
             totals,
             customer: {
                 ...CartState.checkoutData
-            }
+            },
+            paymentMethod: CartState.selectedPaymentMethod
         };
 
-        const handler = window.PaymentHandlers?.[templateConfig.paymentHandler];
+        console.log('💰 Procesando pago con método:', CartState.selectedPaymentMethod);
 
-        if (handler && typeof handler.checkout === 'function') {
-            handler.checkout(payload);
-        } else {
-            alert('No hay pasarela de pago configurada.');
+        // Si es pago contra entrega, crear el pedido directamente
+        if (CartState.selectedPaymentMethod === 'cash_on_delivery') {
+            processCashOnDeliveryOrder(payload);
+        } 
+        // Si es pago en línea, usar la pasarela configurada
+        else if (CartState.selectedPaymentMethod === 'online_payment') {
+            const handler = window.PaymentHandlers?.[templateConfig.paymentHandler];
+
+            if (handler && typeof handler.checkout === 'function') {
+                handler.checkout(payload);
+            } else {
+                alert('No hay pasarela de pago configurada.');
+            }
+        }
+    }
+    
+    // Función para procesar pedidos con pago contra entrega
+    async function processCashOnDeliveryOrder(payload) {
+        console.log('📦 Creando pedido con pago contra entrega...');
+        console.log('📋 Datos del payload:', payload);
+        
+        try {
+            const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
+            
+            // Obtener datos del cliente autenticado
+            const authResponse = await fetch(`/${websiteSlug}/api/check-auth`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
+            
+            const authData = await authResponse.json();
+            console.log('👤 Datos del cliente autenticado:', authData);
+            
+            const customerData = {
+                name: authData.user?.name || payload.customer.name || 'Cliente',
+                email: authData.user?.email || 'cliente@tienda.com',
+                phone: payload.customer.phone || authData.user?.phone || ''
+            };
+            
+            console.log('📝 Datos del cliente a enviar:', customerData);
+            
+            const requestBody = {
+                website_slug: websiteSlug,
+                items: payload.cart.map(item => ({
+                    product_id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    iva: item.iva || 0
+                })),
+                customer: customerData,
+                shipping_address: {
+                    address: payload.customer.address,
+                    city: payload.customer.city,
+                    state: payload.customer.state,
+                    phone: payload.customer.phone,
+                    name: payload.customer.name
+                },
+                billing_address: {
+                    address: payload.customer.address,
+                    city: payload.customer.city,
+                    state: payload.customer.state,
+                    phone: payload.customer.phone,
+                    name: payload.customer.name
+                },
+                payment_method: 'cash_on_delivery',
+                notes: payload.customer.notes,
+                totals: payload.totals
+            };
+            
+            console.log('📤 Enviando pedido:', requestBody);
+            
+            const response = await fetch(`/${websiteSlug}/checkout/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                console.log('✅ Pedido creado exitosamente:', data.order);
+                
+                // Limpiar carrito
+                CartState.items = [];
+                persistCart();
+                localStorage.removeItem('cartCheckoutData');
+                
+                // Redirigir a página de confirmación
+                window.location.href = `/${websiteSlug}/order/${data.order.order_number}`;
+            } else {
+                alert(data.message || 'Error al procesar el pedido');
+            }
+        } catch (error) {
+            console.error('Error procesando pedido:', error);
+            alert('Error al procesar el pedido. Por favor intenta nuevamente.');
         }
     }
 
