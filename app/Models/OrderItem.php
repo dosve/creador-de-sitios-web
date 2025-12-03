@@ -14,6 +14,7 @@ class OrderItem extends Model
         'blog_post_id',
         'product_name',
         'product_sku',
+        'product_image',
         'quantity',
         'price',
         'total',

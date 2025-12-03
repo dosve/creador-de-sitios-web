@@ -183,16 +183,32 @@
                                 <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                     <h3 class="text-sm font-medium text-gray-900 mb-4">Imagen destacada</h3>
 
+                                    <!-- Image Preview -->
+                                    <div id="featured_image_preview" class="mb-3 hidden">
+                                        <div class="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                                            <img id="featured_image_preview_img" src="" alt="Vista previa" class="w-full h-full object-cover">
+                                        </div>
+                                        <button type="button" onclick="removeFeaturedImage()" class="mt-2 text-xs text-red-600 hover:text-red-800">
+                                            Eliminar imagen
+                                        </button>
+                                    </div>
+
                                     <input type="url"
                                         id="featured_image"
                                         name="featured_image"
                                         value="{{ old('featured_image') }}"
-                                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md @error('featured_image') border-red-300 @enderror"
+                                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md mb-2 @error('featured_image') border-red-300 @enderror"
                                         placeholder="https://ejemplo.com/imagen.jpg">
                                     @error('featured_image')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
-                                    <p class="mt-1 text-xs text-gray-500">URL de la imagen destacada</p>
+                                    
+                                    <button type="button" onclick="openMediaSelector(setFeaturedImage)" 
+                                            class="w-full mt-2 bg-blue-600 text-white text-sm py-2 px-4 rounded-md hover:bg-blue-700">
+                                        Seleccionar de la Biblioteca
+                                    </button>
+                                    
+                                    <p class="mt-2 text-xs text-gray-500">URL de la imagen destacada</p>
                                 </div>
                             </div>
                         </div>
@@ -211,6 +227,9 @@
                     </form>
                 </div>
             </div>
+
+<!-- Media Selector Component -->
+@include('components.media-selector')
 
 @push('scripts')
 <script>
@@ -247,7 +266,37 @@
     excerptTextarea.addEventListener('input', updateExcerptCounter);
     updateExcerptCounter();
 
-    // Inicializar CKEditor con manejo de errores mejorado
+    // Funciones para manejar la imagen destacada
+    function setFeaturedImage(url) {
+        document.getElementById('featured_image').value = url;
+        updateFeaturedImagePreview(url);
+    }
+
+    function updateFeaturedImagePreview(url) {
+        if (url) {
+            document.getElementById('featured_image_preview_img').src = url;
+            document.getElementById('featured_image_preview').classList.remove('hidden');
+        } else {
+            document.getElementById('featured_image_preview').classList.add('hidden');
+        }
+    }
+
+    function removeFeaturedImage() {
+        document.getElementById('featured_image').value = '';
+        document.getElementById('featured_image_preview').classList.add('hidden');
+    }
+
+    // Actualizar vista previa cuando se cambie el input manualmente
+    document.getElementById('featured_image').addEventListener('input', function() {
+        updateFeaturedImagePreview(this.value);
+    });
+
+    // Cargar vista previa si ya hay una URL
+    if (document.getElementById('featured_image').value) {
+        updateFeaturedImagePreview(document.getElementById('featured_image').value);
+    }
+
+    // Inicializar CKEditor con manejo de errores mejorado y botón para insertar imágenes
     let editorInstance = null;
     
     ClassicEditor
@@ -258,6 +307,7 @@
                 'bulletedList', 'numberedList', '|',
                 'outdent', 'indent', '|',
                 'blockQuote', 'insertTable', '|',
+                'insertImage', '|',
                 'undo', 'redo'
             ],
             language: 'es',
@@ -272,6 +322,22 @@
         .then(editor => {
             editorInstance = editor;
             console.log('CKEditor inicializado correctamente');
+            
+            // Personalizar el botón de insertar imagen
+            editor.ui.view.toolbar.items.forEach(item => {
+                if (item.label === 'Insertar imagen' || item.label === 'Insert image') {
+                    item.on('execute', () => {
+                        openMediaSelector(function(url) {
+                            editor.model.change(writer => {
+                                const imageElement = writer.createElement('imageBlock', {
+                                    src: url
+                                });
+                                editor.model.insertContent(imageElement, editor.model.document.selection);
+                            });
+                        });
+                    });
+                }
+            });
             
             // Asegurar que el contenido se sincronice antes del envío
             const form = document.querySelector('form');

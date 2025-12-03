@@ -25,9 +25,10 @@
                     <!-- File Preview -->
                     <div class="aspect-square bg-gray-100 rounded-lg mb-3 overflow-hidden">
                         @if(str_starts_with($file->mime_type, 'image/'))
-                            <img src="{{ Storage::disk('public')->url($file->file_path) }}" 
+                            <img src="{{ $file->file_url ?? asset('storage/' . $file->file_path) }}" 
                                  alt="{{ $file->alt_text }}" 
-                                 class="w-full h-full object-cover">
+                                 class="w-full h-full object-cover"
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><text x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22>❌</text></svg>';">
                         @else
                             <div class="w-full h-full flex items-center justify-center">
                                 <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,7 +46,7 @@
 
                     <!-- File Actions -->
                     <div class="flex space-x-1">
-                        <button onclick="copyUrl('{{ Storage::disk('public')->url($file->file_path) }}')" 
+                        <button onclick="copyUrl('{{ $file->file_url ?? asset('storage/' . $file->file_path) }}')" 
                                 class="flex-1 bg-gray-100 text-gray-700 text-center py-1 px-2 rounded text-xs hover:bg-gray-200">
                             URL
                         </button>
@@ -124,26 +125,48 @@
                 document.getElementById('uploadForm').addEventListener('submit', function(e) {
                     e.preventDefault();
                     
-                    const formData = new FormData(this);
+                    const formData = new FormData();
+                    const fileInput = document.getElementById('files');
+                    const files = fileInput.files;
+                    
+                    // Verificar que haya archivos seleccionados
+                    if (files.length === 0) {
+                        alert('Por favor selecciona al menos un archivo');
+                        return;
+                    }
+                    
+                    // Agregar cada archivo al FormData
+                    for (let i = 0; i < files.length; i++) {
+                        formData.append('files[]', files[i]);
+                    }
+                    
+                    // Agregar token CSRF
+                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
                     
                     fetch('{{ route("creator.media.store") }}', {
                         method: 'POST',
                         body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
+                        // NO incluir headers cuando usas FormData con archivos
+                        // El navegador establecerá el Content-Type correcto automáticamente
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw new Error(err.message || 'Error al subir archivos');
+                            });
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.success) {
                             location.reload();
                         } else {
-                            alert('Error al subir archivos');
+                            alert(data.message || 'Error al subir archivos');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Error al subir archivos');
+                        alert('Error al subir archivos: ' + error.message);
                     });
                 });
             </script>

@@ -26,7 +26,7 @@ class CategoryController extends Controller
         
         $categories = $website->categories()->latest()->get();
         
-        return view('creator.categories.index', compact('categories'));
+        return view('creator.categories.index', compact('categories', 'website'));
     }
 
     public function create(Request $request)
@@ -39,7 +39,7 @@ class CategoryController extends Controller
         
         $this->authorize('update', $website);
         
-        return view('creator.categories.create');
+        return view('creator.categories.create', compact('website'));
     }
 
     public function store(Request $request)

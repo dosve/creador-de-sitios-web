@@ -31,6 +31,6 @@ class UserController extends Controller
             ->latest()
             ->get();
         
-        return view('creator.users.index', compact('customers'));
+        return view('creator.users.index', compact('customers', 'website'));
     }
 }

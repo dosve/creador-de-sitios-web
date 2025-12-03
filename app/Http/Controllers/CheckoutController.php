@@ -47,6 +47,14 @@ class CheckoutController extends Controller
      */
     public function processCheckout(Request $request)
     {
+        Log::info('🛒 Iniciando proceso de checkout', [
+            'website_slug' => $request->website_slug,
+            'items_count' => count($request->items ?? []),
+            'payment_method' => $request->payment_method,
+            'customer_email' => $request->input('customer.email'),
+            'full_request' => $request->all()
+        ]);
+        
         $request->validate([
             'website_slug' => 'required|string',
             'items' => 'required|array|min:1',
@@ -113,8 +121,29 @@ class CheckoutController extends Controller
             foreach ($request->items as $item) {
                 $orderItem = new OrderItem();
                 $orderItem->order_id = $order->id;
-                $orderItem->product_id = $item['product_id'];
+                
+                // Intentar encontrar el producto local por su admin_negocios_product_id
+                $adminNegociosProductId = $item['product_id'] ?? $item['id'] ?? null;
+                $localProduct = null;
+                
+                if ($adminNegociosProductId) {
+                    $localProduct = \App\Models\BlogPost::where('website_id', $website->id)
+                        ->where('is_product', true)
+                        ->where(function($query) use ($adminNegociosProductId) {
+                            $query->whereJsonContains('meta_data->admin_negocios_id', (string)$adminNegociosProductId)
+                                  ->orWhereJsonContains('meta_data->admin_negocios_id', (int)$adminNegociosProductId);
+                        })
+                        ->first();
+                }
+                
+                $orderItem->blog_post_id = $localProduct ? $localProduct->id : null;
+                $orderItem->admin_negocios_product_id = $adminNegociosProductId;
                 $orderItem->product_name = $item['name'];
+                $orderItem->product_sku = $item['sku'] ?? null;
+                
+                // Guardar la imagen del producto (viene del carrito con la URL completa)
+                $orderItem->product_image = $item['image'] ?? null;
+                
                 $orderItem->quantity = $item['quantity'];
                 $orderItem->price = $item['price'];
                 $orderItem->total = $item['price'] * $item['quantity'];
@@ -168,18 +197,40 @@ class CheckoutController extends Controller
                 ]
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
 
-            Log::error('Error al procesar checkout', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+            Log::error('❌ Error de validación en checkout', [
+                'errors' => $e->errors(),
                 'website_slug' => $request->website_slug
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error al procesar la orden. Por favor, intenta nuevamente.'
+                'message' => 'Datos de checkout inválidos: ' . implode(', ', array_map(fn($errors) => implode(', ', $errors), $e->errors())),
+                'errors' => $e->errors()
+            ], 422);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('❌ Error al procesar checkout', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'website_slug' => $request->website_slug,
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la orden: ' . $e->getMessage(),
+                'debug' => config('app.debug') ? [
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                ] : null
             ], 500);
         }
     }
@@ -315,7 +366,7 @@ class CheckoutController extends Controller
 
         $order = Order::where('website_id', $website->id)
             ->where('order_number', $orderNumber)
-            ->with(['customer', 'items'])
+            ->with(['customer', 'items.product'])
             ->first();
 
         if (!$order) {
@@ -417,7 +468,7 @@ class CheckoutController extends Controller
                 ->whereHas('customer', function($query) use ($customerAdminNegociosId) {
                     $query->where('admin_negocios_id', $customerAdminNegociosId);
                 })
-                ->with(['customer', 'items'])
+                ->with(['customer', 'items.product'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
         }

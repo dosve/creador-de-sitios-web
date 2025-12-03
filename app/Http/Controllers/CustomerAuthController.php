@@ -74,70 +74,30 @@ class CustomerAuthController extends Controller
             Log::info('Intentando login de cliente', [
                 'email' => $request->email,
                 'api_url' => $apiUrl,
-                'website_id' => $website->id
+                'website_id' => $website->id,
+                'has_captcha_token' => !empty($request->captcha_token),
+                'captcha_token_length' => $request->captcha_token ? strlen($request->captcha_token) : 0,
+                'captcha_token_preview' => $request->captcha_token ? substr($request->captcha_token, 0, 20) . '...' : null
             ]);
 
-            // Construir URL correctamente (evitar duplicar /api)
-            $loginUrl = str_ends_with($apiUrl, '/api') ? $apiUrl . '/login' : $apiUrl . '/api/login';
-
-            Log::info('📡 Enviando petición a AdminNegocios', [
-                'url' => $loginUrl,
-                'email' => $request->email
-            ]);
-
-            Log::info('🚀 A punto de enviar POST', [
-                'method' => 'POST',
-                'url' => $loginUrl,
-                'payload' => [
-                    'email' => $request->email,
-                    'password' => '***',
-                    'has_captcha' => !empty($request->captcha_token)
-                ]
-            ]);
-
-            $response = Http::timeout(10)->post($loginUrl, [
+            $response = Http::timeout(10)->post($apiUrl . '/login', [
                 'email' => $request->email,
                 'password' => $request->password,
                 'captcha_token' => $request->captcha_token, // Enviar CAPTCHA token a AdminNegocios
             ]);
 
-            Log::info('📨 Respuesta recibida de AdminNegocios', [
+            $data = $response->json();
+
+            Log::info('Respuesta del servidor AdminNegocios', [
                 'status' => $response->status(),
                 'successful' => $response->successful(),
-                'body_preview' => substr($response->body(), 0, 200),
-                'headers' => $response->headers()
+                'data' => $data
             ]);
 
-            // Verificar si la respuesta es JSON válido
-            if (!$response->successful()) {
-                Log::warning('Login fallido - respuesta no exitosa', [
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
-
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error al conectar con el servidor de autenticación'
-                ], 500);
-            }
-
-            try {
-                $data = $response->json();
-            } catch (\Exception $e) {
-                Log::error('Error al parsear respuesta JSON del login', [
-                    'error' => $e->getMessage(),
-                    'response_body' => $response->body()
-                ]);
-
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error en el formato de respuesta del servidor'
-                ], 500);
-            }
-
-            if (!isset($data['success']) || !$data['success']) {
+            if (!$response->successful() || !isset($data['success']) || !$data['success']) {
                 Log::warning('Login fallido desde tienda', [
                     'email' => $request->email,
+                    'response_status' => $response->status(),
                     'response' => $data
                 ]);
 
@@ -383,5 +343,18 @@ class CustomerAuthController extends Controller
                 'message' => 'Error al procesar el registro. Por favor, intenta nuevamente.'
             ], 500);
         }
+    }
+
+    /**
+     * Verificar si el usuario está autenticado
+     */
+    public function checkAuth(Request $request)
+    {
+        $isAuthenticated = Session::has('customer_logged_in') && Session::get('customer_logged_in');
+
+        return response()->json([
+            'authenticated' => $isAuthenticated,
+            'user' => $isAuthenticated ? Session::get('customer_data') : null
+        ]);
     }
 }

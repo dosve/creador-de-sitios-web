@@ -175,7 +175,7 @@ class FormController extends Controller
             abort(403);
         }
 
-        return view('creator.forms.edit', compact('form'));
+        return view('creator.forms.edit', compact('form', 'website'));
     }
 
     /**
@@ -246,7 +246,7 @@ class FormController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return view('creator.forms.submissions', compact('form', 'submissions'));
+        return view('creator.forms.submissions', compact('form', 'submissions', 'website'));
     }
 
     /**
@@ -272,7 +272,7 @@ class FormController extends Controller
             $submission->markAsRead();
         }
 
-        return view('creator.forms.show-submission', compact('form', 'submission'));
+        return view('creator.forms.show-submission', compact('form', 'submission', 'website'));
     }
 
     /**

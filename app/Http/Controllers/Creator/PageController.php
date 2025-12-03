@@ -109,7 +109,7 @@ class PageController extends BaseController
         
         $this->authorize('update', $website);
 
-        return view('creator.pages.create');
+        return view('creator.pages.create', compact('website'));
     }
 
     public function store(Request $request)
@@ -151,7 +151,7 @@ class PageController extends BaseController
         
         $this->authorize('view', $website);
 
-        return view('creator.pages.show', compact('page'));
+        return view('creator.pages.show', compact('page', 'website'));
     }
 
     public function edit(Request $request, Page $page)
@@ -169,7 +169,7 @@ class PageController extends BaseController
             abort(403);
         }
 
-        return view('creator.pages.edit', compact('page'));
+        return view('creator.pages.edit', compact('page', 'website'));
     }
 
     public function update(Request $request, Page $page)
@@ -471,7 +471,7 @@ class PageController extends BaseController
     {
         $this->authorize('update', $page);
         
-        return view('creator.pages.editor', compact('page'));
+        return view('creator.pages.editor', compact('page', 'website'));
     }
     
     /**

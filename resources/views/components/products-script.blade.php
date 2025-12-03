@@ -2,11 +2,14 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        console.log("🎯 Vista previa de página cargada, buscando productos...");
+
         // Variables globales para el scroll infinito
         let currentPage = 1;
         let isLoading = false;
         let hasMoreProducts = true;
         let allProducts = [];
+        let renderedProductsCount = 0; // Contador de productos ya renderizados
 
         // Configuración de estilos por plantilla
         const templateSlug = "{{ $templateSlug }}";
@@ -17,6 +20,8 @@
             background: "{{ $colors['background'] ?? '#f9fafb' }}",
             text: "{{ $colors['text'] ?? '#111827' }}"
         };
+
+        console.log("🎨 Plantilla activa:", templateSlug, "Colores:", templateColors);
 
         // Función para obtener estilos según la plantilla activa
         function getTemplateStyles() {
@@ -73,6 +78,7 @@
 
         // Obtener estilos para la plantilla actual
         const currentStyles = getTemplateStyles();
+        console.log("✅ Estilos cargados para plantilla:", templateSlug);
 
         // Función para formatear precios al estilo colombiano (miles con punto, decimales con coma)
         function formatPrice(price) {
@@ -91,30 +97,51 @@
             return `${formattedInteger},${decimalPart}`;
         }
 
+        // Debug: Verificar variables del componente
+        console.log("🔧 DEBUG COMPONENTE PRODUCTOS:");
+        console.log("  - apiKey desde PHP:", "{{ addslashes($apiKey) }}" ? 'Configurada' : 'No configurada');
+        console.log("  - apiBaseUrl desde PHP:", "{{ addslashes($apiBaseUrl) }}" || 'No configurada');
+        console.log("  - window.websiteApiKey:", window.websiteApiKey ? 'Configurada' : 'No configurada');
+        console.log("  - window.websiteApiUrl:", window.websiteApiUrl || 'No configurada');
 
         // Función para cargar productos reales desde la API
         function loadRealProductsInPreview(page = 1, append = false) {
             if (isLoading) return;
 
             isLoading = true;
+            console.log("🚀 Iniciando carga de productos en vista previa de página... (Página " + page + ")");
+            console.log("🔧 Variables disponibles:", {
+                apiKey: window.websiteApiKey ? 'Configurada (' + window.websiteApiKey.length + ' caracteres)' : 'No configurada',
+                apiUrl: window.websiteApiUrl || 'No configurada'
+            });
 
             // Buscar contenedores de productos
             let productsContainers = document.querySelectorAll("#products-container");
+            console.log("📦 Contenedores por ID encontrados:", productsContainers.length);
 
+            // Si no encuentra por ID, buscar por atributo data
             if (productsContainers.length === 0) {
                 productsContainers = document.querySelectorAll("[data-dynamic-products=\"true\"] .grid");
+                console.log("📦 Contenedores por atributo data encontrados:", productsContainers.length);
             }
 
+            // Si aún no encuentra, buscar por clase
             if (productsContainers.length === 0) {
                 productsContainers = document.querySelectorAll(".products-list .grid");
+                console.log("📦 Contenedores por clase .products-list .grid:", productsContainers.length);
             }
 
             if (productsContainers.length === 0) {
+                console.log("❌ No se encontraron contenedores de productos");
                 isLoading = false;
                 return;
             }
 
+            console.log("✅ Encontrados", productsContainers.length, "contenedores de productos");
+
             productsContainers.forEach((container, index) => {
+                console.log(`🔄 Procesando contenedor ${index + 1}`);
+
                 // Solo mostrar loading en la primera carga
                 if (!append) {
                     container.innerHTML = `
@@ -247,38 +274,41 @@
             // Si es append, solo renderizar los productos nuevos (los últimos agregados)
             let productsToRender = products;
             if (append) {
-                // Calcular cuántos productos nuevos hay
-                const existingProducts = container.querySelectorAll('.p-6').length;
-                const newProductsCount = products.length - existingProducts;
+                // Usar el contador de productos renderizados para saber cuántos nuevos hay
+                const newProductsCount = products.length - renderedProductsCount;
                 if (newProductsCount > 0) {
-                    productsToRender = products.slice(-newProductsCount);
-                    console.log("📦 Renderizando solo", newProductsCount, "productos nuevos");
+                    productsToRender = products.slice(renderedProductsCount);
+                    console.log("📦 Renderizando solo", newProductsCount, "productos nuevos (desde índice", renderedProductsCount, ")");
                 } else {
                     console.log("⚠️ No hay productos nuevos para renderizar");
                     return;
                 }
+            } else {
+                // Si no es append, reiniciar el contador
+                renderedProductsCount = 0;
             }
 
             productsToRender.forEach(product => {
                 const title = product.producto || "Producto sin nombre";
                 const description = product.descripcion || "Sin descripción";
                 const price = product.precio || "0.00";
-                const category = product.categoria ? product.categoria.categoria : null;
-                const iva = product.iva || "0";
 
-                // Obtener la primera imagen del array de imagenes
+                // Obtener imagen del nuevo sistema (múltiples imágenes)
+                // Prioridad: imagenes[0] (nuevo sistema), luego img (compatibilidad con sistema antiguo)
                 let image = null;
-                if (product.imagenes && Array.isArray(product.imagenes) && product.imagenes.length > 0) {
-                    // Ordenar por campo orden y tomar la primera
-                    const sortedImages = [...product.imagenes].sort((a, b) => (a.orden || 0) - (b.orden || 0));
-                    image = sortedImages[0].imagen;
+                if (product.imagenes && product.imagenes.length > 0) {
+                    // Nuevo sistema: usar la primera imagen (orden 0)
+                    image = product.imagenes[0].imagen;
                 } else if (product.img) {
-                    // Fallback al campo img directo
+                    // Sistema antiguo: compatibilidad con campo img
                     image = product.img;
                 }
 
+                const category = product.categoria ? product.categoria.categoria : null;
+                const iva = product.iva || "0";
+
                 // Debug: ver qué URL de imagen está llegando desde la API
-                console.log("🖼️ Imagen del producto:", title, "→", image);
+                console.log("🖼️ Imagen del producto:", title, "→", image, "| Imagenes disponibles:", product.imagenes ? product.imagenes.length : 0);
 
                 // HTML para la imagen
                 let imageHtml = `
@@ -289,16 +319,17 @@
                 </div>
             `;
 
-                // Si hay imagen, construir la URL completa con el servidor
+                // Construir la URL de la imagen si existe
+                let imageUrl = "";
                 if (image) {
                     // Construir la URL completa usando el servidor de la API (máxima calidad)
-                    const imageUrl = `https://servidor.adminnegocios.com/storage/productos/${image}`;
+                    imageUrl = `https://servidor.adminnegocios.com/storage/productos/${image}`;
 
                     imageHtml = `
-                    <div class="relative h-56 bg-white">
+                    <div class="relative w-full aspect-square bg-gray-50">
                         <img src="${imageUrl}" 
                              alt="${title}" 
-                             class="w-full h-full object-contain"
+                             class="object-contain w-full h-full p-2"
                              loading="lazy"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                         <div class="flex items-center justify-center w-full h-full bg-gray-200" style="display:none;">
@@ -306,7 +337,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
                         </div>
-                        <button class="absolute top-3 right-3 w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-md">
+                        <button class="absolute flex items-center justify-center text-gray-400 transition-colors bg-white rounded-full shadow-md top-3 right-3 w-9 h-9 hover:text-red-500">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                             </svg>
@@ -319,13 +350,13 @@
                 } else {
                     // Si no hay imagen, mostrar placeholder con corazón
                     imageHtml = `
-                    <div class="relative h-56">
+                    <div class="relative w-full aspect-square">
                         <div class="flex items-center justify-center w-full h-full bg-gray-200">
                             <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
                         </div>
-                        <button class="absolute top-3 right-3 w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-md">
+                        <button class="absolute flex items-center justify-center text-gray-400 transition-colors bg-white rounded-full shadow-md top-3 right-3 w-9 h-9 hover:text-red-500">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                             </svg>
@@ -378,7 +409,7 @@
                             data-descripcion="${product.descripcion || ""}" 
                             data-existencia="${product.existencia || ""}" 
                             data-iva="${iva}"
-                            data-image="${image || ""}">
+                            data-image="${imageUrl || ""}">
                         Agregar al Carrito
                     </button>
                 `;
@@ -409,7 +440,9 @@
                 container.innerHTML = productsHtml;
             }
 
-            console.log("✅ Productos reales renderizados correctamente");
+            // Actualizar el contador de productos renderizados
+            renderedProductsCount = products.length;
+            console.log("✅ Productos reales renderizados correctamente. Total renderizados:", renderedProductsCount);
 
             // Actualizar las tarjetas con los productos que ya están en el carrito
             updateAllProductCardsFromCart();
@@ -629,7 +662,7 @@
                             document.querySelector(".products-list .grid");
 
                         if (container) {
-                            renderRealProducts(container, allProducts, false);
+                            renderRealProducts(container, allProducts, true);
                         }
                     }
 
@@ -644,28 +677,17 @@
 
         // Función para agregar buscador de productos
         function addProductSearch(container) {
-            // Verificar si la sección tiene data-show-filters="false"
-            const section = container.closest('section, [data-dynamic-products]');
-            const showFilters = section ? section.getAttribute('data-show-filters') : 'true';
-
-            if (showFilters === 'false') {
-                console.log('🚫 Buscador deshabilitado por data-show-filters="false"');
-                return; // No agregar buscador
-            }
-
             // Buscar si ya existe un buscador
             const existingSearch = container.parentElement.querySelector(".product-search-container");
             if (existingSearch) {
                 return; // Ya existe
             }
 
-            console.log('✅ Agregando buscador de productos');
-
             // Crear buscador con estilos dinámicos según la plantilla
             const searchContainer = document.createElement("div");
             searchContainer.className = "product-search-container mb-6 col-span-full";
             searchContainer.innerHTML = `
-            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
                 <div class="flex-1 max-w-md">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -874,6 +896,7 @@
                     // Actualizar variables globales
                     allProducts = products;
                     currentPage = 1;
+                    renderedProductsCount = 0; // Resetear el contador al hacer búsqueda
                     hasMoreProducts = products.length >= 12; // Si hay menos de 12, no hay más páginas
 
                     if (products.length > 0) {
@@ -947,17 +970,17 @@
 
             const productsHtml = exampleProducts.map(product => `
             <div class="${currentStyles.card}">
-                <div class="relative h-56">
+                <div class="relative w-full aspect-square">
                     <div class="flex items-center justify-center w-full h-full bg-gray-200">
                         <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
                     </div>
-                    <button class="absolute top-3 right-3 w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-md">
+                    <button class="absolute flex items-center justify-center text-gray-400 transition-colors bg-white rounded-full shadow-md top-3 right-3 w-9 h-9 hover:text-red-500">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                        </button>
+                        </svg>
+                    </button>
                 </div>
                 <div class="${currentStyles.cardContent || 'p-5'}">
                     <h3 class="${currentStyles.title}">${product.title}</h3>

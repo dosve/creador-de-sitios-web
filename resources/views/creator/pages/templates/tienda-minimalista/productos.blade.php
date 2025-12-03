@@ -31,7 +31,7 @@
         <!-- Grid editorial asimétrico -->
         <section class="pb-16">
             <div class="max-w-7xl mx-auto px-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     @for($i = 0; $i < 6; $i++)
                     <article class="group">
                         <div class="relative overflow-hidden rounded-2xl {{ $i % 3 === 0 ? 'h-[520px]' : 'h-[420px]' }} bg-gray-100">

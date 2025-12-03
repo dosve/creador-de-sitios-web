@@ -427,32 +427,51 @@ class PreviewController extends Controller
             $cartScript = view('components.cart.script', [
                 'templateSlug' => $website->template_id ?? 'default',
                 'colors' => [],
-                'paymentHandler' => 'epayco'
+                'paymentHandler' => $website->default_payment_gateway ?? 'epayco',
+                'websiteSlug' => $website->slug,
+                'allowCashOnDelivery' => $website->allow_cash_on_delivery ?? true,
+                'allowOnlinePayment' => $website->allow_online_payment ?? true,
+                'cashOnDeliveryInstructions' => $website->cash_on_delivery_instructions ?? ''
             ])->render();
 
-            $paymentHandler = view('components.payments.epayco.handler', [
-                'publicKey' => $website->epayco_public_key ?? '',
-                'privateKey' => $website->epayco_private_key ?? '',
-                'customerId' => $website->epayco_customer_id ?? ''
-            ])->render();
+            // Cargar el handler de pago según la pasarela configurada
+            $paymentGateway = $website->default_payment_gateway ?? 'epayco';
+            
+            if ($paymentGateway === 'wompi' && $website->wompi_public_key) {
+                // Handler de Wompi
+                $paymentHandler = view('components.payments.wompi.handler', [
+                    'publicKey' => $website->wompi_public_key ?? '',
+                    'privateKey' => $website->wompi_private_key ?? '',
+                    'integrityKey' => $website->wompi_integrity_key ?? ''
+                ])->render();
+                
+                $epaycoSDK = ''; // No cargar ePayco si se usa Wompi
+            } else {
+                // Handler de ePayco (por defecto)
+                $paymentHandler = view('components.payments.epayco.handler', [
+                    'publicKey' => $website->epayco_public_key ?? '',
+                    'privateKey' => $website->epayco_private_key ?? '',
+                    'customerId' => $website->epayco_customer_id ?? ''
+                ])->render();
 
-            // SDK de Epayco con callback para verificar carga
-            $epaycoSDK = '
-                <script type="text/javascript">
-                    console.log("🔄 Cargando SDK de Epayco...");
-                    var script = document.createElement("script");
-                    script.type = "text/javascript";
-                    script.src = "https://checkout.epayco.co/checkout.js";
-                    script.onload = function() {
-                        console.log("✅ SDK de Epayco cargado correctamente");
-                        console.log("🔍 ePayco disponible:", typeof ePayco !== "undefined");
-                    };
-                    script.onerror = function() {
-                        console.error("❌ Error cargando SDK de Epayco");
-                    };
-                    document.head.appendChild(script);
-                </script>
-            ';
+                // SDK de Epayco con callback para verificar carga
+                $epaycoSDK = '
+                    <script type="text/javascript">
+                        console.log("🔄 Cargando SDK de Epayco...");
+                        var script = document.createElement("script");
+                        script.type = "text/javascript";
+                        script.src = "https://checkout.epayco.co/checkout.js";
+                        script.onload = function() {
+                            console.log("✅ SDK de Epayco cargado correctamente");
+                            console.log("🔍 ePayco disponible:", typeof ePayco !== "undefined");
+                        };
+                        script.onerror = function() {
+                            console.error("❌ Error cargando SDK de Epayco");
+                        };
+                        document.head.appendChild(script);
+                    </script>
+                ';
+            }
 
             $scriptsToAdd[] = $apiConfigScript;
             $scriptsToAdd[] = $epaycoSDK;

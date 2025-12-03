@@ -26,7 +26,7 @@ class BlogPostController extends Controller
         
         $blogPosts = $website->blogPosts()->with(['category', 'tags'])->latest()->get();
         
-        return view('creator.blog.index', compact('blogPosts'));
+        return view('creator.blog.index', compact('blogPosts', 'website'));
     }
 
     public function create(Request $request)
@@ -42,7 +42,7 @@ class BlogPostController extends Controller
         $categories = $website->categories()->get();
         $tags = $website->tags()->get();
         
-        return view('creator.blog.create', compact('categories', 'tags'));
+        return view('creator.blog.create', compact('categories', 'tags', 'website'));
     }
 
     public function store(Request $request)
@@ -62,6 +62,7 @@ class BlogPostController extends Controller
             'content' => 'required|string',
             'category_id' => 'nullable|exists:categories,id',
             'tags' => 'nullable|array',
+            'featured_image' => 'nullable|url',
             'is_published' => 'boolean',
         ]);
 
@@ -71,6 +72,7 @@ class BlogPostController extends Controller
             'excerpt' => $request->excerpt,
             'content' => $request->content,
             'category_id' => $request->category_id,
+            'featured_image' => $request->featured_image,
             'is_published' => $request->boolean('is_published', false),
         ]);
 
@@ -93,7 +95,7 @@ class BlogPostController extends Controller
         
         $this->authorize('view', $website);
         
-        return view('creator.blog.show', compact('blogPost'));
+        return view('creator.blog.show', compact('blogPost', 'website'));
     }
 
     public function edit(Request $request, BlogPost $blogPost)
@@ -109,7 +111,7 @@ class BlogPostController extends Controller
         $categories = $website->categories()->get();
         $tags = $website->tags()->get();
         
-        return view('creator.blog.edit', compact('blogPost', 'categories', 'tags'));
+        return view('creator.blog.edit', compact('blogPost', 'categories', 'tags', 'website'));
     }
 
     public function update(Request $request, BlogPost $blogPost)
@@ -129,6 +131,7 @@ class BlogPostController extends Controller
             'content' => 'required|string',
             'category_id' => 'nullable|exists:categories,id',
             'tags' => 'nullable|array',
+            'featured_image' => 'nullable|url',
             'is_published' => 'boolean',
         ]);
 
@@ -138,6 +141,7 @@ class BlogPostController extends Controller
             'excerpt' => $request->excerpt,
             'content' => $request->content,
             'category_id' => $request->category_id,
+            'featured_image' => $request->featured_image,
             'is_published' => $request->boolean('is_published', false),
         ]);
 

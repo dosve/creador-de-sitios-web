@@ -33,7 +33,7 @@
         @endif
 
         <!-- Orders Table -->
-        @if($useExternalApi && count($externalOrders) > 0)
+        @if(count($externalOrders) > 0)
             <div class="overflow-hidden bg-white rounded-lg shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -124,7 +124,7 @@
                     </table>
                 </div>
             </div>
-        @elseif(!$useExternalApi && $orders->count() > 0)
+        @elseif($orders->count() > 0)
             <div class="overflow-hidden bg-white rounded-lg shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -264,20 +264,156 @@
     </div>
 </div>
 
+<!-- Update Status Modal -->
+<div id="updateStatusModal" class="fixed inset-0 hidden w-full h-full overflow-y-auto bg-gray-600 bg-opacity-50 z-50">
+    <div class="relative w-full max-w-md p-5 mx-auto bg-white border rounded-md shadow-lg top-20">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Actualizar Estado del Pedido</h3>
+                <button onclick="closeUpdateModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="updateStatusForm" class="space-y-4">
+                <input type="hidden" id="updateOrderId" name="order_id">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Estado del Pedido</label>
+                    <select id="orderStatus" name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="pending">Pendiente</option>
+                        <option value="processing">Procesando</option>
+                        <option value="shipped">Enviado</option>
+                        <option value="delivered">Entregado</option>
+                        <option value="cancelled">Cancelado</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Estado del Pago</label>
+                    <select id="paymentStatus" name="payment_status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="pending">Pendiente</option>
+                        <option value="paid">Pagado</option>
+                        <option value="failed">Fallido</option>
+                        <option value="refunded">Reembolsado</option>
+                    </select>
+                </div>
+                
+                <div id="updateError" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-lg"></div>
+                
+                <div class="flex space-x-3 pt-2">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                        Actualizar
+                    </button>
+                    <button type="button" onclick="closeUpdateModal()" class="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 function viewOrder(orderId) {
-    // Aquí implementarías la lógica para cargar los detalles del pedido
-    document.getElementById('orderModal').classList.remove('hidden');
-    document.getElementById('orderDetails').innerHTML = '<p>Cargando detalles del pedido...</p>';
+    const modal = document.getElementById('orderModal');
+    const detailsContainer = document.getElementById('orderDetails');
+    
+    // Mostrar modal con mensaje de carga
+    modal.classList.remove('hidden');
+    detailsContainer.innerHTML = '<div class="flex items-center justify-center py-8"><svg class="w-8 h-8 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class="ml-3 text-gray-600">Cargando detalles del pedido...</span></div>';
+    
+    // Hacer petición AJAX
+    fetch(`/creator/store/orders/${orderId}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            detailsContainer.innerHTML = data.html;
+        } else {
+            detailsContainer.innerHTML = '<div class="text-center py-8 text-red-600">Error al cargar los detalles del pedido.</div>';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        detailsContainer.innerHTML = '<div class="text-center py-8 text-red-600">Error al cargar los detalles del pedido.</div>';
+    });
 }
 
 function updateStatus(orderId) {
-    // Aquí implementarías la lógica para actualizar el estado del pedido
-    console.log('Actualizar estado del pedido:', orderId);
+    const modal = document.getElementById('updateStatusModal');
+    document.getElementById('updateOrderId').value = orderId;
+    modal.classList.remove('hidden');
+    document.getElementById('updateError').classList.add('hidden');
 }
 
 function closeOrderModal() {
     document.getElementById('orderModal').classList.add('hidden');
 }
+
+function closeUpdateModal() {
+    document.getElementById('updateStatusModal').classList.add('hidden');
+}
+
+// Manejar el envío del formulario de actualización
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('updateStatusForm');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const orderId = document.getElementById('updateOrderId').value;
+            const status = document.getElementById('orderStatus').value;
+            const paymentStatus = document.getElementById('paymentStatus').value;
+            const errorDiv = document.getElementById('updateError');
+            
+            // Obtener el token CSRF
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            fetch(`/creator/store/orders/${orderId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    status: status,
+                    payment_status: paymentStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Cerrar modal
+                    closeUpdateModal();
+                    
+                    // Mostrar mensaje de éxito
+                    alert('Estado actualizado correctamente');
+                    
+                    // Recargar la página para ver los cambios
+                    window.location.reload();
+                } else {
+                    errorDiv.textContent = data.error || 'Error al actualizar el estado';
+                    errorDiv.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorDiv.textContent = 'Error al actualizar el estado del pedido';
+                errorDiv.classList.remove('hidden');
+            });
+        });
+    }
+});
 </script>
 @endsection

@@ -52,7 +52,7 @@ class CommentController extends Controller
         // Obtener posts del blog para el filtro
         $blogPosts = $website->blogPosts()->where('is_published', true)->get();
 
-        return view('creator.comments.index', compact('comments', 'blogPosts'));
+        return view('creator.comments.index', compact('comments', 'blogPosts', 'website'));
     }
 
     /**
@@ -76,7 +76,7 @@ class CommentController extends Controller
         $comment->load(['blogPost', 'parent', 'replies']);
 
         // TODO: Crear vista creator.comments.show
-        return view('creator.comments.show', compact('comment'));
+        return view('creator.comments.show', compact('comment', 'website'));
     }
 
     /**
