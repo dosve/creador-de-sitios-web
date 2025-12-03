@@ -26,10 +26,10 @@ class CustomerProfileController extends Controller
             return redirect()->route('website.show', $websiteSlug)
                 ->with('error', 'Debes iniciar sesión para acceder a esta sección');
         }
-        
+
         return null;
     }
-    
+
     /**
      * Renderizar vista con plantilla del sitio
      */
@@ -38,24 +38,28 @@ class CustomerProfileController extends Controller
         if ($website->template_id) {
             $templateService = app(\App\Services\TemplateService::class);
             $template = $templateService->find($website->template_id);
-            
+
             if ($template) {
                 $customization = $template['customization'] ?? [];
-                
+
                 // Crear página virtual
                 $page = (object)[
                     'id' => null,
                     'title' => $title,
                     'slug' => $slug,
+                    'meta_title' => $title,
                     'meta_description' => $title,
+                    'meta_keywords' => null,
                     'html_content' => view($contentView, array_merge($data, ['website' => $website]))->render(),
                     'css_content' => null,
+                    'js_content' => null,
                     'enable_store' => true,
+                    'is_home' => false,
                 ];
-                
+
                 $templateFile = $template['templates']['page'] ?? 'template';
                 $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
-                
+
                 $templateConfig = \App\Models\TemplateConfiguration::firstOrCreate(
                     [
                         'website_id' => $website->id,
@@ -68,7 +72,7 @@ class CustomerProfileController extends Controller
                         'is_active' => true
                     ]
                 );
-                
+
                 return view($viewPath, [
                     'website' => $website,
                     'page' => $page,
@@ -78,23 +82,42 @@ class CustomerProfileController extends Controller
                 ]);
             }
         }
-        
-        return view($contentView, array_merge($data, ['website' => $website]));
+
+        // Si no hay template, usar el layout blank
+        $page = (object)[
+            'id' => null,
+            'title' => $title,
+            'slug' => $slug,
+            'meta_title' => $title,
+            'meta_description' => $title,
+            'meta_keywords' => null,
+            'html_content' => view($contentView, array_merge($data, ['website' => $website]))->render(),
+            'css_content' => null,
+            'js_content' => null,
+            'enable_store' => true,
+            'is_home' => false,
+        ];
+
+        return view('public.blank', [
+            'website' => $website,
+            'page' => $page,
+            'pages' => $website->pages()->where('is_published', true)->get(),
+        ]);
     }
-    
+
     /**
      * Mostrar perfil del cliente
      */
     public function index($websiteSlug)
     {
         $website = Website::where('slug', $websiteSlug)->firstOrFail();
-        
+
         $authCheck = $this->checkAuth($websiteSlug);
         if ($authCheck) return $authCheck;
-        
+
         $customerData = Session::get('customer_data');
         $addresses = $this->fetchCustomerAddresses($website);
-        
+
         return $this->renderWithTemplate(
             $website,
             'Mi Perfil',
@@ -106,35 +129,35 @@ class CustomerProfileController extends Controller
             ]
         );
     }
-    
+
     /**
      * Actualizar datos del perfil
      */
     public function update(Request $request, $websiteSlug)
     {
         $website = Website::where('slug', $websiteSlug)->firstOrFail();
-        
+
         if (!Session::has('customer_logged_in') || !Session::get('customer_logged_in')) {
             return response()->json([
                 'success' => false,
                 'message' => 'No hay sesión activa'
             ], 401);
         }
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
         ]);
-        
+
         try {
             $adminNegociosUserId = Session::get('customer_admin_negocios_id');
             $token = Session::get('customer_token');
-            
+
             // Separar nombre en firstName y lastName
             $nameParts = explode(' ', $request->name, 2);
             $firstName = $nameParts[0];
             $lastName = $nameParts[1] ?? '';
-            
+
             // Actualizar en AdminNegocios
             $apiUrl = rtrim($website->api_base_url, '/');
             $response = Http::timeout(10)
@@ -144,70 +167,69 @@ class CustomerProfileController extends Controller
                     'lastName' => $lastName,
                     'phone' => $request->phone,
                 ]);
-            
+
             if ($response->successful()) {
                 // Actualizar en local
                 $websiteCustomer = WebsiteCustomer::where('website_id', $website->id)
                     ->where('admin_negocios_user_id', $adminNegociosUserId)
                     ->first();
-                
+
                 if ($websiteCustomer) {
                     $websiteCustomer->update([
                         'name' => $request->name,
                         'phone' => $request->phone,
                     ]);
                 }
-                
+
                 // Actualizar sesión
                 Session::put('customer_data', array_merge(Session::get('customer_data'), [
                     'name' => $request->name,
                     'phone' => $request->phone,
                 ]));
-                
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Perfil actualizado exitosamente'
                 ]);
             }
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar el perfil'
             ], 400);
-            
         } catch (\Exception $e) {
             Log::error('Error actualizando perfil', ['error' => $e->getMessage()]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al procesar la actualización'
             ], 500);
         }
     }
-    
+
     /**
      * Cambiar contraseña
      */
     public function updatePassword(Request $request, $websiteSlug)
     {
         $website = Website::where('slug', $websiteSlug)->firstOrFail();
-        
+
         if (!Session::has('customer_logged_in') || !Session::get('customer_logged_in')) {
             return response()->json([
                 'success' => false,
                 'message' => 'No hay sesión activa'
             ], 401);
         }
-        
+
         $request->validate([
             'current_password' => 'required|string',
             'new_password' => 'required|string|min:6|confirmed',
         ]);
-        
+
         try {
             $adminNegociosUserId = Session::get('customer_admin_negocios_id');
             $token = Session::get('customer_token');
-            
+
             // Actualizar contraseña en AdminNegocios
             $apiUrl = rtrim($website->api_base_url, '/');
             $response = Http::timeout(10)
@@ -217,43 +239,42 @@ class CustomerProfileController extends Controller
                     'password' => $request->new_password,
                     'password_confirmation' => $request->new_password_confirmation,
                 ]);
-            
+
             if ($response->successful()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Contraseña actualizada exitosamente'
                 ]);
             }
-            
+
             $data = $response->json();
             return response()->json([
                 'success' => false,
                 'message' => $data['message'] ?? 'Error al actualizar la contraseña'
             ], 400);
-            
         } catch (\Exception $e) {
             Log::error('Error actualizando contraseña', ['error' => $e->getMessage()]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al procesar la actualización'
             ], 500);
         }
     }
-    
+
     /**
      * Mostrar direcciones del cliente
      */
     public function addresses($websiteSlug)
     {
         $website = Website::where('slug', $websiteSlug)->firstOrFail();
-        
+
         $authCheck = $this->checkAuth($websiteSlug);
         if ($authCheck) return $authCheck;
-        
+
         $customerData = Session::get('customer_data');
         $addresses = $this->fetchCustomerAddresses($website);
-        
+
         return $this->renderWithTemplate(
             $website,
             'Mis Direcciones',
@@ -262,110 +283,103 @@ class CustomerProfileController extends Controller
             ['customerData' => $customerData, 'addresses' => $addresses]
         );
     }
-    
+
     /**
      * Guardar nueva dirección
      */
     public function storeAddress(Request $request, $websiteSlug)
     {
         $website = Website::where('slug', $websiteSlug)->firstOrFail();
-        
+
         if (!Session::has('customer_logged_in') || !Session::get('customer_logged_in')) {
             return response()->json([
                 'success' => false,
                 'message' => 'No hay sesión activa'
             ], 401);
         }
-        
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:500',
-            'city' => 'required|string|max:100',
-            'state' => 'nullable|string|max:100',
-            'postal_code' => 'nullable|string|max:20',
-            'country' => 'required|string|max:100',
-            'phone' => 'nullable|string|max:20',
-            'reference' => 'nullable|string|max:255',
-        ]);
-        
-        $created = $this->createCustomerAddress($website, $request);
 
-        if (!$created) {
+        $validated = $request->validate([
+            'direccion' => 'required|string|max:500',
+            'barrio' => 'required|string|max:100',
+            'ciudad' => 'required|string|max:100',
+            'codigo_postal' => 'nullable|string|max:20',
+        ]);
+
+        $userId = Session::get('customer_admin_negocios_id');
+        if (!$userId) {
             return response()->json([
                 'success' => false,
-                'message' => 'No se pudo crear la dirección'
+                'message' => 'Usuario no encontrado'
+            ], 401);
+        }
+
+        // Guardar dirección en AdminNegocios usando API key
+        try {
+            if (!$website->api_base_url || !$website->api_key) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La tienda no tiene configurada la integración con AdminNegocios'
+                ], 500);
+            }
+
+            $apiUrl = rtrim($website->api_base_url, '/') . '/api-key/addresses';
+            $response = Http::withHeaders([
+                'X-API-Key' => $website->api_key,
+                'Content-Type' => 'application/json',
+            ])->post($apiUrl, [
+                'user_id' => $userId,
+                'direccion' => $validated['direccion'],
+                'barrio' => $validated['barrio'],
+                'ciudad' => $validated['ciudad'],
+                'codigo_postal' => $validated['codigo_postal'] ?? null,
+            ]);
+
+            if ($response->successful()) {
+                $responseData = $response->json();
+                return response()->json([
+                    'success' => true,
+                    'message' => $responseData['message'] ?? 'Dirección guardada exitosamente',
+                    'data' => $responseData['data'] ?? null
+                ]);
+            }
+
+            $errorMessage = $response->json()['message'] ?? 'Error al guardar la dirección';
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage
+            ], $response->status());
+        } catch (\Exception $e) {
+            Log::error('Error al guardar dirección', [
+                'error' => $e->getMessage(),
+                'user_id' => $userId
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de conexión: ' . $e->getMessage()
             ], 500);
         }
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Dirección guardada exitosamente'
-        ]);
     }
-    
+
     /**
      * Actualizar dirección existente
      */
     public function updateAddress(Request $request, $websiteSlug, $id)
     {
-        $website = Website::where('slug', $websiteSlug)->firstOrFail();
-        
-        if (!Session::has('customer_logged_in') || !Session::get('customer_logged_in')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No hay sesión activa'
-            ], 401);
-        }
-        
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:500',
-            'city' => 'required|string|max:100',
-            'state' => 'nullable|string|max:100',
-            'postal_code' => 'nullable|string|max:20',
-            'country' => 'required|string|max:100',
-            'phone' => 'nullable|string|max:20',
-            'reference' => 'nullable|string|max:255',
-        ]);
-        
-        $updated = $this->updateCustomerAddress($website, $id, $request);
+        // TODO: Implementar actualización de dirección
 
-        if (!$updated) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No se pudo actualizar la dirección'
-            ], 500);
-        }
-        
         return response()->json([
             'success' => true,
             'message' => 'Dirección actualizada exitosamente'
         ]);
     }
-    
+
     /**
      * Eliminar dirección
      */
     public function deleteAddress($websiteSlug, $id)
     {
-        $website = Website::where('slug', $websiteSlug)->firstOrFail();
-        
-        if (!Session::has('customer_logged_in') || !Session::get('customer_logged_in')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No hay sesión activa'
-            ], 401);
-        }
-        
-        $deleted = $this->deleteCustomerAddress($website, $id);
+        // TODO: Implementar eliminación de dirección
 
-        if (!$deleted) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No se pudo eliminar la dirección'
-            ], 500);
-        }
-        
         return response()->json([
             'success' => true,
             'message' => 'Dirección eliminada exitosamente'
@@ -377,9 +391,14 @@ class CustomerProfileController extends Controller
      */
     public function apiAddresses(Request $request)
     {
+        Log::info('📍 apiAddresses - Inicio', [
+            'website_param' => $request->input('website')
+        ]);
+
         $website = $this->getWebsiteFromRequest($request);
 
         if (!$this->isCustomerLoggedIn()) {
+            Log::warning('❌ Usuario no autenticado intentando obtener direcciones');
             return response()->json([
                 'success' => false,
                 'message' => 'Debes iniciar sesión para continuar'
@@ -387,13 +406,24 @@ class CustomerProfileController extends Controller
         }
 
         if (!$website) {
+            Log::error('❌ Website no encontrado', ['request' => $request->all()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Tienda no encontrada'
             ], 404);
         }
 
+        Log::info('🌐 Website encontrado para direcciones', [
+            'website_id' => $website->id,
+            'customer_id' => Session::get('customer_id'),
+            'admin_negocios_id' => Session::get('customer_admin_negocios_id')
+        ]);
+
         $addresses = $this->fetchCustomerAddresses($website);
+
+        Log::info('✅ Direcciones obtenidas', [
+            'count' => count($addresses)
+        ]);
 
         return response()->json([
             'success' => true,
@@ -423,14 +453,10 @@ class CustomerProfileController extends Controller
         }
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:500',
-            'city' => 'required|string|max:100',
-            'state' => 'nullable|string|max:100',
-            'postal_code' => 'nullable|string|max:20',
-            'country' => 'required|string|max:100',
-            'phone' => 'nullable|string|max:20',
-            'reference' => 'nullable|string|max:255',
+            'direccion' => 'required|string|max:500',
+            'barrio' => 'required|string|max:100',
+            'ciudad' => 'required|string|max:100',
+            'codigo_postal' => 'nullable|string|max:20',
         ]);
 
         $created = $this->createCustomerAddress($website, $request);
@@ -454,7 +480,7 @@ class CustomerProfileController extends Controller
     {
         return Session::has('customer_logged_in') && Session::get('customer_logged_in');
     }
-    
+
     private function getWebsiteFromRequest(Request $request): ?Website
     {
         $slug = $request->input('website');
@@ -467,50 +493,60 @@ class CustomerProfileController extends Controller
 
     private function createCustomerAddress(Website $website, Request $request)
     {
-        $token = Session::get('customer_token');
         $customerAdminNegociosId = Session::get('customer_admin_negocios_id');
-        $appKey = config('services.admin_negocios.app_key');
 
-        if (!$website->api_base_url || !$token || !$customerAdminNegociosId) {
+        Log::info('🏠 createCustomerAddress - Inicio', [
+            'website_id' => $website->id,
+            'user_id' => $customerAdminNegociosId,
+            'has_api_url' => !empty($website->api_base_url),
+            'has_api_key' => !empty($website->api_key)
+        ]);
+
+        if (!$website->api_base_url || !$website->api_key || !$customerAdminNegociosId) {
+            Log::error('❌ Faltan datos para crear dirección', [
+                'has_api_url' => !empty($website->api_base_url),
+                'has_api_key' => !empty($website->api_key),
+                'has_user_id' => !empty($customerAdminNegociosId)
+            ]);
             return null;
         }
 
         try {
             $payload = [
                 'user_id' => $customerAdminNegociosId,
-                'direccion' => $request->address,
-                'ciudad' => $request->city,
-                'barrio' => $request->state,
-                'postal_code' => $request->postal_code,
-                'pais' => $request->country,
-                'referencia' => $request->reference,
-                'phone' => $request->phone,
-                'alias' => $request->name,
-                'latitud' => $request->input('lat'),
-                'longitud' => $request->input('lng'),
+                'direccion' => $request->direccion,
+                'barrio' => $request->barrio,
+                'ciudad' => $request->ciudad,
+                'codigo_postal' => $request->codigo_postal,
             ];
+
+            Log::info('📤 Enviando dirección a AdminNegocios', $payload);
 
             $response = Http::timeout(15)
                 ->withHeaders([
-                    'Authorization' => 'Bearer ' . $token,
                     'X-API-Key' => $website->api_key,
-                    'X-App-Key' => $appKey,
                     'Accept' => 'application/json',
                 ])
-                ->post(rtrim($website->api_base_url, '/') . '/segundos/direcciones', $payload);
+                ->post(rtrim($website->api_base_url, '/') . '/api-key/addresses', $payload);
+
+            Log::info('📨 Respuesta de AdminNegocios (crear dirección)', [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'body' => $response->json()
+            ]);
 
             if ($response->successful()) {
                 return $response->json();
             }
 
-            Log::warning('No se pudo crear dirección externa', [
+            Log::warning('⚠️ No se pudo crear dirección', [
                 'status' => $response->status(),
                 'body' => $response->json(),
             ]);
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Error creando dirección externa', [
+            Log::error('❌ Error creando dirección', [
                 'error' => $e->getMessage(),
                 'website_id' => $website->id,
             ]);
@@ -524,7 +560,14 @@ class CustomerProfileController extends Controller
      */
     private function fetchCustomerAddresses(Website $website)
     {
+        Log::info('🔍 fetchCustomerAddresses - Inicio', [
+            'website_id' => $website->id,
+            'has_api_url' => !empty($website->api_base_url),
+            'has_api_key' => !empty($website->api_key)
+        ]);
+
         if (!$website->api_base_url || !$website->api_key) {
+            Log::warning('⚠️ Website sin API configurada');
             return collect();
         }
 
@@ -532,24 +575,41 @@ class CustomerProfileController extends Controller
         $customerAdminNegociosId = Session::get('customer_admin_negocios_id');
         $appKey = config('services.admin_negocios.app_key');
 
+        Log::info('🔑 Credenciales para obtener direcciones', [
+            'has_token' => !empty($token),
+            'customer_admin_negocios_id' => $customerAdminNegociosId,
+            'has_app_key' => !empty($appKey)
+        ]);
+
         if (!$customerAdminNegociosId) {
+            Log::warning('⚠️ No hay customer_admin_negocios_id en sesión');
             return collect();
         }
 
         try {
+            $url = rtrim($website->api_base_url, '/') . '/api-key/addresses';
+            Log::info('📡 Consultando direcciones en AdminNegocios', [
+                'url' => $url,
+                'user_id' => $customerAdminNegociosId
+            ]);
+
             $response = Http::timeout(15)
                 ->withHeaders([
-                    'Authorization' => $token ? 'Bearer ' . $token : '',
                     'X-API-Key' => $website->api_key,
-                    'X-App-Key' => $appKey,
                     'Accept' => 'application/json',
                 ])
-                ->get(rtrim($website->api_base_url, '/').'/segundos/direcciones', [
+                ->get($url, [
                     'user_id' => $customerAdminNegociosId,
                 ]);
 
+            Log::info('📨 Respuesta de AdminNegocios (direcciones)', [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'body_preview' => substr($response->body(), 0, 500)
+            ]);
+
             if (!$response->successful()) {
-                Log::warning('No se pudieron obtener direcciones externas', [
+                Log::warning('❌ No se pudieron obtener direcciones externas', [
                     'status' => $response->status(),
                     'body' => $response->json(),
                 ]);
@@ -559,7 +619,7 @@ class CustomerProfileController extends Controller
             $payload = $response->json();
             $addressesRaw = $payload['data'] ?? $payload ?? [];
 
-            Log::info('Direcciones externas recibidas', [
+            Log::info('✅ Direcciones externas recibidas', [
                 'count' => is_array($addressesRaw) ? count($addressesRaw) : 0,
                 'payload' => $payload,
             ]);
@@ -567,14 +627,18 @@ class CustomerProfileController extends Controller
             $addresses = collect(is_array($addressesRaw) ? $addressesRaw : [])->map(function ($address) {
                 return (object)[
                     'id' => $address['id'] ?? null,
+                    'direccion' => $address['direccion'] ?? '',
+                    'barrio' => $address['barrio'] ?? '',
+                    'ciudad' => $address['ciudad'] ?? '',
+                    'codigo_postal' => $address['codigo_postal'] ?? null,
+                    'lat' => $address['latitud'] ?? $address['lat'] ?? null,
+                    'lng' => $address['longitud'] ?? $address['lng'] ?? null,
                     'name' => $address['nombre'] ?? $address['alias'] ?? 'Dirección',
                     'address' => $address['direccion'] ?? '',
                     'city' => $address['ciudad'] ?? '',
                     'state' => $address['barrio'] ?? '',
                     'reference' => $address['referencia'] ?? null,
                     'phone' => $address['phone'] ?? $address['telefono'] ?? null,
-                    'lat' => $address['latitud'] ?? $address['lat'] ?? null,
-                    'lng' => $address['longitud'] ?? $address['lng'] ?? null,
                     'is_primary' => (bool)($address['principal'] ?? false),
                     'created_at' => isset($address['created_at']) ? \Carbon\Carbon::parse($address['created_at']) : null,
                 ];
@@ -692,4 +756,3 @@ class CustomerProfileController extends Controller
         }
     }
 }
-

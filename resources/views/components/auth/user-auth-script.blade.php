@@ -283,7 +283,7 @@
         if (errorDiv) {
             errorDiv.classList.add('hidden');
         }
-        
+
         // Mostrar estado de carga
         if (submitBtn) submitBtn.disabled = true;
         if (btnText) btnText.textContent = 'Iniciando sesión...';
@@ -296,7 +296,7 @@
             widgetId: window.loginRecaptchaWidget,
             siteKey: RECAPTCHA_SITE_KEY
         });
-        
+
         if (typeof grecaptcha !== 'undefined' && window.loginRecaptchaWidget !== undefined) {
             try {
                 captchaToken = grecaptcha.getResponse(window.loginRecaptchaWidget);
@@ -332,7 +332,7 @@
                 hasCaptchaToken: !!captchaToken,
                 captchaTokenLength: captchaToken ? captchaToken.length : 0
             });
-            
+
             const response = await fetch('/customer/login', {
                 method: 'POST',
                 headers: {
@@ -375,7 +375,7 @@
                     errorDiv.textContent = data.message || 'Error al iniciar sesión';
                     errorDiv.classList.remove('hidden');
                 }
-                
+
                 // Restaurar estado del botón
                 if (submitBtn) submitBtn.disabled = false;
                 if (btnText) btnText.textContent = 'Iniciar Sesión';
@@ -396,7 +396,7 @@
                 errorDiv.textContent = 'Error al procesar el login. Por favor, intenta nuevamente.';
                 errorDiv.classList.remove('hidden');
             }
-            
+
             // Restaurar estado del botón
             if (submitBtn) submitBtn.disabled = false;
             if (btnText) btnText.textContent = 'Iniciar Sesión';
@@ -1312,7 +1312,7 @@
             }
         }
     }
-    
+
     // Exponer funciones globalmente para que puedan ser llamadas desde otros componentes
     window.showLoginModal = showLoginModal;
     window.showRegisterModal = showRegisterModal;

@@ -1,4 +1,53 @@
 {{-- Contenido de Mis Direcciones --}}
+<header class="bg-red-600 text-white">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between py-4">
+            <div class="text-center flex-1">
+                <h1 class="text-3xl font-bold">MASH</h1>
+                <p class="text-xs">🚚 ENVÍOS A TODO COLOMBIA</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div id="guest-menu" class="hidden">
+                    <button id="login-button" class="hover:text-red-200 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="user-menu" class="hidden relative">
+                    <button id="user-menu-button" class="hover:text-red-200 transition-colors flex items-center space-x-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                        <a href="/sitio/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">👤 Mi Perfil</a>
+                        <div class="border-t border-gray-200 my-1"></div>
+                        <button id="logout-button" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">🚪 Cerrar Sesión</button>
+                    </div>
+                </div>
+                <button id="cart-button" class="hover:text-red-200 transition-colors relative">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <span id="cart-counter" class="absolute -top-1 -right-1 bg-white text-red-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">0</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<nav class="bg-gray-800 text-white">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex items-center space-x-6">
+            <a href="/sitio" class="hover:text-yellow-400 transition-colors">INICIO</a>
+            <a href="/sitio/tienda" class="hover:text-yellow-400 transition-colors">TIENDA</a>
+            <a href="/sitio/quienes-somos" class="hover:text-yellow-400 transition-colors">QUIÉNES SOMOS</a>
+        </div>
+    </div>
+</nav>
+
 <div class="min-h-screen bg-gray-50 py-8">
     <div class="container mx-auto px-4 max-w-5xl">
         {{-- Header --}}

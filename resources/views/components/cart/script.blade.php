@@ -1,191 +1,199 @@
 @props([
-    'templateSlug' => 'default',
-    'colors' => [],
-    'paymentHandler' => 'epayco',
-    'websiteSlug' => '',
-    'allowCashOnDelivery' => true,
-    'allowOnlinePayment' => true,
-    'cashOnDeliveryInstructions' => ''
+'templateSlug' => 'default',
+'colors' => [],
+'paymentHandler' => 'epayco',
+'websiteSlug' => '',
+'allowCashOnDelivery' => true,
+'allowOnlinePayment' => true,
+'cashOnDeliveryInstructions' => ''
 ])
 
 <script>
-(function () {
-    const templateConfig = {
-        slug: "{{ $templateSlug }}",
-        colors: {
-            primary: "{{ $colors['primary'] ?? '#2563eb' }}",
-            secondary: "{{ $colors['secondary'] ?? '#7c3aed' }}",
-            accent: "{{ $colors['accent'] ?? '#10b981' }}",
-            background: "{{ $colors['background'] ?? '#f9fafb' }}",
-            text: "{{ $colors['text'] ?? '#111827' }}"
-        },
-        paymentHandler: "{{ $paymentHandler }}",
-        websiteSlug: "{{ $websiteSlug }}",
-        allowCashOnDelivery: {{ $allowCashOnDelivery ? 'true' : 'false' }},
-        allowOnlinePayment: {{ $allowOnlinePayment ? 'true' : 'false' }},
-        cashOnDeliveryInstructions: `{{ $cashOnDeliveryInstructions ?? '' }}`
-    };
+    (function() {
+        const templateConfig = {
+            slug: "{{ $templateSlug }}",
+            colors: {
+                primary: "{{ $colors['primary'] ?? '#2563eb' }}",
+                secondary: "{{ $colors['secondary'] ?? '#7c3aed' }}",
+                accent: "{{ $colors['accent'] ?? '#10b981' }}",
+                background: "{{ $colors['background'] ?? '#f9fafb' }}",
+                text: "{{ $colors['text'] ?? '#111827' }}"
+            },
+            paymentHandler: "{{ $paymentHandler }}",
+            websiteSlug: "{{ $websiteSlug }}",
+            allowCashOnDelivery: {
+                {
+                    $allowCashOnDelivery ? 'true' : 'false'
+                }
+            },
+            allowOnlinePayment: {
+                {
+                    $allowOnlinePayment ? 'true' : 'false'
+                }
+            },
+            cashOnDeliveryInstructions: `{{ $cashOnDeliveryInstructions ?? '' }}`
+        };
 
-    const CartState = {
-        items: [],
-        checkoutData: JSON.parse(localStorage.getItem('cartCheckoutData') || '{}'),
-        addresses: [],
-        selectedAddressId: null,
-        isLoadingAddresses: false,
-        selectedPaymentMethod: null // 'cash_on_delivery' o 'online_payment'
-    };
+        const CartState = {
+            items: [],
+            checkoutData: JSON.parse(localStorage.getItem('cartCheckoutData') || '{}'),
+            addresses: [],
+            selectedAddressId: null,
+            isLoadingAddresses: false,
+            selectedPaymentMethod: null // 'cash_on_delivery' o 'online_payment'
+        };
 
-    if (CartState.checkoutData?.addressId) {
-        CartState.selectedAddressId = CartState.checkoutData.addressId;
-    }
-
-    const Selectors = {
-        button: '#cart-button',
-        counter: '#cart-counter',
-        sidebar: '#cart-sidebar',
-        overlay: '#cart-overlay',
-        close: '#close-cart',
-        items: '#cart-items',
-        total: '#cart-total',
-        checkout: '#checkout-btn'
-    };
-
-    document.addEventListener('DOMContentLoaded', initCart);
-
-    function initCart() {
-        CartState.items = JSON.parse(localStorage.getItem('cart') || '[]');
-        ensureCartStructure();
-        bindGlobalEvents();
-        renderCart();
-    }
-
-    function ensureCartStructure() {
-        if (!document.querySelector(Selectors.overlay)) {
-            const overlay = document.createElement('div');
-            overlay.id = 'cart-overlay';
-            overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-40 hidden';
-            document.body.appendChild(overlay);
+        if (CartState.checkoutData?.addressId) {
+            CartState.selectedAddressId = CartState.checkoutData.addressId;
         }
 
-        if (!document.querySelector(Selectors.sidebar)) {
-            const sidebar = document.createElement('div');
-            sidebar.id = 'cart-sidebar';
-            sidebar.className = 'fixed inset-y-0 right-0 z-50 w-96 bg-white shadow-xl transition-transform duration-300 ease-in-out transform translate-x-full';
-            sidebar.innerHTML = buildSidebarTemplate();
-            document.body.appendChild(sidebar);
+        const Selectors = {
+            button: '#cart-button',
+            counter: '#cart-counter',
+            sidebar: '#cart-sidebar',
+            overlay: '#cart-overlay',
+            close: '#close-cart',
+            items: '#cart-items',
+            total: '#cart-total',
+            checkout: '#checkout-btn'
+        };
+
+        document.addEventListener('DOMContentLoaded', initCart);
+
+        function initCart() {
+            CartState.items = JSON.parse(localStorage.getItem('cart') || '[]');
+            ensureCartStructure();
+            bindGlobalEvents();
+            renderCart();
         }
 
-        if (!document.querySelector(Selectors.button)) {
-            const button = document.createElement('button');
-            button.id = 'cart-button';
-            button.className = 'fixed bottom-6 right-6 z-40 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700';
-            button.innerHTML = `
+        function ensureCartStructure() {
+            if (!document.querySelector(Selectors.overlay)) {
+                const overlay = document.createElement('div');
+                overlay.id = 'cart-overlay';
+                overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-40 hidden';
+                document.body.appendChild(overlay);
+            }
+
+            if (!document.querySelector(Selectors.sidebar)) {
+                const sidebar = document.createElement('div');
+                sidebar.id = 'cart-sidebar';
+                sidebar.className = 'fixed inset-y-0 right-0 z-50 w-96 bg-white shadow-xl transition-transform duration-300 ease-in-out transform translate-x-full';
+                sidebar.innerHTML = buildSidebarTemplate();
+                document.body.appendChild(sidebar);
+            }
+
+            if (!document.querySelector(Selectors.button)) {
+                const button = document.createElement('button');
+                button.id = 'cart-button';
+                button.className = 'fixed bottom-6 right-6 z-40 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700';
+                button.innerHTML = `
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                 </svg>
                 <span id="cart-counter" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold">0</span>
             `;
-            document.body.appendChild(button);
-        }
-    }
-
-    function bindGlobalEvents() {
-        document.addEventListener('click', handleGlobalClicks);
-        window.addToCart = addToCart;
-        window.updateQuantity = updateQuantity;
-        window.removeFromCart = removeFromCart;
-        window.reloadCartListeners = attachAddToCartButtons;
-        attachAddToCartButtons();
-    }
-
-    function handleGlobalClicks(event) {
-        if (event.target.closest(Selectors.button)) {
-            event.preventDefault();
-            openSidebar();
+                document.body.appendChild(button);
+            }
         }
 
-        if (event.target.closest(Selectors.close) || event.target.id === 'cart-overlay') {
-            event.preventDefault();
-            closeSidebar();
+        function bindGlobalEvents() {
+            document.addEventListener('click', handleGlobalClicks);
+            window.addToCart = addToCart;
+            window.updateQuantity = updateQuantity;
+            window.removeFromCart = removeFromCart;
+            window.reloadCartListeners = attachAddToCartButtons;
+            attachAddToCartButtons();
         }
 
-        if (event.target.closest(Selectors.checkout)) {
-            event.preventDefault();
-            if (CartState.items.length === 0) return;
-            openCheckoutModal();
+        function handleGlobalClicks(event) {
+            if (event.target.closest(Selectors.button)) {
+                event.preventDefault();
+                openSidebar();
+            }
+
+            if (event.target.closest(Selectors.close) || event.target.id === 'cart-overlay') {
+                event.preventDefault();
+                closeSidebar();
+            }
+
+            if (event.target.closest(Selectors.checkout)) {
+                event.preventDefault();
+                if (CartState.items.length === 0) return;
+                openCheckoutModal();
+            }
+
+            const addBtn = event.target.closest('.add-to-cart');
+            if (addBtn) {
+                event.preventDefault();
+                addToCart({
+                    id: addBtn.getAttribute('data-id'),
+                    name: addBtn.getAttribute('data-name'),
+                    price: parseFloat(addBtn.getAttribute('data-price') || '0'),
+                    iva: parseFloat(addBtn.getAttribute('data-iva') || '0'),
+                    image: addBtn.getAttribute('data-image')
+                });
+            }
         }
 
-        const addBtn = event.target.closest('.add-to-cart');
-        if (addBtn) {
-            event.preventDefault();
-            addToCart({
-                id: addBtn.getAttribute('data-id'),
-                name: addBtn.getAttribute('data-name'),
-                price: parseFloat(addBtn.getAttribute('data-price') || '0'),
-                iva: parseFloat(addBtn.getAttribute('data-iva') || '0'),
-                image: addBtn.getAttribute('data-image')
+        function attachAddToCartButtons() {
+            document.querySelectorAll('.add-to-cart').forEach(button => {
+                button.removeEventListener('click', noop);
+                button.addEventListener('click', noop);
             });
         }
-    }
 
-    function attachAddToCartButtons() {
-        document.querySelectorAll('.add-to-cart').forEach(button => {
-            button.removeEventListener('click', noop);
-            button.addEventListener('click', noop);
-        });
-    }
+        function noop() {}
 
-    function noop() {}
-
-    function openSidebar() {
-        document.querySelector(Selectors.sidebar)?.classList.remove('translate-x-full');
-        document.querySelector(Selectors.overlay)?.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeSidebar() {
-        document.querySelector(Selectors.sidebar)?.classList.add('translate-x-full');
-        document.querySelector(Selectors.overlay)?.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-
-    function addToCart(product) {
-        const existing = CartState.items.find(item => item.id == product.id);
-        if (existing) {
-            existing.quantity += 1;
-        } else {
-            CartState.items.push({
-                ...product,
-                quantity: 1
-            });
+        function openSidebar() {
+            document.querySelector(Selectors.sidebar)?.classList.remove('translate-x-full');
+            document.querySelector(Selectors.overlay)?.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
-        persistCart();
-        renderCart();
-        showToast(`${product.name} agregado al carrito`);
-        window.dispatchEvent(new Event('cartUpdated'));
-    }
 
-    function updateQuantity(index, change) {
-        const item = CartState.items[index];
-        if (!item) return;
-        item.quantity += change;
-        if (item.quantity <= 0) {
+        function closeSidebar() {
+            document.querySelector(Selectors.sidebar)?.classList.add('translate-x-full');
+            document.querySelector(Selectors.overlay)?.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function addToCart(product) {
+            const existing = CartState.items.find(item => item.id == product.id);
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                CartState.items.push({
+                    ...product,
+                    quantity: 1
+                });
+            }
+            persistCart();
+            renderCart();
+            showToast(`${product.name} agregado al carrito`);
+            window.dispatchEvent(new Event('cartUpdated'));
+        }
+
+        function updateQuantity(index, change) {
+            const item = CartState.items[index];
+            if (!item) return;
+            item.quantity += change;
+            if (item.quantity <= 0) {
+                CartState.items.splice(index, 1);
+            }
+            persistCart();
+            renderCart();
+            window.dispatchEvent(new Event('cartUpdated'));
+        }
+
+        function removeFromCart(index) {
             CartState.items.splice(index, 1);
+            persistCart();
+            renderCart();
+            window.dispatchEvent(new Event('cartUpdated'));
         }
-        persistCart();
-        renderCart();
-        window.dispatchEvent(new Event('cartUpdated'));
-    }
 
-    function removeFromCart(index) {
-        CartState.items.splice(index, 1);
-        persistCart();
-        renderCart();
-        window.dispatchEvent(new Event('cartUpdated'));
-    }
-
-    function buildSidebarTemplate() {
-        return `
+        function buildSidebarTemplate() {
+            return `
             <div class="flex flex-col h-full">
                 <div class="flex items-center justify-between p-4 border-b bg-gray-50">
                     <h3 class="text-lg font-semibold text-gray-900">Carrito de Compras</h3>
@@ -216,24 +224,24 @@
                 </div>
             </div>
         `;
-    }
+        }
 
-    function renderCart() {
-        const itemsContainer = document.querySelector(Selectors.items);
-        const counter = document.querySelector(Selectors.counter);
-        const totalElement = document.querySelector(Selectors.total);
-        const checkoutBtn = document.querySelector(Selectors.checkout);
+        function renderCart() {
+            const itemsContainer = document.querySelector(Selectors.items);
+            const counter = document.querySelector(Selectors.counter);
+            const totalElement = document.querySelector(Selectors.total);
+            const checkoutBtn = document.querySelector(Selectors.checkout);
 
-        const totals = computeTotals();
+            const totals = computeTotals();
 
-        if (counter) counter.textContent = CartState.items.reduce((sum, item) => sum + item.quantity, 0);
-        if (totalElement) totalElement.textContent = formatCurrency(totals.gross);
-        if (checkoutBtn) checkoutBtn.disabled = CartState.items.length === 0;
+            if (counter) counter.textContent = CartState.items.reduce((sum, item) => sum + item.quantity, 0);
+            if (totalElement) totalElement.textContent = formatCurrency(totals.gross);
+            if (checkoutBtn) checkoutBtn.disabled = CartState.items.length === 0;
 
-        if (!itemsContainer) return;
+            if (!itemsContainer) return;
 
-        if (CartState.items.length === 0) {
-            itemsContainer.innerHTML = `
+            if (CartState.items.length === 0) {
+                itemsContainer.innerHTML = `
                 <div class="flex flex-col items-center justify-center py-12 text-gray-500 min-h-64">
                     <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" class="mb-4">
                         <path fill="currentColor" fill-rule="evenodd" d="M1.566 4a.75.75 0 0 1 .75-.75h1.181a2.25 2.25 0 0 1 2.228 1.937l.061.435h13.965a2.25 2.25 0 0 1 2.063 3.148l-2.668 6.128a2.25 2.25 0 0 1-2.063 1.352H7.722a2.25 2.25 0 0 1-2.228-1.937L4.24 5.396a.75.75 0 0 0-.743-.646h-1.18a.75.75 0 0 1-.75-.75m4.431 3.122l.982 6.982a.75.75 0 0 0 .743.646h9.361a.75.75 0 0 0 .688-.45l2.667-6.13a.75.75 0 0 0-.687-1.048z" clip-rule="evenodd"/>
@@ -242,10 +250,10 @@
                     <p class="text-center">Tu carrito está vacío</p>
                 </div>
             `;
-            return;
-        }
+                return;
+            }
 
-        itemsContainer.innerHTML = CartState.items.map((item, index) => `
+            itemsContainer.innerHTML = CartState.items.map((item, index) => `
             <div class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
                 <div class="flex-1">
                     <h3 class="font-semibold text-sm">${item.name}</h3>
@@ -264,63 +272,66 @@
                 </button>
             </div>
         `).join('');
-    }
+        }
 
-    function computeTotals() {
-        let gross = 0;
-        let taxBase = 0;
-        let tax = 0;
+        function computeTotals() {
+            let gross = 0;
+            let taxBase = 0;
+            let tax = 0;
 
-        CartState.items.forEach(item => {
-            const quantity = item.quantity || 1;
-            const price = parseFloat(item.price || 0);
-            const ivaRate = parseFloat(item.iva || 0) / 100;
-            const base = ivaRate > 0 ? price / (1 + ivaRate) : price;
-            const iva = price - base;
+            CartState.items.forEach(item => {
+                const quantity = item.quantity || 1;
+                const price = parseFloat(item.price || 0);
+                const ivaRate = parseFloat(item.iva || 0) / 100;
+                const base = ivaRate > 0 ? price / (1 + ivaRate) : price;
+                const iva = price - base;
 
-            gross += price * quantity;
-            taxBase += base * quantity;
-            tax += iva * quantity;
-        });
+                gross += price * quantity;
+                taxBase += base * quantity;
+                tax += iva * quantity;
+            });
 
-        return {
-            gross: round2(gross),
-            taxBase: round2(taxBase),
-            tax: round2(tax),
-            taxIco: 0
-        };
-    }
+            return {
+                gross: round2(gross),
+                taxBase: round2(taxBase),
+                tax: round2(tax),
+                taxIco: 0
+            };
+        }
 
-    function round2(value) {
-        return Math.round(value * 100) / 100;
-    }
+        function round2(value) {
+            return Math.round(value * 100) / 100;
+        }
 
-    function formatCurrency(value) {
-        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(value);
-    }
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP'
+            }).format(value);
+        }
 
-    function persistCart() {
-        localStorage.setItem('cart', JSON.stringify(CartState.items));
-    }
+        function persistCart() {
+            localStorage.setItem('cart', JSON.stringify(CartState.items));
+        }
 
-    function showToast(message) {
-        const toast = document.createElement('div');
-        toast.className = 'fixed top-6 right-6 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg';
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => toast.remove(), 300);
-        }, 2000);
-    }
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-6 right-6 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
 
-    function ensureCheckoutModal() {
-        if (document.getElementById('checkout-modal')) return;
+        function ensureCheckoutModal() {
+            if (document.getElementById('checkout-modal')) return;
 
-        const modal = document.createElement('div');
-        modal.id = 'checkout-modal';
-        modal.className = 'fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 p-4';
-        modal.innerHTML = `
+            const modal = document.createElement('div');
+            modal.id = 'checkout-modal';
+            modal.className = 'fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 p-4';
+            modal.innerHTML = `
             <div class="relative w-full max-w-2xl bg-white rounded-lg shadow-xl flex flex-col max-h-[90vh]">
                 <div class="flex-shrink-0 p-6 pb-4 border-b">
                     <button id="close-checkout-modal" class="absolute text-gray-400 top-4 right-4 hover:text-gray-600 z-10">
@@ -337,12 +348,9 @@
                 <div id="address-section" class="space-y-3 mb-6">
                     <div id="address-loading" class="text-sm text-gray-500">Cargando direcciones...</div>
                     <div id="address-select-wrapper" class="hidden"></div>
-                    <p id="address-empty-message" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
-                        No tienes direcciones guardadas. Agrega una para continuar.
+                    <p id="address-empty-message" class="hidden text-sm text-orange-600 bg-orange-50 border border-orange-200 px-3 py-2 rounded-lg">
+                        ⚠️ No tienes direcciones guardadas. Haz clic en "Añadir dirección" para crear una.
                     </p>
-                    <button id="add-address-btn" class="text-sm font-medium text-blue-600 hover:text-blue-700">
-                        + Añadir dirección
-                    </button>
                 </div>
 
                 <div id="new-address-form" class="hidden mb-6 border border-gray-200 rounded-lg p-4 bg-gray-50 space-y-3">
@@ -401,7 +409,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Notas o indicaciones</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notas o indicaciones</label>
                     <textarea id="checkout-notes" class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Ej. Torre 2, apto 401"></textarea>
                 </div>
                 
@@ -477,145 +485,145 @@
                 </div>
             </div>
         `;
-        document.body.appendChild(modal);
+            document.body.appendChild(modal);
 
-        document.getElementById('close-checkout-modal').addEventListener('click', () => toggleCheckoutModal(false));
-        document.getElementById('cancel-checkout-modal').addEventListener('click', () => toggleCheckoutModal(false));
-        document.getElementById('confirm-checkout-modal').addEventListener('click', confirmCheckoutData);
-        document.getElementById('add-address-btn').addEventListener('click', () => toggleNewAddressForm(true));
-        document.getElementById('cancel-new-address').addEventListener('click', () => toggleNewAddressForm(false));
-        document.getElementById('save-new-address').addEventListener('click', saveNewAddress);
-    }
-
-    async function openCheckoutModal() {
-        // Obtener elementos del botón de checkout
-        const checkoutBtn = document.getElementById('checkout-btn');
-        const checkoutBtnText = document.getElementById('checkout-btn-text');
-        const checkoutBtnSpinner = document.getElementById('checkout-btn-spinner');
-        
-        // Mostrar estado de carga
-        if (checkoutBtn) checkoutBtn.disabled = true;
-        if (checkoutBtnText) checkoutBtnText.textContent = 'Verificando...';
-        if (checkoutBtnSpinner) checkoutBtnSpinner.classList.remove('hidden');
-        
-        // VALIDACIÓN 1: Verificar si el usuario ha iniciado sesión
-        const isLoggedIn = await checkIfUserIsLoggedIn();
-        
-        if (!isLoggedIn) {
-            console.log('⚠️ Usuario no autenticado, mostrando modal de login');
-            
-            // Restaurar estado del botón
-            if (checkoutBtn) checkoutBtn.disabled = false;
-            if (checkoutBtnText) checkoutBtnText.textContent = 'Proceder al Pago';
-            if (checkoutBtnSpinner) checkoutBtnSpinner.classList.add('hidden');
-            
-            // Cerrar el carrito
-            closeSidebar();
-            // Mostrar el modal de login (si existe la función global)
-            if (typeof window.showLoginModal === 'function') {
-                window.showLoginModal();
-            } else {
-                alert('Por favor inicia sesión para continuar con tu compra');
-            }
-            return;
+            document.getElementById('close-checkout-modal').addEventListener('click', () => toggleCheckoutModal(false));
+            document.getElementById('cancel-checkout-modal').addEventListener('click', () => toggleCheckoutModal(false));
+            document.getElementById('confirm-checkout-modal').addEventListener('click', confirmCheckoutData);
+            document.getElementById('add-address-btn').addEventListener('click', () => toggleNewAddressForm(true));
+            document.getElementById('cancel-new-address').addEventListener('click', () => toggleNewAddressForm(false));
+            document.getElementById('save-new-address').addEventListener('click', saveNewAddress);
         }
-        
-        console.log('✅ Usuario autenticado, continuando con checkout...');
-        
-        // Actualizar texto del botón
-        if (checkoutBtnText) checkoutBtnText.textContent = 'Cargando direcciones...';
-        
-        // VALIDACIÓN 2: Cargar direcciones y verificar si tiene alguna
-        await loadAddresses(true); // Forzar recarga
-        
-        if (CartState.addresses.length === 0) {
-            console.log('⚠️ Usuario no tiene direcciones, mostrando mensaje');
-            
-            // Restaurar estado del botón
-            if (checkoutBtn) checkoutBtn.disabled = false;
-            if (checkoutBtnText) checkoutBtnText.textContent = 'Proceder al Pago';
-            if (checkoutBtnSpinner) checkoutBtnSpinner.classList.add('hidden');
-            
-            // Mostrar modal pidiendo que configure una dirección
-            showAddressRequiredModal();
-            return;
-        }
-        
-        console.log('✅ Usuario tiene', CartState.addresses.length, 'dirección(es), abriendo modal de checkout');
-        
-        // Si todo está bien, abrir el modal de checkout normal
-        ensureCheckoutModal();
-        const totals = computeTotals();
-        const modal = document.getElementById('checkout-modal');
-        const totalLabel = document.getElementById('checkout-modal-total');
-        const notesField = document.getElementById('checkout-notes');
-        const errorLabel = document.getElementById('checkout-modal-error');
 
-        if (totalLabel) totalLabel.textContent = formatCurrency(totals.gross);
-        if (errorLabel) errorLabel.classList.add('hidden');
+        async function openCheckoutModal() {
+            // Obtener elementos del botón de checkout
+            const checkoutBtn = document.getElementById('checkout-btn');
+            const checkoutBtnText = document.getElementById('checkout-btn-text');
+            const checkoutBtnSpinner = document.getElementById('checkout-btn-spinner');
 
-        notesField.value = CartState.checkoutData.notes || '';
+            // Mostrar estado de carga
+            if (checkoutBtn) checkoutBtn.disabled = true;
+            if (checkoutBtnText) checkoutBtnText.textContent = 'Verificando...';
+            if (checkoutBtnSpinner) checkoutBtnSpinner.classList.remove('hidden');
 
-        renderAddressSection();
+            // VALIDACIÓN 1: Verificar si el usuario ha iniciado sesión
+            const isLoggedIn = await checkIfUserIsLoggedIn();
 
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.body.style.overflow = 'hidden';
-        
-        // Restaurar estado del botón después de abrir el modal
-        if (checkoutBtn) checkoutBtn.disabled = false;
-        if (checkoutBtnText) checkoutBtnText.textContent = 'Proceder al Pago';
-        if (checkoutBtnSpinner) checkoutBtnSpinner.classList.add('hidden');
-    }
-    
-    // Función para verificar si el usuario está logueado
-    async function checkIfUserIsLoggedIn() {
-        try {
-            // Obtener el slug del website desde la URL actual o de la configuración
-            const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
-            
-            console.log('🔍 Verificando autenticación para:', websiteSlug);
-            
-            const response = await fetch(`/${websiteSlug}/api/check-auth`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
+            if (!isLoggedIn) {
+                console.log('⚠️ Usuario no autenticado, mostrando modal de login');
+
+                // Restaurar estado del botón
+                if (checkoutBtn) checkoutBtn.disabled = false;
+                if (checkoutBtnText) checkoutBtnText.textContent = 'Proceder al Pago';
+                if (checkoutBtnSpinner) checkoutBtnSpinner.classList.add('hidden');
+
+                // Cerrar el carrito
+                closeSidebar();
+                // Mostrar el modal de login (si existe la función global)
+                if (typeof window.showLoginModal === 'function') {
+                    window.showLoginModal();
+                } else {
+                    alert('Por favor inicia sesión para continuar con tu compra');
                 }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log('✅ Respuesta de autenticación:', data);
-                return data.authenticated === true;
+                return;
             }
-            
-            console.warn('⚠️ No se pudo verificar autenticación, status:', response.status);
-            return false;
-        } catch (error) {
-            console.error('❌ Error verificando autenticación:', error);
-            return false;
+
+            console.log('✅ Usuario autenticado, continuando con checkout...');
+
+            // Actualizar texto del botón
+            if (checkoutBtnText) checkoutBtnText.textContent = 'Cargando direcciones...';
+
+            // VALIDACIÓN 2: Cargar direcciones y verificar si tiene alguna
+            await loadAddresses(true); // Forzar recarga
+
+            if (CartState.addresses.length === 0) {
+                console.log('⚠️ Usuario no tiene direcciones, mostrando mensaje');
+
+                // Restaurar estado del botón
+                if (checkoutBtn) checkoutBtn.disabled = false;
+                if (checkoutBtnText) checkoutBtnText.textContent = 'Proceder al Pago';
+                if (checkoutBtnSpinner) checkoutBtnSpinner.classList.add('hidden');
+
+                // Mostrar modal pidiendo que configure una dirección
+                showAddressRequiredModal();
+                return;
+            }
+
+            console.log('✅ Usuario tiene', CartState.addresses.length, 'dirección(es), abriendo modal de checkout');
+
+            // Si todo está bien, abrir el modal de checkout normal
+            ensureCheckoutModal();
+            const totals = computeTotals();
+            const modal = document.getElementById('checkout-modal');
+            const totalLabel = document.getElementById('checkout-modal-total');
+            const notesField = document.getElementById('checkout-notes');
+            const errorLabel = document.getElementById('checkout-modal-error');
+
+            if (totalLabel) totalLabel.textContent = formatCurrency(totals.gross);
+            if (errorLabel) errorLabel.classList.add('hidden');
+
+            notesField.value = CartState.checkoutData.notes || '';
+
+            renderAddressSection();
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+
+            // Restaurar estado del botón después de abrir el modal
+            if (checkoutBtn) checkoutBtn.disabled = false;
+            if (checkoutBtnText) checkoutBtnText.textContent = 'Proceder al Pago';
+            if (checkoutBtnSpinner) checkoutBtnSpinner.classList.add('hidden');
         }
-    }
-    
-    // Función auxiliar para obtener el slug desde la URL
-    function getWebsiteSlugFromUrl() {
-        // La URL es algo como: /mashcol o /mashcol/productos
-        const pathParts = window.location.pathname.split('/').filter(p => p);
-        return pathParts[0] || '';
-    }
-    
-    // Función para mostrar modal cuando no tiene direcciones
-    function showAddressRequiredModal() {
-        // Crear modal personalizado para pedir configurar dirección
-        const existingModal = document.getElementById('address-required-modal');
-        if (existingModal) {
-            existingModal.remove();
+
+        // Función para verificar si el usuario está logueado
+        async function checkIfUserIsLoggedIn() {
+            try {
+                // Obtener el slug del website desde la URL actual o de la configuración
+                const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
+
+                console.log('🔍 Verificando autenticación para:', websiteSlug);
+
+                const response = await fetch(`/${websiteSlug}/api/check-auth`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Respuesta de autenticación:', data);
+                    return data.authenticated === true;
+                }
+
+                console.warn('⚠️ No se pudo verificar autenticación, status:', response.status);
+                return false;
+            } catch (error) {
+                console.error('❌ Error verificando autenticación:', error);
+                return false;
+            }
         }
-        
-        const modal = document.createElement('div');
-        modal.id = 'address-required-modal';
-        modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
-        modal.innerHTML = `
+
+        // Función auxiliar para obtener el slug desde la URL
+        function getWebsiteSlugFromUrl() {
+            // La URL es algo como: /mashcol o /mashcol/productos
+            const pathParts = window.location.pathname.split('/').filter(p => p);
+            return pathParts[0] || '';
+        }
+
+        // Función para mostrar modal cuando no tiene direcciones
+        function showAddressRequiredModal() {
+            // Crear modal personalizado para pedir configurar dirección
+            const existingModal = document.getElementById('address-required-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            const modal = document.createElement('div');
+            modal.id = 'address-required-modal';
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+            modal.innerHTML = `
             <div class="relative w-full max-w-md p-6 bg-white rounded-lg shadow-xl">
                 <div class="text-center mb-6">
                     <div class="mx-auto mb-4 w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
@@ -637,412 +645,423 @@
                 </div>
             </div>
         `;
-        
-        document.body.appendChild(modal);
-        
-        // Event listeners
-        document.getElementById('go-to-addresses').addEventListener('click', () => {
-            const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
-            window.location.href = `/${websiteSlug}/addresses`;
-        });
-        
-        document.getElementById('close-address-required').addEventListener('click', () => {
-            modal.remove();
-        });
-        
-        // Cerrar al hacer clic fuera del modal
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
-    }
 
-    async function loadAddresses(force = false) {
-        const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
-        
-        if (!websiteSlug) {
-            console.warn('No se pudo determinar el slug del sitio para cargar direcciones.');
-            return;
-        }
+            document.body.appendChild(modal);
 
-        if (CartState.addresses.length > 0 && !force) return;
-
-        CartState.isLoadingAddresses = true;
-        renderAddressSection();
-
-        try {
-            console.log('📍 Cargando direcciones para website:', websiteSlug);
-            const response = await fetch(`/customer/addresses?website=${encodeURIComponent(websiteSlug)}`, {
-                headers: { 'Accept': 'application/json' }
+            // Event listeners
+            document.getElementById('go-to-addresses').addEventListener('click', () => {
+                const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
+                window.location.href = `/${websiteSlug}/addresses`;
             });
 
-            if (!response.ok) throw new Error('No se pudieron obtener las direcciones');
-            const data = await response.json();
+            document.getElementById('close-address-required').addEventListener('click', () => {
+                modal.remove();
+            });
 
-            if (!data.success) throw new Error(data.message || 'Error cargando direcciones');
+            // Cerrar al hacer clic fuera del modal
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
 
-            CartState.addresses = data.addresses || [];
-            if (CartState.addresses.length > 0 && !CartState.selectedAddressId) {
-                CartState.selectedAddressId = CartState.addresses[0].id;
+        async function loadAddresses(force = false) {
+            const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
+
+            if (!websiteSlug) {
+                console.warn('No se pudo determinar el slug del sitio para cargar direcciones.');
+                return;
             }
-        } catch (error) {
-            console.error('Error obteniendo direcciones:', error);
-            const emptyMessage = document.getElementById('address-empty-message');
-            if (emptyMessage) {
-                emptyMessage.textContent = error.message;
-                emptyMessage.classList.remove('hidden');
+
+            if (CartState.addresses.length > 0 && !force) {
+                console.log('📍 Direcciones ya cargadas:', CartState.addresses.length);
+                return;
             }
-        } finally {
-            CartState.isLoadingAddresses = false;
+
+            CartState.isLoadingAddresses = true;
             renderAddressSection();
+
+            try {
+                console.log('📍 Cargando direcciones para website:', websiteSlug);
+                const response = await fetch(`/customer/addresses?website=${encodeURIComponent(websiteSlug)}`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('No se pudieron obtener las direcciones');
+                const data = await response.json();
+
+                console.log('📦 Datos de direcciones recibidos:', data);
+
+                if (!data.success) throw new Error(data.message || 'Error cargando direcciones');
+
+                CartState.addresses = data.addresses || [];
+                console.log('✅ Direcciones cargadas:', CartState.addresses.length);
+
+                if (CartState.addresses.length > 0 && !CartState.selectedAddressId) {
+                    CartState.selectedAddressId = CartState.addresses[0].id;
+                }
+            } catch (error) {
+                console.error('❌ Error obteniendo direcciones:', error);
+                const emptyMessage = document.getElementById('address-empty-message');
+                if (emptyMessage) {
+                    emptyMessage.textContent = error.message;
+                    emptyMessage.classList.remove('hidden');
+                }
+            } finally {
+                CartState.isLoadingAddresses = false;
+                renderAddressSection();
+            }
         }
-    }
 
-    function renderAddressSection() {
-        const loading = document.getElementById('address-loading');
-        const wrapper = document.getElementById('address-select-wrapper');
-        const emptyMessage = document.getElementById('address-empty-message');
-        const confirmBtn = document.getElementById('confirm-checkout-modal');
+        function renderAddressSection() {
+            const loading = document.getElementById('address-loading');
+            const wrapper = document.getElementById('address-select-wrapper');
+            const addAddressSection = document.getElementById('add-address-section');
+            const confirmBtn = document.getElementById('confirm-checkout-modal');
 
-        if (!loading || !wrapper || !emptyMessage || !confirmBtn) return;
+            if (!loading || !wrapper || !confirmBtn) return;
 
-        if (CartState.isLoadingAddresses) {
-            loading.classList.remove('hidden');
-            wrapper.classList.add('hidden');
-            emptyMessage.classList.add('hidden');
-            confirmBtn.disabled = true;
-            return;
-        }
+            if (CartState.isLoadingAddresses) {
+                loading.classList.remove('hidden');
+                wrapper.classList.add('hidden');
+                if (addAddressSection) addAddressSection.classList.add('hidden');
+                confirmBtn.disabled = true;
+                return;
+            }
 
-        loading.classList.add('hidden');
+            loading.classList.add('hidden');
 
-        if (CartState.addresses.length === 0) {
-            wrapper.classList.add('hidden');
-            emptyMessage.classList.remove('hidden');
-            confirmBtn.disabled = true;
-            toggleNewAddressForm(true);
-            return;
-        }
+            const emptyMessage = document.getElementById('address-empty-message');
+            const addBtn = document.getElementById('add-address-btn');
 
-        emptyMessage.classList.add('hidden');
-        wrapper.classList.remove('hidden');
-        confirmBtn.disabled = false;
+            if (CartState.addresses.length === 0) {
+                // No hay direcciones: mostrar aviso y botón "Añadir dirección"
+                wrapper.classList.add('hidden');
+                if (emptyMessage) emptyMessage.classList.remove('hidden');
+                if (addBtn) addBtn.classList.remove('hidden');
+                confirmBtn.disabled = true;
+                return;
+            }
 
-        wrapper.innerHTML = `
+            // Hay direcciones: mostrar selector y ocultar mensaje/botón
+            if (emptyMessage) emptyMessage.classList.add('hidden');
+            if (addBtn) addBtn.classList.add('hidden');
+            wrapper.classList.remove('hidden');
+            confirmBtn.disabled = false;
+
+            console.log('📋 Renderizando selector con direcciones:', CartState.addresses);
+
+            wrapper.innerHTML = `
             <label class="block text-sm font-medium text-gray-700 mb-1">Selecciona una dirección</label>
-            <select id="checkout-address-select" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
-                ${CartState.addresses.map(address => `
-                    <option value="${address.id}" ${address.id == CartState.selectedAddressId ? 'selected' : ''}>
-                        ${address.name ? address.name + ' - ' : ''}${address.address}, ${address.city}
-                    </option>
-                `).join('')}
+            <select id="checkout-address-select" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                ${CartState.addresses.map(address => {
+                    console.log('📍 Renderizando dirección:', address);
+                    const displayText = `${address.address || address.direccion || 'Sin dirección'}, ${address.state || address.barrio || ''}, ${address.city || address.ciudad || 'Sin ciudad'}`;
+                    console.log('📍 Texto a mostrar:', displayText);
+                    return `
+                        <option value="${address.id}" ${address.id == CartState.selectedAddressId ? 'selected' : ''}>
+                            ${displayText}
+                        </option>
+                    `;
+                }).join('')}
             </select>
         `;
 
-        document.getElementById('checkout-address-select').addEventListener('change', function () {
-            CartState.selectedAddressId = this.value;
-        });
-    }
-
-    function toggleNewAddressForm(show) {
-        const form = document.getElementById('new-address-form');
-        const button = document.getElementById('add-address-btn');
-        if (!form || !button) return;
-
-        if (show) {
-            form.classList.remove('hidden');
-            button.classList.add('hidden');
-        } else {
-            form.classList.add('hidden');
-            button.classList.remove('hidden');
-        }
-    }
-
-    async function saveNewAddress() {
-        const saveBtn = document.getElementById('save-new-address');
-        const saveBtnText = document.getElementById('save-address-btn-text');
-        const saveSpinner = document.getElementById('save-address-spinner');
-        const confirmBtn = document.getElementById('confirm-checkout-modal');
-        const errorBox = document.getElementById('new-address-error');
-        if (errorBox) errorBox.classList.add('hidden');
-
-        const data = {
-            name: document.getElementById('new-address-name').value.trim(),
-            address: document.getElementById('new-address-address').value.trim(),
-            city: document.getElementById('new-address-city').value.trim(),
-            state: document.getElementById('new-address-state').value.trim(),
-            postal_code: document.getElementById('new-address-postal').value.trim(),
-            country: document.getElementById('new-address-country').value.trim(),
-            phone: document.getElementById('new-address-phone').value.trim(),
-            reference: document.getElementById('new-address-reference').value.trim(),
-            website: templateConfig.websiteSlug
-        };
-
-        if (!data.name || !data.address || !data.city) {
-            showNewAddressError('Por favor completa los campos requeridos.');
-            return;
+            document.getElementById('checkout-address-select').addEventListener('change', function() {
+                CartState.selectedAddressId = this.value;
+            });
         }
 
-        try {
-            // Mostrar estado de carga en el botón de guardar
-            if (saveBtn) saveBtn.disabled = true;
-            if (saveBtnText) saveBtnText.textContent = 'Guardando...';
-            if (saveSpinner) saveSpinner.classList.remove('hidden');
+
+        async function saveNewAddress() {
+            const saveBtn = document.getElementById('save-new-address');
+            const saveBtnText = document.getElementById('save-address-btn-text');
+            const saveSpinner = document.getElementById('save-address-spinner');
+            const confirmBtn = document.getElementById('confirm-checkout-modal');
+            const errorBox = document.getElementById('new-address-error');
+            if (errorBox) errorBox.classList.add('hidden');
+
+            const data = {
+                direccion: document.getElementById('new-address-address').value.trim(),
+                ciudad: document.getElementById('new-address-city').value.trim(),
+                barrio: document.getElementById('new-address-barrio').value.trim(),
+                codigo_postal: document.getElementById('new-address-postal').value.trim(),
+                website: templateConfig.websiteSlug
+            };
+
+            if (!data.direccion || !data.ciudad || !data.barrio) {
+                showNewAddressError('Por favor completa los campos requeridos (dirección, ciudad y barrio).');
+                return;
+            }
+
+            try {
+                // Mostrar estado de carga en el botón de guardar
+                if (saveBtn) saveBtn.disabled = true;
+                if (saveBtnText) saveBtnText.textContent = 'Guardando...';
+                if (saveSpinner) saveSpinner.classList.remove('hidden');
+                if (confirmBtn) confirmBtn.disabled = true;
+                const response = await fetch('/customer/addresses', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'No se pudo crear la dirección');
+                }
+
+                CartState.addresses = result.addresses || [];
+                if (CartState.addresses.length > 0) {
+                    CartState.selectedAddressId = CartState.addresses[CartState.addresses.length - 1].id;
+                }
+                toggleNewAddressForm(false);
+                renderAddressSection();
+                showToast('Dirección guardada correctamente');
+            } catch (error) {
+                console.error('Error guardando dirección:', error);
+                showNewAddressError(error.message);
+            } finally {
+                // Restaurar estado de los botones
+                if (saveBtn) saveBtn.disabled = false;
+                if (saveBtnText) saveBtnText.textContent = 'Guardar dirección';
+                if (saveSpinner) saveSpinner.classList.add('hidden');
+                if (confirmBtn) confirmBtn.disabled = CartState.addresses.length === 0;
+            }
+        }
+
+        function showNewAddressError(message) {
+            const errorBox = document.getElementById('new-address-error');
+            if (!errorBox) return;
+            errorBox.textContent = message;
+            errorBox.classList.remove('hidden');
+        }
+
+        function confirmCheckoutData() {
+            const notesField = document.getElementById('checkout-notes');
+            const errorLabel = document.getElementById('checkout-modal-error');
+            const paymentMethodError = document.getElementById('payment-method-error');
+            const confirmBtn = document.getElementById('confirm-checkout-modal');
+            const btnText = document.getElementById('confirm-btn-text');
+            const spinner = document.getElementById('confirm-spinner');
+
+            if (!notesField) return;
+
+            // Limpiar errores previos
+            if (errorLabel) errorLabel.classList.add('hidden');
+            if (paymentMethodError) paymentMethodError.classList.add('hidden');
+
+            if (!CartState.selectedAddressId) {
+                if (errorLabel) {
+                    errorLabel.textContent = 'Selecciona o crea una dirección antes de continuar.';
+                    errorLabel.classList.remove('hidden');
+                }
+                return;
+            }
+
+            const selectedAddress = CartState.addresses.find(a => a.id == CartState.selectedAddressId);
+            if (!selectedAddress) {
+                if (errorLabel) {
+                    errorLabel.textContent = 'La dirección seleccionada no es válida.';
+                    errorLabel.classList.remove('hidden');
+                }
+                return;
+            }
+
+            // Validar selección de método de pago
+            const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked');
+            if (!selectedPaymentMethod) {
+                if (paymentMethodError) {
+                    paymentMethodError.textContent = 'Por favor selecciona un método de pago';
+                    paymentMethodError.classList.remove('hidden');
+                }
+                // Scroll hacia el error
+                paymentMethodError?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                return;
+            }
+
+            CartState.selectedPaymentMethod = selectedPaymentMethod.value;
+            console.log('💳 Método de pago seleccionado:', CartState.selectedPaymentMethod);
+
+            // Mostrar estado de carga
             if (confirmBtn) confirmBtn.disabled = true;
-            const response = await fetch('/customer/addresses', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
+            if (btnText) btnText.textContent = 'Procesando pago...';
+            if (spinner) spinner.classList.remove('hidden');
+            if (errorLabel) errorLabel.classList.add('hidden');
 
-            const result = await response.json();
-            if (!response.ok || !result.success) {
-                throw new Error(result.message || 'No se pudo crear la dirección');
-            }
+            CartState.checkoutData = {
+                addressId: selectedAddress.id,
+                address: selectedAddress.address,
+                city: selectedAddress.city,
+                state: selectedAddress.state,
+                phone: selectedAddress.phone,
+                name: selectedAddress.name,
+                notes: notesField.value.trim(),
+                paymentMethod: CartState.selectedPaymentMethod
+            };
 
-            CartState.addresses = result.addresses || [];
-            if (CartState.addresses.length > 0) {
-                CartState.selectedAddressId = CartState.addresses[CartState.addresses.length - 1].id;
-            }
-            toggleNewAddressForm(false);
-            renderAddressSection();
-            showToast('Dirección guardada correctamente');
-        } catch (error) {
-            console.error('Error guardando dirección:', error);
-            showNewAddressError(error.message);
-        } finally {
-            // Restaurar estado de los botones
-            if (saveBtn) saveBtn.disabled = false;
-            if (saveBtnText) saveBtnText.textContent = 'Guardar dirección';
-            if (saveSpinner) saveSpinner.classList.add('hidden');
-            if (confirmBtn) confirmBtn.disabled = CartState.addresses.length === 0;
-        }
-    }
+            localStorage.setItem('cartCheckoutData', JSON.stringify(CartState.checkoutData));
 
-    function showNewAddressError(message) {
-        const errorBox = document.getElementById('new-address-error');
-        if (!errorBox) return;
-        errorBox.textContent = message;
-        errorBox.classList.remove('hidden');
-    }
-
-    function confirmCheckoutData() {
-        const notesField = document.getElementById('checkout-notes');
-        const errorLabel = document.getElementById('checkout-modal-error');
-        const paymentMethodError = document.getElementById('payment-method-error');
-        const confirmBtn = document.getElementById('confirm-checkout-modal');
-        const btnText = document.getElementById('confirm-btn-text');
-        const spinner = document.getElementById('confirm-spinner');
-
-        if (!notesField) return;
-
-        // Limpiar errores previos
-        if (errorLabel) errorLabel.classList.add('hidden');
-        if (paymentMethodError) paymentMethodError.classList.add('hidden');
-
-        if (!CartState.selectedAddressId) {
-            if (errorLabel) {
-                errorLabel.textContent = 'Selecciona o crea una dirección antes de continuar.';
-                errorLabel.classList.remove('hidden');
-            }
-            return;
-        }
-
-        const selectedAddress = CartState.addresses.find(a => a.id == CartState.selectedAddressId);
-        if (!selectedAddress) {
-            if (errorLabel) {
-                errorLabel.textContent = 'La dirección seleccionada no es válida.';
-                errorLabel.classList.remove('hidden');
-            }
-            return;
-        }
-
-        // Validar selección de método de pago
-        const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked');
-        if (!selectedPaymentMethod) {
-            if (paymentMethodError) {
-                paymentMethodError.textContent = 'Por favor selecciona un método de pago';
-                paymentMethodError.classList.remove('hidden');
-            }
-            // Scroll hacia el error
-            paymentMethodError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            return;
-        }
-
-        CartState.selectedPaymentMethod = selectedPaymentMethod.value;
-        console.log('💳 Método de pago seleccionado:', CartState.selectedPaymentMethod);
-
-        // Mostrar estado de carga
-        if (confirmBtn) confirmBtn.disabled = true;
-        if (btnText) btnText.textContent = 'Procesando pago...';
-        if (spinner) spinner.classList.remove('hidden');
-        if (errorLabel) errorLabel.classList.add('hidden');
-
-        CartState.checkoutData = {
-            addressId: selectedAddress.id,
-            address: selectedAddress.address,
-            city: selectedAddress.city,
-            state: selectedAddress.state,
-            phone: selectedAddress.phone,
-            name: selectedAddress.name,
-            notes: notesField.value.trim(),
-            paymentMethod: CartState.selectedPaymentMethod
-        };
-
-        localStorage.setItem('cartCheckoutData', JSON.stringify(CartState.checkoutData));
-        
-        // Pequeño delay para que se vea el loading
-        setTimeout(() => {
-            toggleCheckoutModal(false);
-            proceedToPayment();
-            
-            // Restaurar estado del botón (por si hay error y vuelve)
+            // Pequeño delay para que se vea el loading
             setTimeout(() => {
-                if (confirmBtn) confirmBtn.disabled = false;
-                if (btnText) btnText.textContent = 'Confirmar';
-                if (spinner) spinner.classList.add('hidden');
-            }, 1000);
-        }, 300);
-    }
+                toggleCheckoutModal(false);
+                proceedToPayment();
 
-    function toggleCheckoutModal(show) {
-        const modal = document.getElementById('checkout-modal');
-        if (!modal) return;
-        if (show) {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        } else {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            document.body.style.overflow = 'auto';
+                // Restaurar estado del botón (por si hay error y vuelve)
+                setTimeout(() => {
+                    if (confirmBtn) confirmBtn.disabled = false;
+                    if (btnText) btnText.textContent = 'Confirmar';
+                    if (spinner) spinner.classList.add('hidden');
+                }, 1000);
+            }, 300);
         }
-    }
 
-    function proceedToPayment() {
-        const totals = computeTotals();
-        const payload = {
-            cart: CartState.items.map(item => ({ ...item })),
-            totals,
-            customer: {
-                ...CartState.checkoutData
-            },
-            paymentMethod: CartState.selectedPaymentMethod
+        function toggleCheckoutModal(show) {
+            const modal = document.getElementById('checkout-modal');
+            if (!modal) return;
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function proceedToPayment() {
+            const totals = computeTotals();
+            const payload = {
+                cart: CartState.items.map(item => ({
+                    ...item
+                })),
+                totals,
+                customer: {
+                    ...CartState.checkoutData
+                },
+                paymentMethod: CartState.selectedPaymentMethod
+            };
+
+            console.log('💰 Procesando pago con método:', CartState.selectedPaymentMethod);
+
+            // Si es pago contra entrega, crear el pedido directamente
+            if (CartState.selectedPaymentMethod === 'cash_on_delivery') {
+                processCashOnDeliveryOrder(payload);
+            }
+            // Si es pago en línea, usar la pasarela configurada
+            else if (CartState.selectedPaymentMethod === 'online_payment') {
+                const handler = window.PaymentHandlers?.[templateConfig.paymentHandler];
+
+                if (handler && typeof handler.checkout === 'function') {
+                    handler.checkout(payload);
+                } else {
+                    alert('No hay pasarela de pago configurada.');
+                }
+            }
+        }
+
+        // Función para procesar pedidos con pago contra entrega
+        async function processCashOnDeliveryOrder(payload) {
+            console.log('📦 Creando pedido con pago contra entrega...');
+            console.log('📋 Datos del payload:', payload);
+
+            try {
+                const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
+
+                // Obtener datos del cliente autenticado
+                const authResponse = await fetch(`/${websiteSlug}/api/check-auth`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const authData = await authResponse.json();
+                console.log('👤 Datos del cliente autenticado:', authData);
+
+                const customerData = {
+                    name: authData.user?.name || payload.customer.name || 'Cliente',
+                    email: authData.user?.email || 'cliente@tienda.com',
+                    phone: payload.customer.phone || authData.user?.phone || ''
+                };
+
+                console.log('📝 Datos del cliente a enviar:', customerData);
+
+                const requestBody = {
+                    website_slug: websiteSlug,
+                    items: payload.cart.map(item => ({
+                        product_id: item.id,
+                        name: item.name,
+                        quantity: item.quantity,
+                        price: item.price,
+                        iva: item.iva || 0
+                    })),
+                    customer: customerData,
+                    shipping_address: {
+                        address: payload.customer.address,
+                        city: payload.customer.city,
+                        state: payload.customer.state,
+                        phone: payload.customer.phone,
+                        name: payload.customer.name
+                    },
+                    billing_address: {
+                        address: payload.customer.address,
+                        city: payload.customer.city,
+                        state: payload.customer.state,
+                        phone: payload.customer.phone,
+                        name: payload.customer.name
+                    },
+                    payment_method: 'cash_on_delivery',
+                    notes: payload.customer.notes,
+                    totals: payload.totals
+                };
+
+                console.log('📤 Enviando pedido:', requestBody);
+
+                const response = await fetch(`/${websiteSlug}/checkout/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('✅ Pedido creado exitosamente:', data.order);
+
+                    // Limpiar carrito
+                    CartState.items = [];
+                    persistCart();
+                    localStorage.removeItem('cartCheckoutData');
+
+                    // Redirigir a página de confirmación
+                    window.location.href = `/${websiteSlug}/order/${data.order.order_number}`;
+                } else {
+                    alert(data.message || 'Error al procesar el pedido');
+                }
+            } catch (error) {
+                console.error('Error procesando pedido:', error);
+                alert('Error al procesar el pedido. Por favor intenta nuevamente.');
+            }
+        }
+
+        window.getCartState = function() {
+            return CartState;
         };
 
-        console.log('💰 Procesando pago con método:', CartState.selectedPaymentMethod);
-
-        // Si es pago contra entrega, crear el pedido directamente
-        if (CartState.selectedPaymentMethod === 'cash_on_delivery') {
-            processCashOnDeliveryOrder(payload);
-        } 
-        // Si es pago en línea, usar la pasarela configurada
-        else if (CartState.selectedPaymentMethod === 'online_payment') {
-            const handler = window.PaymentHandlers?.[templateConfig.paymentHandler];
-
-            if (handler && typeof handler.checkout === 'function') {
-                handler.checkout(payload);
-            } else {
-                alert('No hay pasarela de pago configurada.');
-            }
-        }
-    }
-    
-    // Función para procesar pedidos con pago contra entrega
-    async function processCashOnDeliveryOrder(payload) {
-        console.log('📦 Creando pedido con pago contra entrega...');
-        console.log('📋 Datos del payload:', payload);
-        
-        try {
-            const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
-            
-            // Obtener datos del cliente autenticado
-            const authResponse = await fetch(`/${websiteSlug}/api/check-auth`, {
-                method: 'GET',
-                headers: { 'Accept': 'application/json' }
-            });
-            
-            const authData = await authResponse.json();
-            console.log('👤 Datos del cliente autenticado:', authData);
-            
-            const customerData = {
-                name: authData.user?.name || payload.customer.name || 'Cliente',
-                email: authData.user?.email || 'cliente@tienda.com',
-                phone: payload.customer.phone || authData.user?.phone || ''
-            };
-            
-            console.log('📝 Datos del cliente a enviar:', customerData);
-            
-            const requestBody = {
-                website_slug: websiteSlug,
-                items: payload.cart.map(item => ({
-                    product_id: item.id,
-                    name: item.name,
-                    quantity: item.quantity,
-                    price: item.price,
-                    iva: item.iva || 0
-                })),
-                customer: customerData,
-                shipping_address: {
-                    address: payload.customer.address,
-                    city: payload.customer.city,
-                    state: payload.customer.state,
-                    phone: payload.customer.phone,
-                    name: payload.customer.name
-                },
-                billing_address: {
-                    address: payload.customer.address,
-                    city: payload.customer.city,
-                    state: payload.customer.state,
-                    phone: payload.customer.phone,
-                    name: payload.customer.name
-                },
-                payment_method: 'cash_on_delivery',
-                notes: payload.customer.notes,
-                totals: payload.totals
-            };
-            
-            console.log('📤 Enviando pedido:', requestBody);
-            
-            const response = await fetch(`/${websiteSlug}/checkout/process`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                console.log('✅ Pedido creado exitosamente:', data.order);
-                
-                // Limpiar carrito
-                CartState.items = [];
-                persistCart();
-                localStorage.removeItem('cartCheckoutData');
-                
-                // Redirigir a página de confirmación
-                window.location.href = `/${websiteSlug}/order/${data.order.order_number}`;
-            } else {
-                alert(data.message || 'Error al procesar el pedido');
-            }
-        } catch (error) {
-            console.error('Error procesando pedido:', error);
-            alert('Error al procesar el pedido. Por favor intenta nuevamente.');
-        }
-    }
-
-    window.getCartState = function () {
-        return CartState;
-    };
-
-})();
+    })();
 </script>
-

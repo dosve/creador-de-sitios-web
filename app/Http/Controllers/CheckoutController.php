@@ -486,10 +486,14 @@ class CheckoutController extends Controller
                     'id' => null,
                     'title' => 'Mis Órdenes',
                     'slug' => 'my-orders',
+                    'meta_title' => 'Mis Órdenes',
                     'meta_description' => 'Revisa el estado y detalles de tus compras',
+                    'meta_keywords' => null,
                     'html_content' => view('checkout.my-orders-content', compact('website', 'orders'))->render(),
                     'css_content' => null,
+                    'js_content' => null,
                     'enable_store' => true, // Mostrar carrito
+                    'is_home' => false,
                 ];
                 
                 $templateFile = $template['templates']['page'] ?? 'template';
@@ -519,7 +523,25 @@ class CheckoutController extends Controller
         }
         
         // Fallback al layout genérico si no tiene plantilla
-        return view('checkout.my-orders', compact('website', 'orders'));
+        $page = (object)[
+            'id' => null,
+            'title' => 'Mis Pedidos',
+            'slug' => 'my-orders',
+            'meta_title' => 'Mis Pedidos',
+            'meta_description' => 'Revisa el estado y detalles de tus compras',
+            'meta_keywords' => null,
+            'html_content' => view('checkout.my-orders-content', compact('website', 'orders'))->render(),
+            'css_content' => null,
+            'js_content' => null,
+            'enable_store' => true,
+            'is_home' => false,
+        ];
+        
+        return view('public.blank', [
+            'website' => $website,
+            'page' => $page,
+            'pages' => $website->pages()->where('is_published', true)->get(),
+        ]);
     }
 
     /**
