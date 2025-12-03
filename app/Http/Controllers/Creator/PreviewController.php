@@ -43,8 +43,36 @@ class PreviewController extends Controller
             $query->where('is_active', true)->orderBy('order');
         }, 'items.children.page'])->get();
 
-        // Si el sitio web tiene plantilla aplicada, procesar en tiempo real con modo preview
+        // Si el sitio web tiene plantilla aplicada, intentar renderizarla
         if ($website->template_id) {
+            // Primero intentar cargar desde archivo Blade
+            $templateService = app(\App\Services\TemplateService::class);
+            $templateArray = $templateService->find($website->template_id);
+
+            if ($templateArray) {
+                // Renderizar la vista Blade directamente
+                $templateFile = $templateArray['templates']['home'] ?? 'template';
+                $viewPath = 'templates.' . $templateArray['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
+
+                if (view()->exists($viewPath)) {
+                    $templateConfig = \App\Models\TemplateConfiguration::firstOrCreate(
+                        ['website_id' => $website->id, 'template_slug' => $templateArray['slug']],
+                        ['customization' => $templateArray['customization'] ?? []]
+                    );
+
+                    $customization = $templateConfig->customization ?? $templateArray['customization'] ?? [];
+
+                    return view($viewPath, [
+                        'website' => $website,
+                        'page' => $homePage,
+                        'pages' => $pages,
+                        'menus' => $menus,
+                        'customization' => $customization
+                    ]);
+                }
+            }
+
+            // Si no está en archivo, intentar desde base de datos
             $template = $website->template;
             if ($template) {
                 // Procesar la plantilla en tiempo real con modo preview
@@ -78,12 +106,12 @@ class PreviewController extends Controller
         \Log::info("=== PREVIEW CONTROLLER DEBUG ===");
         \Log::info("Página: " . $page->title . " (ID: " . $page->id . ")");
         \Log::info("Slug: " . $page->slug);
-        
+
         // Log directo a archivo para debug
         file_put_contents(storage_path('logs/debug.log'), "=== PREVIEW CONTROLLER DEBUG ===\n", FILE_APPEND);
         file_put_contents(storage_path('logs/debug.log'), "Página: " . $page->title . " (ID: " . $page->id . ")\n", FILE_APPEND);
         file_put_contents(storage_path('logs/debug.log'), "Slug: " . $page->slug . "\n", FILE_APPEND);
-        
+
         // Obtener sitio web de la sesión
         $website = Website::find(session('selected_website_id'));
 
@@ -96,7 +124,7 @@ class PreviewController extends Controller
 
         \Log::info("Sitio web: " . $website->name . " (ID: " . $website->id . ")");
         \Log::info("Template ID: " . ($website->template_id ?? 'NULL'));
-        
+
         file_put_contents(storage_path('logs/debug.log'), "Sitio web: " . $website->name . " (ID: " . $website->id . ")\n", FILE_APPEND);
         file_put_contents(storage_path('logs/debug.log'), "Template ID: " . ($website->template_id ?? 'NULL') . "\n", FILE_APPEND);
 
@@ -150,8 +178,8 @@ class PreviewController extends Controller
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
-    <div class="max-w-4xl mx-auto px-4 py-16">
-        <h1 class="text-4xl font-bold text-gray-900 mb-4">' . htmlspecialchars($page->title) . '</h1>
+    <div class="max-w-4xl px-4 py-16 mx-auto">
+        <h1 class="mb-4 text-4xl font-bold text-gray-900">' . htmlspecialchars($page->title) . '</h1>
         ' . ($page->html_content ?: '<p class="text-gray-600">Esta página aún no tiene contenido.</p>') . '
     </div>
 </body>
@@ -416,7 +444,7 @@ class PreviewController extends Controller
                     });
                 </script>
             ';
-            
+
             // Script de productos
             $productsScript = view('components.products-script', [
                 'apiKey' => $website->api_key ?? '',
@@ -436,7 +464,7 @@ class PreviewController extends Controller
 
             // Cargar el handler de pago según la pasarela configurada
             $paymentGateway = $website->default_payment_gateway ?? 'epayco';
-            
+
             if ($paymentGateway === 'wompi' && $website->wompi_public_key) {
                 // Handler de Wompi
                 $paymentHandler = view('components.payments.wompi.handler', [
@@ -444,7 +472,7 @@ class PreviewController extends Controller
                     'privateKey' => $website->wompi_private_key ?? '',
                     'integrityKey' => $website->wompi_integrity_key ?? ''
                 ])->render();
-                
+
                 $epaycoSDK = ''; // No cargar ePayco si se usa Wompi
             } else {
                 // Handler de ePayco (por defecto)
@@ -533,22 +561,22 @@ class PreviewController extends Controller
      */
     private function generateBlogPageContent($website, $blogPosts, $categories)
     {
-        $blogHtml = '<section class="blog-page py-12">';
-        $blogHtml .= '<div class="container mx-auto px-4">';
+        $blogHtml = '<section class="py-12 blog-page">';
+        $blogHtml .= '<div class="container px-4 mx-auto">';
 
         // Header del blog
-        $blogHtml .= '<div class="text-center mb-12">';
-        $blogHtml .= '<h1 class="text-4xl font-bold text-gray-900 mb-4">Blog</h1>';
+        $blogHtml .= '<div class="mb-12 text-center">';
+        $blogHtml .= '<h1 class="mb-4 text-4xl font-bold text-gray-900">Blog</h1>';
         $blogHtml .= '<p class="text-xl text-gray-600">Descubre nuestras últimas publicaciones y tendencias</p>';
         $blogHtml .= '</div>';
 
         if ($blogPosts->count() > 0) {
             // Grid de posts
-            $blogHtml .= '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">';
+            $blogHtml .= '<div class="grid grid-cols-1 gap-8 mb-12 md:grid-cols-2 lg:grid-cols-3">';
 
             foreach ($blogPosts as $post) {
-                $blogHtml .= '<article class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">';
-                $blogHtml .= '<div class="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">';
+                $blogHtml .= '<article class="overflow-hidden transition-shadow bg-white rounded-lg shadow-lg hover:shadow-xl">';
+                $blogHtml .= '<div class="flex items-center justify-center w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100">';
 
                 if ($post->category) {
                     $blogHtml .= '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">';
@@ -558,20 +586,20 @@ class PreviewController extends Controller
 
                 $blogHtml .= '</div>';
                 $blogHtml .= '<div class="p-6">';
-                $blogHtml .= '<div class="flex items-center text-sm text-gray-500 mb-2">';
+                $blogHtml .= '<div class="flex items-center mb-2 text-sm text-gray-500">';
                 $blogHtml .= '<span>' . $post->created_at->format('d M, Y') . '</span>';
                 $blogHtml .= '<span class="mx-2">•</span>';
                 $blogHtml .= '<span>' . ceil(str_word_count(strip_tags($post->content)) / 200) . ' min lectura</span>';
                 $blogHtml .= '</div>';
 
-                $blogHtml .= '<h3 class="text-xl font-bold text-gray-900 mb-2 hover:text-blue-600">';
+                $blogHtml .= '<h3 class="mb-2 text-xl font-bold text-gray-900 hover:text-blue-600">';
                 $blogHtml .= '<a href="/creator/websites/' . $website->id . '/preview/blog/' . $post->id . '">';
                 $blogHtml .= htmlspecialchars($post->title);
                 $blogHtml .= '</a>';
                 $blogHtml .= '</h3>';
 
                 $excerpt = $post->excerpt ?: Str::limit(strip_tags($post->content), 150);
-                $blogHtml .= '<p class="text-gray-600 mb-4">' . htmlspecialchars($excerpt) . '</p>';
+                $blogHtml .= '<p class="mb-4 text-gray-600">' . htmlspecialchars($excerpt) . '</p>';
 
                 if ($post->tags->count() > 0) {
                     $blogHtml .= '<div class="flex flex-wrap gap-1 mb-4">';
@@ -585,10 +613,10 @@ class PreviewController extends Controller
 
                 $blogHtml .= '<div class="flex items-center justify-between">';
                 $blogHtml .= '<div class="flex items-center">';
-                $blogHtml .= '<div class="w-6 h-6 bg-gray-300 rounded-full mr-2"></div>';
+                $blogHtml .= '<div class="w-6 h-6 mr-2 bg-gray-300 rounded-full"></div>';
                 $blogHtml .= '<span class="text-sm text-gray-600">Autor</span>';
                 $blogHtml .= '</div>';
-                $blogHtml .= '<a href="/creator/websites/' . $website->id . '/preview/blog/' . $post->id . '" class="text-blue-600 hover:text-blue-800 text-sm">Leer más →</a>';
+                $blogHtml .= '<a href="/creator/websites/' . $website->id . '/preview/blog/' . $post->id . '" class="text-sm text-blue-600 hover:text-blue-800">Leer más →</a>';
                 $blogHtml .= '</div>';
                 $blogHtml .= '</div>';
                 $blogHtml .= '</article>';
@@ -604,13 +632,13 @@ class PreviewController extends Controller
             }
         } else {
             // Estado vacío
-            $blogHtml .= '<div class="text-center py-12">';
-            $blogHtml .= '<div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">';
+            $blogHtml .= '<div class="py-12 text-center">';
+            $blogHtml .= '<div class="flex items-center justify-center w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full">';
             $blogHtml .= '<svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
             $blogHtml .= '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>';
             $blogHtml .= '</svg>';
             $blogHtml .= '</div>';
-            $blogHtml .= '<h3 class="text-xl font-medium text-gray-900 mb-2">No hay artículos publicados</h3>';
+            $blogHtml .= '<h3 class="mb-2 text-xl font-medium text-gray-900">No hay artículos publicados</h3>';
             $blogHtml .= '<p class="text-gray-500">Pronto tendremos contenido interesante para compartir contigo.</p>';
             $blogHtml .= '</div>';
         }
@@ -680,20 +708,20 @@ class PreviewController extends Controller
      */
     private function generateBlogPostContent($website, $blogPost, $relatedPosts)
     {
-        $postHtml = '<section class="blog-post-page py-12">';
-        $postHtml .= '<div class="container mx-auto px-4">';
+        $postHtml = '<section class="py-12 blog-post-page">';
+        $postHtml .= '<div class="container px-4 mx-auto">';
 
         // Header del post
-        $postHtml .= '<div class="text-center mb-12">';
+        $postHtml .= '<div class="mb-12 text-center">';
         if ($blogPost->category) {
-            $postHtml .= '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4">';
+            $postHtml .= '<span class="inline-flex items-center px-3 py-1 mb-4 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">';
             $postHtml .= htmlspecialchars($blogPost->category->name);
             $postHtml .= '</span>';
         }
 
-        $postHtml .= '<h1 class="text-4xl font-bold text-gray-900 mb-4">' . htmlspecialchars($blogPost->title) . '</h1>';
+        $postHtml .= '<h1 class="mb-4 text-4xl font-bold text-gray-900">' . htmlspecialchars($blogPost->title) . '</h1>';
 
-        $postHtml .= '<div class="flex items-center justify-center text-sm text-gray-500 mb-6">';
+        $postHtml .= '<div class="flex items-center justify-center mb-6 text-sm text-gray-500">';
         $postHtml .= '<span>' . $blogPost->created_at->format('d M, Y') . '</span>';
         $postHtml .= '<span class="mx-2">•</span>';
         $postHtml .= '<span>' . ceil(str_word_count(strip_tags($blogPost->content)) / 200) . ' min lectura</span>';
@@ -702,7 +730,7 @@ class PreviewController extends Controller
         if ($blogPost->tags->count() > 0) {
             $postHtml .= '<div class="flex flex-wrap justify-center gap-2">';
             foreach ($blogPost->tags as $tag) {
-                $postHtml .= '<span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">';
+                $postHtml .= '<span class="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-800 bg-gray-100 rounded">';
                 $postHtml .= htmlspecialchars($tag->name);
                 $postHtml .= '</span>';
             }
@@ -712,12 +740,12 @@ class PreviewController extends Controller
 
         // Contenido del post
         $postHtml .= '<div class="max-w-4xl mx-auto">';
-        $postHtml .= '<div class="bg-white rounded-lg shadow-lg overflow-hidden">';
+        $postHtml .= '<div class="overflow-hidden bg-white rounded-lg shadow-lg">';
         $postHtml .= '<div class="p-8">';
 
         // Excerpt si existe
         if ($blogPost->excerpt) {
-            $postHtml .= '<div class="text-xl text-gray-600 mb-8 font-medium">';
+            $postHtml .= '<div class="mb-8 text-xl font-medium text-gray-600">';
             $postHtml .= htmlspecialchars($blogPost->excerpt);
             $postHtml .= '</div>';
         }
@@ -729,11 +757,11 @@ class PreviewController extends Controller
 
         // Tags al final
         if ($blogPost->tags->count() > 0) {
-            $postHtml .= '<div class="mt-8 pt-8 border-t border-gray-200">';
-            $postHtml .= '<h4 class="text-sm font-medium text-gray-900 mb-3">Etiquetas:</h4>';
+            $postHtml .= '<div class="pt-8 mt-8 border-t border-gray-200">';
+            $postHtml .= '<h4 class="mb-3 text-sm font-medium text-gray-900">Etiquetas:</h4>';
             $postHtml .= '<div class="flex flex-wrap gap-2">';
             foreach ($blogPost->tags as $tag) {
-                $postHtml .= '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">';
+                $postHtml .= '<span class="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">';
                 $postHtml .= htmlspecialchars($tag->name);
                 $postHtml .= '</span>';
             }
@@ -748,12 +776,12 @@ class PreviewController extends Controller
         // Posts relacionados
         if ($relatedPosts->count() > 0) {
             $postHtml .= '<div class="mt-12">';
-            $postHtml .= '<h3 class="text-2xl font-bold text-gray-900 mb-6">Artículos relacionados</h3>';
-            $postHtml .= '<div class="grid grid-cols-1 md:grid-cols-3 gap-6">';
+            $postHtml .= '<h3 class="mb-6 text-2xl font-bold text-gray-900">Artículos relacionados</h3>';
+            $postHtml .= '<div class="grid grid-cols-1 gap-6 md:grid-cols-3">';
 
             foreach ($relatedPosts as $relatedPost) {
-                $postHtml .= '<article class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">';
-                $postHtml .= '<div class="w-full h-32 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">';
+                $postHtml .= '<article class="overflow-hidden transition-shadow bg-white rounded-lg shadow-lg hover:shadow-xl">';
+                $postHtml .= '<div class="flex items-center justify-center w-full h-32 bg-gradient-to-br from-blue-100 to-purple-100">';
                 if ($relatedPost->category) {
                     $postHtml .= '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">';
                     $postHtml .= htmlspecialchars($relatedPost->category->name);
@@ -761,15 +789,15 @@ class PreviewController extends Controller
                 }
                 $postHtml .= '</div>';
                 $postHtml .= '<div class="p-4">';
-                $postHtml .= '<div class="text-sm text-gray-500 mb-2">';
+                $postHtml .= '<div class="mb-2 text-sm text-gray-500">';
                 $postHtml .= $relatedPost->created_at->format('d M, Y');
                 $postHtml .= '</div>';
-                $postHtml .= '<h4 class="text-lg font-bold text-gray-900 mb-2 hover:text-blue-600">';
+                $postHtml .= '<h4 class="mb-2 text-lg font-bold text-gray-900 hover:text-blue-600">';
                 $postHtml .= '<a href="/creator/websites/' . $website->id . '/preview/blog/' . $relatedPost->id . '">';
                 $postHtml .= htmlspecialchars($relatedPost->title);
                 $postHtml .= '</a>';
                 $postHtml .= '</h4>';
-                $postHtml .= '<p class="text-gray-600 text-sm">';
+                $postHtml .= '<p class="text-sm text-gray-600">';
                 $postHtml .= htmlspecialchars(Str::limit(strip_tags($relatedPost->content), 100));
                 $postHtml .= '</p>';
                 $postHtml .= '</div>';
@@ -973,8 +1001,8 @@ class PreviewController extends Controller
             return '';
         }
 
-        $navigationHtml = '<div class="preview-navigation bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">';
-        $navigationHtml .= '<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">';
+        $navigationHtml = '<div class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm preview-navigation">';
+        $navigationHtml .= '<div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">';
         $navigationHtml .= '<div class="flex items-center justify-between h-16">';
 
         // Logo/Nombre del sitio
@@ -986,14 +1014,14 @@ class PreviewController extends Controller
 
         // Navegación de páginas
         $navigationHtml .= '<div class="flex items-center space-x-1">';
-        $navigationHtml .= '<div class="hidden md:flex items-center space-x-1">';
+        $navigationHtml .= '<div class="items-center hidden space-x-1 md:flex">';
 
         foreach ($pages as $page) {
             $isActive = $currentPage && $currentPage->id === $page->id;
             $activeClass = $isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100';
             $url = route('creator.preview.page', $page->id);
 
-            $navigationHtml .= '<a href="' . $url . '" class="px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ' . $activeClass . '">';
+            $navigationHtml .= '<a href="' . $url . '" class="px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md ' . $activeClass . '">';
             $navigationHtml .= htmlspecialchars($page->title);
             $navigationHtml .= '</a>';
         }
@@ -1005,13 +1033,13 @@ class PreviewController extends Controller
         $navigationHtml .= '<div class="relative">';
         $navigationHtml .= '<button id="mobile-menu-button" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none">';
         $navigationHtml .= '<span id="current-page-name">' . htmlspecialchars($currentPage ? $currentPage->title : 'Páginas') . '</span>';
-        $navigationHtml .= '<svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
+        $navigationHtml .= '<svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
         $navigationHtml .= '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>';
         $navigationHtml .= '</svg>';
         $navigationHtml .= '</button>';
 
         // Menú desplegable móvil
-        $navigationHtml .= '<div id="mobile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">';
+        $navigationHtml .= '<div id="mobile-menu" class="absolute right-0 z-50 hidden w-48 mt-2 bg-white border border-gray-200 rounded-md shadow-lg">';
         $navigationHtml .= '<div class="py-1">';
 
         foreach ($pages as $page) {
@@ -1032,7 +1060,7 @@ class PreviewController extends Controller
 
         // Botón de regreso al editor
         $navigationHtml .= '<div class="flex items-center space-x-2">';
-        $navigationHtml .= '<a href="' . route('creator.pages.index') . '" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">';
+        $navigationHtml .= '<a href="' . route('creator.pages.index') . '" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900">';
         $navigationHtml .= '<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
         $navigationHtml .= '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>';
         $navigationHtml .= '</svg>';
@@ -1130,7 +1158,7 @@ class PreviewController extends Controller
                 }
 
                 $activeClass = $isActive ? ' font-bold' : '';
-                $menuItems .= '<a href="' . $item->final_url . '" target="' . $item->target . '" class="text-gray-600 hover:text-gray-900 transition-colors duration-200' . $activeClass . '">' . $icon . $item->title . '</a>';
+                $menuItems .= '<a href="' . $item->final_url . '" target="' . $item->target . '" class="text-gray-600 transition-colors duration-200 hover:text-gray-900' . $activeClass . '">' . $icon . $item->title . '</a>';
             }
             return $menuItems;
         }
@@ -1168,7 +1196,7 @@ class PreviewController extends Controller
                 }
 
                 $activeClass = $isActive ? ' font-bold' : '';
-                $menuItems .= '<li><a href="' . $item->final_url . '" target="' . $item->target . '" class="text-gray-400 hover:text-white transition-colors duration-200' . $activeClass . '">' . $icon . $item->title . '</a></li>';
+                $menuItems .= '<li><a href="' . $item->final_url . '" target="' . $item->target . '" class="text-gray-400 transition-colors duration-200 hover:text-white' . $activeClass . '">' . $icon . $item->title . '</a></li>';
             }
             return $menuItems;
         }
@@ -1185,7 +1213,7 @@ class PreviewController extends Controller
     private function generatePageContent($homePage)
     {
         if ($homePage && $homePage->html_content) {
-            return '<div class="container mx-auto px-4 py-8">
+            return '<div class="container px-4 py-8 mx-auto">
                         <div class="prose max-w-none">
                             ' . $homePage->html_content . '
                         </div>
@@ -1196,7 +1224,7 @@ class PreviewController extends Controller
                     <div class="container px-4 mx-auto text-center">
                         <h2 class="mb-4 text-4xl font-bold">Bienvenido a tu sitio web</h2>
                         <p class="mb-8 text-xl">Crea contenido increíble y compártelo con el mundo</p>
-                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <div class="flex flex-col justify-center gap-4 sm:flex-row">
                             <a href="/productos" class="px-8 py-3 font-semibold text-blue-600 transition-colors bg-white rounded-lg hover:bg-gray-100">
                                 Ver Productos
                             </a>
@@ -1363,9 +1391,9 @@ class PreviewController extends Controller
                 // Si estamos en modo preview, crear enlaces que mantengan el contexto de preview
                 if ($isPreview) {
                     $previewUrl = $this->generatePreviewUrl($item, $website);
-                    $menuItems .= '<a href="' . $previewUrl . '" target="' . $item->target . '" class="text-gray-600 hover:text-gray-900 transition-colors duration-200' . $activeClass . '">' . $icon . $item->title . '</a>';
+                    $menuItems .= '<a href="' . $previewUrl . '" target="' . $item->target . '" class="text-gray-600 transition-colors duration-200 hover:text-gray-900' . $activeClass . '">' . $icon . $item->title . '</a>';
                 } else {
-                    $menuItems .= '<a href="' . $item->final_url . '" target="' . $item->target . '" class="text-gray-600 hover:text-gray-900 transition-colors duration-200' . $activeClass . '">' . $icon . $item->title . '</a>';
+                    $menuItems .= '<a href="' . $item->final_url . '" target="' . $item->target . '" class="text-gray-600 transition-colors duration-200 hover:text-gray-900' . $activeClass . '">' . $icon . $item->title . '</a>';
                 }
             }
             return $menuItems;
@@ -1423,9 +1451,9 @@ class PreviewController extends Controller
                 // Si estamos en modo preview, crear enlaces que mantengan el contexto de preview
                 if ($isPreview) {
                     $previewUrl = $this->generatePreviewUrl($item, $website);
-                    $menuItems .= '<li><a href="' . $previewUrl . '" target="' . $item->target . '" class="text-gray-400 hover:text-white transition-colors duration-200' . $activeClass . '">' . $icon . $item->title . '</a></li>';
+                    $menuItems .= '<li><a href="' . $previewUrl . '" target="' . $item->target . '" class="text-gray-400 transition-colors duration-200 hover:text-white' . $activeClass . '">' . $icon . $item->title . '</a></li>';
                 } else {
-                    $menuItems .= '<li><a href="' . $item->final_url . '" target="' . $item->target . '" class="text-gray-400 hover:text-white transition-colors duration-200' . $activeClass . '">' . $icon . $item->title . '</a></li>';
+                    $menuItems .= '<li><a href="' . $item->final_url . '" target="' . $item->target . '" class="text-gray-400 transition-colors duration-200 hover:text-white' . $activeClass . '">' . $icon . $item->title . '</a></li>';
                 }
             }
             return $menuItems;
@@ -1496,7 +1524,7 @@ class PreviewController extends Controller
                     <div class="container px-4 mx-auto text-center">
                         <h2 class="mb-4 text-4xl font-bold">Bienvenido a tu sitio web</h2>
                         <p class="mb-8 text-xl">Crea contenido increíble y compártelo con el mundo</p>
-                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <div class="flex flex-col justify-center gap-4 sm:flex-row">
                             <a href="/productos" class="px-8 py-3 font-semibold text-blue-600 transition-colors bg-white rounded-lg hover:bg-gray-100">
                                 Ver Productos
                             </a>

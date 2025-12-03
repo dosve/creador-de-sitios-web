@@ -286,57 +286,79 @@ class CheckoutController extends Controller
     private function sendOrderToAdminNegocios($website, $order, $items, $customer)
     {
         try {
-            $apiService = new ExternalApiService($website->api_key, $website->api_base_url);
+            Log::info('📤 Enviando pedido a AdminNegocios', [
+                'order_id' => $order->id,
+                'customer' => $customer->admin_negocios_id ?? $customer->email
+            ]);
             
-            // Preparar datos de la orden para AdminNegocios
+            // Obtener el ID del usuario autenticado de AdminNegocios
+            $adminNegociosUserId = Session::get('customer_admin_negocios_id');
+            
+            if (!$adminNegociosUserId) {
+                Log::warning('⚠️ No hay customer_admin_negocios_id en sesión');
+                return null;
+            }
+            
+            // Obtener la dirección seleccionada del pedido
+            $shippingAddress = $order->shipping_address;
+            $addressId = $shippingAddress['address_id'] ?? null;
+            
+            if (!$addressId) {
+                Log::warning('⚠️ No se proporcionó address_id');
+                return null;
+            }
+            
+            // Preparar productos para AdminNegocios
+            $productos = array_map(function($item) {
+                return [
+                    'id_producto' => $item['product_id'],
+                    'producto' => $item['name'],
+                    'precio' => $item['price'],
+                    'cantidad' => $item['quantity'],
+                    'comentario' => null
+                ];
+            }, $items);
+            
+            // Preparar datos del pedido según el formato de AdminNegocios
             $orderData = [
-                'customer_id' => $customer->admin_negocios_id, // Si existe
-                'customer_email' => $customer->email,
-                'customer_name' => $customer->name,
-                'customer_phone' => $customer->phone,
-                'items' => array_map(function($item) {
-                    return [
-                        'product_id' => $item['product_id'],
-                        'quantity' => $item['quantity'],
-                        'price' => $item['price'],
-                    ];
-                }, $items),
-                'shipping_address' => $order->shipping_address,
-                'billing_address' => $order->billing_address,
-                'payment_method' => $order->payment_method,
-                'notes' => $order->notes,
-                'subtotal' => $order->subtotal,
-                'tax_amount' => $order->tax_amount,
-                'shipping_amount' => $order->shipping_amount,
-                'total' => $order->total,
-                'currency' => $order->currency,
-                'external_order_number' => $order->order_number,
-                'source' => 'creador_tiendas',
+                'user_id' => $adminNegociosUserId,
+                'id_direccion' => $addressId,
+                'id_negocio' => $website->negocio_id ?? null, // Debes tener el negocio_id configurado
+                'observaciones' => $order->notes,
+                'medio_pago' => $order->payment_method === 'cash_on_delivery' ? 'Efectivo' : 'En línea',
+                'origen' => 'web-mash', // Origen del pedido desde el creador de sitios
+                'productos' => $productos
             ];
+            
+            Log::info('📦 Datos del pedido a enviar', $orderData);
 
-            // Enviar a AdminNegocios (ajustar endpoint según tu API)
-            $apiUrl = rtrim($website->api_base_url, '/');
-            $token = Session::get('customer_token'); // Si el usuario está autenticado
+            // Usar el endpoint con API Key
+            $apiUrl = rtrim($website->api_base_url, '/') . '/api-key/orders';
 
             $response = Http::timeout(30)
                 ->withHeaders([
-                    'Authorization' => $token ? 'Bearer ' . $token : '',
                     'X-API-Key' => $website->api_key,
+                    'Accept' => 'application/json',
                 ])
-                ->post($apiUrl . '/segundos/pedidos', $orderData);
+                ->post($apiUrl, $orderData);
 
             $data = $response->json();
+            
+            Log::info('📨 Respuesta de AdminNegocios', [
+                'status' => $response->status(),
+                'data' => $data
+            ]);
 
-            if ($response->successful() && isset($data['pedido']['id'])) {
-                Log::info('Orden enviada a AdminNegocios', [
+            if ($response->successful() && isset($data['data']['id'])) {
+                Log::info('✅ Pedido creado en AdminNegocios', [
                     'local_order_id' => $order->id,
-                    'admin_negocios_order_id' => $data['pedido']['id']
+                    'admin_negocios_order_id' => $data['data']['id']
                 ]);
 
-                return $data['pedido']['id'];
+                return $data['data']['id'];
             }
 
-            Log::warning('No se pudo enviar orden a AdminNegocios', [
+            Log::warning('❌ No se pudo crear el pedido en AdminNegocios', [
                 'response' => $data,
                 'status' => $response->status()
             ]);
@@ -344,8 +366,9 @@ class CheckoutController extends Controller
             return null;
 
         } catch (\Exception $e) {
-            Log::error('Error al enviar orden a AdminNegocios', [
+            Log::error('❌ Error al enviar pedido a AdminNegocios', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'order_id' => $order->id
             ]);
 
@@ -364,13 +387,35 @@ class CheckoutController extends Controller
             abort(404, 'Tienda no encontrada');
         }
 
-        $order = Order::where('website_id', $website->id)
-            ->where('order_number', $orderNumber)
-            ->with(['customer', 'items.product'])
-            ->first();
+        // Si el orderNumber es numérico y corto, asumimos que es un ID de AdminNegocios
+        $isAdminNegociosId = is_numeric($orderNumber) && strlen($orderNumber) < 10;
+        
+        Log::info('🔍 Buscando orden', [
+            'order_number' => $orderNumber,
+            'is_admin_negocios_id' => $isAdminNegociosId
+        ]);
 
-        if (!$order) {
+        if ($isAdminNegociosId) {
+            // Buscar primero en AdminNegocios por ID
             $order = $this->fetchExternalOrder($website, $orderNumber);
+            
+            // Si no se encuentra en AdminNegocios, buscar localmente
+            if (!$order) {
+                $order = Order::where('website_id', $website->id)
+                    ->where('admin_negocios_order_id', $orderNumber)
+                    ->with(['customer', 'items.product'])
+                    ->first();
+            }
+        } else {
+            // Buscar por order_number largo (ORD202512030009)
+            $order = Order::where('website_id', $website->id)
+                ->where('order_number', $orderNumber)
+                ->with(['customer', 'items.product'])
+                ->first();
+
+            if (!$order) {
+                $order = $this->fetchExternalOrder($website, $orderNumber);
+            }
         }
 
         if (!$order) {
@@ -441,108 +486,6 @@ class CheckoutController extends Controller
         return view('checkout.order', compact('website', 'order'));
     }
 
-    /**
-     * Listar órdenes del cliente autenticado
-     */
-    public function myOrders(Request $request, $websiteSlug)
-    {
-        $website = Website::where('slug', $websiteSlug)->first();
-        
-        if (!$website) {
-            abort(404, 'Tienda no encontrada');
-        }
-
-        // Verificar autenticación
-        if (!Session::has('customer_logged_in') || !Session::get('customer_logged_in')) {
-            // Redirigir a la página de inicio del sitio web
-            return redirect()->route('website.show', $websiteSlug)
-                ->with('error', 'Debes iniciar sesión para ver tus órdenes');
-        }
-
-        $customerAdminNegociosId = Session::get('customer_admin_negocios_id');
-
-        $orders = $this->fetchExternalOrders($request, $website, $customerAdminNegociosId);
-
-        if (!$orders) {
-            $orders = Order::where('website_id', $website->id)
-                ->whereHas('customer', function($query) use ($customerAdminNegociosId) {
-                    $query->where('admin_negocios_id', $customerAdminNegociosId);
-                })
-                ->with(['customer', 'items.product'])
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
-        }
-
-        // Usar la plantilla del sitio web para consistencia visual
-        if ($website->template_id) {
-            $templateService = app(\App\Services\TemplateService::class);
-            $template = $templateService->find($website->template_id);
-            
-            if ($template) {
-                $customization = $template['customization'] ?? [];
-                
-                // Crear una página virtual para "Mis Órdenes"
-                $page = (object)[
-                    'id' => null,
-                    'title' => 'Mis Órdenes',
-                    'slug' => 'my-orders',
-                    'meta_title' => 'Mis Órdenes',
-                    'meta_description' => 'Revisa el estado y detalles de tus compras',
-                    'meta_keywords' => null,
-                    'html_content' => view('checkout.my-orders-content', compact('website', 'orders'))->render(),
-                    'css_content' => null,
-                    'js_content' => null,
-                    'enable_store' => true, // Mostrar carrito
-                    'is_home' => false,
-                ];
-                
-                $templateFile = $template['templates']['page'] ?? 'template';
-                $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
-                
-                $templateConfig = \App\Models\TemplateConfiguration::firstOrCreate(
-                    [
-                        'website_id' => $website->id,
-                        'template_slug' => $template['slug']
-                    ],
-                    [
-                        'configuration' => \App\Models\TemplateConfiguration::getDefaultConfiguration($template['slug']),
-                        'customization' => [],
-                        'settings' => [],
-                        'is_active' => true
-                    ]
-                );
-                
-                return view($viewPath, [
-                    'website' => $website,
-                    'page' => $page,
-                    'pages' => $website->pages()->where('is_published', true)->get(),
-                    'customization' => $customization,
-                    'templateConfig' => $templateConfig
-                ]);
-            }
-        }
-        
-        // Fallback al layout genérico si no tiene plantilla
-        $page = (object)[
-            'id' => null,
-            'title' => 'Mis Pedidos',
-            'slug' => 'my-orders',
-            'meta_title' => 'Mis Pedidos',
-            'meta_description' => 'Revisa el estado y detalles de tus compras',
-            'meta_keywords' => null,
-            'html_content' => view('checkout.my-orders-content', compact('website', 'orders'))->render(),
-            'css_content' => null,
-            'js_content' => null,
-            'enable_store' => true,
-            'is_home' => false,
-        ];
-        
-        return view('public.blank', [
-            'website' => $website,
-            'page' => $page,
-            'pages' => $website->pages()->where('is_published', true)->get(),
-        ]);
-    }
 
     /**
      * Obtener órdenes desde AdminNegocios para el cliente autenticado
@@ -555,14 +498,13 @@ class CheckoutController extends Controller
 
         $token = Session::get('customer_token');
         $appKey = config('services.admin_negocios.app_key');
-        $apiUrl = rtrim($website->api_base_url, '/') . '/segundos/pedidos';
+        // Usar la ruta correcta con API Key (no requiere JWT)
+        $apiUrl = rtrim($website->api_base_url, '/') . '/api-key/orders';
 
         try {
             $response = Http::timeout(15)
                 ->withHeaders([
-                    'Authorization' => $token ? 'Bearer ' . $token : '',
                     'X-API-Key' => $website->api_key,
-                    'X-App-Key' => $appKey,
                     'Accept' => 'application/json',
                 ])
                 ->get($apiUrl, [
@@ -580,8 +522,8 @@ class CheckoutController extends Controller
             }
 
             $payload = $response->json();
-            $ordersData = collect($payload['data'] ?? [])->map(function ($order) {
-                return $this->transformExternalOrder($order);
+            $ordersData = collect($payload['data'] ?? [])->map(function ($order) use ($website) {
+                return $this->transformExternalOrder($order, $website);
             });
 
             return new LengthAwarePaginator(
@@ -615,14 +557,13 @@ class CheckoutController extends Controller
 
         $token = Session::get('customer_token');
         $appKey = config('services.admin_negocios.app_key');
-        $apiUrl = rtrim($website->api_base_url, '/') . '/segundos/pedidos/' . $orderNumber;
+        // Usar la ruta correcta con API Key (no requiere JWT)
+        $apiUrl = rtrim($website->api_base_url, '/') . '/api-key/orders/' . $orderNumber;
 
         try {
             $response = Http::timeout(15)
                 ->withHeaders([
-                    'Authorization' => $token ? 'Bearer ' . $token : '',
                     'X-API-Key' => $website->api_key,
-                    'X-App-Key' => $appKey,
                     'Accept' => 'application/json',
                 ])
                 ->get($apiUrl);
@@ -639,7 +580,7 @@ class CheckoutController extends Controller
             $payload = $response->json();
             $data = $payload['data'] ?? $payload;
 
-            return $this->transformExternalOrder($data);
+            return $this->transformExternalOrder($data, $website);
         } catch (\Exception $e) {
             Log::error('Error consumiendo orden externa', [
                 'error' => $e->getMessage(),
@@ -654,7 +595,7 @@ class CheckoutController extends Controller
     /**
      * Unificar la estructura de pedidos externos con la esperada por las vistas
      */
-    protected function transformExternalOrder(array $order): object
+    protected function transformExternalOrder(array $order, ?Website $website = null): object
     {
         $createdAt = $order['created_at'] ?? $order['fecha_solicitud'] ?? now()->toDateTimeString();
         $products = collect($order['productos'] ?? []);
@@ -667,7 +608,7 @@ class CheckoutController extends Controller
         $shipping = $order['delivery_fee'] ?? 0;
         $total = $order['total'] ?? ($subtotal + $shipping);
 
-        $items = $products->map(function ($item) {
+        $items = $products->map(function ($item) use ($website) {
             $rawName = $item['producto']
                 ?? ($item['product']['producto'] ?? null)
                 ?? ($item['product']['name'] ?? null)
@@ -680,13 +621,31 @@ class CheckoutController extends Controller
                     ?? (is_array($rawName['product'] ?? null) ? ($rawName['product']['name'] ?? 'Producto') : 'Producto');
             }
 
-            // Obtener la imagen del producto
-            $productImage = $item['product_image'] 
-                ?? $item['imagen']
-                ?? ($item['product']['imagen'] ?? null)
-                ?? ($item['product']['image'] ?? null)
-                ?? ($item['product']['featured_image'] ?? null)
-                ?? null;
+            // Obtener la imagen del producto desde AdminNegocios
+            // Primero intentar desde la relación imagenes (orden 0)
+            $productImage = null;
+            
+            if (isset($item['producto']['imagenes']) && is_array($item['producto']['imagenes']) && count($item['producto']['imagenes']) > 0) {
+                // Tomar la primera imagen de la relación
+                $primeraImagen = $item['producto']['imagenes'][0];
+                $productImage = $primeraImagen['imagen'] ?? null;
+            } elseif (isset($item['product']['imagenes']) && is_array($item['product']['imagenes']) && count($item['product']['imagenes']) > 0) {
+                $primeraImagen = $item['product']['imagenes'][0];
+                $productImage = $primeraImagen['imagen'] ?? null;
+            } else {
+                // Fallback a campos directos
+                $productImage = $item['product_image'] 
+                    ?? $item['imagen']
+                    ?? ($item['producto']['img'] ?? null)
+                    ?? ($item['product']['img'] ?? null)
+                    ?? null;
+            }
+            
+            // Si hay imagen, construir la URL completa
+            if ($productImage && !str_starts_with($productImage, 'http')) {
+                // Usar siempre la URL de producción para las imágenes
+                $productImage = 'https://servidor.adminnegocios.com/storage/productos/' . $productImage;
+            }
 
             return (object)[
                 'product_name' => is_string($rawName) ? $rawName : 'Producto',

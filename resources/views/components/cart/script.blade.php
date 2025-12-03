@@ -21,16 +21,8 @@
             },
             paymentHandler: "{{ $paymentHandler }}",
             websiteSlug: "{{ $websiteSlug }}",
-            allowCashOnDelivery: {
-                {
-                    $allowCashOnDelivery ? 'true' : 'false'
-                }
-            },
-            allowOnlinePayment: {
-                {
-                    $allowOnlinePayment ? 'true' : 'false'
-                }
-            },
+            allowCashOnDelivery: {{ $allowCashOnDelivery ? 'true' : 'false' }},
+            allowOnlinePayment: {{ $allowOnlinePayment ? 'true' : 'false' }},
             cashOnDeliveryInstructions: `{{ $cashOnDeliveryInstructions ?? '' }}`
         };
 
@@ -351,6 +343,9 @@
                     <p id="address-empty-message" class="hidden text-sm text-orange-600 bg-orange-50 border border-orange-200 px-3 py-2 rounded-lg">
                         ⚠️ No tienes direcciones guardadas. Haz clic en "Añadir dirección" para crear una.
                     </p>
+                    <button id="add-address-btn" class="hidden w-full px-4 py-2 text-sm font-medium text-white rounded-lg" style="background-color:${templateConfig.colors.primary}">
+                        + Añadir dirección
+                    </button>
                 </div>
 
                 <div id="new-address-form" class="hidden mb-6 border border-gray-200 rounded-lg p-4 bg-gray-50 space-y-3">
@@ -651,7 +646,7 @@
             // Event listeners
             document.getElementById('go-to-addresses').addEventListener('click', () => {
                 const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
-                window.location.href = `/${websiteSlug}/addresses`;
+                window.location.href = `/${websiteSlug}/profile#direcciones`;
             });
 
             document.getElementById('close-address-required').addEventListener('click', () => {
@@ -787,7 +782,7 @@
             const data = {
                 direccion: document.getElementById('new-address-address').value.trim(),
                 ciudad: document.getElementById('new-address-city').value.trim(),
-                barrio: document.getElementById('new-address-barrio').value.trim(),
+                barrio: document.getElementById('new-address-state').value.trim(),
                 codigo_postal: document.getElementById('new-address-postal').value.trim(),
                 website: templateConfig.websiteSlug
             };
@@ -834,6 +829,32 @@
                 if (saveBtnText) saveBtnText.textContent = 'Guardar dirección';
                 if (saveSpinner) saveSpinner.classList.add('hidden');
                 if (confirmBtn) confirmBtn.disabled = CartState.addresses.length === 0;
+            }
+        }
+
+        function toggleNewAddressForm(show) {
+            const form = document.getElementById('new-address-form');
+            const addBtn = document.getElementById('add-address-btn');
+            
+            if (!form) return;
+            
+            if (show) {
+                form.classList.remove('hidden');
+                if (addBtn) addBtn.classList.add('hidden');
+            } else {
+                form.classList.add('hidden');
+                if (addBtn) addBtn.classList.remove('hidden');
+                // Limpiar campos del formulario
+                document.getElementById('new-address-name').value = '';
+                document.getElementById('new-address-phone').value = '';
+                document.getElementById('new-address-address').value = '';
+                document.getElementById('new-address-city').value = '';
+                document.getElementById('new-address-state').value = '';
+                document.getElementById('new-address-postal').value = '';
+                document.getElementById('new-address-reference').value = '';
+                // Limpiar error
+                const errorBox = document.getElementById('new-address-error');
+                if (errorBox) errorBox.classList.add('hidden');
             }
         }
 
@@ -940,6 +961,7 @@
         }
 
         function proceedToPayment() {
+            console.log('🛒 CartState.items ANTES de crear payload:', CartState.items);
             const totals = computeTotals();
             const payload = {
                 cart: CartState.items.map(item => ({
@@ -953,6 +975,8 @@
             };
 
             console.log('💰 Procesando pago con método:', CartState.selectedPaymentMethod);
+            console.log('📦 Payload.cart:', payload.cart);
+            console.log('💵 Totals:', totals);
 
             // Si es pago contra entrega, crear el pedido directamente
             if (CartState.selectedPaymentMethod === 'cash_on_delivery') {
@@ -974,6 +998,15 @@
         async function processCashOnDeliveryOrder(payload) {
             console.log('📦 Creando pedido con pago contra entrega...');
             console.log('📋 Datos del payload:', payload);
+            console.log('🛒 CartState.items en processCashOnDeliveryOrder:', CartState.items);
+            console.log('📦 payload.cart:', payload.cart);
+            
+            if (!payload.cart || payload.cart.length === 0) {
+                console.error('❌ ERROR: payload.cart está vacío!');
+                console.log('🔍 Verificando localStorage:', localStorage.getItem('cart'));
+                alert('Error: El carrito está vacío. Por favor recarga la página.');
+                return;
+            }
 
             try {
                 const websiteSlug = templateConfig.websiteSlug || getWebsiteSlugFromUrl();
@@ -997,6 +1030,12 @@
 
                 console.log('📝 Datos del cliente a enviar:', customerData);
 
+                // Obtener la dirección seleccionada
+                const selectedAddress = CartState.addresses.find(a => a.id == CartState.selectedAddressId);
+                
+                console.log('🏠 Dirección seleccionada:', selectedAddress);
+                console.log('🏠 Address ID seleccionado:', CartState.selectedAddressId);
+
                 const requestBody = {
                     website_slug: websiteSlug,
                     items: payload.cart.map(item => ({
@@ -1004,22 +1043,24 @@
                         name: item.name,
                         quantity: item.quantity,
                         price: item.price,
-                        iva: item.iva || 0
+                        iva: item.iva || 0,
+                        image: item.image || null
                     })),
                     customer: customerData,
                     shipping_address: {
-                        address: payload.customer.address,
-                        city: payload.customer.city,
-                        state: payload.customer.state,
-                        phone: payload.customer.phone,
-                        name: payload.customer.name
+                        address_id: parseInt(CartState.selectedAddressId), // ID de la dirección en AdminNegocios
+                        address: selectedAddress?.address || selectedAddress?.direccion || payload.customer.address,
+                        city: selectedAddress?.city || selectedAddress?.ciudad || payload.customer.city,
+                        state: selectedAddress?.state || selectedAddress?.barrio || payload.customer.state,
+                        phone: customerData.phone,
+                        name: customerData.name
                     },
                     billing_address: {
-                        address: payload.customer.address,
-                        city: payload.customer.city,
-                        state: payload.customer.state,
-                        phone: payload.customer.phone,
-                        name: payload.customer.name
+                        address: selectedAddress?.address || selectedAddress?.direccion || payload.customer.address,
+                        city: selectedAddress?.city || selectedAddress?.ciudad || payload.customer.city,
+                        state: selectedAddress?.state || selectedAddress?.barrio || payload.customer.state,
+                        phone: customerData.phone,
+                        name: customerData.name
                     },
                     payment_method: 'cash_on_delivery',
                     notes: payload.customer.notes,
@@ -1048,8 +1089,13 @@
                     persistCart();
                     localStorage.removeItem('cartCheckoutData');
 
-                    // Redirigir a página de confirmación
-                    window.location.href = `/${websiteSlug}/order/${data.order.order_number}`;
+                    // Determinar el número de pedido a mostrar
+                    const orderNumber = data.order.admin_negocios_order_id || data.order.order_number;
+                    
+                    console.log('🔢 Redirigiendo a pedido:', orderNumber);
+                    
+                    // Redirigir al detalle del pedido
+                    window.location.href = `/${websiteSlug}/order/${orderNumber}`;
                 } else {
                     alert(data.message || 'Error al procesar el pedido');
                 }

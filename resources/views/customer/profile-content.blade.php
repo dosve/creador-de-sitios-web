@@ -1,64 +1,4 @@
 {{-- Contenido de Mi Perfil --}}
-<header class="bg-red-600 text-white">
-    <div class="container mx-auto px-4">
-        <div class="flex items-center justify-between py-4">
-            <div class="text-center flex-1">
-                <h1 class="text-3xl font-bold">MASH</h1>
-                <p class="text-xs">🚚 ENVÍOS A TODO COLOMBIA</p>
-            </div>
-            <div class="flex items-center space-x-4">
-                <!-- Menú para usuarios invitados (no autenticados) -->
-                <div id="guest-menu" class="hidden">
-                    <button id="login-button" class="hover:text-red-200 transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Menú para usuarios autenticados -->
-                <div id="user-menu" class="hidden relative">
-                    <button id="user-menu-button" class="hover:text-red-200 transition-colors flex items-center space-x-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    
-                    <!-- Dropdown del usuario -->
-                    <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                        <a href="/sitio/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                            👤 Mi Perfil
-                        </a>
-                        <div class="border-t border-gray-200 my-1"></div>
-                        <button id="logout-button" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                            🚪 Cerrar Sesión
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Carrito de compras -->
-                <button id="cart-button" class="hover:text-red-200 transition-colors relative">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    <span id="cart-counter" class="absolute -top-1 -right-1 bg-white text-red-600 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">0</span>
-                </button>
-            </div>
-        </div>
-    </div>
-</header>
-
-<nav class="bg-gray-800 text-white">
-    <div class="container mx-auto px-4 py-3">
-        <div class="flex items-center space-x-6">
-            <a href="/sitio" class="hover:text-yellow-400 transition-colors">INICIO</a>
-            <a href="/sitio/tienda" class="hover:text-yellow-400 transition-colors">TIENDA</a>
-            <a href="/sitio/quienes-somos" class="hover:text-yellow-400 transition-colors">QUIÉNES SOMOS</a>
-        </div>
-    </div>
-</nav>
-
 <div class="min-h-screen bg-gray-50 py-8">
     <div class="container mx-auto px-4 max-w-5xl">
         {{-- Header --}}
@@ -303,14 +243,62 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 class="text-xl font-bold text-gray-900 mb-6">Mis Pedidos</h2>
                 
-                <div id="orders-list" class="space-y-4">
-                    <div class="text-center py-8">
-                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        <p class="text-gray-500">Cargando pedidos...</p>
+                @if(isset($orders) && $orders->count() > 0)
+                    <div class="space-y-4">
+                        @foreach($orders as $order)
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">Pedido #{{ $order->order_number }}</h3>
+                                    <p class="text-sm text-gray-500">{{ $order->created_at ? $order->created_at->format('d/m/Y H:i') : 'N/A' }}</p>
+                                </div>
+                                <span class="px-3 py-1 text-sm rounded-full 
+                                    @if($order->estado === 'entregado') bg-green-100 text-green-800
+                                    @elseif($order->estado === 'en_camino' || $order->estado === 'en camino') bg-blue-100 text-blue-800
+                                    @elseif($order->estado === 'cancelado') bg-red-100 text-red-800
+                                    @else bg-yellow-100 text-yellow-800
+                                    @endif">
+                                    {{ ucfirst(str_replace('_', ' ', $order->estado)) }}
+                                </span>
+                            </div>
+                            
+                            <div class="text-sm text-gray-600 space-y-1 mb-3">
+                                <p><strong>{{ $order->items_count }}</strong> {{ $order->items_count === 1 ? 'producto' : 'productos' }}</p>
+                                @if($order->direccion)
+                                    <p class="flex items-start">
+                                        <svg class="w-4 h-4 mr-1 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        <span>{{ $order->direccion }}{{ $order->barrio ? ', ' . $order->barrio : '' }}</span>
+                                    </p>
+                                @endif
+                                @if($order->payment_method)
+                                    <p><strong>Pago:</strong> {{ $order->payment_method }}</p>
+                                @endif
+                            </div>
+                            
+                            <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+                                <span class="text-lg font-bold text-gray-900">${{ number_format($order->total, 0, ',', '.') }}</span>
+                                <a href="/{{ $website->slug }}/order/{{ $order->order_number }}" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                                    Ver detalles →
+                                </a>
+                            </div>
+                        </div>
+                        @endforeach
                     </div>
-                </div>
+                @else
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No tienes pedidos</h3>
+                        <p class="text-gray-600 mb-4">Empieza a comprar en nuestra tienda</p>
+                        <a href="/{{ $website->slug }}/tienda" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Ir a la Tienda
+                        </a>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -391,10 +379,10 @@ function switchToTab(tabName) {
         tabContent.classList.remove('hidden');
     }
     
-        // Si es el tab de pedidos, cargar los pedidos
-        if (tabName === 'pedidos') {
-            loadOrders();
-        }
+        // Si es el tab de pedidos, los pedidos ya están cargados desde el servidor
+        // if (tabName === 'pedidos') {
+        //     loadOrders();
+        // }
         
         // Si es el tab de direcciones, cargar las direcciones
         if (tabName === 'direcciones') {

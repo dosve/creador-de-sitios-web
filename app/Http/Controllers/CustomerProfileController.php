@@ -117,6 +117,7 @@ class CustomerProfileController extends Controller
 
         $customerData = Session::get('customer_data');
         $addresses = $this->fetchCustomerAddresses($website);
+        $orders = $this->fetchCustomerOrders($website);
 
         return $this->renderWithTemplate(
             $website,
@@ -125,7 +126,8 @@ class CustomerProfileController extends Controller
             'customer.profile-content',
             [
                 'customerData' => $customerData,
-                'addresses' => $addresses
+                'addresses' => $addresses,
+                'orders' => $orders
             ]
         );
     }
@@ -262,129 +264,6 @@ class CustomerProfileController extends Controller
         }
     }
 
-    /**
-     * Mostrar direcciones del cliente
-     */
-    public function addresses($websiteSlug)
-    {
-        $website = Website::where('slug', $websiteSlug)->firstOrFail();
-
-        $authCheck = $this->checkAuth($websiteSlug);
-        if ($authCheck) return $authCheck;
-
-        $customerData = Session::get('customer_data');
-        $addresses = $this->fetchCustomerAddresses($website);
-
-        return $this->renderWithTemplate(
-            $website,
-            'Mis Direcciones',
-            'addresses',
-            'customer.addresses-content',
-            ['customerData' => $customerData, 'addresses' => $addresses]
-        );
-    }
-
-    /**
-     * Guardar nueva dirección
-     */
-    public function storeAddress(Request $request, $websiteSlug)
-    {
-        $website = Website::where('slug', $websiteSlug)->firstOrFail();
-
-        if (!Session::has('customer_logged_in') || !Session::get('customer_logged_in')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No hay sesión activa'
-            ], 401);
-        }
-
-        $validated = $request->validate([
-            'direccion' => 'required|string|max:500',
-            'barrio' => 'required|string|max:100',
-            'ciudad' => 'required|string|max:100',
-            'codigo_postal' => 'nullable|string|max:20',
-        ]);
-
-        $userId = Session::get('customer_admin_negocios_id');
-        if (!$userId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Usuario no encontrado'
-            ], 401);
-        }
-
-        // Guardar dirección en AdminNegocios usando API key
-        try {
-            if (!$website->api_base_url || !$website->api_key) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'La tienda no tiene configurada la integración con AdminNegocios'
-                ], 500);
-            }
-
-            $apiUrl = rtrim($website->api_base_url, '/') . '/api-key/addresses';
-            $response = Http::withHeaders([
-                'X-API-Key' => $website->api_key,
-                'Content-Type' => 'application/json',
-            ])->post($apiUrl, [
-                'user_id' => $userId,
-                'direccion' => $validated['direccion'],
-                'barrio' => $validated['barrio'],
-                'ciudad' => $validated['ciudad'],
-                'codigo_postal' => $validated['codigo_postal'] ?? null,
-            ]);
-
-            if ($response->successful()) {
-                $responseData = $response->json();
-                return response()->json([
-                    'success' => true,
-                    'message' => $responseData['message'] ?? 'Dirección guardada exitosamente',
-                    'data' => $responseData['data'] ?? null
-                ]);
-            }
-
-            $errorMessage = $response->json()['message'] ?? 'Error al guardar la dirección';
-            return response()->json([
-                'success' => false,
-                'message' => $errorMessage
-            ], $response->status());
-        } catch (\Exception $e) {
-            Log::error('Error al guardar dirección', [
-                'error' => $e->getMessage(),
-                'user_id' => $userId
-            ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Error de conexión: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Actualizar dirección existente
-     */
-    public function updateAddress(Request $request, $websiteSlug, $id)
-    {
-        // TODO: Implementar actualización de dirección
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Dirección actualizada exitosamente'
-        ]);
-    }
-
-    /**
-     * Eliminar dirección
-     */
-    public function deleteAddress($websiteSlug, $id)
-    {
-        // TODO: Implementar eliminación de dirección
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Dirección eliminada exitosamente'
-        ]);
-    }
 
     /**
      * API: Listar direcciones para el checkout
@@ -753,6 +632,124 @@ class CustomerProfileController extends Controller
             ]);
 
             return false;
+        }
+    }
+
+    /**
+     * Obtener pedidos del cliente desde AdminNegocios
+     */
+    private function fetchCustomerOrders(Website $website)
+    {
+        Log::info('🛒 fetchCustomerOrders - Inicio', [
+            'website_id' => $website->id,
+            'has_api_url' => !empty($website->api_base_url),
+            'has_api_key' => !empty($website->api_key)
+        ]);
+
+        if (!$website->api_base_url || !$website->api_key) {
+            Log::warning('⚠️ Website sin API configurada para pedidos');
+            return collect();
+        }
+
+        $token = Session::get('customer_token');
+        $customerAdminNegociosId = Session::get('customer_admin_negocios_id');
+        $appKey = config('services.admin_negocios.app_key');
+
+        Log::info('🔑 Credenciales para obtener pedidos', [
+            'has_token' => !empty($token),
+            'customer_admin_negocios_id' => $customerAdminNegociosId,
+            'has_app_key' => !empty($appKey)
+        ]);
+
+        if (!$customerAdminNegociosId) {
+            Log::warning('⚠️ No hay customer_admin_negocios_id en sesión');
+            return collect();
+        }
+
+        try {
+            // Usar la ruta correcta con API Key (no requiere JWT)
+            $url = rtrim($website->api_base_url, '/') . '/api-key/orders';
+            Log::info('📡 Consultando pedidos en AdminNegocios', [
+                'url' => $url,
+                'user_id' => $customerAdminNegociosId,
+                'api_key_preview' => substr($website->api_key, 0, 10) . '...'
+            ]);
+
+            $response = Http::timeout(15)
+                ->withHeaders([
+                    'X-API-Key' => $website->api_key,
+                    'Accept' => 'application/json',
+                ])
+                ->get($url, [
+                    'user_id' => $customerAdminNegociosId,
+                ]);
+
+            Log::info('📨 Respuesta COMPLETA de AdminNegocios (pedidos)', [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'headers' => $response->headers(),
+                'body_full' => $response->body(),
+                'json_decoded' => $response->json()
+            ]);
+
+            if (!$response->successful()) {
+                Log::warning('❌ No se pudieron obtener pedidos externos', [
+                    'status' => $response->status(),
+                    'body' => $response->json(),
+                ]);
+                return collect();
+            }
+
+            $payload = $response->json();
+            $ordersRaw = $payload['data'] ?? $payload ?? [];
+
+            Log::info('✅ Pedidos externos procesados', [
+                'count' => is_array($ordersRaw) ? count($ordersRaw) : 0,
+                'payload_keys' => array_keys($payload),
+                'first_order' => is_array($ordersRaw) && count($ordersRaw) > 0 ? $ordersRaw[0] : null,
+                'orders_raw' => $ordersRaw
+            ]);
+
+            $orders = collect(is_array($ordersRaw) ? $ordersRaw : [])->map(function ($order) {
+                // Calcular el total sumando precio * cantidad de cada producto
+                $productos = $order['productos'] ?? [];
+                $total = 0;
+                if (is_array($productos)) {
+                    foreach ($productos as $producto) {
+                        $precio = floatval($producto['precio'] ?? 0);
+                        $cantidad = intval($producto['cantidad'] ?? 0);
+                        $total += $precio * $cantidad;
+                    }
+                }
+                
+                return (object)[
+                    'id' => $order['id'] ?? null,
+                    'order_number' => $order['id'] ?? $order['order_number'] ?? null,
+                    'total' => $total,
+                    'status' => $order['estado'] ?? $order['status'] ?? 'pending',
+                    'estado' => $order['estado'] ?? 'pendiente',
+                    'created_at' => isset($order['created_at']) ? \Carbon\Carbon::parse($order['created_at']) : null,
+                    'productos' => $productos,
+                    'items_count' => is_array($productos) ? count($productos) : 0,
+                    'payment_method' => $order['medio_pago'] ?? $order['payment_method'] ?? null,
+                    'direccion' => $order['direccion'] ?? null,
+                    'barrio' => $order['barrio'] ?? null,
+                ];
+            });
+
+            Log::info('🎯 Pedidos TRANSFORMADOS para la vista', [
+                'count' => $orders->count(),
+                'orders' => $orders->toArray()
+            ]);
+
+            return $orders;
+        } catch (\Exception $e) {
+            Log::error('Error obteniendo pedidos externos', [
+                'error' => $e->getMessage(),
+                'website_id' => $website->id,
+            ]);
+
+            return collect();
         }
     }
 }
