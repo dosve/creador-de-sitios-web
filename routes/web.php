@@ -525,8 +525,12 @@ Route::get('/{website:slug}/{page:slug}', [WebsiteController::class, 'showPagePu
 Route::get('/{website:slug}/blog', [App\Http\Controllers\Creator\BlogPostController::class, 'publicIndex'])->name('website.blog.index');
 Route::get('/{website:slug}/blog/{blogPost:slug}', [App\Http\Controllers\Creator\BlogPostController::class, 'publicShow'])->name('website.blog.show');
 
-// Ruta del sitio web principal (homepage) - 1 segmento: /website
-// Esta ruta maneja tanto creadorweb.eme10.com/website como dominios personalizados/pagina
+// Ruta para páginas específicas del sitio: /sitio/tienda, /sitio/inicio, etc.
+Route::get('/{website:slug}/{pageSlug}', [WebsiteController::class, 'showWebsitePage'])
+    ->name('website.page.show')
+    ->where('pageSlug', '^(?!blog).*');
+
+// Ruta del sitio web principal (homepage) - 1 segmento: /sitio
 Route::get('/{slug}', [WebsiteController::class, 'showPageOrWebsite'])
     ->name('website.show')
     ->where('slug', '^(?!creator|admin|login|register|logout|bienvenida|api|storage|css|js|fonts|images|blog|template|academia-online).*');

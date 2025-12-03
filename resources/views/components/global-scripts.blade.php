@@ -76,6 +76,7 @@
     :epaycoCustomerId="$website->epayco_customer_id"
     :templateSlug="$templateSlug"
     :colors="$colors"
+    :websiteSlug="$website->slug"
 />
 
 <!-- Script de autenticación de usuario -->

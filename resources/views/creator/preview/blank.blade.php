@@ -1,27 +1,42 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $website->name ?? 'Vista Previa' }}</title>
     <meta name="description" content="{{ $website->description ?? '' }}">
-    
+
+    <!-- ⚡ PRIMERO: Configurar variables globales ANTES de cualquier cosa -->
+    <script>
+        window.websiteApiKey = "{{ $website->api_key ?? '' }}";
+        window.websiteApiUrl = "{{ $website->api_base_url ?? '' }}";
+        window.epaycoPublicKey = "{{ $website->epayco_public_key ?? '' }}";
+        window.epaycoPrivateKey = "{{ $website->epayco_private_key ?? '' }}";
+        window.epaycoCustomerId = "{{ $website->epayco_customer_id ?? '' }}";
+        console.log('⚡ Variables API configuradas en HEAD:', {
+            apiKey: window.websiteApiKey ? 'Sí' : 'No',
+            apiUrl: window.websiteApiUrl || 'No'
+        });
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
     </style>
-    
+
     @yield('styles')
 </head>
+
 <body class="bg-gray-50">
-    <!-- Header de Vista Previa (solo en modo preview) -->
+    <!-- Header de Vista Previa -->
     <div class="px-4 py-2 bg-yellow-100 border-b border-yellow-200">
         <div class="flex items-center justify-between mx-auto max-w-7xl">
             <div class="flex items-center">
@@ -33,8 +48,8 @@
             </div>
             <div class="flex items-center space-x-4">
                 <span class="text-sm text-yellow-700">{{ $website->name ?? 'Mi Sitio Web' }}</span>
-                <a href="{{ route('creator.dashboard') }}" 
-                   class="inline-flex items-center px-3 py-1 text-sm font-medium text-yellow-700 bg-white border border-yellow-300 rounded-md hover:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                <a href="{{ route('creator.dashboard') }}"
+                    class="inline-flex items-center px-3 py-1 text-sm font-medium text-yellow-700 bg-white border border-yellow-300 rounded-md hover:bg-yellow-50">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
@@ -44,59 +59,38 @@
         </div>
     </div>
 
-    @if(false)
-        <!-- Esta sección está deshabilitada para evitar mostrar código Blade sin procesar -->
-    @else
-        <!-- Contenido Principal - Solo el contenido del editor visual -->
-        <main class="min-h-screen">
-            @if($homePage && $homePage->html_content)
-                <!-- Contenido de la Página de Inicio -->
-                <div class="home-page-content">
-                    {!! $homePage->html_content !!}
+    <!-- Contenido Principal -->
+    <main class="min-h-screen">
+        @if($homePage && $homePage->html_content)
+        <div class="home-page-content">
+            {!! $homePage->html_content !!}
+        </div>
+        @if($homePage->css_content)
+        <style>
+            {
+                ! ! $homePage->css_content ! !
+            }
+        </style>
+        @endif
+        @else
+        <div class="flex items-center justify-center min-h-screen bg-gray-50">
+            <div class="text-center">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
                 </div>
-                @if($homePage->css_content)
-                    <style>
-                        {!! $homePage->css_content !!}
-                    </style>
-                @endif
-            @else
-                <!-- Mensaje cuando no hay contenido -->
-                <div class="flex items-center justify-center min-h-screen bg-gray-50">
-                    <div class="text-center">
-                        <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full">
-                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="mb-2 text-lg font-medium text-gray-900">Página en blanco</h3>
-                        <p class="text-gray-600">Esta es una página en blanco. Usa el editor visual para crear tu contenido.</p>
-                    </div>
-                </div>
-            @endif
-        </main>
-    @endif
+                <h3 class="mb-2 text-lg font-medium text-gray-900">Página en blanco</h3>
+                <p class="text-gray-600">Esta es una página en blanco. Usa el editor visual para crear tu contenido.</p>
+            </div>
+        </div>
+        @endif
+    </main>
 
     @yield('scripts')
-    
-    <!-- Configuración de credenciales API y Epayco -->
-    <script>
-        // Configurar las credenciales API del sitio web
-        window.websiteApiKey = "{{ $website->api_key }}";
-        window.websiteApiUrl = "{{ $website->api_base_url }}";
-        
-        // Configurar las credenciales de ePayco
-        window.epaycoPublicKey = "{{ $website->epayco_public_key }}";
-        window.epaycoPrivateKey = "{{ $website->epayco_private_key }}";
-        window.epaycoCustomerId = "{{ $website->epayco_customer_id }}";
-        
-        console.log('🔧 Configuración de API cargada:', {
-            apiKey: window.websiteApiKey ? 'Configurada' : 'No configurada',
-            apiUrl: window.websiteApiUrl || 'No configurada',
-            epaycoPublicKey: window.epaycoPublicKey ? 'Configurada' : 'No configurada',
-            epaycoCustomerId: window.epaycoCustomerId ? 'Configurado' : 'No configurado'
-        });
-    </script>
-    <!-- Componente para cargar productos dinámicamente -->
-    <x-products-script :apiKey="$website->api_key" :apiBaseUrl="$website->api_base_url" />
+
+    <!-- Scripts Globales (ya incluye productos, carrito, auth y epayco) -->
+    <x-global-scripts :website="$website" />
 </body>
+
 </html>

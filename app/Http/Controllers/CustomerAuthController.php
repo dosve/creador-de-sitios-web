@@ -22,15 +22,35 @@ class CustomerAuthController extends Controller
      */
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-            'website_slug' => 'required',
-            'captcha_token' => 'nullable|string', // CAPTCHA token opcional
+        Log::info('🔐 CustomerAuth::login - Inicio', [
+            'email' => $request->email,
+            'website_slug' => $request->website_slug,
+            'has_captcha' => !empty($request->captcha_token)
         ]);
+
+        try {
+            $request->validate([
+                'email' => 'required|email',
+                'password' => 'required',
+                'website_slug' => 'required',
+                'captcha_token' => 'nullable|string', // CAPTCHA token opcional
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('❌ Validación fallida', ['errors' => $e->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Datos de login inválidos',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
         // Buscar el website
         $website = Website::where('slug', $request->website_slug)->first();
+
+        Log::info('🌐 Website encontrado', [
+            'website_id' => $website->id ?? null,
+            'api_base_url' => $website->api_base_url ?? null
+        ]);
 
         if (!$website) {
             return response()->json([
@@ -57,15 +77,65 @@ class CustomerAuthController extends Controller
                 'website_id' => $website->id
             ]);
 
-            $response = Http::timeout(10)->post($apiUrl . '/login', [
+            // Construir URL correctamente (evitar duplicar /api)
+            $loginUrl = str_ends_with($apiUrl, '/api') ? $apiUrl . '/login' : $apiUrl . '/api/login';
+
+            Log::info('📡 Enviando petición a AdminNegocios', [
+                'url' => $loginUrl,
+                'email' => $request->email
+            ]);
+
+            Log::info('🚀 A punto de enviar POST', [
+                'method' => 'POST',
+                'url' => $loginUrl,
+                'payload' => [
+                    'email' => $request->email,
+                    'password' => '***',
+                    'has_captcha' => !empty($request->captcha_token)
+                ]
+            ]);
+
+            $response = Http::timeout(10)->post($loginUrl, [
                 'email' => $request->email,
                 'password' => $request->password,
                 'captcha_token' => $request->captcha_token, // Enviar CAPTCHA token a AdminNegocios
             ]);
 
-            $data = $response->json();
+            Log::info('📨 Respuesta recibida de AdminNegocios', [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'body_preview' => substr($response->body(), 0, 200),
+                'headers' => $response->headers()
+            ]);
 
-            if (!$response->successful() || !isset($data['success']) || !$data['success']) {
+            // Verificar si la respuesta es JSON válido
+            if (!$response->successful()) {
+                Log::warning('Login fallido - respuesta no exitosa', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al conectar con el servidor de autenticación'
+                ], 500);
+            }
+
+            try {
+                $data = $response->json();
+            } catch (\Exception $e) {
+                Log::error('Error al parsear respuesta JSON del login', [
+                    'error' => $e->getMessage(),
+                    'response_body' => $response->body()
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error en el formato de respuesta del servidor'
+                ], 500);
+            }
+
+            if (!isset($data['success']) || !$data['success']) {
                 Log::warning('Login fallido desde tienda', [
                     'email' => $request->email,
                     'response' => $data
@@ -135,8 +205,20 @@ class CustomerAuthController extends Controller
                 ],
                 'token' => $token, // Para usar en futuras peticiones si es necesario
             ]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('❌ Error de conexión con AdminNegocios', [
+                'email' => $request->email,
+                'api_url' => $loginUrl ?? 'N/A',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo conectar con el servidor de autenticación. Verifica tu conexión.'
+            ], 500);
         } catch (\Exception $e) {
-            Log::error('Error en login de cliente', [
+            Log::error('❌ Error general en login de cliente', [
                 'email' => $request->email,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -266,7 +348,10 @@ class CustomerAuthController extends Controller
             $lastName = $nameParts[1] ?? '';
 
             // Intentar registro en AdminNegocios
-            $response = Http::timeout(10)->post($apiUrl . '/register', [
+            // Construir URL correctamente (evitar duplicar /api)
+            $registerUrl = str_ends_with($apiUrl, '/api') ? $apiUrl . '/register' : $apiUrl . '/api/register';
+
+            $response = Http::timeout(10)->post($registerUrl, [
                 'firstName' => $firstName,
                 'lastName' => $lastName,
                 'email' => $request->email,

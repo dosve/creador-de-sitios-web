@@ -149,8 +149,8 @@
                     Cerrar Ventana
                 </button>
 
-                @if(isset($paymentData['order']))
-                    <a href="#" 
+                @if(isset($paymentData['order']) && isset($paymentData['website']))
+                    <a href="{{ route('customer.profile', $paymentData['website']) }}#pedidos" 
                        class="flex justify-center w-full px-4 py-2 text-sm font-medium text-white transition-colors bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                         Ver Detalles del Pedido
                     </a>

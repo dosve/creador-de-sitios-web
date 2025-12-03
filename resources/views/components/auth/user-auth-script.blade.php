@@ -1,3 +1,5 @@
+@props(['website'])
+
 {{-- Script de reCAPTCHA --}}
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
@@ -6,6 +8,8 @@
     // Configuración global
     const WEBSITE_SLUG = '{{ $website->slug ?? "" }}';
     const RECAPTCHA_SITE_KEY = '6LcuRdkrAAAAACZ3yBQ6I9WtnNb-TYdwKXcWKizj'; // Clave de prueba de Google
+
+    console.log('🌐 Auth Script cargado - WEBSITE_SLUG:', WEBSITE_SLUG || '(vacío)');
 
     // Verificar autenticación al cargar la página
     document.addEventListener('DOMContentLoaded', async function() {
@@ -296,21 +300,49 @@
         }
 
         try {
+            const payload = {
+                email: email,
+                password: password,
+                website_slug: WEBSITE_SLUG,
+                captcha_token: captchaToken
+            };
+            
+            console.log('🔐 Intentando login con:', {
+                email: email,
+                website_slug: WEBSITE_SLUG,
+                has_captcha: !!captchaToken
+            });
+            
             const response = await fetch('/customer/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
-                body: JSON.stringify({
-                    email: email,
-                    password: password,
-                    website_slug: WEBSITE_SLUG,
-                    captcha_token: captchaToken
-                })
+                body: JSON.stringify(payload)
             });
 
-            const data = await response.json();
+            console.log('📡 Respuesta del servidor:', {
+                status: response.status,
+                statusText: response.statusText,
+                contentType: response.headers.get('content-type')
+            });
+            
+            // Obtener el texto de la respuesta primero
+            const responseText = await response.text();
+            console.log('📄 Contenido de la respuesta:', responseText.substring(0, 500));
+            
+            // Intentar parsear como JSON
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('❌ Error al parsear JSON:', parseError);
+                console.error('📄 Respuesta completa (primeros 1000 caracteres):', responseText.substring(0, 1000));
+                throw new Error('El servidor no devolvió un JSON válido. Respuesta: ' + responseText.substring(0, 100));
+            }
+            
+            console.log('✅ Datos parseados:', data);
 
             if (data.success) {
                 // Login exitoso
