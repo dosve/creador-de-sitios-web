@@ -2,7 +2,7 @@
 {
   id: 'section'
   , label: '<b>Sección</b>'
-  , category: 'Básicos'
+  , category: 'Diseño'
   , attributes: {
     class: 'gjs-block-section'
   }
@@ -184,7 +184,7 @@
 {
   id: 'simple-container'
   , label: '<b>Contenedor</b>'
-  , category: 'Básicos'
+  , category: 'Diseño'
   , attributes: {
     class: 'gjs-block-container'
   }

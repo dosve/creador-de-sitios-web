@@ -21,11 +21,24 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                 @foreach($blogPosts as $post)
                     <article class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                        <div class="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                            @if($post->category)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    {{ $post->category->name }}
-                                </span>
+                        <div class="w-full h-48 relative overflow-hidden">
+                            @if($post->featured_image)
+                                <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" class="w-full h-full object-cover">
+                                @if($post->category)
+                                    <div class="absolute top-4 left-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 backdrop-blur-sm bg-opacity-90">
+                                            {{ $post->category->name }}
+                                        </span>
+                                    </div>
+                                @endif
+                            @else
+                                <div class="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                                    @if($post->category)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ $post->category->name }}
+                                        </span>
+                                    @endif
+                                </div>
                             @endif
                         </div>
                         <div class="p-6">

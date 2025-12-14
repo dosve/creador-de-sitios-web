@@ -2,7 +2,7 @@
 {
   id: 'list',
   label: 'Lista',
-  category: 'WordPress Básicos',
+  category: 'Básicos',
   content: `
     <div class="list-container">
       <ul class="list-disc list-inside space-y-2">
@@ -16,7 +16,7 @@
 {
   id: 'quote',
   label: 'Cita',
-  category: 'WordPress Básicos',
+  category: 'Básicos',
   content: `
     <blockquote class="border-l-4 border-blue-500 pl-6 py-4 bg-gray-50 rounded-r-lg">
       <p class="text-lg italic text-gray-700 mb-4">"Esta es una cita destacada que resalta una frase importante o testimonio."</p>
@@ -27,7 +27,7 @@
 {
   id: 'code',
   label: 'Código',
-  category: 'WordPress Básicos',
+  category: 'Básicos',
   content: `
     <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
       <code class="text-sm">
@@ -42,7 +42,7 @@
 {
   id: 'preformatted',
   label: 'Preformateado',
-  category: 'WordPress Básicos',
+  category: 'Básicos',
   content: `
     <pre class="bg-gray-100 p-4 rounded-lg font-mono text-sm whitespace-pre-wrap">
       Texto preformateado
@@ -54,7 +54,7 @@
 {
   id: 'table',
   label: 'Tabla',
-  category: 'WordPress Básicos',
+  category: 'Diseño',
   content: `
     <div class="overflow-x-auto">
       <table class="min-w-full bg-white border border-gray-200 rounded-lg">
@@ -84,7 +84,7 @@
 {
   id: 'verse',
   label: 'Verso',
-  category: 'WordPress Básicos',
+  category: 'Básicos',
   content: `
     <div class="verse-container bg-gray-50 p-6 rounded-lg">
       <div class="text-center font-serif text-lg leading-relaxed text-gray-700">
@@ -99,7 +99,7 @@
 {
   id: 'classic-editor',
   label: 'Editor Clásico',
-  category: 'WordPress Básicos',
+  category: 'Básicos',
   content: `
     <div class="classic-editor bg-white border border-gray-300 rounded-lg p-4">
       <div class="prose max-w-none">

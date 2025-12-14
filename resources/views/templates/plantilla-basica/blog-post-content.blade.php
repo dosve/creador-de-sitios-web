@@ -1,12 +1,8 @@
-@extends('layouts.public')
-
-@section('title', $blogPost->title . ' - ' . $website->name)
-
-@section('content')
+{{-- Contenido del blog post para plantilla básica --}}
 <div class="min-h-screen bg-gray-50">
     <!-- Header del post -->
     <div class="bg-white shadow-sm">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="container px-4 sm:px-6 lg:px-8 py-12 mx-auto">
             <div class="text-center">
                 @if($blogPost->category)
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4">
@@ -36,7 +32,7 @@
     </div>
 
     <!-- Contenido del post -->
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="container px-4 sm:px-6 lg:px-8 py-12 mx-auto">
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
             <div class="p-8">
                 <!-- Excerpt si existe -->
@@ -68,7 +64,7 @@
         </div>
         
         <!-- Posts relacionados -->
-        @if($relatedPosts->count() > 0)
+        @if(isset($relatedPosts) && $relatedPosts->count() > 0)
             <div class="mt-12">
                 <h3 class="text-2xl font-bold text-gray-900 mb-6">Artículos relacionados</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -127,4 +123,72 @@
         </div>
     </div>
 </div>
-@endsection
+
+<style>
+    .prose {
+        color: #374151;
+    }
+    .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+        color: #111827;
+        font-weight: 600;
+    }
+    .prose h1 {
+        font-size: 2.25rem;
+        margin-bottom: 1rem;
+    }
+    .prose h2 {
+        font-size: 1.875rem;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    .prose h3 {
+        font-size: 1.5rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .prose p {
+        margin-bottom: 1rem;
+        line-height: 1.7;
+    }
+    .prose ul, .prose ol {
+        margin-bottom: 1rem;
+        padding-left: 1.5rem;
+    }
+    .prose li {
+        margin-bottom: 0.5rem;
+    }
+    .prose blockquote {
+        border-left: 4px solid #3B82F6;
+        padding-left: 1rem;
+        margin: 1.5rem 0;
+        font-style: italic;
+        color: #6B7280;
+    }
+    .prose a {
+        color: #3B82F6;
+        text-decoration: underline;
+    }
+    .prose a:hover {
+        color: #1D4ED8;
+    }
+    .prose img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+    }
+    .prose table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+    .prose th, .prose td {
+        border: 1px solid #E5E7EB;
+        padding: 0.75rem;
+        text-align: left;
+    }
+    .prose th {
+        background-color: #F9FAFB;
+        font-weight: 600;
+    }
+</style>

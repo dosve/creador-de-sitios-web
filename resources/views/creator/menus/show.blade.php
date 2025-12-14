@@ -11,12 +11,18 @@
         </div>
         <div class="flex space-x-3">
             <a href="{{ route('creator.menus.edit', $menu) }}" 
-               class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
-                ✏️ Editar Menú
+               class="inline-flex items-center bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                Editar Menú
             </a>
             <button onclick="showAddItemModal()" 
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                ➕ Agregar Item
+                    class="inline-flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Agregar Item
             </button>
         </div>
     </div>
@@ -48,12 +54,19 @@
         </div>
     @else
         <div class="text-center py-12 bg-white rounded-lg shadow-md border border-gray-200">
-            <div class="text-gray-400 text-6xl mb-4">🔗</div>
+            <div class="flex justify-center mb-4">
+                <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                </svg>
+            </div>
             <h3 class="text-lg font-medium text-gray-900 mb-2">No hay items en este menú</h3>
             <p class="text-gray-600 mb-6">Agrega items para crear la navegación de tu sitio web.</p>
             <button onclick="showAddItemModal()" 
-                    class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-                ➕ Agregar Primer Item
+                    class="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Agregar Primer Item
             </button>
         </div>
     @endif
@@ -88,9 +101,9 @@
                                     name="type" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     onchange="toggleUrlFields()">
-                                <option value="page">📄 Página del Sitio</option>
-                                <option value="custom">🔗 URL Personalizada</option>
-                                <option value="external">🌐 Enlace Externo</option>
+                                <option value="page">Página del Sitio</option>
+                                <option value="custom">URL Personalizada</option>
+                                <option value="external">Enlace Externo</option>
                             </select>
                         </div>
 
@@ -139,7 +152,7 @@
                                    id="icon" 
                                    name="icon" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                   placeholder="🏠, 📧, 📱, etc.">
+                                   placeholder="Ej: home, mail, phone (clase de icono)">
                         </div>
 
                         <div class="mb-4">

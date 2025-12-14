@@ -10,7 +10,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="mb-0">Páginas</h2>
                 <div class="flex flex-wrap gap-3">
-                    <a href="{{ route('creator.pages.create', ['website' => $website->id]) }}" 
+                    <a href="{{ route('creator.pages.create') }}" 
                        class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
                         <i class="fas fa-plus mr-2"></i>
                     Nueva Página
@@ -101,7 +101,7 @@
                             <h3 class="text-xl font-semibold text-gray-900 mb-3">No hay páginas creadas</h3>
                             <p class="text-gray-600 mb-8">Comienza creando tu primera página o importa páginas desde una plantilla.</p>
                             <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                                <a href="{{ route('creator.pages.create', ['website' => $website->id]) }}" 
+                                <a href="{{ route('creator.pages.create') }}" 
                                    class="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 transition-colors">
                                     <i class="fas fa-plus mr-2"></i>
         Crear Primera Página

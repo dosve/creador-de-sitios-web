@@ -40,13 +40,13 @@
                             required>
                         <option value="">Selecciona una ubicación</option>
                         <option value="header" {{ old('location') === 'header' ? 'selected' : '' }}>
-                            🔝 Header (Parte superior)
+                            Header (Parte superior)
                         </option>
                         <option value="footer" {{ old('location') === 'footer' ? 'selected' : '' }}>
-                            🔽 Footer (Parte inferior)
+                            Footer (Parte inferior)
                         </option>
                         <option value="sidebar" {{ old('location') === 'sidebar' ? 'selected' : '' }}>
-                            📱 Sidebar (Lateral)
+                            Sidebar (Lateral)
                         </option>
                     </select>
                     @error('location')

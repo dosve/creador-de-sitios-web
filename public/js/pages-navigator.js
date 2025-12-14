@@ -131,6 +131,7 @@
     let selectedWebsite = null;
     let allowedSlugs = new Set(); // Slugs disponibles en la plantilla actual del sitio
     let existingSlugs = new Set(); // Slugs ya existentes en el sitio
+    let expandedWebsites = new Set(); // Sitios web expandidos (para mantener el estado)
 
     // Elementos del DOM
     let searchInput, categoryFilter, pagesGrid, totalPagesSpan, filteredPagesSpan, selectedPagesSpan, importSelectedBtn;
@@ -284,7 +285,7 @@
                         </div>
                         <div class="text-right">
                             <button class="text-gray-600 hover:text-gray-800 text-2xl transition-colors">
-                                <i class="fas fa-chevron-down" id="chevron-${websiteKey}"></i>
+                                <i class="fas fa-chevron-${isExpanded ? 'up' : 'down'}" id="chevron-${websiteKey}"></i>
                             </button>
                         </div>
                     </div>
@@ -292,9 +293,10 @@
             `;
             pagesGrid.appendChild(websiteHeader);
 
-            // Páginas del sitio web (inicialmente ocultas)
+            // Páginas del sitio web (ocultas por defecto, visibles si está expandido)
+            const isExpanded = expandedWebsites.has(websiteKey);
             const pagesContainer = document.createElement('div');
-            pagesContainer.className = 'col-span-full mb-8 hidden';
+            pagesContainer.className = `col-span-full mb-8 ${isExpanded ? '' : 'hidden'}`;
             pagesContainer.id = `pages-${websiteKey}`;
             pagesContainer.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -304,11 +306,12 @@
                         const isAllowed = allowedSlugs.size === 0 ? true : allowedSlugs.has(page.slug);
                         const isExisting = existingSlugs.has(page.slug);
                         return `
-                            <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border-2 ${isSelected ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-200 hover:border-gray-300'} ${( !isAllowed || isExisting) ? 'opacity-50 pointer-events-none' : 'cursor-pointer'} group" onclick="PagesNavigator.togglePageSelection('${key}')">
+                            <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border-2 ${isSelected ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-200 hover:border-gray-300'} ${!isAllowed ? 'opacity-50 pointer-events-none' : 'cursor-pointer'} group" onclick="PagesNavigator.togglePageSelection('${key}')">
                                 <div class="p-6">
                                     <!-- Header con título -->
                                     <div class="mb-4">
                                         <h6 class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">${page.title}</h6>
+                                        ${isExisting ? '<p class="text-xs text-orange-600 mt-1"><i class="fas fa-info-circle mr-1"></i>Se creará con sufijo si ya existe</p>' : ''}
                                     </div>
                                     
                                     <!-- Descripción -->
@@ -331,9 +334,9 @@
                                             <i class="fas fa-${page.type === 'common' ? 'star' : 'puzzle-piece'} mr-1"></i>
                                             ${page.type === 'common' ? 'Esencial' : 'Especializada'}
                                         </span>
-                                        <button class="inline-flex items-center px-3 py-2 text-sm font-medium ${isExisting ? 'text-gray-400 bg-gray-100 cursor-not-allowed' : 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100'} rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" ${isExisting ? 'disabled' : ''} onclick="event.stopPropagation(); ${isExisting ? 'void(0);' : `PagesNavigator.previewPage('${key}')`}">
+                                        <button class="inline-flex items-center px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors" onclick="event.stopPropagation(); PagesNavigator.previewPage('${key}')">
                                             <i class="fas fa-eye mr-2"></i>
-                                            ${isExisting ? 'Ya existe' : 'Vista Previa'}
+                                            Vista Previa
                                         </button>
                                     </div>
                                 </div>
@@ -409,6 +412,7 @@
             pages.forEach(page => {
                 const key = `${page.websiteKey}--${page.slug}`;
                 const isSelected = selectedPages.has(key);
+                const isExisting = existingSlugs.has(page.slug);
                 
                 const pageCard = document.createElement('div');
                 pageCard.className = 'col-span-1';
@@ -418,6 +422,7 @@
                             <!-- Header con título -->
                             <div class="mb-4">
                                 <h6 class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">${page.title}</h6>
+                                ${isExisting ? '<p class="text-xs text-orange-600 mt-1"><i class="fas fa-info-circle mr-1"></i>Se creará con sufijo si ya existe</p>' : ''}
                             </div>
                             
                             <!-- Descripción -->
@@ -516,7 +521,7 @@
             selectedPages.add(slug);
         }
         updateStats();
-        renderPages();
+        renderWebsites(); // Mantener la agrupación por sitios web
     }
 
     // Vista previa de página
@@ -558,13 +563,12 @@
         // Filtrar a slugs permitidos por la plantilla actual
         if (allowedSlugs.size > 0) {
             selectedArray = selectedArray.filter(obj => allowedSlugs.has(obj.slug));
+            if (selectedArray.length === 0) {
+                alert('Las páginas seleccionadas no están disponibles en la plantilla actual.');
+                return;
+            }
         }
-        // Excluir los que ya existen en el sitio
-        selectedArray = selectedArray.filter(obj => !existingSlugs.has(obj.slug));
-        if (selectedArray.length === 0) {
-            alert('Las páginas seleccionadas ya existen en tu sitio o no están disponibles en la plantilla actual.');
-            return;
-        }
+        // NO excluir los que ya existen - el backend se encargará de crear con sufijo si es necesario
 
         // Crear y enviar un formulario POST tradicional para respetar el flujo de Laravel (redirect con flash)
         const form = document.createElement('form');
@@ -628,10 +632,12 @@
             pagesContainer.classList.remove('hidden');
             chevron.classList.remove('fa-chevron-down');
             chevron.classList.add('fa-chevron-up');
+            expandedWebsites.add(websiteKey); // Guardar estado expandido
         } else {
             pagesContainer.classList.add('hidden');
             chevron.classList.remove('fa-chevron-up');
             chevron.classList.add('fa-chevron-down');
+            expandedWebsites.delete(websiteKey); // Guardar estado colapsado
         }
     }
 

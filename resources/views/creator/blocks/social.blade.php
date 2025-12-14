@@ -34,7 +34,7 @@
 {
   id: 'map',
   label: 'Mapa',
-  category: 'Social', attributes: {
+  category: 'Redes Sociales', attributes: {
     class: 'gjs-block-map'
   }
   , content: `<section class="py-16 map">

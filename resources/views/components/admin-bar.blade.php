@@ -1,4 +1,4 @@
-@props(['website', 'page' => null])
+@props(['website', 'page' => null, 'currentPage' => null])
 
 <!-- Barra de administración - ID: {{ uniqid() }} -->
 <div class="admin-bar" data-admin-bar-id="{{ uniqid() }}">
@@ -23,13 +23,59 @@
                     Panel de Administración
                 </a>
                 
-                <button id="edit-current-page" class="admin-bar-link" style="background: transparent; border: none;" title="Abrir editor de la página actual">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                        <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                    Editar página actual
-                </button>
+                @php
+                    // Intentar obtener la página desde diferentes fuentes
+                    $pageToEdit = $page ?? $currentPage ?? $attributes->get('page') ?? $attributes->get('currentPage');
+                    
+                    // Si no tenemos la p?gina, intentar obtenerla desde la URL actual
+                    if (!$pageToEdit) {
+                        $currentUrl = request()->path();
+                        $urlParts = array_filter(explode('/', trim($currentUrl, '/')));
+                        $urlParts = array_values($urlParts); // Reindexar array
+                        
+                        // Caso 1: URL tiene el formato /{website_slug}/{page_slug}
+                        if (count($urlParts) >= 2 && $urlParts[0] === $website->slug) {
+                            $pageSlug = $urlParts[1];
+                            $pageToEdit = $website->pages()->where('slug', $pageSlug)->first();
+                        }
+                        // Caso 2: URL tiene solo el slug del sitio (página de inicio)
+                        elseif (count($urlParts) === 1 && $urlParts[0] === $website->slug) {
+                            $pageToEdit = $website->pages()->where('is_home', true)->first();
+                        }
+                        // Caso 3: URL raíz o vacía (página de inicio)
+                        elseif (empty($urlParts) || (count($urlParts) === 0)) {
+                            $pageToEdit = $website->pages()->where('is_home', true)->first();
+                        }
+                        // Caso 4: Dominio personalizado - la URL puede ser solo /{page_slug}
+                        elseif (count($urlParts) === 1) {
+                            $pageSlug = $urlParts[0];
+                            $pageToEdit = $website->pages()->where('slug', $pageSlug)->first();
+                            
+                            // Si no se encuentra, puede ser la página de inicio
+                            if (!$pageToEdit && ($pageSlug === '' || $pageSlug === 'index' || $pageSlug === 'inicio')) {
+                                $pageToEdit = $website->pages()->where('is_home', true)->first();
+                            }
+                        }
+                    }
+                @endphp
+                
+                @if($pageToEdit)
+                    <a href="{{ route('creator.pages.editor', $pageToEdit) }}" target="_blank" class="admin-bar-link" title="Abrir editor de la página actual">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                            <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        Editar página actual
+                    </a>
+                @else
+                    <button id="edit-current-page" class="admin-bar-link" style="background: transparent; border: none;" title="Abrir editor de la página actual">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                            <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        Editar página actual
+                    </button>
+                @endif
                 
                 @if(auth()->user()->role === 'admin')
                     <a href="{{ route('admin.template-configuration.index', $website) }}" class="admin-bar-link" title="Configurar plantilla">
@@ -251,8 +297,8 @@
 </style>
 
 <script>
-// Pasar el ID de la página al JavaScript
-// Intentar obtener la página desde los atributos del componente o de la variable directa
+// Pasar el ID de la p?gina al JavaScript
+// Intentar obtener la p?gina desde los atributos del componente o de la variable directa
 @php
     $componentPage = $attributes->get('page');
 @endphp
@@ -321,8 +367,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const csrfToken = document.querySelector('meta[name="csrf-token"]');
             if (!csrfToken) {
-                console.error('❌ No se pudo obtener el token CSRF');
-                console.log('🔄 Intentando método alternativo...');
+                console.error('? No se pudo obtener el token CSRF');
+                console.log('?? Intentando m?todo alternativo...');
                 
                 // Buscar el pageId en el data attribute del body
                 const body = document.body;

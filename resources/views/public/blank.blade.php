@@ -9,6 +9,8 @@
     @php
     // Usar la página de inicio o la página específica si se proporciona
     $currentPage = $page ?? $homePage;
+    // Variable para evitar cargar el script de blog múltiples veces
+    $blogScriptIncluded = false;
     @endphp
 
     <title>{{ $currentPage->meta_title ?? $currentPage->title ?? $website->name }}</title>
@@ -25,17 +27,48 @@
     <script>
         window.websiteApiKey = "{{ $website->api_key ?? '' }}";
         window.websiteApiUrl = "{{ $website->api_base_url ?? '' }}";
+        window.websiteSlug = "{{ $website->slug ?? '' }}";
+        window.websiteId = {{ $website->id ?? 0 }};
         window.epaycoPublicKey = "{{ $website->epayco_public_key ?? '' }}";
         window.epaycoPrivateKey = "{{ $website->epayco_private_key ?? '' }}";
         window.epaycoCustomerId = "{{ $website->epayco_customer_id ?? '' }}";
         console.log('⚡ Variables API configuradas:', {
             apiKey: window.websiteApiKey ? ('Configurada - ' + window.websiteApiKey.length + ' chars') : 'NO',
-            apiUrl: window.websiteApiUrl || 'NO'
+            apiUrl: window.websiteApiUrl || 'NO',
+            websiteSlug: window.websiteSlug || 'NO',
+            websiteId: window.websiteId || 'NO'
         });
     </script>
 
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    @php
+        $isProduction = app()->environment('production');
+        $hasCompiledCss = file_exists(public_path('build/assets/app.css'));
+    @endphp
+    @if($isProduction && $hasCompiledCss)
+        <link href="{{ asset('build/assets/app.css') }}" rel="stylesheet">
+    @else
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            // Suprimir advertencia de producción en desarrollo
+            (function() {
+                if (typeof tailwind !== 'undefined' && tailwind.config) {
+                    try {
+                        // Intentar suprimir la advertencia
+                        const originalWarn = console.warn;
+                        console.warn = function(...args) {
+                            if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+                                return; // Suprimir esta advertencia específica
+                            }
+                            originalWarn.apply(console, args);
+                        };
+                    } catch(e) {
+                        // Ignorar errores al suprimir advertencias
+                    }
+                }
+            })();
+        </script>
+    @endif
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -123,6 +156,21 @@
         $currentPage = $page ?? $homePage;
         $isHomePage = $currentPage && $currentPage->is_home;
         $isStorePage = $currentPage && $currentPage->enable_store && !$currentPage->is_home;
+        
+        // Verificar si el contenido tiene un bloque de blog
+        $hasBlogBlock = false;
+        if ($currentPage && $currentPage->html_content) {
+            $hasBlogBlock = strpos($currentPage->html_content, 'id="blog-posts-container"') !== false
+                || strpos($currentPage->html_content, 'data-dynamic-blog="true"') !== false;
+        }
+        
+        // Verificar si el contenido tiene un bloque de productos
+        $hasProductsBlock = false;
+        if ($currentPage && $currentPage->html_content) {
+            $hasProductsBlock = strpos($currentPage->html_content, 'id="products-container"') !== false
+                || strpos($currentPage->html_content, 'data-dynamic-products="true"') !== false
+                || strpos($currentPage->html_content, 'data-products-source="api"') !== false;
+        }
     @endphp
     
     @if($isStorePage)
@@ -133,11 +181,33 @@
         <script type="text/javascript" src="https://checkout.epayco.co/checkout.js"></script>
         <x-cart.script :websiteSlug="$website->slug" />
         <x-auth.user-auth-script :website="$website" />
+        
+        {{-- Script de productos si tiene bloque de productos --}}
+        @if($hasProductsBlock)
+            <x-products-script :apiKey="$website->api_key" :apiBaseUrl="$website->api_base_url" />
+        @endif
+        
+        {{-- Script de blog si tiene bloque de blog (solo si no se cargó antes) --}}
+        @if($hasBlogBlock && !isset($blogScriptIncluded))
+            @php $blogScriptIncluded = true; @endphp
+            @include('components.blog-script', ['websiteId' => $website->id])
+        @endif
     @else
         {{-- Página de inicio: Solo carrito y auth (productos se cargan con script inline) --}}
         <script type="text/javascript" src="https://checkout.epayco.co/checkout.js"></script>
         <x-cart.script :websiteSlug="$website->slug" />
         <x-auth.user-auth-script :website="$website" />
+        
+        {{-- Script de productos si tiene bloque de productos --}}
+        @if($hasProductsBlock)
+            <x-products-script :apiKey="$website->api_key" :apiBaseUrl="$website->api_base_url" />
+        @endif
+        
+        {{-- Script de blog si tiene bloque de blog (solo si no se cargó antes) --}}
+        @if($hasBlogBlock && !isset($blogScriptIncluded))
+            @php $blogScriptIncluded = true; @endphp
+            @include('components.blog-script', ['websiteId' => $website->id])
+        @endif
         
         @if($website->epayco_public_key && $website->epayco_private_key)
             <x-payments.epayco.handler 
@@ -150,6 +220,8 @@
 
     <!-- Alpine.js para interactividad -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    {{-- Script para eliminar placeholders eliminado: Ya no es necesario porque los placeholders solo aparecen en páginas nuevas sin contenido --}}
 </body>
 
 </html>

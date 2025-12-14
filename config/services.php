@@ -46,4 +46,8 @@ return [
         'app_key' => env('ADMIN_NEGOCIOS_APP_KEY', '123456789'),
     ],
 
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+    ],
+
 ];

@@ -173,7 +173,7 @@
 {
   id: 'image-box-advanced',
   label: 'Caja de Imagen Avanzada',
-  category: 'Media',
+  category: 'Multimedia',
   attributes: {
     class: 'gjs-block-image-box'
   },
@@ -210,47 +210,6 @@
       name: 'link-url',
       label: 'Enlace (opcional)',
       placeholder: 'https://ejemplo.com'
-    }
-  ]
-},
-{
-  id: 'soundcloud-embed',
-  label: 'SoundCloud',
-  category: 'Multimedia',
-  attributes: {
-    class: 'gjs-block-soundcloud'
-  },
-  content: `
-    <div class="soundcloud-embed rounded-lg overflow-hidden shadow-lg">
-      <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" 
-        src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/293&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true">
-      </iframe>
-      <div class="px-4 py-2 bg-gray-50 text-center">
-        <p data-gjs-type="text" data-gjs-name="soundcloud-caption" class="text-sm text-gray-600">Reproductor de SoundCloud</p>
-      </div>
-    </div>
-  `,
-  traits: [
-    {
-      type: 'text',
-      name: 'soundcloud-url',
-      label: 'URL de SoundCloud',
-      placeholder: 'https://soundcloud.com/...'
-    },
-    {
-      type: 'select',
-      name: 'player-type',
-      label: 'Tipo de Reproductor',
-      options: [
-        { value: 'classic', name: 'Clásico' },
-        { value: 'visual', name: 'Visual con Artwork' }
-      ]
-    },
-    {
-      type: 'checkbox',
-      name: 'autoplay',
-      label: 'Reproducción Automática',
-      value: false
     }
   ]
 }

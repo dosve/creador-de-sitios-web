@@ -7,6 +7,8 @@ use App\Models\Website;
 use App\Models\BlogPost;
 use App\Models\Category;
 use App\Models\Tag;
+use App\Models\TemplateConfiguration;
+use App\Services\TemplateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -14,6 +16,14 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class BlogPostController extends Controller
 {
     use AuthorizesRequests;
+
+    protected $templateService;
+
+    public function __construct(TemplateService $templateService)
+    {
+        $this->templateService = $templateService;
+    }
+
     public function index(Request $request)
     {
         $website = Website::find(session('selected_website_id'));
@@ -225,6 +235,42 @@ class BlogPostController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(12);
 
+        // Si el sitio web tiene plantilla aplicada, renderizar con el sistema de archivos
+        if ($website->template_id) {
+            $template = $this->templateService->find($website->template_id);
+            if ($template) {
+                $customization = $template['customization'] ?? [];
+                
+                // Obtener o crear la configuración de la plantilla
+                $templateConfig = TemplateConfiguration::firstOrCreate(
+                    [
+                        'website_id' => $website->id,
+                        'template_slug' => $template['slug']
+                    ],
+                    [
+                        'configuration' => TemplateConfiguration::getDefaultConfiguration($template['slug']),
+                        'customization' => [],
+                        'settings' => [],
+                        'is_active' => true
+                    ]
+                );
+
+                // Usar vista especial para blog index o template normal
+                $templateFile = $template['templates']['blog'] ?? $template['templates']['page'] ?? 'template';
+                $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
+                
+                // Si la vista existe, usarla, sino usar la vista pública normal
+                if (view()->exists($viewPath)) {
+                    return view($viewPath, [
+                        'website' => $website,
+                        'blogPosts' => $blogPosts,
+                        'customization' => $customization,
+                        'templateConfig' => $templateConfig
+                    ]);
+                }
+            }
+        }
+
         return view('public.blog.index', compact('website', 'blogPosts'));
     }
 
@@ -254,6 +300,53 @@ class BlogPostController extends Controller
             ->limit(3)
             ->get();
 
+        // Si el sitio web tiene plantilla aplicada, renderizar con el sistema de archivos
+        if ($website->template_id) {
+            $template = $this->templateService->find($website->template_id);
+            if ($template) {
+                $customization = $template['customization'] ?? [];
+                
+                // Obtener o crear la configuración de la plantilla
+                $templateConfig = TemplateConfiguration::firstOrCreate(
+                    [
+                        'website_id' => $website->id,
+                        'template_slug' => $template['slug']
+                    ],
+                    [
+                        'configuration' => TemplateConfiguration::getDefaultConfiguration($template['slug']),
+                        'customization' => [],
+                        'settings' => [],
+                        'is_active' => true
+                    ]
+                );
+
+                // Usar vista especial para blog post o template normal
+                $templateFile = $template['templates']['blog'] ?? $template['templates']['page'] ?? 'template';
+                $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
+                
+                // Si la vista existe, usarla, sino usar la vista pública normal con template
+                if (view()->exists($viewPath)) {
+                    return view($viewPath, [
+                        'website' => $website,
+                        'blogPost' => $blogPost,
+                        'relatedPosts' => $relatedPosts,
+                        'customization' => $customization,
+                        'templateConfig' => $templateConfig
+                    ]);
+                } else {
+                    // Renderizar usando el template principal pero con contenido de blog post
+                    return view('templates.' . $template['slug'] . '.template', [
+                        'website' => $website,
+                        'page' => null, // No hay página, es un blog post
+                        'blogPost' => $blogPost,
+                        'relatedPosts' => $relatedPosts,
+                        'customization' => $customization,
+                        'templateConfig' => $templateConfig
+                    ]);
+                }
+            }
+        }
+
         return view('public.blog.show', compact('website', 'blogPost', 'relatedPosts'));
     }
 
@@ -281,6 +374,42 @@ class BlogPostController extends Controller
             ->with(['category', 'tags'])
             ->orderBy('created_at', 'desc')
             ->paginate(12);
+
+        // Si el sitio web tiene plantilla aplicada, renderizar con el sistema de archivos
+        if ($website->template_id) {
+            $template = $this->templateService->find($website->template_id);
+            if ($template) {
+                $customization = $template['customization'] ?? [];
+                
+                // Obtener o crear la configuración de la plantilla
+                $templateConfig = TemplateConfiguration::firstOrCreate(
+                    [
+                        'website_id' => $website->id,
+                        'template_slug' => $template['slug']
+                    ],
+                    [
+                        'configuration' => TemplateConfiguration::getDefaultConfiguration($template['slug']),
+                        'customization' => [],
+                        'settings' => [],
+                        'is_active' => true
+                    ]
+                );
+
+                // Usar vista especial para blog index o template normal
+                $templateFile = $template['templates']['blog'] ?? $template['templates']['page'] ?? 'template';
+                $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
+                
+                // Si la vista existe, usarla, sino usar la vista pública normal
+                if (view()->exists($viewPath)) {
+                    return view($viewPath, [
+                        'website' => $website,
+                        'blogPosts' => $blogPosts,
+                        'customization' => $customization,
+                        'templateConfig' => $templateConfig
+                    ]);
+                }
+            }
+        }
 
         return view('public.blog.index', compact('website', 'blogPosts'));
     }
@@ -324,6 +453,53 @@ class BlogPostController extends Controller
             ->with(['category', 'tags'])
             ->limit(3)
             ->get();
+
+        // Si el sitio web tiene plantilla aplicada, renderizar con el sistema de archivos
+        if ($website->template_id) {
+            $template = $this->templateService->find($website->template_id);
+            if ($template) {
+                $customization = $template['customization'] ?? [];
+                
+                // Obtener o crear la configuración de la plantilla
+                $templateConfig = TemplateConfiguration::firstOrCreate(
+                    [
+                        'website_id' => $website->id,
+                        'template_slug' => $template['slug']
+                    ],
+                    [
+                        'configuration' => TemplateConfiguration::getDefaultConfiguration($template['slug']),
+                        'customization' => [],
+                        'settings' => [],
+                        'is_active' => true
+                    ]
+                );
+
+                // Usar vista especial para blog post o template normal
+                $templateFile = $template['templates']['blog'] ?? $template['templates']['page'] ?? 'template';
+                $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
+                
+                // Si la vista existe, usarla, sino usar la vista pública normal con template
+                if (view()->exists($viewPath)) {
+                    return view($viewPath, [
+                        'website' => $website,
+                        'blogPost' => $blogPost,
+                        'relatedPosts' => $relatedPosts,
+                        'customization' => $customization,
+                        'templateConfig' => $templateConfig
+                    ]);
+                } else {
+                    // Renderizar usando el template principal pero con contenido de blog post
+                    return view('templates.' . $template['slug'] . '.template', [
+                        'website' => $website,
+                        'page' => null, // No hay página, es un blog post
+                        'blogPost' => $blogPost,
+                        'relatedPosts' => $relatedPosts,
+                        'customization' => $customization,
+                        'templateConfig' => $templateConfig
+                    ]);
+                }
+            }
+        }
 
         return view('public.blog.show', compact('website', 'blogPost', 'relatedPosts'));
     }

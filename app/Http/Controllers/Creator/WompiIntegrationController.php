@@ -56,6 +56,8 @@ class WompiIntegrationController extends Controller
                 'wompi_private_key' => $request->wompi_private_key,
                 'wompi_event_key' => $request->wompi_event_key,
                 'wompi_integrity_key' => $request->wompi_integrity_key,
+                // Actualizar la pasarela de pago por defecto a Wompi si se guardan credenciales
+                'default_payment_gateway' => 'wompi',
             ]);
 
             Log::info('Credenciales de Wompi actualizadas', [

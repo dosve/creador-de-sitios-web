@@ -306,9 +306,9 @@
 
 {{-- Modal para agregar/editar dirección (compartido) --}}
 <div id="address-modal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 m-4 max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 m-4 max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Agregar Dirección</h2>
+            <h2 id="address-modal-title" class="text-2xl font-bold text-gray-900">Agregar Dirección</h2>
             <button id="close-address-modal" class="text-gray-400 hover:text-gray-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -317,26 +317,70 @@
         </div>
         
         <form id="address-form" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Dirección completa *</label>
-                <textarea name="direccion" rows="2" placeholder="Calle, número, apartamento, etc." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required></textarea>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Barrio *</label>
-                    <input type="text" name="barrio" placeholder="Nombre del barrio" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+            <input type="hidden" id="address-id" name="address_id" value="">
+            {{-- Departamento y Ciudad (PRIMERO) --}}
+            <div class="grid grid-cols-2 gap-3">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Departamento *</label>
+                    <select name="departamento" id="departamento-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                        <option value="">Cargando...</option>
+                    </select>
                 </div>
                 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Ciudad *</label>
-                    <input type="text" name="ciudad" placeholder="Ej: Bogotá" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ciudad/Municipio *</label>
+                    <select name="ciudad" id="ciudad-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required disabled>
+                        <option value="">Seleccione primero un departamento</option>
+                    </select>
                 </div>
             </div>
-            
+
+            {{-- Tipo de dirección --}}
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Código Postal (opcional)</label>
-                <input type="text" name="codigo_postal" placeholder="Ej: 110111" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de vía *</label>
+                <select name="tipo_via" id="tipo-via" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                    <option value="">Seleccione un tipo</option>
+                    <option value="Calle">Calle</option>
+                    <option value="Carrera">Carrera</option>
+                    <option value="Avenida">Avenida</option>
+                    <option value="Avenida Calle">Avenida Calle</option>
+                    <option value="Avenida Carrera">Avenida Carrera</option>
+                    <option value="Diagonal">Diagonal</option>
+                    <option value="Transversal">Transversal</option>
+                    <option value="Circular">Circular</option>
+                    <option value="Vía">Vía</option>
+                    <option value="Autopista">Autopista</option>
+                    <option value="Boulevard">Boulevard</option>
+                    <option value="Pasaje">Pasaje</option>
+                    <option value="Camino">Camino</option>
+                    <option value="Carrera">Carrera</option>
+                </select>
+            </div>
+
+            {{-- Dirección en tres campos --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Dirección *</label>
+                <div class="flex items-center gap-2 w-full">
+                    <input type="text" name="direccion_campo1" id="direccion-campo1" placeholder="-" maxlength="10" class="flex-1 min-w-0 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                    <span class="text-blue-600 font-semibold text-base flex-shrink-0 px-1">#</span>
+                    <input type="text" name="direccion_campo2" id="direccion-campo2" placeholder="-" maxlength="10" class="flex-1 min-w-0 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                    <span class="text-blue-600 font-semibold text-base flex-shrink-0 px-1">-</span>
+                    <input type="text" name="direccion_campo3" id="direccion-campo3" placeholder="-" maxlength="10" class="flex-1 min-w-0 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <p class="mt-1 text-xs text-gray-500">Ej: 27 # 45 - 67</p>
+            </div>
+            
+            {{-- Barrio --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Barrio *</label>
+                <input type="text" name="barrio" placeholder="Nombre del barrio" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+            </div>
+
+            {{-- Otros detalles (Torre, Piso, Apartamento, etc.) --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Otros detalles (opcional)</label>
+                <input type="text" name="otros_detalles" placeholder="Ej: Torre 2, Piso 5, Apto 201, Edificio Los Rosales" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <p class="mt-1 text-xs text-gray-500">Torre, piso, apartamento, edificio, etc.</p>
             </div>
             
             <div id="address-message" class="hidden"></div>
@@ -468,7 +512,7 @@ async function loadAddresses() {
                         <p class="text-gray-500">Registrada el ${createdDate}</p>
                     </div>
                     <div class="mt-4 flex items-center justify-between text-sm">
-                        <button class="text-blue-600 hover:text-blue-700 font-medium">Editar</button>
+                        <button class="text-blue-600 hover:text-blue-700 font-medium" onclick="editAddress(${address.id}, ${JSON.stringify(address).replace(/"/g, '&quot;')})">Editar</button>
                         <button class="text-red-600 hover:text-red-700 font-medium" onclick="deleteAddress(${address.id})">Eliminar</button>
                     </div>
                 </div>
@@ -731,20 +775,371 @@ document.getElementById('password-form').addEventListener('submit', async functi
     }
 });
 
+// Variable global para modo de edición
+let editingAddressId = null;
+
 // Gestión de modal de direcciones
-function openAddressModal() {
+async function openAddressModal() {
+    editingAddressId = null;
+    document.getElementById('address-id').value = '';
+    document.getElementById('address-modal-title').textContent = 'Agregar Dirección';
     document.getElementById('address-modal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    
+    // Limpiar formulario
+    document.getElementById('address-form').reset();
+    document.getElementById('ciudad-select').innerHTML = '<option value="">Seleccione primero un departamento</option>';
+    document.getElementById('ciudad-select').disabled = true;
+    
+    // Cargar departamentos al abrir el modal
+    await loadDepartments();
+}
+
+// Abrir modal en modo edición
+async function editAddress(addressId, addressData) {
+    editingAddressId = addressId;
+    document.getElementById('address-id').value = addressId;
+    document.getElementById('address-modal-title').textContent = 'Editar Dirección';
+    document.getElementById('address-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Cargar departamentos primero
+    await loadDepartments();
+    
+    // Esperar un momento para que los departamentos se carguen
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Parsear y llenar los campos
+    parseAndFillAddress(addressData);
+}
+
+// Parsear dirección completa y llenar campos del formulario
+function parseAndFillAddress(address) {
+    // Llenar barrio
+    document.getElementById('address-form').querySelector('input[name="barrio"]').value = address.barrio || '';
+    
+    // Llenar otros detalles (si existen en la dirección)
+    const otrosDetallesInput = document.getElementById('address-form').querySelector('input[name="otros_detalles"]');
+    otrosDetallesInput.value = '';
+    
+    // Parsear dirección completa
+    const direccionCompleta = address.direccion || '';
+    
+    // Separar otros detalles si hay una coma
+    let direccionSinDetalles = direccionCompleta;
+    let otrosDetalles = '';
+    
+    const comaIndex = direccionCompleta.lastIndexOf(',');
+    if (comaIndex > 0) {
+        direccionSinDetalles = direccionCompleta.substring(0, comaIndex).trim();
+        otrosDetalles = direccionCompleta.substring(comaIndex + 1).trim();
+        otrosDetallesInput.value = otrosDetalles;
+    }
+    
+    // Intentar extraer tipo de vía y números
+    // Formato esperado: "TipoVia Campo1 # Campo2 - Campo3"
+    // Ejemplos: "Calle 27 # 45 - 67", "Carrera 15 # 20", "Avenida 100 # 50 - 30"
+    const direccionMatch = direccionSinDetalles.match(/^([A-Za-zÁÉÍÓÚáéíóúñÑ\s]+?)\s+(\d+)\s*#\s*(\d+)(?:\s*-\s*(\d+))?$/);
+    
+    if (direccionMatch) {
+        // Tipo de vía
+        const tipoVia = direccionMatch[1].trim();
+        const tipoViaSelect = document.getElementById('tipo-via');
+        // Buscar la opción que coincida
+        for (let i = 0; i < tipoViaSelect.options.length; i++) {
+            if (tipoViaSelect.options[i].textContent.trim() === tipoVia) {
+                tipoViaSelect.value = tipoViaSelect.options[i].value;
+                break;
+            }
+        }
+        // Si no se encuentra, poner el valor directamente
+        if (!tipoViaSelect.value) {
+            tipoViaSelect.value = tipoVia;
+        }
+        
+        // Campo 1
+        document.getElementById('direccion-campo1').value = direccionMatch[2] || '';
+        
+        // Campo 2
+        document.getElementById('direccion-campo2').value = direccionMatch[3] || '';
+        
+        // Campo 3 (opcional)
+        if (direccionMatch[4]) {
+            document.getElementById('direccion-campo3').value = direccionMatch[4];
+        }
+    } else {
+        // Si no coincide el patrón exacto, intentar extraer lo que se pueda
+        // Buscar el primer número después del tipo de vía
+        const tipoViaMatch = direccionSinDetalles.match(/^([A-Za-zÁÉÍÓÚáéíóúñÑ\s]+?)\s+/);
+        if (tipoViaMatch) {
+            const tipoVia = tipoViaMatch[1].trim();
+            const tipoViaSelect = document.getElementById('tipo-via');
+            for (let i = 0; i < tipoViaSelect.options.length; i++) {
+                if (tipoViaSelect.options[i].textContent.trim() === tipoVia) {
+                    tipoViaSelect.value = tipoViaSelect.options[i].value;
+                    break;
+                }
+            }
+        }
+        
+        // Intentar extraer números con # y -
+        const numerosMatch = direccionSinDetalles.match(/(\d+)\s*#\s*(\d+)(?:\s*-\s*(\d+))?/);
+        if (numerosMatch) {
+            document.getElementById('direccion-campo1').value = numerosMatch[1] || '';
+            document.getElementById('direccion-campo2').value = numerosMatch[2] || '';
+            if (numerosMatch[3]) {
+                document.getElementById('direccion-campo3').value = numerosMatch[3];
+            }
+        }
+    }
+    
+    // Seleccionar departamento y ciudad
+    selectDepartmentAndCity(address.ciudad);
+}
+
+// Seleccionar departamento y ciudad
+async function selectDepartmentAndCity(ciudadNombre) {
+    const departamentoSelect = document.getElementById('departamento-select');
+    const ciudadSelect = document.getElementById('ciudad-select');
+    
+    if (!ciudadNombre || !departamentoSelect || departamentoSelect.options.length <= 1) {
+        return;
+    }
+    
+    // Obtener la URL base de la API
+    let apiBaseUrl = window.websiteApiUrl || '{{ $website->api_base_url ?? "" }}';
+    if (!apiBaseUrl) return;
+    
+    apiBaseUrl = apiBaseUrl.replace(/\/$/, '');
+    const url = apiBaseUrl + (apiBaseUrl.endsWith('/api') ? '/public/departments' : '/api/public/departments');
+    
+    try {
+        // Cargar todos los departamentos con sus ciudades
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (!response.ok) return;
+        
+        const departments = await response.json();
+        
+        // Buscar la ciudad en todos los departamentos
+        for (const dept of departments) {
+            if (dept.cities && Array.isArray(dept.cities)) {
+                const ciudad = dept.cities.find(c => 
+                    c.name.trim().toLowerCase() === ciudadNombre.trim().toLowerCase()
+                );
+                
+                if (ciudad) {
+                    // Seleccionar el departamento
+                    departamentoSelect.value = dept.id;
+                    
+                    // Cargar las ciudades del departamento
+                    await loadCities(dept.id);
+                    
+                    // Esperar un momento para que se carguen las ciudades
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                    // Seleccionar la ciudad
+                    ciudadSelect.value = ciudad.id;
+                    ciudadSelect.disabled = false;
+                    return;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error buscando ciudad:', error);
+    }
 }
 
 function closeAddressModal() {
     document.getElementById('address-modal').classList.add('hidden');
     document.body.style.overflow = '';
+    
+    // Limpiar formulario y resetear selects
+    document.getElementById('address-form').reset();
+    document.getElementById('address-id').value = '';
+    editingAddressId = null;
+    document.getElementById('ciudad-select').innerHTML = '<option value="">Seleccione primero un departamento</option>';
+    document.getElementById('ciudad-select').disabled = true;
 }
+
+// Cargar departamentos desde la API
+async function loadDepartments() {
+    const departamentoSelect = document.getElementById('departamento-select');
+    const ciudadSelect = document.getElementById('ciudad-select');
+    
+    try {
+        departamentoSelect.innerHTML = '<option value="">Cargando...</option>';
+        departamentoSelect.disabled = true;
+        
+        // Obtener la URL base de la API del servidor de admin negocios
+        let apiBaseUrl = window.websiteApiUrl || '{{ $website->api_base_url ?? "" }}';
+        
+        if (!apiBaseUrl) {
+            throw new Error('No se encontró la URL de la API');
+        }
+        
+        // Limpiar la URL base (remover barra final si existe)
+        apiBaseUrl = apiBaseUrl.replace(/\/$/, '');
+        
+        // Si la URL base ya incluye /api, no agregarlo de nuevo
+        // Construir la URL del endpoint público de departamentos
+        const url = apiBaseUrl + (apiBaseUrl.endsWith('/api') ? '/public/departments' : '/api/public/departments');
+        
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al cargar departamentos: ' + response.status);
+        }
+        
+        const departments = await response.json();
+        populateDepartmentsSelect(departamentoSelect, departments);
+        
+    } catch (error) {
+        console.error('Error cargando departamentos:', error);
+        departamentoSelect.innerHTML = '<option value="">Error al cargar departamentos</option>';
+    }
+}
+
+// Función auxiliar para poblar el select de departamentos
+function populateDepartmentsSelect(select, departments) {
+    select.innerHTML = '<option value="">Seleccione un departamento</option>';
+    
+    if (Array.isArray(departments)) {
+        departments.forEach(dept => {
+            const option = document.createElement('option');
+            option.value = dept.id;
+            option.textContent = dept.name;
+            select.appendChild(option);
+        });
+    }
+    
+    select.disabled = false;
+}
+
+// Cargar ciudades según el departamento seleccionado
+async function loadCities(departmentId) {
+    const ciudadSelect = document.getElementById('ciudad-select');
+    
+    if (!departmentId) {
+        ciudadSelect.innerHTML = '<option value="">Seleccione primero un departamento</option>';
+        ciudadSelect.disabled = true;
+        return;
+    }
+    
+    try {
+        ciudadSelect.innerHTML = '<option value="">Cargando...</option>';
+        ciudadSelect.disabled = true;
+        
+        // Obtener la URL base de la API
+        let apiBaseUrl = window.websiteApiUrl || '{{ $website->api_base_url ?? "" }}';
+        
+        if (!apiBaseUrl) {
+            throw new Error('No se encontró la URL de la API');
+        }
+        
+        // Limpiar la URL base (remover barra final si existe)
+        apiBaseUrl = apiBaseUrl.replace(/\/$/, '');
+        
+        // Si la URL base ya incluye /api, no agregarlo de nuevo
+        // Construir la URL del endpoint público de departamento específico (que incluye ciudades)
+        const url = apiBaseUrl + (apiBaseUrl.endsWith('/api') ? '/public/departments/' + departmentId : '/api/public/departments/' + departmentId);
+        
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al cargar ciudades: ' + response.status);
+        }
+        
+        const department = await response.json();
+        populateCitiesSelect(ciudadSelect, department.cities || []);
+        
+    } catch (error) {
+        console.error('Error cargando ciudades:', error);
+        ciudadSelect.innerHTML = '<option value="">Error al cargar ciudades</option>';
+    }
+}
+
+// Función auxiliar para poblar el select de ciudades
+function populateCitiesSelect(select, cities) {
+    select.innerHTML = '<option value="">Seleccione una ciudad</option>';
+    
+    if (Array.isArray(cities)) {
+        cities.forEach(city => {
+            const option = document.createElement('option');
+            option.value = city.id;
+            option.textContent = city.name;
+            select.appendChild(option);
+        });
+    }
+    
+    select.disabled = false;
+}
+
+// Event listener para cuando se selecciona un departamento
+document.addEventListener('DOMContentLoaded', function() {
+    const departamentoSelect = document.getElementById('departamento-select');
+    if (departamentoSelect) {
+        departamentoSelect.addEventListener('change', function() {
+            loadCities(this.value);
+        });
+    }
+});
 
 document.getElementById('add-address-btn')?.addEventListener('click', openAddressModal);
 document.getElementById('add-first-address-btn')?.addEventListener('click', openAddressModal);
 document.getElementById('close-address-modal')?.addEventListener('click', closeAddressModal);
+
+// Función para eliminar dirección
+async function deleteAddress(addressId) {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta dirección?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/customer/addresses/${addressId}?website={{ $website->slug }}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Recargar la lista de direcciones
+            loadAddresses();
+            
+            // Mostrar mensaje de éxito
+            const addressesList = document.getElementById('addresses-list');
+            const successMsg = document.createElement('div');
+            successMsg.className = 'p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm mb-4';
+            successMsg.textContent = '✓ Dirección eliminada exitosamente';
+            addressesList.insertBefore(successMsg, addressesList.firstChild);
+            
+            setTimeout(() => {
+                successMsg.remove();
+            }, 3000);
+        } else {
+            alert('Error al eliminar la dirección: ' + (result.message || 'Error desconocido'));
+        }
+    } catch (error) {
+        console.error('Error eliminando dirección:', error);
+        alert('Error al eliminar la dirección. Por favor, intenta nuevamente.');
+    }
+}
 
 // Guardar dirección
 document.getElementById('address-form')?.addEventListener('submit', async function(e) {
@@ -760,11 +1155,63 @@ document.getElementById('address-form')?.addEventListener('submit', async functi
         messageDiv.classList.add('hidden');
         
         const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData);
-        data.website = '{{ $website->slug }}'; // Agregar slug del sitio web
         
-        const response = await fetch('/customer/addresses', {
-            method: 'POST',
+        // Obtener valores del formulario
+        const tipoVia = formData.get('tipo_via');
+        const direccionCampo1 = formData.get('direccion_campo1');
+        const direccionCampo2 = formData.get('direccion_campo2');
+        const direccionCampo3 = formData.get('direccion_campo3');
+        const otrosDetalles = formData.get('otros_detalles');
+        const barrio = formData.get('barrio');
+        const ciudadSelect = document.getElementById('ciudad-select');
+        
+        // Validar que la ciudad esté seleccionada
+        if (!ciudadSelect.value || ciudadSelect.selectedIndex === 0) {
+            messageDiv.className = 'p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm';
+            messageDiv.textContent = 'Por favor seleccione una ciudad';
+            messageDiv.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            return;
+        }
+        
+        const ciudadText = ciudadSelect.options[ciudadSelect.selectedIndex].textContent;
+        
+        // Construir la dirección completa desde los tres campos
+        let direccionNumeros = `${direccionCampo1} # ${direccionCampo2}`;
+        if (direccionCampo3 && direccionCampo3.trim() !== '') {
+            direccionNumeros += ` - ${direccionCampo3.trim()}`;
+        }
+        
+        let direccionCompleta = `${tipoVia} ${direccionNumeros}`.trim();
+        
+        // Agregar otros detalles si existen
+        if (otrosDetalles && otrosDetalles.trim() !== '') {
+            direccionCompleta += `, ${otrosDetalles.trim()}`;
+        }
+        
+        // Preparar datos para enviar al servidor
+        // El servidor de admin negocios espera: user_id, direccion, barrio, ciudad, codigo_postal (opcional)
+        const data = {
+            direccion: direccionCompleta,
+            barrio: barrio,
+            ciudad: ciudadText,
+            website: '{{ $website->slug }}'
+        };
+        
+        console.log('📤 Datos a enviar:', data);
+        
+        // Determinar si es edición o creación
+        const addressId = document.getElementById('address-id').value;
+        const isEdit = addressId && addressId !== '';
+        
+        const url = isEdit ? `/customer/addresses/${addressId}` : '/customer/addresses';
+        const method = isEdit ? 'PUT' : 'POST';
+        
+        console.log(`${isEdit ? '✏️ Editando' : '➕ Creando'} dirección:`, url, method);
+        
+        const response = await fetch(url, {
+            method: method,
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -782,7 +1229,7 @@ document.getElementById('address-form')?.addEventListener('submit', async functi
             e.target.reset();
             // Mostrar mensaje de éxito
             messageDiv.className = 'p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm';
-            messageDiv.textContent = '✓ Dirección guardada exitosamente';
+            messageDiv.textContent = isEdit ? '✓ Dirección actualizada exitosamente' : '✓ Dirección guardada exitosamente';
             messageDiv.classList.remove('hidden');
             setTimeout(() => messageDiv.classList.add('hidden'), 3000);
         } else {

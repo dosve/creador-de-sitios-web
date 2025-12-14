@@ -2,7 +2,7 @@
 {
   id: 'shortcode',
   label: 'Shortcode',
-  category: 'WordPress',
+  category: 'Avanzados',
   attributes: {
     class: 'gjs-block-shortcode'
   },
@@ -37,67 +37,9 @@
   ]
 },
 {
-  id: 'read-more',
-  label: 'Leer Más',
-  category: 'WordPress',
-  attributes: {
-    class: 'gjs-block-read-more'
-  },
-  content: `
-    <div class="read-more-wrapper inline-block">
-      <a href="#" class="read-more-button inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors">
-        <span data-gjs-type="text" data-gjs-name="read-more-text">Leer más</span>
-        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-        </svg>
-      </a>
-    </div>
-  `,
-  traits: [
-    {
-      type: 'text',
-      name: 'href',
-      label: 'URL del Post',
-      placeholder: '/blog/post-completo'
-    },
-    {
-      type: 'select',
-      name: 'button-style',
-      label: 'Estilo del Botón',
-      options: [
-        { value: 'solid', name: 'Sólido' },
-        { value: 'outline', name: 'Outline' },
-        { value: 'text', name: 'Solo Texto' }
-      ]
-    },
-    {
-      type: 'select',
-      name: 'button-size',
-      label: 'Tamaño',
-      options: [
-        { value: 'small', name: 'Pequeño' },
-        { value: 'medium', name: 'Mediano' },
-        { value: 'large', name: 'Grande' }
-      ]
-    },
-    {
-      type: 'checkbox',
-      name: 'show-icon',
-      label: 'Mostrar Icono',
-      value: true
-    },
-    {
-      type: 'checkbox',
-      name: 'open-new-tab',
-      label: 'Abrir en Nueva Pestaña',
-      value: false
-    }
-  ]
-},
-{
   id: 'menu-anchor',
   label: 'Ancla de Menú',
-  category: 'WordPress',
+  category: 'Avanzados',
   attributes: {
     class: 'gjs-block-menu-anchor'
   },

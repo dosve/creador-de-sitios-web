@@ -115,6 +115,12 @@ class CheckoutController extends Controller
             $order->shipping_address = $request->shipping_address;
             $order->billing_address = $request->billing_address ?? $request->shipping_address;
             $order->notes = $request->input('notes');
+            
+            // Guardar payment_reference si se proporciona (para Wompi y otras pasarelas)
+            if ($request->has('payment_reference')) {
+                $order->payment_reference = $request->input('payment_reference');
+            }
+            
             $order->save();
 
             // Crear los items de la orden
@@ -240,44 +246,64 @@ class CheckoutController extends Controller
      */
     private function createOrUpdateCustomer($website, $customerData, $adminNegociosUserId = null, $isAuthenticated = false)
     {
-        $data = [
-            'website_id' => $website->id,
-            'name' => $customerData['name'],
-            'email' => $customerData['email'],
-            'phone' => $customerData['phone'],
-            'address' => $customerData['address'] ?? null,
-            'city' => $customerData['city'] ?? null,
-            'state' => $customerData['state'] ?? null,
-            'postal_code' => $customerData['postal_code'] ?? null,
-            'country' => $customerData['country'] ?? null,
-            'admin_negocios_id' => $adminNegociosUserId,
-            'is_authenticated' => $isAuthenticated,
-        ];
-
-        // Si está autenticado, buscar por admin_negocios_id
-        if ($isAuthenticated && $adminNegociosUserId) {
-            $customer = Customer::where('website_id', $website->id)
-                ->where('admin_negocios_id', $adminNegociosUserId)
-                ->first();
-
-            if ($customer) {
-                $customer->update($data);
-                return $customer;
-            }
-        }
-
-        // Si no está autenticado o no se encontró, buscar por email
-        $customer = Customer::where('website_id', $website->id)
-            ->where('email', $customerData['email'])
-            ->first();
+        // Buscar cliente existente SOLO por email (el índice único está solo en email)
+        $customer = Customer::where('email', $customerData['email'])->first();
 
         if ($customer) {
-            $customer->update($data);
-            return $customer;
+            // Si existe, actualizar con los nuevos datos
+            $customer->update([
+                'website_id' => $website->id,
+                'name' => $customerData['name'],
+                'phone' => $customerData['phone'],
+                'address' => $customerData['address'] ?? null,
+                'city' => $customerData['city'] ?? null,
+                'state' => $customerData['state'] ?? null,
+                'postal_code' => $customerData['postal_code'] ?? null,
+                'country' => $customerData['country'] ?? null,
+                'admin_negocios_id' => $adminNegociosUserId ?? $customer->admin_negocios_id,
+                'is_authenticated' => $isAuthenticated,
+            ]);
+            return $customer->fresh();
         }
 
-        // Crear nuevo customer
-        return Customer::create($data);
+        // Si no existe, crear nuevo
+        try {
+            return Customer::create([
+                'website_id' => $website->id,
+                'name' => $customerData['name'],
+                'email' => $customerData['email'],
+                'phone' => $customerData['phone'],
+                'address' => $customerData['address'] ?? null,
+                'city' => $customerData['city'] ?? null,
+                'state' => $customerData['state'] ?? null,
+                'postal_code' => $customerData['postal_code'] ?? null,
+                'country' => $customerData['country'] ?? null,
+                'admin_negocios_id' => $adminNegociosUserId,
+                'is_authenticated' => $isAuthenticated,
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Si falla por duplicado (puede pasar en condiciones de carrera), buscar y retornar
+            if ($e->getCode() == 23000 || str_contains($e->getMessage(), 'Duplicate entry')) {
+                $customer = Customer::where('email', $customerData['email'])->first();
+                if ($customer) {
+                    // Actualizar con los nuevos datos
+                    $customer->update([
+                        'website_id' => $website->id,
+                        'name' => $customerData['name'],
+                        'phone' => $customerData['phone'],
+                        'address' => $customerData['address'] ?? null,
+                        'city' => $customerData['city'] ?? null,
+                        'state' => $customerData['state'] ?? null,
+                        'postal_code' => $customerData['postal_code'] ?? null,
+                        'country' => $customerData['country'] ?? null,
+                        'admin_negocios_id' => $adminNegociosUserId ?? $customer->admin_negocios_id,
+                        'is_authenticated' => $isAuthenticated,
+                    ]);
+                    return $customer->fresh();
+                }
+            }
+            throw $e;
+        }
     }
 
     /**

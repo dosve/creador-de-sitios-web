@@ -2,7 +2,7 @@
 {
   id: 'audio',
   label: 'Audio',
-  category: 'WordPress Medios',
+  category: 'Multimedia',
   content: `
     <div class="audio-player bg-gray-100 rounded-lg p-6">
       <div class="flex items-center space-x-4">
@@ -28,7 +28,7 @@
 {
   id: 'file',
   label: 'Archivo',
-  category: 'WordPress Medios',
+  category: 'Multimedia',
   content: `
     <div class="file-download bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
       <div class="flex items-center space-x-4">
@@ -51,7 +51,7 @@
 {
   id: 'cover-image',
   label: 'Imagen de Portada',
-  category: 'WordPress Medios',
+  category: 'Multimedia',
   content: `
     <div class="cover-image relative h-96 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg overflow-hidden">
       <div class="absolute inset-0 bg-black bg-opacity-40"></div>
@@ -70,7 +70,7 @@
 {
   id: 'carousel',
   label: 'Carrusel',
-  category: 'WordPress Medios',
+  category: 'Multimedia',
   content: `
     <div class="carousel-container relative">
       <div class="carousel-wrapper overflow-hidden rounded-lg">
@@ -97,7 +97,7 @@
 {
   id: 'background-image',
   label: 'Imagen de Fondo',
-  category: 'WordPress Medios',
+  category: 'Multimedia',
   content: `
     <div class="background-image-section relative h-96 bg-cover bg-center bg-no-repeat rounded-lg overflow-hidden" style="background-image: url('https://via.placeholder.com/1200x600')">
       <div class="absolute inset-0 bg-black bg-opacity-50"></div>

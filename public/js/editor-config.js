@@ -1218,11 +1218,8 @@ function initializeEditor() {
   // Componente de Carrusel - REFORMULADO COMPLETAMENTE
   editor.DomComponents.addType('carousel', {
     isComponent: (el) => {
-      console.log('🔍 Verificando elemento para carrusel:', el.tagName, el.className);
-      
       // Identificar por clase carousel-container
       if (el.classList && el.classList.contains('carousel-container')) {
-        console.log('✅ Carrusel identificado por clase "carousel-container"');
         return { type: 'carousel' };
       }
       
@@ -2419,9 +2416,9 @@ onRender() {
     editorContainer.style.display = 'block';
   }
 
-  // Inyectar estilos en el canvas para bloquear iframes de contenido
+  // Inyectar estilos y scripts en el canvas
   editor.on('load', function() {
-    console.log('🎨 Editor cargado, inyectando estilos para iframes...');
+    console.log('🎨 Editor cargado, inyectando estilos y scripts para iframes...');
     
     // Obtener el canvas frame
     const canvasFrame = editor.Canvas.getFrameEl();
@@ -2451,7 +2448,158 @@ onRender() {
         frameDoc.head.appendChild(styleEl);
         console.log('✅ Estilos inyectados en el canvas para bloquear iframes');
       }
+      
+      // Inyectar script de blog si hay un bloque de blog
+      injectBlogScriptInCanvas(frameDoc);
     }
+  });
+  
+  // Función para inyectar script de blog en el canvas
+  function injectBlogScriptInCanvas(frameDoc) {
+    // Verificar si hay un bloque de blog
+    const hasBlogBlock = frameDoc.querySelector('#blog-posts-container') || 
+                         frameDoc.querySelector('[data-dynamic-blog="true"]');
+    
+    if (hasBlogBlock) {
+      // Remover script anterior si existe para reinyectarlo
+      const oldScript = frameDoc.getElementById('blog-script-injected');
+      if (oldScript) {
+        oldScript.remove();
+      }
+      console.log('📝 Bloque de blog detectado, inyectando script...');
+      
+      // Obtener el website ID de la variable global o del atributo data
+      const websiteId = window.websiteId || 
+                       window.currentWebsiteId || 
+                       (frameDoc.querySelector('#blog-posts-container')?.dataset?.websiteId) ||
+                       (frameDoc.querySelector('[data-dynamic-blog="true"]')?.querySelector('[data-website-id]')?.dataset?.websiteId) ||
+                       null;
+      
+      console.log('🌐 Website ID para blog:', websiteId);
+      
+      if (!websiteId || websiteId === "" || websiteId === null) {
+        console.log("⚠️ Website ID no válido o no encontrado");
+        return;
+      }
+      
+      // Crear el script
+      const scriptEl = frameDoc.createElement('script');
+      scriptEl.id = 'blog-script-injected';
+      scriptEl.textContent = `
+        (function() {
+          console.log("📝 Script de blog inyectado en canvas");
+          const websiteId = "${websiteId}";
+          
+          if (!websiteId || websiteId === "" || websiteId === "null") {
+            console.log("⚠️ Website ID no válido:", websiteId);
+            return;
+          }
+          
+          // Función para cargar posts
+          function loadBlogPosts() {
+            const container = document.querySelector('#blog-posts-container') || 
+                             document.querySelector('[data-dynamic-blog="true"] .grid');
+            
+            if (!container) {
+              console.log("❌ No se encontró contenedor de blog");
+              return;
+            }
+            
+            console.log("📝 Cargando posts del blog para website ID:", websiteId);
+            
+            fetch('/api/websites/' + websiteId + '/blog-posts?page=1&per_page=6', {
+              method: 'GET',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            })
+            .then(response => response.json())
+            .then(data => {
+              console.log("📝 Posts recibidos:", data);
+              
+              if (data && data.data && data.data.length > 0) {
+                // Limpiar contenido de ejemplo
+                container.innerHTML = '';
+                
+                // Renderizar posts reales
+                data.data.forEach(post => {
+                  const postEl = document.createElement('article');
+                  postEl.className = 'bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow';
+                  
+                  const excerpt = post.excerpt || (post.content || '').substring(0, 150) + '...';
+                  const publishDate = new Date(post.created_at || post.published_at).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  });
+                  
+                  postEl.innerHTML = \`
+                    <div class="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                      \${post.category ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-2">' + post.category.name + '</span>' : ''}
+                    </div>
+                    <div class="p-6">
+                      <div class="flex items-center text-sm text-gray-500 mb-2">
+                        <span>\${publishDate}</span>
+                        <span class="mx-2">•</span>
+                        <span>\${Math.ceil((post.content || '').split(/\\s+/).length / 200)} min lectura</span>
+                      </div>
+                      <h3 class="text-xl font-bold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer">\${post.title || 'Sin título'}</h3>
+                      <p class="text-gray-600 mb-4">\${excerpt}</p>
+                      <div class="flex items-center justify-between mt-4">
+                        <div class="flex items-center">
+                          <div class="w-6 h-6 bg-gray-300 rounded-full mr-2"></div>
+                          <span class="text-sm text-gray-600">Autor</span>
+                        </div>
+                        <a href="#" class="text-blue-600 hover:text-blue-800 text-sm">Leer más →</a>
+                      </div>
+                    </div>
+                  \`;
+                  
+                  container.appendChild(postEl);
+                });
+                
+                console.log("✅ Posts del blog renderizados correctamente");
+              } else {
+                console.log("⚠️ No se encontraron posts del blog");
+              }
+            })
+            .catch(error => {
+              console.error("❌ Error al cargar posts del blog:", error);
+            });
+          }
+          
+          // Cargar posts después de un pequeño delay
+          setTimeout(loadBlogPosts, 500);
+        })();
+      `;
+      
+      frameDoc.body.appendChild(scriptEl);
+      console.log('✅ Script de blog inyectado en canvas');
+    }
+  }
+  
+  // También inyectar cuando se actualiza el canvas o se agrega un componente
+  editor.on('update', function() {
+    setTimeout(() => {
+      const canvasFrame = editor.Canvas.getFrameEl();
+      if (canvasFrame && canvasFrame.contentDocument) {
+        const frameDoc = canvasFrame.contentDocument;
+        injectBlogScriptInCanvas(frameDoc);
+      }
+    }, 300);
+  });
+  
+  // Inyectar cuando se agrega un componente (para detectar bloques de blog agregados)
+  editor.on('component:add', function() {
+    setTimeout(() => {
+      const canvasFrame = editor.Canvas.getFrameEl();
+      if (canvasFrame && canvasFrame.contentDocument) {
+        const frameDoc = canvasFrame.contentDocument;
+        injectBlogScriptInCanvas(frameDoc);
+      }
+    }, 500);
   });
 
   // Agregar comandos personalizados
@@ -2590,6 +2738,29 @@ onRender() {
   // Evento cuando cambia un trait (propiedad) de un componente
   // Cambiado a 'component:trait:change' para evitar ejecuciones innecesarias
   editor.on('component:trait:change', function(component) {
+    // Si es el bloque de formulario y cambió el form-id, actualizar el atributo
+    const componentType = component.get('type');
+    if (componentType === 'form-dynamic' || component.get('attributes')?.class === 'gjs-block-form') {
+      const formId = component.get('traits').find(t => t.get('name') === 'form-id')?.get('value') || '';
+      
+      // Actualizar el atributo data-form-id en el componente
+      component.addAttributes({ 'data-form-id': formId });
+      
+      // Actualizar el contenido del placeholder si existe
+      const viewEl = component.view && component.view.el;
+      if (viewEl) {
+        const placeholderEl = viewEl.querySelector('#form-placeholder');
+        if (placeholderEl && formId) {
+          placeholderEl.innerHTML = `
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <p class="text-gray-600">Formulario seleccionado (ID: ${formId})</p>
+            <p class="text-sm text-gray-500 mt-2">El formulario se mostrará en la vista previa</p>
+          `;
+        }
+      }
+    }
     // No actualizar layout durante la carga inicial para preservar contenido existente
     if (isLoadingContent) {
       return;
@@ -2935,35 +3106,65 @@ onRender() {
     }
   });
 
-  // Evento cuando se selecciona un componente
+  // Cargar formularios cuando se selecciona el bloque de formulario
   editor.on('component:selected', function (component) {
-    console.log('🎯 COMPONENTE SELECCIONADO:', {
-      tipo: component.get('type'),
-      nombre: component.get('name'),
-      tagName: component.get('tagName'),
-      id: component.getId(),
-      classes: component.getClasses(),
-      attributes: component.getAttributes(),
-      traits: component.get('traits'),
-      cantidadTraits: component.get('traits')?.length || 0
-    });
+    // Si es el bloque de formulario, cargar formularios disponibles
+    const isFormBlock = component.get('type') === 'form-dynamic' || component.get('attributes')?.class === 'gjs-block-form';
+    if (isFormBlock) {
+      console.log('📋 Bloque de formulario seleccionado, cargando formularios disponibles...');
+      
+      const websiteId = window.websiteId;
+      if (websiteId) {
+        // Obtener formularios del website
+        fetch(`/creator/api/websites/${websiteId}/forms`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.data) {
+            // Encontrar el trait de form-id y actualizar sus opciones
+            const traits = component.get('traits');
+            const formIdTrait = traits.find(t => t.get('name') === 'form-id');
+            
+            if (formIdTrait) {
+              // Crear opciones desde los formularios
+              const options = [
+                { value: '', name: '-- Selecciona un formulario --' }
+              ];
+              
+              data.data.forEach(form => {
+                options.push({
+                  value: form.id.toString(),
+                  name: form.name || form.slug
+                });
+              });
+              
+              formIdTrait.set('options', options);
+              
+              // Forzar renderizado del TraitManager
+              if (editor.TraitManager) {
+                editor.TraitManager.render();
+              }
+            }
+          }
+        })
+        .catch(error => {
+          console.error('❌ Error al cargar formularios:', error);
+        });
+      }
+    }
     
     // Debug específico para carrusel
     if (component.get('type') === 'carousel') {
-      console.log('🎠 CARRUSEL SELECCIONADO - Usando TraitManager estándar...');
-      console.log('📋 Traits actuales:', component.get('traits'));
-      console.log('📋 getTraits() disponible:', typeof component.getTraits);
-      
       // Usar el TraitManager estándar de GrapesJS
       setTimeout(() => {
         if (editor.TraitManager) {
           editor.TraitManager.setTarget(component);
           editor.TraitManager.render();
-          console.log('🔄 TraitManager actualizado para Carrusel');
-          
-          // Verificar si los traits se renderizaron
-          const traitsInContainer = document.querySelectorAll('.traits-container .gjs-trt-trait');
-          console.log('📋 Traits renderizados:', traitsInContainer.length);
         }
       }, 100);
     }
@@ -3018,29 +3219,12 @@ onRender() {
     }
     
     // Debug para componentes especiales
-    const componentType = component.get('type');
-    
     // YouTube
     if (componentType === 'youtube-video') {
-      console.log('📺 Componente de YouTube seleccionado:', {
-        tipo: componentType,
-        nombre: component.get('name'),
-        traits: component.get('traits'),
-        cantidadTraits: component.get('traits')?.length || 0,
-        seleccionable: component.get('selectable'),
-        removable: component.get('removable'),
-        draggable: component.get('draggable')
-      });
-      
       // Forzar la actualización del TraitManager para YouTube
       setTimeout(() => {
         if (editor.TraitManager) {
           editor.TraitManager.render();
-          console.log('🔄 TraitManager actualizado para YouTube');
-          
-          // Verificar si los traits se renderizaron
-          const traitsInContainer = document.querySelectorAll('.traits-container .gjs-trt-trait');
-          console.log('📋 Traits renderizados:', traitsInContainer.length);
         }
       }, 100);
     }
@@ -3316,24 +3500,7 @@ onRender() {
     const componentId = component.getId();
     const styles = component.getStyle();
     
-    console.log('✨ ESTILO ACTUALIZADO EN COMPONENTE:', {
-      id: componentId,
-      tipo: component.get('type'),
-      estilosAplicados: styles
-    });
-    
-    // Verificar que el CSS se haya generado correctamente
-    setTimeout(() => {
-      const css = editor.getCss();
-      const cssForComponent = css.match(new RegExp(`#${componentId}[^{]*{[^}]*}`, 'g'));
-      
-      if (cssForComponent) {
-        console.log('✅ CSS GENERADO PARA EL COMPONENTE:', cssForComponent);
-      } else {
-        console.warn('⚠️ No se encontró CSS para el componente #' + componentId);
-        console.log('📄 CSS completo:', css.substring(0, 500));
-      }
-    }, 100);
+    // CSS se genera automáticamente por GrapesJS
   });
   
   // Evento cuando se añade una regla CSS

@@ -29,7 +29,19 @@
                     </svg>
                 </div>
                 <h2 class="text-3xl font-bold text-gray-900 mb-2">Error en el Pago</h2>
-                <p class="text-gray-600">{{ $error ?? 'Ocurrió un error al procesar el pago' }}</p>
+                <p class="text-gray-600">{{ $message ?? $error ?? 'Ocurrió un error al procesar el pago' }}</p>
+                
+                @if(request()->has('ref') || request()->has('id'))
+                <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-sm text-blue-800">
+                        <strong>Referencia de transacción:</strong> {{ request()->input('ref', 'N/A') }}<br>
+                        <strong>ID de transacción:</strong> {{ request()->input('id', 'N/A') }}
+                    </p>
+                    <p class="text-xs text-blue-600 mt-2">
+                        Si el pago fue exitoso, guarda esta información y contacta con soporte para que puedan ayudarte a localizar tu pedido.
+                    </p>
+                </div>
+                @endif
             </div>
 
             <!-- Información del error -->
@@ -68,16 +80,28 @@
 
             <!-- Botones de acción -->
             <div class="flex flex-col space-y-3">
-                <button onclick="window.history.back()" 
+                <button onclick="window.location.href = window.location.origin + '/{{ request()->segment(1) ?? '' }}/profile#pedidos';" 
                         class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                    Intentar Nuevamente
+                    Ver Mis Pedidos
                 </button>
 
-                <button onclick="window.close()" 
+                <button onclick="window.history.back()" 
                         class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                    Cerrar Ventana
+                    Volver Atrás
                 </button>
             </div>
+            
+            <!-- Script para limpiar carrito si viene de un error después de pago -->
+            @if(request()->has('ref') || request()->has('id'))
+            <script>
+                // Limpiar carrito si el pago fue exitoso pero hubo un error al procesar
+                console.log('⚠️ Error después del pago detectado');
+                // No limpiamos el carrito aquí porque podría ser un error legítimo
+                // Solo registramos para debug
+                console.log('Referencia:', '{{ request()->input("ref") }}');
+                console.log('ID Transacción:', '{{ request()->input("id") }}');
+            </script>
+            @endif
 
             <!-- Información de contacto -->
             <div class="text-center text-sm text-gray-500">

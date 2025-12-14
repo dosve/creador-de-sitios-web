@@ -2,7 +2,7 @@
 {
   id: 'twitter-embed',
   label: 'Twitter',
-  category: 'WordPress Incorporar',
+  category: 'Redes Sociales',
   content: `
     <div class="twitter-embed bg-white border border-gray-200 rounded-lg p-4">
       <div class="flex items-center space-x-3 mb-3">
@@ -45,7 +45,7 @@
 {
   id: 'instagram-embed',
   label: 'Instagram',
-  category: 'WordPress Incorporar',
+  category: 'Redes Sociales',
   content: `
     <div class="instagram-embed bg-white border border-gray-200 rounded-lg overflow-hidden">
       <div class="flex items-center space-x-3 p-4 border-b border-gray-200">
@@ -93,7 +93,7 @@
 {
   id: 'facebook-embed',
   label: 'Facebook',
-  category: 'WordPress Incorporar',
+  category: 'Redes Sociales',
   content: `
     <div class="facebook-embed bg-white border border-gray-200 rounded-lg overflow-hidden">
       <div class="flex items-center space-x-3 p-4 border-b border-gray-200">
@@ -146,7 +146,7 @@
 {
   id: 'spotify-embed',
   label: 'Spotify',
-  category: 'WordPress Incorporar',
+  category: 'Redes Sociales',
   content: `
     <div class="spotify-embed bg-black rounded-lg overflow-hidden">
       <div class="flex items-center space-x-3 p-4 bg-green-600">
@@ -187,7 +187,7 @@
 {
   id: 'soundcloud-embed',
   label: 'SoundCloud',
-  category: 'WordPress Incorporar',
+  category: 'Redes Sociales',
   content: `
     <div class="soundcloud-embed bg-orange-100 border border-orange-200 rounded-lg p-4">
       <div class="flex items-center space-x-3 mb-3">
@@ -220,7 +220,7 @@
 {
   id: 'vimeo-embed',
   label: 'Vimeo',
-  category: 'WordPress Incorporar',
+  category: 'Redes Sociales',
   content: `
     <div class="vimeo-embed bg-gray-900 rounded-lg overflow-hidden">
       <div class="aspect-video bg-gray-800 flex items-center justify-center">
@@ -254,7 +254,7 @@
 {
   id: 'tiktok-embed',
   label: 'TikTok',
-  category: 'WordPress Incorporar',
+  category: 'Redes Sociales',
   content: `
     <div class="tiktok-embed bg-black rounded-lg overflow-hidden">
       <div class="aspect-[9/16] bg-gray-900 flex items-center justify-center">
@@ -288,7 +288,7 @@
 {
   id: 'google-maps-embed',
   label: 'Google Maps',
-  category: 'WordPress Incorporar',
+  category: 'Redes Sociales',
   content: `
     <div class="google-maps-embed bg-white border border-gray-200 rounded-lg overflow-hidden">
       <div class="flex items-center space-x-3 p-4 border-b border-gray-200">
