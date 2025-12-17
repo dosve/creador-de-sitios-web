@@ -123,5 +123,10 @@
     <!-- Componente para cargar productos dinámicamente -->
     <x-products-script :apiKey="$apiKey" :apiBaseUrl="$apiBaseUrl" />
     
+    <!-- Componente para cargar posts del blog dinámicamente -->
+    @if(isset($website) && $website)
+        @include('components.blog-script', ['websiteId' => $website->id])
+    @endif
+    
 </body>
 </html>

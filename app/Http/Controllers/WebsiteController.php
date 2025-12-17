@@ -256,10 +256,6 @@ class WebsiteController extends Controller
             $template = $this->templateService->find($website->template_id);
             if ($template) {
                 // Renderizar la plantilla con variables
-                $customization = $template['customization'] ?? [];
-                $templateFile = $template['templates']['home'] ?? 'template';
-                $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
-
                 // Obtener o crear la configuración de la plantilla
                 $templateConfig = TemplateConfiguration::firstOrCreate(
                     [
@@ -273,14 +269,32 @@ class WebsiteController extends Controller
                         'is_active' => true
                     ]
                 );
+                
+                // Combinar customización de la plantilla con la configuración guardada
+                $defaultCustomization = $template['customization'] ?? [];
+                $savedCustomization = $templateConfig->customization ?? [];
+                $customization = array_merge($defaultCustomization, $savedCustomization);
+                
+                $templateFile = $template['templates']['home'] ?? 'template';
+                $viewPath = 'templates.' . $template['slug'] . '.' . str_replace('.blade.php', '', $templateFile);
 
-                return view($viewPath, [
-                    'website' => $website,
-                    'page' => $homePage,
-                    'pages' => $pages,
-                    'customization' => $customization,
-                    'templateConfig' => $templateConfig
-                ]);
+                try {
+                    return view($viewPath, [
+                        'website' => $website,
+                        'page' => $homePage,
+                        'pages' => $pages,
+                        'customization' => $customization,
+                        'templateConfig' => $templateConfig
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error("Error renderizando plantilla: " . $e->getMessage());
+                    \Log::error("Stack trace: " . $e->getTraceAsString());
+                    // Fallback a vista en blanco si hay error
+                    if ($homePage && $homePage->html_content) {
+                        return view('public.blank', compact('website', 'homePage', 'menus'));
+                    }
+                    throw $e;
+                }
             }
         }
 

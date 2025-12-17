@@ -18,10 +18,12 @@ class PreviewController extends Controller
     /**
      * Mostrar vista previa del sitio web seleccionado de la sesión
      */
-    public function index(Request $request)
+    public function index(Request $request, Website $website = null)
     {
-        // Obtener sitio web de la sesión
-        $website = Website::find(session('selected_website_id'));
+        // Si se proporciona el website en la ruta, usarlo; si no, usar el de la sesión
+        if (!$website) {
+            $website = Website::find(session('selected_website_id'));
+        }
 
         if (!$website) {
             return redirect()->route('creator.select-website')
@@ -191,21 +193,45 @@ class PreviewController extends Controller
     /**
      * Mostrar vista previa de un post del blog
      */
-    public function blogPost(Request $request, BlogPost $blogPost)
+    public function blogPost(Request $request, BlogPost $blogPost, Website $website = null)
     {
-        // Obtener sitio web de la sesión
-        $website = Website::find(session('selected_website_id'));
+        // Si se proporciona el website en la ruta, verificar que coincida con el del post
+        // Si no se proporciona, usar el website del post
+        if ($website) {
+            // Verificar que el post pertenece al sitio web especificado
+            if ($blogPost->website_id !== $website->id) {
+                abort(404, 'Este post no pertenece al sitio web especificado');
+            }
+        } else {
+            // Usar el website del post
+            $website = $blogPost->website;
+            if (!$website) {
+                // Fallback: usar el de la sesión
+                $website = Website::find(session('selected_website_id'));
+            }
+        }
 
         if (!$website) {
             return redirect()->route('creator.select-website')
                 ->with('error', 'Por favor selecciona un sitio web primero');
         }
 
-        $this->authorize('view', $website);
-
-        // Verificar que el post pertenece al sitio web seleccionado
-        if ($blogPost->website_id !== $website->id) {
-            abort(403, 'Este post no pertenece al sitio web seleccionado');
+        // Verificar autorización: admins pueden ver cualquier sitio, otros usuarios solo sus propios sitios
+        // Para preview, permitir acceso si el usuario es admin o es el propietario
+        if (Auth::check()) {
+            $user = Auth::user();
+            // Los admins pueden ver cualquier sitio en preview
+            if ($user->isAdmin()) {
+                // Permitir acceso sin verificar más
+            } elseif ($website->user_id !== $user->id) {
+                // Si no es admin ni propietario, denegar acceso
+                abort(403, 'No tienes permisos para acceder a este sitio web');
+            }
+        } else {
+            // Si no está autenticado, solo permitir si el sitio está publicado
+            if (!$website->is_published) {
+                abort(404, 'Sitio web no encontrado');
+            }
         }
 
         // Obtener la página de inicio para usar como base
@@ -245,10 +271,12 @@ class PreviewController extends Controller
     /**
      * Mostrar vista previa del blog
      */
-    public function blog(Request $request)
+    public function blog(Request $request, Website $website = null)
     {
-        // Obtener sitio web de la sesión
-        $website = Website::find(session('selected_website_id'));
+        // Si se proporciona el website en la ruta, usarlo; si no, usar el de la sesión
+        if (!$website) {
+            $website = Website::find(session('selected_website_id'));
+        }
 
         if (!$website) {
             return redirect()->route('creator.select-website')
@@ -424,7 +452,7 @@ class PreviewController extends Controller
         $processedContent = $this->processHooks($templateContent, $hooks);
 
         // Agregar barra de administrador al inicio del body
-        $adminBar = view('components.admin-bar', compact('website'))->render();
+        $adminBar = view('components.admin-bar', compact('website', 'currentPage'))->render();
         $processedContent = $this->injectAdminBar($processedContent, $adminBar);
 
         // Si estamos en modo preview, agregar los scripts necesarios
@@ -514,6 +542,14 @@ class PreviewController extends Controller
                 ])->render();
                 $scriptsToAdd[] = $blogScript;
             }
+            
+            // Script de formularios si tiene bloque de formulario
+            if ($this->hasFormBlock($processedContent)) {
+                $formScript = view('components.form-script', [
+                    'websiteId' => $website->id
+                ])->render();
+                $scriptsToAdd[] = $formScript;
+            }
 
             // Combinar todos los scripts
             if (!empty($scriptsToAdd)) {
@@ -557,6 +593,16 @@ class PreviewController extends Controller
     }
 
     /**
+     * Verificar si el contenido tiene un bloque de formulario
+     */
+    private function hasFormBlock($content)
+    {
+        // Verificar si existe alguno de los identificadores del bloque de formulario
+        return strpos($content, 'data-dynamic-form="true"') !== false
+            || strpos($content, 'class="form-container"') !== false;
+    }
+
+    /**
      * Generar contenido HTML para la página del blog
      */
     private function generateBlogPageContent($website, $blogPosts, $categories)
@@ -593,7 +639,7 @@ class PreviewController extends Controller
                 $blogHtml .= '</div>';
 
                 $blogHtml .= '<h3 class="mb-2 text-xl font-bold text-gray-900 hover:text-blue-600">';
-                $blogHtml .= '<a href="/creator/websites/' . $website->id . '/preview/blog/' . $post->id . '">';
+                $blogHtml .= '<a href="/' . $website->slug . '/blog/' . $post->slug . '">';
                 $blogHtml .= htmlspecialchars($post->title);
                 $blogHtml .= '</a>';
                 $blogHtml .= '</h3>';
@@ -616,7 +662,7 @@ class PreviewController extends Controller
                 $blogHtml .= '<div class="w-6 h-6 mr-2 bg-gray-300 rounded-full"></div>';
                 $blogHtml .= '<span class="text-sm text-gray-600">Autor</span>';
                 $blogHtml .= '</div>';
-                $blogHtml .= '<a href="/creator/websites/' . $website->id . '/preview/blog/' . $post->id . '" class="text-sm text-blue-600 hover:text-blue-800">Leer más →</a>';
+                $blogHtml .= '<a href="/' . $website->slug . '/blog/' . $post->slug . '" class="text-sm text-blue-600 hover:text-blue-800">Leer más →</a>';
                 $blogHtml .= '</div>';
                 $blogHtml .= '</div>';
                 $blogHtml .= '</article>';
@@ -684,6 +730,14 @@ class PreviewController extends Controller
                     'websiteId' => $website->id
                 ])->render();
                 $scriptsToAdd[] = $blogScript;
+            }
+            
+            // Script de formularios si tiene bloque de formulario
+            if ($this->hasFormBlock($processedContent)) {
+                $formScript = view('components.form-script', [
+                    'websiteId' => $website->id
+                ])->render();
+                $scriptsToAdd[] = $formScript;
             }
 
             // Combinar todos los scripts
@@ -793,7 +847,7 @@ class PreviewController extends Controller
                 $postHtml .= $relatedPost->created_at->format('d M, Y');
                 $postHtml .= '</div>';
                 $postHtml .= '<h4 class="mb-2 text-lg font-bold text-gray-900 hover:text-blue-600">';
-                $postHtml .= '<a href="/creator/websites/' . $website->id . '/preview/blog/' . $relatedPost->id . '">';
+                $postHtml .= '<a href="/' . $website->slug . '/blog/' . $relatedPost->slug . '">';
                 $postHtml .= htmlspecialchars($relatedPost->title);
                 $postHtml .= '</a>';
                 $postHtml .= '</h4>';

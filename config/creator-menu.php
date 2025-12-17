@@ -143,17 +143,6 @@ return [
         ],
 
         // ============================================
-        // ITEM SIMPLE: SEO & Analytics
-        // ============================================
-        [
-            'title' => 'SEO & Analytics',
-            'route' => 'creator.seo.index',
-            'icon_svg' => 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
-            'active_routes' => ['creator.seo.*'],
-            'requires_website' => true,
-        ],
-
-        // ============================================
         // DROPDOWN: Integraciones
         // ============================================
         [
@@ -209,13 +198,6 @@ return [
                     'route' => 'creator.config.domain',
                     'icon_custom' => '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-3" viewBox="0 0 1024 999"><path fill="currentColor" d="M858 758q31-94 39-194h127q-13 102-66 194zm0-517h100q53 92 66 194H897q-8-100-39-194M750 42q55 29 102 70h-52q-24-40-50-70M577 435V241h158q27 91 33 194zm0-435q59 30 105 112H577zM289 758q-27-91-33-194h191v194zm0-517h158v194H256q6-103 33-194M447 0v112H342Q388 30 447 0M172 112q47-41 102-70q-26 30-50 70zM0 435q13-102 66-194h100q-31 94-39 194zm166 323H66Q13 666 0 564h127q8 100 39 194m58 129q24 40 50 70q-55-29-102-70zm223 0v112q-59-31-105-112zm130-323h191q-6 103-33 194H577zm105 323q-46 81-105 112V887zm170 0q-46 41-102 70q26-30 50-70z"/></svg>',
                     'active_routes' => ['creator.config.domain*'],
-                    // Sin params_session - usa sesión internamente
-                ],
-                [
-                    'title' => 'Seguridad y SSL',
-                    'route' => 'creator.config.security',
-                    'icon_svg' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-                    'active_routes' => ['creator.config.security*'],
                     // Sin params_session - usa sesión internamente
                 ],
                 [

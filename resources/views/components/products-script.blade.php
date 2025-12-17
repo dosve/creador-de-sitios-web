@@ -80,6 +80,20 @@
         const currentStyles = getTemplateStyles();
         console.log("✅ Estilos cargados para plantilla:", templateSlug);
 
+        // Función para obtener el slug del website desde la URL (una sola vez, global)
+        function getWebsiteSlug() {
+            const path = window.location.pathname;
+            const parts = path.split('/').filter(part => part);
+            
+            // Si estamos en una ruta como /sitio/pagina o /sitio/producto, el primer segmento es el slug
+            if (parts.length > 0) {
+                return parts[0];
+            }
+            
+            // Fallback: usar 'sitio' como default
+            return 'sitio';
+        }
+
         // Función para formatear precios al estilo colombiano (miles con punto, decimales con coma)
         function formatPrice(price) {
             // Convertir a número y asegurar 2 decimales
@@ -104,6 +118,18 @@
         console.log("  - window.websiteApiKey:", window.websiteApiKey ? 'Configurada' : 'No configurada');
         console.log("  - window.websiteApiUrl:", window.websiteApiUrl || 'No configurada');
 
+        // Función para mostrar indicador de carga
+        function showLoadingIndicator(container) {
+            container.innerHTML = `
+                <div class="flex items-center justify-center py-12 col-span-full">
+                    <div class="text-center">
+                        <div class="w-12 h-12 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin"></div>
+                        <p class="text-gray-600">Cargando productos...</p>
+                    </div>
+                </div>
+            `;
+        }
+        
         // Función para cargar productos reales desde la API
         function loadRealProductsInPreview(page = 1, append = false) {
             if (isLoading) return;
@@ -144,14 +170,7 @@
 
                 // Solo mostrar loading en la primera carga
                 if (!append) {
-                    container.innerHTML = `
-                    <div class="flex items-center justify-center py-12 col-span-full">
-                        <div class="text-center">
-                            <div class="w-12 h-12 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin"></div>
-                            <p class="text-gray-600">Cargando productos...</p>
-                        </div>
-                    </div>
-                `;
+                    showLoadingIndicator(container);
                 }
 
                 // Obtener credenciales de la API
@@ -239,8 +258,18 @@
                                 }
                             } else {
                                 if (!append) {
-                                    console.log("⚠️ No se encontraron productos, mostrando productos de ejemplo");
-                                    showEnhancedExampleProducts(container);
+                                    console.log("⚠️ No se encontraron productos");
+                                    container.innerHTML = `
+                                        <div class="col-span-full text-center py-12">
+                                            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                                </svg>
+                                            </div>
+                                            <h3 class="text-xl font-medium text-gray-900 mb-2">No hay productos disponibles</h3>
+                                            <p class="text-gray-500">Aún no se han agregado productos a esta tienda.</p>
+                                        </div>
+                                    `;
                                 }
                             }
 
@@ -249,17 +278,37 @@
                         .catch(error => {
                             console.error("❌ Error al cargar productos de la API:", error);
                             isLoading = false;
-                            // Si falla la API, mostrar productos de ejemplo
+                            // Si falla la API, mostrar mensaje de error
                             if (!append) {
-                                showEnhancedExampleProducts(container);
+                                container.innerHTML = `
+                                    <div class="col-span-full text-center py-12">
+                                        <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                            <svg class="w-12 h-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-xl font-medium text-gray-900 mb-2">Error al cargar productos</h3>
+                                        <p class="text-gray-500">No se pudieron cargar los productos. Por favor, intenta recargar la página.</p>
+                                    </div>
+                                `;
                             }
                         });
                 } else {
-                    console.log("⚠️ No hay credenciales de API, mostrando productos de ejemplo");
+                    console.log("⚠️ No hay credenciales de API");
                     isLoading = false;
-                    // Si no hay credenciales, mostrar productos de ejemplo
+                    // Si no hay credenciales, mostrar mensaje informativo
                     if (!append) {
-                        showEnhancedExampleProducts(container);
+                        container.innerHTML = `
+                            <div class="col-span-full text-center py-12">
+                                <div class="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <svg class="w-12 h-12 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-medium text-gray-900 mb-2">Configuración requerida</h3>
+                                <p class="text-gray-500">Las credenciales de API necesitan estar configuradas para mostrar productos.</p>
+                            </div>
+                        `;
                     }
                 }
             });
@@ -287,6 +336,9 @@
                 // Si no es append, reiniciar el contador
                 renderedProductsCount = 0;
             }
+
+            // Usar la función global getWebsiteSlug
+            const websiteSlug = getWebsiteSlug();
 
             productsToRender.forEach(product => {
                 const title = product.producto || "Producto sin nombre";
@@ -399,8 +451,8 @@
                 } else {
                     // Producto no está en el carrito - mostrar botón de agregar con estilos dinámicos
                     cartButtonHtml = `
-                    <button class="${currentStyles.button} add-to-cart" 
-                            style="background-color: ${currentStyles.buttonBg}; transition: background-color 0.3s;"
+                    <button class="${currentStyles.button} add-to-cart flex items-center justify-center gap-2 whitespace-nowrap" 
+                            style="background-color: ${currentStyles.buttonBg}; transition: background-color 0.3s; min-width: 140px;"
                             onmouseover="this.style.backgroundColor='${currentStyles.buttonHover}'" 
                             onmouseout="this.style.backgroundColor='${currentStyles.buttonBg}'"
                             data-id="${product.id || ""}" 
@@ -410,22 +462,39 @@
                             data-existencia="${product.existencia || ""}" 
                             data-iva="${iva}"
                             data-image="${imageUrl || ""}">
-                        Agregar al Carrito
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <span>Agregar</span>
                     </button>
                 `;
                 }
 
+                const productUrl = `/${websiteSlug}/producto/${product.id}`;
+                
+                // Hacer la imagen clickeable
+                const clickableImageHtml = imageHtml.includes('<img') 
+                    ? `<a href="${productUrl}" class="block cursor-pointer">${imageHtml}</a>`
+                    : `<a href="${productUrl}" class="block cursor-pointer">${imageHtml}</a>`;
+                
+                // Hacer el título clickeable
+                const clickableTitleHtml = `<a href="${productUrl}" class="cursor-pointer hover:opacity-80 transition-opacity">${title}</a>`;
+                
                 // Construir el HTML del producto con estilos dinámicos
                 productsHtml += `
                 <div class="${currentStyles.card}">
-                    ${imageHtml}
+                    ${clickableImageHtml}
                     <div class="${currentStyles.cardContent || 'p-5'}">
-                        <h3 class="${currentStyles.title}">${title}</h3>
+                        <h3 class="${currentStyles.title}">${clickableTitleHtml}</h3>
                         ${categoryHtml}
                         <p class="${currentStyles.description}">${description}</p>
-                        <div class="flex items-center justify-between">
-                            <span class="${currentStyles.price}" style="color: ${currentStyles.priceColor}">$${formatPrice(price)}</span>
-                            ${cartButtonHtml}
+                        <div class="flex flex-col gap-3">
+                            <div class="flex items-center justify-between">
+                                <span class="${currentStyles.price}" style="color: ${currentStyles.priceColor}">$${formatPrice(price)}</span>
+                            </div>
+                            <div class="w-full">
+                                ${cartButtonHtml}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -451,6 +520,11 @@
             if (typeof window.reloadCartListeners === "function") {
                 window.reloadCartListeners();
             }
+            
+            // Asegurar que los botones add-to-cart funcionen
+            // El componente cart/script.blade.php maneja estos clicks globalmente
+            // pero verificamos que estén disponibles
+            console.log("✅ Productos renderizados, botones disponibles:", document.querySelectorAll('.add-to-cart').length);
         }
 
         // Función para actualizar todas las tarjetas de productos con los datos del carrito
@@ -524,11 +598,14 @@
                             console.log("✅ Reemplazando control con botón agregar para:", productData.id);
 
                             control.outerHTML = `
-                            <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 add-to-cart" 
+                            <button class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 add-to-cart whitespace-nowrap w-full" 
                                     data-id="${productData.id}" 
                                     data-name="${title}" 
                                     data-price="${price}">
-                                Agregar al Carrito
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                <span>Agregar</span>
                             </button>
                         `;
                         }
@@ -723,7 +800,11 @@
         `;
 
             // Insertar el buscador antes del contenedor de productos
-            container.parentElement.insertBefore(searchContainer, container);
+            if (container && container.parentElement) {
+                container.parentElement.insertBefore(searchContainer, container);
+            } else {
+                console.error('❌ No se puede insertar el buscador: contenedor o parentElement no encontrado');
+            }
 
             // Configurar event listeners del buscador
             setupSearchListeners();
@@ -781,7 +862,9 @@
                             const option = document.createElement("option");
                             option.value = category.id || category.categoria;
                             option.textContent = category.categoria || category.name;
-                            categoryFilter.appendChild(option);
+                            if (categoryFilter) {
+                                categoryFilter.appendChild(option);
+                            }
                         });
                     }
                 })
@@ -1047,7 +1130,13 @@
         // Función para actualizar la cantidad de un producto en el carrito
         function updateProductQuantityInCart(productId, change) {
             let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const itemIndex = cart.findIndex(item => item.id == productId);
+            // Buscar tanto por ID numérico como string
+            let itemIndex = cart.findIndex(item => item.id == productId || item.id == String(productId));
+            
+            // Si no encuentra, intentar con parseInt
+            if (itemIndex === -1) {
+                itemIndex = cart.findIndex(item => parseInt(item.id) == parseInt(productId));
+            }
 
             if (itemIndex !== -1) {
                 cart[itemIndex].quantity += change;
@@ -1064,43 +1153,99 @@
                 updateProductCardUI(productId, cart);
 
                 // Disparar evento para que el carrito se actualice
-                window.dispatchEvent(new Event("cartUpdated"));
+                window.dispatchEvent(new CustomEvent("cartUpdated", {
+                    detail: { cart: cart }
+                }));
+            } else {
+                console.warn("⚠️ Producto no encontrado en el carrito:", productId);
             }
         }
 
         // Función para actualizar la UI de la tarjeta del producto
         function updateProductCardUI(productId, cart) {
-            const cartItem = cart.find(item => item.id == productId);
+            const cartItem = cart.find(item => item.id == productId || item.id == String(productId));
 
+            // Buscar el botón "Agregar al carrito" para este producto
+            const addButton = document.querySelector(`.add-to-cart[data-id="${productId}"]`);
+            
             // Buscar el elemento de cantidad en la tarjeta
             const quantityElement = document.querySelector(`.cart-quantity[data-id="${productId}"]`);
             const controlElement = document.querySelector(`[data-product-cart-control="${productId}"]`);
 
-            if (cartItem && quantityElement) {
-                // Actualizar la cantidad mostrada
-                quantityElement.textContent = cartItem.quantity;
-            } else if (!cartItem && controlElement) {
-                // El producto fue removido del carrito, cambiar a botón "Agregar"
-                // Necesitamos obtener los datos del producto para crear el botón
-                const decreaseBtn = controlElement.querySelector(".cart-decrease");
-                const productData = {
-                    id: decreaseBtn.getAttribute("data-id")
-                };
+            if (cartItem) {
+                // El producto está en el carrito
+                if (quantityElement && controlElement) {
+                    // Ya tiene controles, solo actualizar la cantidad
+                    quantityElement.textContent = cartItem.quantity;
+                } else if (addButton) {
+                    // Tiene botón de agregar, cambiar a controles
+                    const productName = addButton.getAttribute("data-name") || "";
+                    const productPrice = addButton.getAttribute("data-price") || "0";
+                    
+                    addButton.outerHTML = `
+                        <div class="flex items-center space-x-2" data-product-cart-control="${productId}">
+                            <button class="flex items-center justify-center w-8 h-8 text-white bg-red-500 rounded-md hover:bg-red-600 cart-decrease" 
+                                    data-id="${productId}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                </svg>
+                            </button>
+                            <span class="px-3 py-1 font-semibold text-gray-900 bg-gray-100 rounded-md cart-quantity" data-id="${productId}">${cartItem.quantity}</span>
+                            <button class="flex items-center justify-center w-8 h-8 text-white bg-green-500 rounded-md hover:bg-green-600 cart-increase" 
+                                    data-id="${productId}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                }
+            } else {
+                // El producto NO está en el carrito
+                if (controlElement) {
+                    // Tiene controles, cambiar a botón "Agregar"
+                    const decreaseBtn = controlElement.querySelector(".cart-decrease");
+                    if (decreaseBtn) {
+                        // Buscar el botón original o datos del producto
+                        const productCard = controlElement.closest(".p-6, article, [class*='card']");
+                        let productName = "";
+                        let productPrice = "0";
+                        
+                        // Intentar obtener datos del título y precio de la card
+                        if (productCard) {
+                            const titleEl = productCard.querySelector("h3");
+                            const priceEl = productCard.querySelector("[class*='price'], .text-green-600, [class*='font-bold']");
+                            
+                            if (titleEl) {
+                                productName = titleEl.textContent.trim();
+                            }
+                            
+                            if (priceEl) {
+                                const priceText = priceEl.textContent.replace("$", "").replace(/\./g, "").replace(",", ".");
+                                productPrice = priceText || "0";
+                            }
+                        }
+                        
+                        // Si no encontramos datos, usar valores por defecto del decreaseBtn si tiene data attributes
+                        if (!productName && decreaseBtn.hasAttribute("data-name")) {
+                            productName = decreaseBtn.getAttribute("data-name");
+                        }
+                        if (productPrice === "0" && decreaseBtn.hasAttribute("data-price")) {
+                            productPrice = decreaseBtn.getAttribute("data-price");
+                        }
 
-                // Buscar el contenedor del producto para obtener más datos
-                const productCard = controlElement.closest(".p-6");
-                if (productCard) {
-                    const title = productCard.querySelector("h3")?.textContent || "";
-                    const price = productCard.querySelector(".text-green-600")?.textContent.replace("$", "") || "0";
-
-                    controlElement.outerHTML = `
-                    <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 add-to-cart" 
-                            data-id="${productData.id}" 
-                            data-name="${title}" 
-                            data-price="${price}">
-                        Agregar al Carrito
-                    </button>
-                `;
+                        controlElement.outerHTML = `
+                            <button class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 add-to-cart whitespace-nowrap w-full" 
+                                    data-id="${productId}"
+                                    data-name="${productName}"
+                                    data-price="${productPrice}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                <span>Agregar</span>
+                            </button>
+                        `;
+                    }
                 }
             }
         }
@@ -1113,8 +1258,19 @@
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
             console.log("📦 Carrito actual:", cart);
 
-            // Llamar a la función de actualización completa
-            updateAllProductCardsFromCart();
+            // Actualizar cada producto individualmente
+            cart.forEach(item => {
+                updateProductCardUI(item.id, cart);
+            });
+            
+            // También actualizar productos que ya no están en el carrito
+            document.querySelectorAll("[data-product-cart-control]").forEach(control => {
+                const productId = control.getAttribute("data-product-cart-control");
+                const cartItem = cart.find(item => item.id == productId || item.id == String(productId));
+                if (!cartItem) {
+                    updateProductCardUI(productId, cart);
+                }
+            });
 
             // Actualizar contador del carrito si existe
             const cartCounter = document.querySelector("#cart-counter");
@@ -1131,6 +1287,27 @@
             }
         });
 
+        // Función para inicializar contenedores y mostrar indicador de carga
+        function initializeProductContainers() {
+            let productsContainers = document.querySelectorAll("#products-container");
+            
+            if (productsContainers.length === 0) {
+                productsContainers = document.querySelectorAll("[data-dynamic-products=\"true\"] .grid");
+            }
+            
+            if (productsContainers.length === 0) {
+                productsContainers = document.querySelectorAll(".products-list .grid");
+            }
+            
+            // Mostrar indicador de carga inmediatamente
+            productsContainers.forEach(container => {
+                showLoadingIndicator(container);
+            });
+        }
+        
+        // Mostrar indicador de carga inmediatamente
+        initializeProductContainers();
+        
         // Cargar productos después de un breve delay
         setTimeout(() => {
             loadRealProductsInPreview();

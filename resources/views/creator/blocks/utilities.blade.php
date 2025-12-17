@@ -183,7 +183,7 @@
 {
   id: 'toggle',
   label: 'Toggle',
-  category: 'Navegación',
+  category: 'Diseño',
   attributes: {
     class: 'gjs-block-toggle'
   },

@@ -494,4 +494,114 @@ class FormController extends Controller
             'success' => true,
         ]);
     }
+
+    /**
+     * API para obtener formularios activos (para el selector del bloque)
+     */
+    public function apiIndex(Request $request, Website $website)
+    {
+        $forms = $website->forms()
+            ->where('is_active', true)
+            ->whereNull('blog_post_id') // Solo formularios generales, no de blog
+            ->select('id', 'name', 'slug', 'description', 'type')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json([
+            'data' => $forms
+        ]);
+    }
+
+    /**
+     * API para obtener un formulario específico con sus campos (para renderizarlo)
+     */
+    public function apiShow(Request $request, Website $website, Form $form)
+    {
+        // Verificar que el formulario pertenece al website y está activo
+        if ($form->website_id !== $website->id || !$form->is_active) {
+            return response()->json([
+                'error' => 'Formulario no encontrado o inactivo'
+            ], 404);
+        }
+
+        $form->load(['fields' => function($query) {
+            $query->orderBy('sort_order');
+        }]);
+
+        return response()->json([
+            'data' => [
+                'id' => $form->id,
+                'name' => $form->name,
+                'slug' => $form->slug,
+                'description' => $form->description,
+                'show_title' => $form->show_title,
+                'show_description' => $form->show_description,
+                'submit_button_text' => $form->submit_button_text,
+                'success_message' => $form->success_message,
+                'error_message' => $form->error_message,
+                'fields' => $form->fields->map(function($field) {
+                    return [
+                        'id' => $field->id,
+                        'type' => $field->type,
+                        'label' => $field->label,
+                        'name' => $field->name,
+                        'placeholder' => $field->placeholder,
+                        'required' => $field->required,
+                        'options' => $field->options,
+                        'validation_rules' => $field->validation_rules,
+                        'help_text' => $field->help_text,
+                        'sort_order' => $field->sort_order,
+                    ];
+                })
+            ]
+        ]);
+    }
+
+    /**
+     * API para enviar un formulario (submit)
+     */
+    public function apiSubmit(Request $request, Website $website, Form $form)
+    {
+        // Verificar que el formulario pertenece al website y está activo
+        if ($form->website_id !== $website->id || !$form->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Formulario no encontrado o inactivo'
+            ], 404);
+        }
+
+        // Validar campos requeridos
+        $form->load('fields');
+        $rules = [];
+        $messages = [];
+        
+        foreach ($form->fields as $field) {
+            if ($field->required) {
+                $rules[$field->name] = 'required';
+                $messages[$field->name . '.required'] = 'El campo ' . $field->label . ' es requerido';
+            }
+            
+            // Validaciones adicionales según el tipo
+            if ($field->type === 'email') {
+                $rules[$field->name] = ($rules[$field->name] ?? '') . '|email';
+            }
+        }
+        
+        $validated = $request->validate($rules, $messages);
+
+        // Crear el envío del formulario
+        $submission = $form->submissions()->create([
+            'data' => $validated,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        // TODO: Enviar notificaciones por email si está configurado
+
+        return response()->json([
+            'success' => true,
+            'message' => $form->success_message ?: '¡Formulario enviado exitosamente!'
+        ]);
+    }
 }

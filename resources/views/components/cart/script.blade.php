@@ -57,14 +57,29 @@
             ensureCartStructure();
             bindGlobalEvents();
             renderCart();
+            
+            // Escuchar cambios en el carrito desde otros componentes (cards de productos)
+            window.addEventListener('cartUpdated', function() {
+                // Sincronizar el estado del carrito desde localStorage
+                const storedCart = JSON.parse(localStorage.getItem('cart') || '[]');
+                CartState.items = storedCart;
+                renderCart();
+            });
         }
 
         function ensureCartStructure() {
+            if (!document.body) {
+                console.error('❌ document.body no está disponible');
+                return;
+            }
+
             if (!document.querySelector(Selectors.overlay)) {
                 const overlay = document.createElement('div');
                 overlay.id = 'cart-overlay';
                 overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-40 hidden';
-                document.body.appendChild(overlay);
+                if (document.body) {
+                    document.body.appendChild(overlay);
+                }
             }
 
             if (!document.querySelector(Selectors.sidebar)) {
@@ -72,7 +87,9 @@
                 sidebar.id = 'cart-sidebar';
                 sidebar.className = 'fixed inset-y-0 right-0 z-50 w-96 bg-white shadow-xl transition-transform duration-300 ease-in-out transform translate-x-full';
                 sidebar.innerHTML = buildSidebarTemplate();
-                document.body.appendChild(sidebar);
+                if (document.body) {
+                    document.body.appendChild(sidebar);
+                }
             }
 
             if (!document.querySelector(Selectors.button)) {
@@ -85,12 +102,14 @@
                 </svg>
                 <span id="cart-counter" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold">0</span>
             `;
-                document.body.appendChild(button);
+                if (document.body) {
+                    document.body.appendChild(button);
+                }
             }
         }
 
         function bindGlobalEvents() {
-            document.addEventListener('click', handleGlobalClicks);
+            document.addEventListener('click', handleGlobalClicks, true); // Usar capture phase
             window.addToCart = addToCart;
             window.updateQuantity = updateQuantity;
             window.removeFromCart = removeFromCart;
@@ -99,32 +118,54 @@
         }
 
         function handleGlobalClicks(event) {
+            // Verificar botón de carrito
             if (event.target.closest(Selectors.button)) {
                 event.preventDefault();
                 openSidebar();
+                return;
             }
 
+            // Verificar cerrar carrito
             if (event.target.closest(Selectors.close) || event.target.id === 'cart-overlay') {
                 event.preventDefault();
                 closeSidebar();
+                return;
             }
 
+            // Verificar checkout
             if (event.target.closest(Selectors.checkout)) {
                 event.preventDefault();
                 if (CartState.items.length === 0) return;
                 openCheckoutModal();
+                return;
             }
 
+            // Verificar botón "Agregar al carrito" - IMPORTANTE: antes que otros handlers
             const addBtn = event.target.closest('.add-to-cart');
-            if (addBtn) {
+            if (addBtn && !addBtn.disabled) {
                 event.preventDefault();
-                addToCart({
-                    id: addBtn.getAttribute('data-id'),
-                    name: addBtn.getAttribute('data-name'),
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                
+                const productId = addBtn.getAttribute('data-id');
+                if (!productId) {
+                    console.warn('⚠️ Botón add-to-cart sin data-id');
+                    return;
+                }
+                
+                const productData = {
+                    id: productId,
+                    name: addBtn.getAttribute('data-name') || 'Producto',
                     price: parseFloat(addBtn.getAttribute('data-price') || '0'),
                     iva: parseFloat(addBtn.getAttribute('data-iva') || '0'),
-                    image: addBtn.getAttribute('data-image')
-                });
+                    existencia: addBtn.getAttribute('data-existencia') || '0',
+                    descripcion: addBtn.getAttribute('data-descripcion') || '',
+                    image: addBtn.getAttribute('data-image') || ''
+                };
+                
+                console.log('🛒 Agregando producto al carrito desde card:', productData);
+                addToCart(productData);
+                return;
             }
         }
 
@@ -307,6 +348,10 @@
         }
 
         function showToast(message) {
+            if (!document.body) {
+                console.error('❌ document.body no está disponible para mostrar toast');
+                return;
+            }
             const toast = document.createElement('div');
             toast.className = 'fixed top-6 right-6 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg';
             toast.textContent = message;
@@ -480,7 +525,12 @@
                 </div>
             </div>
         `;
-            document.body.appendChild(modal);
+            if (document.body) {
+                document.body.appendChild(modal);
+            } else {
+                console.error('❌ document.body no está disponible para el modal de checkout');
+                return;
+            }
 
             document.getElementById('close-checkout-modal').addEventListener('click', () => toggleCheckoutModal(false));
             document.getElementById('cancel-checkout-modal').addEventListener('click', () => toggleCheckoutModal(false));
@@ -641,7 +691,12 @@
             </div>
         `;
 
-            document.body.appendChild(modal);
+            if (document.body) {
+                document.body.appendChild(modal);
+            } else {
+                console.error('❌ document.body no está disponible para el modal de dirección requerida');
+                return;
+            }
 
             // Event listeners
             document.getElementById('go-to-addresses').addEventListener('click', () => {
@@ -984,12 +1039,43 @@
             }
             // Si es pago en línea, usar la pasarela configurada
             else if (CartState.selectedPaymentMethod === 'online_payment') {
-                const handler = window.PaymentHandlers?.[templateConfig.paymentHandler];
-
-                if (handler && typeof handler.checkout === 'function') {
-                    handler.checkout(payload);
+                console.log('🔍 Buscando handler de pago:', {
+                    paymentHandler: templateConfig.paymentHandler,
+                    PaymentHandlers: window.PaymentHandlers ? Object.keys(window.PaymentHandlers) : 'no existe',
+                    handlerExists: window.PaymentHandlers?.[templateConfig.paymentHandler] ? 'sí' : 'no'
+                });
+                
+                // Intentar obtener el handler
+                let handler = window.PaymentHandlers?.[templateConfig.paymentHandler];
+                
+                // Si no existe, esperar un poco y volver a intentar (problema de timing)
+                if (!handler || typeof handler.checkout !== 'function') {
+                    console.warn('⚠️ Handler no disponible inmediatamente, esperando...');
+                    // Esperar hasta 2 segundos por el handler
+                    let attempts = 0;
+                    const maxAttempts = 10;
+                    const checkHandler = setInterval(() => {
+                        attempts++;
+                        handler = window.PaymentHandlers?.[templateConfig.paymentHandler];
+                        
+                        if (handler && typeof handler.checkout === 'function') {
+                            clearInterval(checkHandler);
+                            console.log('✅ Handler encontrado después de esperar, llamando checkout...');
+                            handler.checkout(payload);
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(checkHandler);
+                            console.error('❌ Handler no encontrado después de esperar', {
+                                paymentHandler: templateConfig.paymentHandler,
+                                availableHandlers: window.PaymentHandlers ? Object.keys(window.PaymentHandlers) : [],
+                                PaymentHandlers: window.PaymentHandlers
+                            });
+                            alert('No hay pasarela de pago configurada. Por favor verifica que:\n\n1. La pasarela de pago esté correctamente configurada\n2. Las claves estén guardadas correctamente\n3. Recarga la página completamente (Ctrl+F5)');
+                        }
+                    }, 200);
                 } else {
-                    alert('No hay pasarela de pago configurada.');
+                    // Handler disponible, usarlo directamente
+                    console.log('✅ Handler encontrado, llamando checkout...');
+                    handler.checkout(payload);
                 }
             }
         }

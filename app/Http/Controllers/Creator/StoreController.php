@@ -378,4 +378,103 @@ class StoreController extends Controller
             'order' => $order
         ]);
     }
+
+    /**
+     * Mostrar producto público individual
+     */
+    public function publicShow(Website $website, $productId)
+    {
+        $product = null;
+        $useExternalApi = false;
+
+        // Verificar si hay configuración de API externa
+        if ($website->api_key && $website->api_base_url) {
+            try {
+                $apiService = new ExternalApiService($website->api_key, $website->api_base_url);
+                $apiResponse = $apiService->getProduct($productId);
+
+                if ($apiResponse && isset($apiResponse['success']) && $apiResponse['success']) {
+                    $product = $apiResponse['data'] ?? $apiResponse;
+                    
+                    // Debug: Log del stock recibido
+                    Log::info('Producto recibido de API', [
+                        'product_id' => $productId,
+                        'existencia' => $product['existencia'] ?? 'no existe',
+                        'stock' => $product['stock'] ?? 'no existe',
+                        'inventario' => $product['inventario'] ?? 'no existe',
+                        'all_keys' => array_keys($product)
+                    ]);
+                    
+                    $baseImageUrl = rtrim($website->api_base_url, '/api');
+                    
+                    // Construir URLs completas para todas las imágenes
+                    if (!empty($product['imagenes']) && is_array($product['imagenes'])) {
+                        // Nuevo sistema: múltiples imágenes
+                        foreach ($product['imagenes'] as &$imagenItem) {
+                            if (!empty($imagenItem['imagen'])) {
+                                $imagenItem['imagen_url'] = $baseImageUrl . '/storage/productos/' . $imagenItem['imagen'];
+                            }
+                        }
+                    }
+                    
+                    // También construir URL para img (compatibilidad con sistema antiguo)
+                    if (!empty($product['img'])) {
+                        $product['img_url'] = $baseImageUrl . '/storage/productos/' . $product['img'];
+                    }
+                    
+                    $useExternalApi = true;
+                }
+            } catch (\Exception $e) {
+                Log::error('Error al obtener producto de API externa', [
+                    'product_id' => $productId,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
+        // Si no hay API externa o falló, usar productos locales (si existen)
+        if (!$useExternalApi) {
+            abort(404, 'Producto no encontrado');
+        }
+
+        if (!$product) {
+            abort(404, 'Producto no encontrado');
+        }
+
+        // Si el sitio web tiene plantilla aplicada, renderizar con el sistema de archivos
+        if ($website->template_id) {
+            $templateService = app(\App\Services\TemplateService::class);
+            $template = $templateService->find($website->template_id);
+            
+            if ($template) {
+                $customization = $template['customization'] ?? [];
+                
+                // Obtener o crear la configuración de la plantilla
+                $templateConfig = \App\Models\TemplateConfiguration::firstOrCreate(
+                    [
+                        'website_id' => $website->id,
+                        'template_slug' => $template['slug']
+                    ],
+                    [
+                        'configuration' => \App\Models\TemplateConfiguration::getDefaultConfiguration($template['slug']),
+                        'customization' => [],
+                        'settings' => [],
+                        'is_active' => true
+                    ]
+                );
+
+                // Renderizar usando el template principal pero con contenido de producto
+                return view('templates.' . $template['slug'] . '.template', [
+                    'website' => $website,
+                    'page' => null, // No hay página, es un producto
+                    'product' => $product,
+                    'customization' => $customization,
+                    'templateConfig' => $templateConfig
+                ]);
+            }
+        }
+
+        // Si no tiene plantilla, usar vista en blanco
+        return view('public.product.show', compact('website', 'product'));
+    }
 }

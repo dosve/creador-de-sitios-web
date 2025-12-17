@@ -2,12 +2,27 @@
     Componente para cargar posts del blog dinámicamente
     
     @param int $websiteId - ID del sitio web
+    @param string $websiteSlug - Slug del sitio web (opcional, se obtiene de window.websiteSlug)
 --}}
-@props(['websiteId' => ''])
+@props(['websiteId' => '', 'websiteSlug' => ''])
 
-<script>
+<script id="blog-script-{{ $websiteId }}">
+// Prevenir ejecución múltiple del script usando un identificador único
+// Esta verificación debe estar FUERA de la IIFE para ejecutarse inmediatamente
+(function() {
+    'use strict';
+    
+    // Verificar si ya se ejecutó este script (usando un identificador único por website)
+    const scriptId = 'blog-script-loaded-{{ $websiteId }}';
+    if (window[scriptId]) {
+        console.warn('⚠️ Blog script ya fue cargado para website {{ $websiteId }}, omitiendo carga duplicada');
+        return;
+    }
+    
+    // Marcar como cargado inmediatamente
+    window[scriptId] = true;
+    
 document.addEventListener("DOMContentLoaded", function() {
-    console.log("📝 Vista previa de página cargada, buscando posts del blog...");
     
     // Variables globales para el scroll infinito
     let currentPage = 1;
@@ -15,52 +30,89 @@ document.addEventListener("DOMContentLoaded", function() {
     let hasMorePosts = true;
     let allPosts = [];
     
+    // Función para mostrar indicador de carga
+    function showLoadingIndicator(container) {
+        container.innerHTML = `
+            <div class="flex items-center justify-center py-12 col-span-full">
+                <div class="text-center">
+                    <div class="w-12 h-12 mx-auto mb-4 border-b-2 border-blue-600 rounded-full animate-spin"></div>
+                    <p class="text-gray-600">Cargando artículos...</p>
+                </div>
+            </div>
+        `;
+    }
+    
     // Función para cargar posts reales del blog
     function loadRealBlogPosts(page = 1, append = false) {
-        if (isLoading) return;
+        if (isLoading) {
+            return;
+        }
         
         isLoading = true;
-        console.log("🚀 Iniciando carga de posts del blog... (Página " + page + ")");
         
         // Buscar contenedores de blog posts
         let blogContainers = document.querySelectorAll("#blog-posts-container");
-        console.log("📝 Contenedores por ID encontrados:", blogContainers.length);
         
         // Si no encuentra por ID, buscar por atributo data
         if (blogContainers.length === 0) {
             blogContainers = document.querySelectorAll("[data-dynamic-blog=\"true\"] .grid");
-            console.log("📝 Contenedores por atributo data encontrados:", blogContainers.length);
         }
         
         // Si aún no encuentra, buscar por clase
         if (blogContainers.length === 0) {
-            blogContainers = document.querySelectorAll(".blog-grid .grid");
-            console.log("📝 Contenedores por clase .blog-grid .grid:", blogContainers.length);
+            blogContainers = document.querySelectorAll(".blog-list .grid, .blog-grid .grid");
+        }
+        
+        // Búsqueda adicional: buscar sección con data-dynamic-blog y luego el grid dentro
+        if (blogContainers.length === 0) {
+            const blogSections = document.querySelectorAll("[data-dynamic-blog=\"true\"]");
+            
+            if (blogSections.length > 0) {
+                blogSections.forEach((section) => {
+                    const grid = section.querySelector(".grid, #blog-posts-container");
+                    if (grid && blogContainers.length === 0) {
+                        blogContainers = [grid];
+                    }
+                });
+            }
         }
         
         if (blogContainers.length === 0) {
-            console.log("❌ No se encontraron contenedores de posts del blog");
             isLoading = false;
             return;
         }
         
-        console.log("✅ Encontrados", blogContainers.length, "contenedores de posts del blog");
+        // Mostrar indicador de carga en todos los contenedores (solo en la primera carga)
+        if (!append) {
+            blogContainers.forEach(container => {
+                showLoadingIndicator(container);
+            });
+        }
         
-        blogContainers.forEach((container, index) => {
-            console.log("📝 Procesando contenedor", index + 1);
+        // Obtener el website ID del parámetro del componente
+        const defaultWebsiteId = "{{ $websiteId }}";
+        
+        blogContainers.forEach((container) => {
+            // Obtener el website ID del atributo data o usar el parámetro
+            let containerWebsiteId = container.dataset.websiteId;
             
-        // Obtener el website ID del atributo data o usar el parámetro
-        const containerWebsiteId = container.dataset.websiteId || "{{ $websiteId }}";
-        console.log("🌐 Website ID:", containerWebsiteId);
-        
-        // Guardar el website ID globalmente para usar en los enlaces
-        window.currentWebsiteId = containerWebsiteId;
+            // Si el atributo está vacío o es "1" (valor por defecto), usar el ID del componente
+            if (!containerWebsiteId || containerWebsiteId === "" || containerWebsiteId === "1") {
+                containerWebsiteId = defaultWebsiteId;
+            }
+            
+            // Guardar el website ID globalmente para usar en los enlaces
+            window.currentWebsiteId = containerWebsiteId;
 
-            // Si hay website ID, cargar posts reales
-            if (containerWebsiteId) {
-                console.log("✅ Website ID encontrado, cargando posts del blog...");
-                
-                fetch(`/api/websites/${containerWebsiteId}/blog-posts?page=${page}&per_page=6`, {
+            // Si hay website ID válido (debe ser un número), cargar posts reales
+            if (containerWebsiteId && containerWebsiteId !== "" && !isNaN(containerWebsiteId) && parseInt(containerWebsiteId) > 0) {
+                // Construir URL absoluta correcta
+                // Obtener el path base (ej: /creador-web-eme10/public)
+                const pathArray = window.location.pathname.split('/');
+                const basePath = pathArray.slice(0, -2).join('/') || ''; // Remover los últimos 2 segmentos (sitio/prueba-blog)
+                const apiUrl = `${window.location.protocol}//${window.location.host}${basePath}/api/websites/${containerWebsiteId}/blog-posts?page=${page}&per_page=6`;
+                console.log('📡 [BLOG SCRIPT] Llamando a API:', apiUrl);
+                fetch(apiUrl, {
                     method: "GET",
                     headers: {
                         "Accept": "application/json",
@@ -69,15 +121,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 })
                 .then(response => {
-                    console.log("📡 Respuesta de la API:", response.status);
                     if (!response.ok) {
+                        console.error("❌ [BLOG SCRIPT] Error en la respuesta:", response.status, response.statusText);
                         throw new Error("Error en la respuesta de la API: " + response.status);
                     }
                     return response.json();
                 })
                 .then(data => {
-                    console.log("📝 Datos recibidos:", data);
-                    
                     let posts = [];
                     if (data && data.data && Array.isArray(data.data)) {
                         posts = data.data;
@@ -92,12 +142,10 @@ document.addEventListener("DOMContentLoaded", function() {
                         if (append) {
                             // Agregar posts a los existentes
                             allPosts = allPosts.concat(posts);
-                            console.log("📝 Total posts acumulados:", allPosts.length);
                             renderRealBlogPosts(container, allPosts, true);
                         } else {
                             // Primera carga
                             allPosts = posts;
-                            console.log("📝 Primera carga, posts:", allPosts.length);
                             renderRealBlogPosts(container, posts, false);
                         }
                         
@@ -110,13 +158,21 @@ document.addEventListener("DOMContentLoaded", function() {
                         // Configurar scroll infinito
                         if (hasMorePosts) {
                             setupInfiniteScroll();
-                        } else {
-                            console.log("🏁 No hay más posts disponibles, scroll infinito desactivado");
                         }
                     } else {
                         if (!append) {
-                            console.log("⚠️ No se encontraron posts, mostrando posts de ejemplo");
-                            showExampleBlogPosts(container);
+                            // Si no hay posts, mostrar mensaje en lugar de ejemplos
+                            container.innerHTML = `
+                                <div class="col-span-full text-center py-12">
+                                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-xl font-medium text-gray-900 mb-2">No hay artículos disponibles</h3>
+                                    <p class="text-gray-500">Aún no se han publicado artículos en este blog.</p>
+                                </div>
+                            `;
                         }
                     }
                     
@@ -125,13 +181,34 @@ document.addEventListener("DOMContentLoaded", function() {
                 .catch(error => {
                     console.error("❌ Error al cargar posts del blog:", error);
                     if (!append) {
-                        showExampleBlogPosts(container);
+                        // En caso de error, mostrar mensaje en lugar de ejemplos
+                        container.innerHTML = `
+                            <div class="col-span-full text-center py-12">
+                                <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <svg class="w-12 h-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-medium text-gray-900 mb-2">Error al cargar artículos</h3>
+                                <p class="text-gray-500">No se pudieron cargar los artículos del blog. Por favor, intenta recargar la página.</p>
+                            </div>
+                        `;
                     }
                     isLoading = false;
                 });
             } else {
-                console.log("⚠️ No hay Website ID configurado, mostrando posts de ejemplo");
-                showExampleBlogPosts(container);
+                // Si no hay website ID válido, mostrar mensaje
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-medium text-gray-900 mb-2">Configuración requerida</h3>
+                        <p class="text-gray-500">El blog necesita estar configurado para mostrar artículos.</p>
+                    </div>
+                `;
                 isLoading = false;
             }
         });
@@ -139,8 +216,6 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Función para renderizar posts reales
     function renderRealBlogPosts(container, posts, append = false) {
-        console.log("🎨 Renderizando", posts.length, "posts del blog");
-        
         if (!append) {
             container.innerHTML = "";
         }
@@ -149,14 +224,30 @@ document.addEventListener("DOMContentLoaded", function() {
             const postElement = createBlogPostElement(post);
             container.appendChild(postElement);
         });
+    }
+    
+    // Función auxiliar para obtener el slug del website
+    function getWebsiteSlug() {
+        // Prioridad 1: Variable global window.websiteSlug
+        if (window.websiteSlug) {
+            return window.websiteSlug;
+        }
         
-        console.log("✅ Posts del blog renderizados correctamente");
+        // Prioridad 2: Obtener desde la URL actual
+        const path = window.location.pathname;
+        const parts = path.split('/').filter(p => p && p !== 'public' && p !== 'creador-web-eme10');
+        
+        // Si estamos en una ruta como /sitio/pagina o /sitio/blog, el primer segmento es el slug
+        if (parts.length > 0) {
+            return parts[0];
+        }
+        
+        // Fallback: usar 'sitio' como default
+        return 'sitio';
     }
     
     // Función para crear elemento HTML de un post
     function createBlogPostElement(post) {
-        console.log("📝 Creando elemento para post:", post);
-        
         const postDiv = document.createElement('article');
         postDiv.className = 'bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow';
         
@@ -187,12 +278,24 @@ document.addEventListener("DOMContentLoaded", function() {
             day: 'numeric'
         });
         
-        // Usar slug como fallback si no hay ID
-        const postId = post.id || post.slug || 'sin-id';
+        // Obtener el slug del website y del post
+        const postWebsiteSlug = getWebsiteSlug();
+        const postSlug = post.slug || post.id;
+        
+        const imageHtml = post.featured_image 
+            ? `<img src="${escapeHtml(post.featured_image)}" alt="${escapeHtml(post.title)}" class="w-full h-full object-cover">`
+            : `<div class="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                ${categoryBadge}
+            </div>`;
+        
+        const categoryOverlay = post.featured_image && categoryBadge
+            ? `<div class="absolute top-4 left-4">${categoryBadge}</div>`
+            : '';
         
         postDiv.innerHTML = `
-            <div class="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                ${categoryBadge}
+            <div class="w-full h-48 relative overflow-hidden">
+                ${imageHtml}
+                ${categoryOverlay}
             </div>
             <div class="p-6">
                 <div class="flex items-center text-sm text-gray-500 mb-2">
@@ -201,7 +304,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     <span>${readTime} min lectura</span>
                 </div>
                 <h3 class="text-xl font-bold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer">
-                    <a href="/creator/websites/${window.currentWebsiteId || '1'}/preview/blog/${post.id}">${escapeHtml(post.title)}</a>
+                    <a href="/${postWebsiteSlug}/blog/${postSlug}">${escapeHtml(post.title)}</a>
                 </h3>
                 <p class="text-gray-600 mb-4">${escapeHtml(excerpt)}</p>
                 ${tagsHtml}
@@ -210,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         <div class="w-6 h-6 bg-gray-300 rounded-full mr-2"></div>
                         <span class="text-sm text-gray-600">Autor</span>
                     </div>
-                    <a href="/creator/websites/${window.currentWebsiteId || '1'}/preview/blog/${post.id}" class="text-blue-600 hover:text-blue-800 text-sm">Leer más →</a>
+                    <a href="/${postWebsiteSlug}/blog/${postSlug}" class="text-blue-600 hover:text-blue-800 text-sm">Leer más →</a>
                 </div>
             </div>
         `;
@@ -220,8 +323,6 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Función para mostrar posts de ejemplo
     function showExampleBlogPosts(container) {
-        console.log("📝 Mostrando posts de ejemplo");
-        
         const examplePosts = [
             {
                 id: 1,
@@ -299,7 +400,11 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>
         `;
         
-        container.parentElement.insertBefore(searchDiv, container);
+        if (container && container.parentElement) {
+            container.parentElement.insertBefore(searchDiv, container);
+        } else {
+            console.error('❌ No se puede insertar el buscador de blog: contenedor o parentElement no encontrado');
+        }
         
         // Configurar eventos de búsqueda
         const searchInput = searchDiv.querySelector('input');
@@ -319,12 +424,9 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Función para buscar posts
     function searchBlogPosts(query, sortBy) {
-        console.log("🔍 Buscando posts:", { query, sortBy });
-        
         const containerWebsiteId = document.querySelector("#blog-posts-container")?.dataset.websiteId || "{{ $websiteId }}";
         
         if (!containerWebsiteId) {
-            console.log("❌ No hay Website ID para buscar posts");
             return;
         }
         
@@ -375,8 +477,12 @@ document.addEventListener("DOMContentLoaded", function() {
             `;
         }
         
-        // Hacer petición a la API con filtros
-        fetch(`/api/websites/${containerWebsiteId}/blog-posts?${searchParams.toString()}`, {
+        // Hacer petición a la API con filtros (usar URL absoluta)
+        const pathArray = window.location.pathname.split('/');
+        const basePath = pathArray.slice(0, -2).join('/') || '';
+        const apiUrl = `${window.location.protocol}//${window.location.host}${basePath}/api/websites/${containerWebsiteId}/blog-posts?${searchParams.toString()}`;
+        console.log('📡 [BLOG SCRIPT] Buscando posts:', apiUrl);
+        fetch(apiUrl, {
             method: "GET",
             headers: {
                 "Accept": "application/json",
@@ -425,9 +531,11 @@ document.addEventListener("DOMContentLoaded", function() {
     // Función para actualizar el enlace "Ver Todos los Artículos"
     function updateBlogListLink() {
         const blogListLink = document.querySelector('[data-blog-list-link]');
-        if (blogListLink && window.currentWebsiteId) {
-            blogListLink.href = `/creator/websites/${window.currentWebsiteId}/preview/blog`;
-            console.log("🔗 Enlace 'Ver Todos los Artículos' actualizado:", blogListLink.href);
+        if (blogListLink) {
+            const linkWebsiteSlug = getWebsiteSlug();
+            if (linkWebsiteSlug) {
+                blogListLink.href = `/${linkWebsiteSlug}/blog`;
+            }
         }
     }
     
@@ -472,7 +580,52 @@ document.addEventListener("DOMContentLoaded", function() {
         return div.innerHTML;
     }
     
-    // Inicializar carga de posts
-    loadRealBlogPosts(1, false);
+    // Mostrar indicador de carga inmediatamente si hay contenedores
+    function initializeBlogContainers() {
+        let blogContainers = document.querySelectorAll("#blog-posts-container");
+        
+        if (blogContainers.length === 0) {
+            blogContainers = document.querySelectorAll("[data-dynamic-blog=\"true\"] .grid");
+        }
+        
+        if (blogContainers.length === 0) {
+            blogContainers = document.querySelectorAll(".blog-list .grid, .blog-grid .grid");
+        }
+        
+        if (blogContainers.length === 0) {
+            const blogSections = document.querySelectorAll("[data-dynamic-blog=\"true\"]");
+            if (blogSections.length > 0) {
+                blogSections.forEach((section) => {
+                    const grid = section.querySelector(".grid, #blog-posts-container");
+                    if (grid) {
+                        blogContainers = [grid];
+                    }
+                });
+            }
+        }
+        
+        // Mostrar indicador de carga inmediatamente
+        blogContainers.forEach(container => {
+            showLoadingIndicator(container);
+        });
+    }
+    
+    // Mostrar indicador de carga inmediatamente
+    initializeBlogContainers();
+    
+    // Inicializar carga de posts - con delay para asegurar que el DOM esté listo
+    setTimeout(() => {
+        loadRealBlogPosts(1, false);
+    }, 500);
+    
+    // También intentar cargar después de que la página esté completamente cargada
+    if (document.readyState === 'loading') {
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loadRealBlogPosts(1, false);
+            }, 300);
+        });
+    }
 });
+})(); // Fin de la IIFE - previene ejecución múltiple y aísla el scope
 </script>

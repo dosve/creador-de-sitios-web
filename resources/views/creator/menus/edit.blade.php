@@ -41,13 +41,13 @@
                             required>
                         <option value="">Selecciona una ubicación</option>
                         <option value="header" {{ old('location', $menu->location) === 'header' ? 'selected' : '' }}>
-                            🔝 Header (Parte superior)
+                            Header (Parte superior)
                         </option>
                         <option value="footer" {{ old('location', $menu->location) === 'footer' ? 'selected' : '' }}>
-                            🔽 Footer (Parte inferior)
+                            Footer (Parte inferior)
                         </option>
                         <option value="sidebar" {{ old('location', $menu->location) === 'sidebar' ? 'selected' : '' }}>
-                            📱 Sidebar (Lateral)
+                            Sidebar (Lateral)
                         </option>
                     </select>
                     @error('location')
@@ -94,27 +94,6 @@
                     </button>
                 </div>
             </form>
-        </div>
-
-        <!-- Información del menú -->
-        <div class="mt-8 bg-gray-50 border border-gray-200 rounded-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">📊 Información del Menú</h3>
-            <div class="grid gap-4 md:grid-cols-2">
-                <div>
-                    <h4 class="font-medium text-gray-900">Items del Menú</h4>
-                    <p class="text-sm text-gray-600">{{ $menu->items->count() }} items configurados</p>
-                </div>
-                <div>
-                    <h4 class="font-medium text-gray-900">Estado</h4>
-                    <p class="text-sm text-gray-600">
-                        @if($menu->is_active)
-                            <span class="text-green-600">✅ Activo</span>
-                        @else
-                            <span class="text-red-600">❌ Inactivo</span>
-                        @endif
-                    </p>
-                </div>
-            </div>
         </div>
     </div>
 </div>

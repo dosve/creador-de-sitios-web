@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Creator;
 use App\Http\Controllers\Controller;
 use App\Models\Website;
 use App\Models\Page;
+use App\Services\OpenAIService;
+use App\Services\TemplateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -101,7 +103,17 @@ class PageController extends BaseController
 
     public function create(Request $request)
     {
-        $website = Website::find(session('selected_website_id'));
+        // Usar la sesión como prioridad, solo usar parámetro de URL como fallback
+        $websiteId = session('selected_website_id');
+        
+        // Solo usar el parámetro de la URL si no hay sesión
+        if (!$websiteId && $request->has('website')) {
+            $websiteId = $request->input('website');
+            // Actualizar la sesión con el parámetro de la URL
+            session(['selected_website_id' => $websiteId]);
+        }
+        
+        $website = Website::find($websiteId);
         
         if (!$website) {
             return redirect()->route('creator.select-website');
@@ -139,6 +151,214 @@ class PageController extends BaseController
 
         return redirect()->route('creator.pages.index')
             ->with('success', 'Página creada exitosamente');
+    }
+
+    /**
+     * Generar página con IA
+     */
+    public function generateWithAI(Request $request)
+    {
+        // Usar la sesión como prioridad, solo usar parámetro de URL como fallback
+        $websiteId = session('selected_website_id');
+        
+        // Solo usar el parámetro de la URL si no hay sesión
+        if (!$websiteId && $request->has('website')) {
+            $websiteId = $request->input('website');
+            // Actualizar la sesión con el parámetro de la URL
+            session(['selected_website_id' => $websiteId]);
+        }
+        
+        \Log::info('Iniciando generación de página con IA', [
+            'request_data' => $request->all(),
+            'selected_website_id' => session('selected_website_id'),
+            'website_id_usado' => $websiteId
+        ]);
+
+        $website = Website::find($websiteId);
+        
+        if (!$website) {
+            \Log::warning('No hay sitio web seleccionado para generar página con IA', [
+                'session_id' => session('selected_website_id'),
+                'param_website' => $request->input('website')
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'No hay sitio web seleccionado. Por favor, selecciona un sitio web primero.'
+            ], 403);
+        }
+        
+        $this->authorize('update', $website);
+
+        $request->validate([
+            'prompt' => 'required|string|min:10|max:10000',
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:pages,slug,NULL,id,website_id,' . $website->id,
+        ]);
+
+        \Log::info('Validación exitosa, iniciando generación con OpenAI', [
+            'title' => $request->title,
+            'slug' => $request->slug,
+            'prompt_length' => strlen($request->prompt)
+        ]);
+
+        try {
+            // Obtener información de la plantilla
+            $templateInfo = [];
+            if ($website->template_id) {
+                $templateService = app(TemplateService::class);
+                $template = $templateService->find($website->template_id);
+                if ($template) {
+                    $templateInfo = [
+                        'name' => $template['name'] ?? null,
+                        'category' => $template['category'] ?? null,
+                        'customization' => $template['customization'] ?? [],
+                    ];
+                }
+            }
+
+            // Generar contenido con OpenAI
+            \Log::info('Llamando a OpenAI para generar contenido', [
+                'template_info' => $templateInfo,
+                'has_template' => !empty($templateInfo)
+            ]);
+
+            $openAIService = app(OpenAIService::class);
+            $generatedContent = $openAIService->generatePageContent($request->prompt, $templateInfo);
+
+            if (!$generatedContent) {
+                \Log::error('OpenAI no devolvió contenido', [
+                    'prompt' => substr($request->prompt, 0, 100) . '...'
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al generar el contenido. Por favor, verifica que la API key de OpenAI esté configurada.'
+                ], 500);
+            }
+
+            \Log::info('Contenido generado exitosamente', [
+                'html_length' => strlen($generatedContent['html_content'] ?? ''),
+                'has_meta_description' => !empty($generatedContent['meta_description'])
+            ]);
+
+            // Crear la página
+            $page = $website->pages()->create([
+                'title' => $request->title,
+                'slug' => $request->slug,
+                'html_content' => $generatedContent['html_content'],
+                'meta_description' => $generatedContent['meta_description'],
+                'is_published' => $request->boolean('is_published', false),
+                'sort_order' => $website->pages()->max('sort_order') + 1,
+            ]);
+
+            \Log::info('Página creada exitosamente', [
+                'page_id' => $page->id,
+                'page_title' => $page->title,
+                'page_slug' => $page->slug
+            ]);
+
+            // Crear versión inicial
+            $page->createVersion('Página generada con IA');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Página generada exitosamente',
+                'page' => [
+                    'id' => $page->id,
+                    'title' => $page->title,
+                    'slug' => $page->slug,
+                    'url' => route('creator.pages.edit', $page)
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error al generar página con IA', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar la página: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generar solo el contenido HTML con IA (para insertar en editor existente)
+     */
+    public function generateAIContent(Request $request)
+    {
+        $websiteId = session('selected_website_id') ?? $request->input('website_id');
+        
+        $website = Website::find($websiteId);
+        
+        if (!$website) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No hay sitio web seleccionado'
+            ], 403);
+        }
+        
+        $this->authorize('update', $website);
+
+        $request->validate([
+            'prompt' => 'required|string|min:10|max:10000',
+            'current_content' => 'nullable|string',
+            'page_id' => 'nullable|integer|exists:pages,id',
+        ]);
+
+        try {
+            // Obtener el contenido actual de la página si se proporciona page_id
+            $currentContent = $request->input('current_content');
+            if (!$currentContent && $request->input('page_id')) {
+                $page = Page::find($request->input('page_id'));
+                if ($page && $page->website_id === $website->id) {
+                    $currentContent = $page->html_content;
+                }
+            }
+
+            // Obtener información de la plantilla
+            $templateInfo = [];
+            if ($website->template_id) {
+                $templateService = app(TemplateService::class);
+                $template = $templateService->find($website->template_id);
+                if ($template) {
+                    $templateInfo = [
+                        'name' => $template['name'] ?? null,
+                        'category' => $template['category'] ?? null,
+                        'customization' => $template['customization'] ?? [],
+                    ];
+                }
+            }
+
+            // Generar contenido con OpenAI (incluyendo contenido actual si existe)
+            $openAIService = app(OpenAIService::class);
+            $generatedContent = $openAIService->generatePageContent($request->prompt, $templateInfo, $currentContent);
+
+            if (!$generatedContent) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al generar el contenido. Por favor, verifica que la API key de OpenAI esté configurada.'
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'html_content' => $generatedContent['html_content'],
+                'message' => 'Contenido generado exitosamente'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error al generar contenido con IA', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar el contenido: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function show(Request $request, Page $page)
@@ -357,7 +577,6 @@ class PageController extends BaseController
         \Log::info('Páginas a importar', ['count' => count($pagesToImport)]);
         
         $imported = 0;
-        $skipped = 0;
         
         foreach ($pagesToImport as $pageData) {
             \Log::info('Procesando página', [
@@ -367,10 +586,13 @@ class PageController extends BaseController
             
             // Asegurar slug único: si existe, agregar sufijo incremental
             $baseSlug = $pageData['slug'];
+            $baseTitle = $pageData['title'];
             $slug = $baseSlug;
+            $title = $baseTitle;
             $counter = 2;
             while ($website->pages()->where('slug', $slug)->exists()) {
                 $slug = $baseSlug . '-' . $counter;
+                $title = $baseTitle . ' ' . $counter;
                 $counter++;
             }
             
@@ -383,7 +605,7 @@ class PageController extends BaseController
                     try {
                         // Pasar variables mínimas esperadas por vistas de catálogo
                         $htmlContent = view($viewName, [
-                            'pageTitle' => $pageData['title'] ?? 'Página',
+                            'pageTitle' => $title ?? 'Página',
                             'websiteName' => $website->name ?? 'Sitio',
                             'website' => $website,
                         ])->render();
@@ -404,7 +626,8 @@ class PageController extends BaseController
             $htmlContent = $this->extractMainContent($htmlContent);
             
             \Log::info('Contenido HTML generado', [
-                'title' => $pageData['title'],
+                'title' => $title,
+                'slug' => $slug,
                 'content_length' => strlen($htmlContent),
                 'has_blocks' => !empty($pageData['blocks'])
             ]);
@@ -412,7 +635,7 @@ class PageController extends BaseController
             // Crear nueva página
             $page = new Page([
                 'website_id' => $website->id,
-                'title' => $pageData['title'],
+                'title' => $title,
                 'slug' => $slug,
                 'meta_description' => $pageData['meta_description'] ?? null,
                 'html_content' => $htmlContent,
@@ -431,13 +654,9 @@ class PageController extends BaseController
         }
         
         $message = "Se importaron {$imported} páginas prediseñadas";
-        if ($skipped > 0) {
-            $message .= " ({$skipped} ya existían)";
-        }
         
         \Log::info('Importación completada', [
             'imported' => $imported,
-            'skipped' => $skipped,
             'message' => $message
         ]);
         

@@ -631,6 +631,29 @@
       text-align: center;
     }
 
+    /* Ocultar campo de búsqueda y elementos adicionales al final del panel de bloques */
+    .gjs-blocks-c input[type="text"],
+    .gjs-blocks-c input[type="search"],
+    .gjs-blocks-c .gjs-sm-field,
+    .gjs-blocks-c .gjs-sm-input-holder,
+    .gjs-block-category:last-child input,
+    .gjs-block-category:last-child .gjs-field,
+    #gjs-blocks input,
+    #gjs-blocks .gjs-field,
+    #gjs-blocks .gjs-sm-field-holder {
+      display: none !important;
+    }
+
+    /* Ocultar scrollbar visible al final de las categorías */
+    .gjs-blocks-c::-webkit-scrollbar {
+      display: none !important;
+    }
+
+    .gjs-blocks-c {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
     /* Estilos para el header y sidebar */
     .tab-button.active {
       color: #2563eb;
@@ -664,7 +687,7 @@
       <div class="px-4 py-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
-            <a href="{{ route('creator.websites.show', session('selected_website_id')) }}" class="text-gray-600 hover:text-gray-900">
+            <a href="{{ route('creator.pages.index') }}" class="text-gray-600 hover:text-gray-900">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
@@ -704,6 +727,13 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
               </svg>
+            </button>
+
+            <button id="ai-generate-btn" class="flex items-center gap-2 px-3 py-2 text-sm text-white bg-purple-600 rounded-md hover:bg-purple-700" title="Generar contenido con IA">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+              </svg>
+              Generar con IA
             </button>
 
             <button id="config-btn" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" title="Configuración de la Página">
@@ -849,6 +879,65 @@
         </div>
 
         <div id="gjs" style="height: 100%; display: none;"></div>
+      </div>
+    </div>
+
+    <!-- Modal de Generación con IA -->
+    <div id="ai-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black bg-opacity-50">
+      <div class="flex items-center justify-center min-h-screen px-4 py-8">
+        <div class="relative w-full max-w-4xl bg-white rounded-lg shadow-xl">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+              </svg>
+              Actualizar Contenido con IA
+            </h2>
+            <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="px-6 py-4 max-h-[70vh] overflow-y-auto">
+            <p class="text-sm text-gray-600 mb-4">
+              Describe cómo quieres actualizar el contenido de esta página. La IA mejorará el contenido existente considerando la plantilla y estilos de tu sitio.
+            </p>
+            
+            <!-- Contenido Actual -->
+            <div class="mb-4">
+              <label class="block mb-2 text-sm font-medium text-gray-700">Contenido Actual de la Página</label>
+              <div class="p-3 bg-gray-50 border border-gray-200 rounded-md max-h-40 overflow-y-auto">
+                <pre id="ai-current-content" class="text-xs text-gray-600 whitespace-pre-wrap font-mono"></pre>
+              </div>
+              <p class="mt-1 text-xs text-gray-500">Este es el contenido HTML actual que se actualizará</p>
+            </div>
+
+            <!-- Prompt para actualizar -->
+            <div>
+              <label class="block mb-2 text-sm font-medium text-gray-700">Instrucciones para Actualizar</label>
+              <textarea id="ai-prompt-input" rows="6" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Ejemplo: Mejora el título de la sección hero para que sea más llamativo, agrega más detalles a los servicios y actualiza los testimonios con información más específica."></textarea>
+              <p class="mt-2 text-xs text-gray-500">
+                Describe cómo quieres mejorar o actualizar el contenido. El contenido completo de la página será reemplazado con la versión actualizada.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <button id="ai-modal-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+              Cancelar
+            </button>
+            <button id="ai-generate-submit" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700">
+              <span id="ai-generate-text">Actualizar con IA</span>
+              <span id="ai-generate-loading" class="hidden">
+                <svg class="inline-block w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Actualizando...
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1017,16 +1106,12 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM cargado, iniciando GrapesJS...');
-
       // Verificar que GrapesJS esté disponible
       if (typeof grapesjs === 'undefined') {
         console.error('GrapesJS no se ha cargado correctamente');
         alert('Error: El editor no se pudo cargar. Por favor, recarga la página.');
         return;
       }
-
-      console.log('GrapesJS disponible:', grapesjs);
 
       // Inicializar el editor (con pequeño retraso para asegurar que todo esté cargado)
       if (typeof initializeEditor === 'function') {
@@ -1089,6 +1174,151 @@
       });
 
       // Funcionalidad del modal de configuración
+      // Modal de Generación con IA
+      const aiGenerateBtn = document.getElementById('ai-generate-btn');
+      const aiModal = document.getElementById('ai-modal');
+      const closeAiModal = document.getElementById('close-ai-modal');
+      const aiModalCancel = document.getElementById('ai-modal-cancel');
+      const aiPromptInput = document.getElementById('ai-prompt-input');
+      const aiGenerateSubmit = document.getElementById('ai-generate-submit');
+      const aiGenerateText = document.getElementById('ai-generate-text');
+      const aiGenerateLoading = document.getElementById('ai-generate-loading');
+
+      // Abrir modal de IA
+      if (aiGenerateBtn) {
+        aiGenerateBtn.addEventListener('click', function() {
+          // Obtener el contenido actual del editor
+          let currentContent = '';
+          if (window.editor) {
+            currentContent = window.editor.getHtml();
+            // Limpiar el contenido para mostrar (quitar espacios excesivos)
+            const cleanContent = currentContent.replace(/>\s+</g, '><').trim();
+            // Mostrar una versión truncada si es muy largo
+            const displayContent = cleanContent.length > 500 
+              ? cleanContent.substring(0, 500) + '...\n\n[Contenido truncado - se enviará completo]' 
+              : cleanContent;
+            
+            document.getElementById('ai-current-content').textContent = displayContent || 'Página vacía - se generará contenido nuevo';
+          } else {
+            document.getElementById('ai-current-content').textContent = 'Editor no inicializado';
+          }
+          
+          aiModal.classList.remove('hidden');
+          aiPromptInput.focus();
+        });
+      }
+
+      // Cerrar modal de IA
+      function closeAiModalFunc() {
+        aiModal.classList.add('hidden');
+        aiPromptInput.value = '';
+      }
+
+      if (closeAiModal) {
+        closeAiModal.addEventListener('click', closeAiModalFunc);
+      }
+
+      if (aiModalCancel) {
+        aiModalCancel.addEventListener('click', closeAiModalFunc);
+      }
+
+      // Cerrar al hacer clic fuera del modal
+      if (aiModal) {
+        aiModal.addEventListener('click', function(e) {
+          if (e.target === aiModal) {
+            closeAiModalFunc();
+          }
+        });
+      }
+
+      // Generar contenido con IA
+      if (aiGenerateSubmit) {
+        aiGenerateSubmit.addEventListener('click', function() {
+          const prompt = aiPromptInput.value.trim();
+          
+          if (!prompt || prompt.length < 10) {
+            alert('Por favor describe cómo quieres actualizar el contenido (mínimo 10 caracteres)');
+            return;
+          }
+
+          // Obtener el contenido actual del editor
+          let currentContent = '';
+          if (window.editor) {
+            currentContent = window.editor.getHtml();
+          }
+
+          // Mostrar loading
+          aiGenerateText.classList.add('hidden');
+          aiGenerateLoading.classList.remove('hidden');
+          aiGenerateSubmit.disabled = true;
+
+          // Enviar petición a OpenAI con el contenido actual
+          fetch('{{ route("creator.pages.generate-ai-content") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              prompt: prompt,
+              current_content: currentContent,
+              page_id: {{ $editable->id ?? 'null' }},
+              website_id: {{ $website->id }}
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success && data.html_content) {
+              // Reemplazar TODO el contenido en GrapesJS
+              if (window.editor) {
+                try {
+                  // Método 1: Intentar usar setComponents si existe
+                  if (typeof window.editor.setComponents === 'function') {
+                    window.editor.setComponents(data.html_content);
+                  } 
+                  // Método 2: Limpiar y agregar nuevo contenido
+                  else if (typeof window.editor.getWrapper === 'function') {
+                    const wrapper = window.editor.getWrapper();
+                    if (wrapper && wrapper.components) {
+                      wrapper.components().reset();
+                      window.editor.addComponents(data.html_content);
+                    } else {
+                      // Método 3: Usar el método directo de reset
+                      window.editor.set('components', data.html_content);
+                    }
+                  }
+                  // Método 4: Usar el método directo
+                  else {
+                    window.editor.set('components', data.html_content);
+                  }
+                  
+                  closeAiModalFunc();
+                  alert('Contenido actualizado exitosamente con IA');
+                } catch (error) {
+                  console.error('Error al actualizar contenido:', error);
+                  alert('Error al actualizar el contenido en el editor. Por favor intenta guardar manualmente.');
+                }
+              } else {
+                alert('Error: El editor no está listo. Por favor recarga la página.');
+              }
+            } else {
+              alert('Error: ' + (data.message || 'No se pudo actualizar el contenido'));
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Error al actualizar el contenido. Por favor intenta nuevamente.');
+          })
+          .finally(() => {
+            // Restaurar botón
+            aiGenerateText.classList.remove('hidden');
+            aiGenerateLoading.classList.add('hidden');
+            aiGenerateSubmit.disabled = false;
+          });
+        });
+      }
+
       const configBtn = document.getElementById('config-btn');
       const configModal = document.getElementById('config-modal');
       const closeConfigModal = document.getElementById('close-config-modal');
@@ -1347,27 +1577,18 @@
       }
 
       // Event listeners para los botones de dispositivos
-      console.log('Botones encontrados:', {
-        desktopBtn,
-        tabletBtn,
-        mobileBtn
-      });
-
       if (desktopBtn) {
         desktopBtn.addEventListener('click', () => {
-          console.log('Click en desktop');
           switchDevice('desktop');
         });
       }
       if (tabletBtn) {
         tabletBtn.addEventListener('click', () => {
-          console.log('Click en tablet');
           switchDevice('tablet');
         });
       }
       if (mobileBtn) {
         mobileBtn.addEventListener('click', () => {
-          console.log('Click en mobile');
           switchDevice('mobile');
         });
       }
@@ -1638,7 +1859,6 @@ ${formatHtml(html)}
           // Configurar listener para cambios de dispositivo
           window.editor.on('change:device', () => {
             const currentDevice = window.editor.getDevice();
-            console.log('Dispositivo actual:', currentDevice);
 
             // Actualizar botones según el dispositivo actual
             [desktopBtn, tabletBtn, mobileBtn].forEach(btn => {
@@ -1677,15 +1897,15 @@ ${formatHtml(html)}
     // Configurar las credenciales API del sitio web
     window.websiteApiKey = "{{ $website->api_key }}";
     window.websiteApiUrl = "{{ $website->api_base_url }}";
+    window.websiteId = {{ $website->id }};
 
-    console.log('🔧 Configuración de API cargada en editor:', {
-      apiKey: window.websiteApiKey ? 'Configurada' : 'No configurada',
-      apiUrl: window.websiteApiUrl || 'No configurada'
-    });
   </script>
 
   <!-- Componente para cargar productos dinámicamente -->
   <x-products-script :apiKey="$website->api_key" :apiBaseUrl="$website->api_base_url" />
+
+  <!-- Componente para cargar posts del blog dinámicamente -->
+  @include('components.blog-script', ['websiteId' => $website->id])
 
 </body>
 

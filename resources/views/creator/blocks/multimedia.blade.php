@@ -15,7 +15,7 @@
 {
   id: 'youtube',
   label: 'YouTube',
-  category: 'Multimedia', 
+  category: 'Redes Sociales', 
   attributes: {
     class: 'gjs-block-video'
   },

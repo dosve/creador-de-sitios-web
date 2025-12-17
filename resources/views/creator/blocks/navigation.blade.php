@@ -31,22 +31,9 @@
 },
 --}}
 {
-id: 'breadcrumbs',
-label: 'Migas de pan',
-category: 'Navegación', content: `<nav class="py-4 text-sm breadcrumbs">
-    <div class="container px-4 mx-auto">
-        <a href="#" class="text-blue-600 hover:text-blue-800">Inicio</a>
-        <span class="mx-2 text-gray-500">/</span>
-        <a href="#" class="text-blue-600 hover:text-blue-800">Categoría</a>
-        <span class="mx-2 text-gray-500">/</span>
-        <span class="text-gray-700">Página actual</span>
-    </div>
-</nav>`
-},
-{
 id: 'tabs',
 label: 'Pestañas',
-category: 'Navegación', content: `<div class="py-8 tabs-container">
+category: 'Diseño', content: `<div class="py-8 tabs-container">
     <div class="container px-4 mx-auto">
         <div class="border-b border-gray-200">
             <nav class="flex -mb-px space-x-8">
@@ -67,7 +54,7 @@ category: 'Navegación', content: `<div class="py-8 tabs-container">
 {
 id: 'accordion',
 label: 'Acordeón',
-category: 'Navegación', content: `<div class="py-8 accordion">
+category: 'Diseño', content: `<div class="py-8 accordion">
     <div class="container max-w-4xl px-4 mx-auto">
         <h2 class="mb-8 text-3xl font-bold text-center">Preguntas Frecuentes</h2>
         <div class="space-y-4">

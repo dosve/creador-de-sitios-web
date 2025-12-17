@@ -61,5 +61,11 @@
 
 <!-- Componente para cargar productos dinámicamente -->
 <x-products-script :apiKey="$website->api_key" :apiBaseUrl="$website->api_base_url" />
+
+<!-- Componente para cargar posts del blog dinámicamente -->
+@include('components.blog-script', ['websiteId' => $website->id])
+
+<!-- Componente para cargar formularios dinámicamente -->
+@include('components.form-script', ['websiteId' => $website->id])
 @endpush
 @endsection

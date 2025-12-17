@@ -201,6 +201,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/websites/{website}/template-configuration/{templateSlug}/reset', [App\Http\Controllers\Admin\TemplateConfigurationController::class, 'reset'])->name('template-configuration.reset');
 });
 
+// API pública para posts del blog (para componentes dinámicos en páginas públicas)
+Route::get('/api/websites/{website}/blog-posts', [App\Http\Controllers\Creator\BlogPostController::class, 'apiIndex'])->name('api.blog.index.public');
+
 // Rutas para usuarios creadores
 Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')->group(function () {
     // Ruta raíz de creator - redirige al dashboard
@@ -247,6 +250,8 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('pages', [App\Http\Controllers\Creator\PageController::class, 'index'])->name('pages.index');
         Route::get('pages/create', [App\Http\Controllers\Creator\PageController::class, 'create'])->name('pages.create');
         Route::post('pages', [App\Http\Controllers\Creator\PageController::class, 'store'])->name('pages.store');
+        Route::post('pages/generate-ai', [App\Http\Controllers\Creator\PageController::class, 'generateWithAI'])->name('pages.generate-ai');
+        Route::post('pages/generate-ai-content', [App\Http\Controllers\Creator\PageController::class, 'generateAIContent'])->name('pages.generate-ai-content');
         Route::get('pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'show'])->name('pages.show');
         Route::get('pages/{page}/edit', [App\Http\Controllers\Creator\PageController::class, 'edit'])->name('pages.edit');
         Route::put('pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'update'])->name('pages.update');
@@ -315,6 +320,11 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
 
         // API para posts del blog (para el componente dinámico)
         Route::get('api/websites/{website}/blog-posts', [App\Http\Controllers\Creator\BlogPostController::class, 'apiIndex'])->name('api.blog.index');
+
+        // API para formularios (para el bloque dinámico)
+        Route::get('api/websites/{website}/forms', [App\Http\Controllers\Creator\FormController::class, 'apiIndex'])->name('api.forms.index');
+        Route::get('api/websites/{website}/forms/{form}', [App\Http\Controllers\Creator\FormController::class, 'apiShow'])->name('api.forms.show');
+        Route::post('api/websites/{website}/forms/{form}/submit', [App\Http\Controllers\Creator\FormController::class, 'apiSubmit'])->name('api.forms.submit');
 
         // Rutas de categorías (usan sesión en lugar de parámetro website)
         Route::get('categories', [App\Http\Controllers\Creator\CategoryController::class, 'index'])->name('categories.index');
@@ -386,6 +396,13 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('preview/blog', [App\Http\Controllers\Creator\PreviewController::class, 'blog'])->name('preview.blog');
         Route::get('preview/blog/{blogPost}', [App\Http\Controllers\Creator\PreviewController::class, 'blogPost'])->name('preview.blog-post');
         Route::get('preview/contact', [App\Http\Controllers\Creator\PreviewController::class, 'contact'])->name('preview.contact');
+        
+        // Rutas de vista previa con website explícito (para enlaces desde componentes)
+        Route::get('websites/{website}/preview', [App\Http\Controllers\Creator\PreviewController::class, 'index'])->name('preview.index.website');
+        Route::get('websites/{website}/preview/pages/{page}', [App\Http\Controllers\Creator\PreviewController::class, 'page'])->name('preview.page.website');
+        Route::get('websites/{website}/preview/blog', [App\Http\Controllers\Creator\PreviewController::class, 'blog'])->name('preview.blog.website');
+        Route::get('websites/{website}/preview/blog/{blogPost}', [App\Http\Controllers\Creator\PreviewController::class, 'blogPost'])->name('preview.blog-post.website');
+        Route::get('websites/{website}/preview/contact', [App\Http\Controllers\Creator\PreviewController::class, 'contact'])->name('preview.contact.website');
 
         // Ruta de vista previa de plantillas
         // Ruta de preview movida arriba con las otras rutas de templates
@@ -483,6 +500,8 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/me', [App\Http\Controllers\CustomerAuthController::class, 'me'])->name('me');
     Route::get('/addresses', [App\Http\Controllers\CustomerProfileController::class, 'apiAddresses'])->name('addresses.index');
     Route::post('/addresses', [App\Http\Controllers\CustomerProfileController::class, 'apiStoreAddress'])->name('addresses.store');
+    Route::put('/addresses/{id}', [App\Http\Controllers\CustomerProfileController::class, 'apiUpdateAddress'])->name('addresses.update');
+    Route::delete('/addresses/{id}', [App\Http\Controllers\CustomerProfileController::class, 'apiDeleteAddress'])->name('addresses.destroy');
 });
 
 // Rutas de checkout y perfil de cliente público
@@ -511,6 +530,7 @@ Route::prefix('payment')->name('payment.')->group(function () {
     // Wompi
     Route::post('/wompi/webhook', [App\Http\Controllers\WompiWebhookController::class, 'handleWebhook'])->name('wompi.webhook');
     Route::get('/wompi/response', [App\Http\Controllers\WompiWebhookController::class, 'paymentResponse'])->name('wompi.response');
+    Route::post('/wompi/generate-signature', [App\Http\Controllers\WompiWebhookController::class, 'generateSignature'])->name('wompi.generate-signature');
     
     // Página genérica de error de pago
     Route::get('/error', function() {
@@ -550,6 +570,7 @@ Route::get('/academia-online/contacto', [App\Http\Controllers\TemplatePreviewCon
 Route::get('/{website:slug}/{page:slug}', [WebsiteController::class, 'showPagePublic'])->name('website.page.show');
 Route::get('/{website:slug}/blog', [App\Http\Controllers\Creator\BlogPostController::class, 'publicIndex'])->name('website.blog.index');
 Route::get('/{website:slug}/blog/{blogPost:slug}', [App\Http\Controllers\Creator\BlogPostController::class, 'publicShow'])->name('website.blog.show');
+Route::get('/{website:slug}/producto/{productId}', [App\Http\Controllers\Creator\StoreController::class, 'publicShow'])->name('website.product.show');
 
 // Ruta para páginas específicas del sitio: /sitio/tienda, /sitio/inicio, etc.
 Route::get('/{website:slug}/{pageSlug}', [WebsiteController::class, 'showWebsitePage'])

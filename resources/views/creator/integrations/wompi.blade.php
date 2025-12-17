@@ -40,9 +40,13 @@
                            name="wompi_public_key" 
                            value="{{ old('wompi_public_key', $website->wompi_public_key) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                           placeholder="pub_prod_..."
+                           placeholder="pub_test_... o pub_prod_..."
                            required>
-                    <p class="mt-1 text-xs text-gray-500">Encuentra esta clave en tu panel de Wompi → Configuración → Llaves API</p>
+                    <p class="mt-1 text-xs text-gray-500">
+                        Encuentra esta clave en tu panel de Wompi → Configuración → Llaves API
+                        <br>
+                        <span class="text-orange-600 font-semibold">⚠️ IMPORTANTE:</span> Para desarrollo local usa <code class="bg-gray-100 px-1 rounded">pub_test_...</code> (claves de prueba)
+                    </p>
                 </div>
 
                 <!-- Private Key -->
@@ -55,8 +59,11 @@
                            name="wompi_private_key" 
                            value="{{ old('wompi_private_key', $website->wompi_private_key) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                           placeholder="prv_prod_..."
+                           placeholder="prv_test_... o prv_prod_..."
                            required>
+                    <p class="mt-1 text-xs text-gray-500">
+                        <span class="text-orange-600 font-semibold">⚠️ Para desarrollo local usa <code class="bg-gray-100 px-1 rounded">prv_test_...</code></span>
+                    </p>
                     <p class="mt-1 text-xs text-gray-500">Esta clave es secreta y se usa para validaciones en el servidor</p>
                 </div>
 
@@ -132,49 +139,6 @@
                     <p class="mt-3">
                         <strong>Nota:</strong> Asegúrate de usar las llaves de <strong>producción</strong> (no las de prueba) para transacciones reales.
                     </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Ventajas de Wompi -->
-    <div class="p-6 bg-white rounded-lg shadow">
-        <h3 class="mb-4 text-lg font-semibold text-gray-900">¿Por qué Wompi?</h3>
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div class="flex items-start">
-                <svg class="w-5 h-5 text-green-500 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-                <div>
-                    <p class="text-sm font-medium text-gray-900">Comisiones competitivas</p>
-                    <p class="text-xs text-gray-500">Tarifas transparentes y sin costos ocultos</p>
-                </div>
-            </div>
-            <div class="flex items-start">
-                <svg class="w-5 h-5 text-green-500 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-                <div>
-                    <p class="text-sm font-medium text-gray-900">Múltiples métodos de pago</p>
-                    <p class="text-xs text-gray-500">Tarjetas, PSE, Nequi, Bancolombia y más</p>
-                </div>
-            </div>
-            <div class="flex items-start">
-                <svg class="w-5 h-5 text-green-500 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-                <div>
-                    <p class="text-sm font-medium text-gray-900">Integración sencilla</p>
-                    <p class="text-xs text-gray-500">API fácil de usar y bien documentada</p>
-                </div>
-            </div>
-            <div class="flex items-start">
-                <svg class="w-5 h-5 text-green-500 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-                <div>
-                    <p class="text-sm font-medium text-gray-900">Soporte local</p>
-                    <p class="text-xs text-gray-500">Empresa colombiana con soporte en español</p>
                 </div>
             </div>
         </div>
