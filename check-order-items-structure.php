@@ -56,3 +56,6 @@ if (Schema::hasColumn('order_items', 'product_image')) {
 }
 echo str_repeat("=", 70) . "\n";
 
+
+
+

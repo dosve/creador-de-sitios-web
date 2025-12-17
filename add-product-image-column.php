@@ -47,3 +47,6 @@ try {
 echo "\n" . str_repeat("=", 70) . "\n";
 echo "✅ Proceso completado. Puedes subir este script al servidor y ejecutarlo.\n";
 
+
+
+
