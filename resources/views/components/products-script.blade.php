@@ -2,7 +2,6 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        console.log("🎯 Vista previa de página cargada, buscando productos...");
 
         // Variables globales para el scroll infinito
         let currentPage = 1;
@@ -21,7 +20,6 @@
             text: "{{ $colors['text'] ?? '#111827' }}"
         };
 
-        console.log("🎨 Plantilla activa:", templateSlug, "Colores:", templateColors);
 
         // Función para obtener estilos según la plantilla activa
         function getTemplateStyles() {
@@ -78,7 +76,6 @@
 
         // Obtener estilos para la plantilla actual
         const currentStyles = getTemplateStyles();
-        console.log("✅ Estilos cargados para plantilla:", templateSlug);
 
         // Función para obtener el slug del website desde la URL (una sola vez, global)
         function getWebsiteSlug() {
@@ -111,12 +108,7 @@
             return `${formattedInteger},${decimalPart}`;
         }
 
-        // Debug: Verificar variables del componente
-        console.log("🔧 DEBUG COMPONENTE PRODUCTOS:");
-        console.log("  - apiKey desde PHP:", "{{ addslashes($apiKey) }}" ? 'Configurada' : 'No configurada');
-        console.log("  - apiBaseUrl desde PHP:", "{{ addslashes($apiBaseUrl) }}" || 'No configurada');
-        console.log("  - window.websiteApiKey:", window.websiteApiKey ? 'Configurada' : 'No configurada');
-        console.log("  - window.websiteApiUrl:", window.websiteApiUrl || 'No configurada');
+        // Debug: Verificar variables del componente (logs removidos)
 
         // Función para mostrar indicador de carga
         function showLoadingIndicator(container) {
@@ -135,30 +127,20 @@
             if (isLoading) return;
 
             isLoading = true;
-            console.log("🚀 Iniciando carga de productos en vista previa de página... (Página " + page + ")");
-            console.log("🔧 Variables disponibles:", {
-                apiKey: window.websiteApiKey ? 'Configurada (' + window.websiteApiKey.length + ' caracteres)' : 'No configurada',
-                apiUrl: window.websiteApiUrl || 'No configurada'
-            });
-
             // Buscar contenedores de productos
             let productsContainers = document.querySelectorAll("#products-container");
-            console.log("📦 Contenedores por ID encontrados:", productsContainers.length);
 
             // Si no encuentra por ID, buscar por atributo data
             if (productsContainers.length === 0) {
                 productsContainers = document.querySelectorAll("[data-dynamic-products=\"true\"] .grid");
-                console.log("📦 Contenedores por atributo data encontrados:", productsContainers.length);
             }
 
             // Si aún no encuentra, buscar por clase
             if (productsContainers.length === 0) {
                 productsContainers = document.querySelectorAll(".products-list .grid");
-                console.log("📦 Contenedores por clase .products-list .grid:", productsContainers.length);
             }
 
             if (productsContainers.length === 0) {
-                console.log("❌ No se encontraron contenedores de productos");
                 isLoading = false;
                 return;
             }
@@ -1029,7 +1011,6 @@
 
         // Función para mostrar productos de ejemplo cuando no hay API configurada
         function showEnhancedExampleProducts(container) {
-            console.log("🎨 Mostrando productos de ejemplo...");
 
             const exampleProducts = [{
                     title: "Producto Premium 1",

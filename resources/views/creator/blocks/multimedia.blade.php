@@ -1,71 +1,52 @@
 {{-- Bloques Multimedia --}}
 {
   id: 'video',
-  label: 'Video',
-  category: 'Multimedia', attributes: {
-    class: 'gjs-block-video'
-  }
-  , content: `<div class="mb-8 video-container">
-    <video controls class="w-full rounded-lg shadow-lg">
-        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-        Tu navegador no soporta video HTML5.
-    </video>
-  </div>`
-},
-{
-  id: 'youtube',
-  label: 'YouTube',
-  category: 'Redes Sociales', 
+  label: '<b>Video</b>',
+  category: 'Multimedia',
   attributes: {
     class: 'gjs-block-video'
   },
   content: {
-    type: 'youtube-video',
-    name: 'YouTube',
-    draggable: true,
-    droppable: false,
-    selectable: true,
-    editable: true,
-    removable: true,
-    hoverable: true,
-    layerable: true,
+    type: 'video',
+    tagName: 'div',
+    name: 'Video',
+    editable: false,  // ✅ BLOQUEADO: No edición directa
+    droppable: false, // ✅ BLOQUEADO: No acepta hijos
+    removable: true,  // ✅ PERMITIDO: Se puede eliminar
+    selectable: true, // ✅ PERMITIDO: Se puede seleccionar
     attributes: {
-      'data-gjs-type': 'youtube-video',
-      'data-gjs-name': 'YouTube',
-      class: 'mb-8 youtube-container',
-      style: 'position: relative; cursor: pointer;'
+      class: 'mb-8 video-container',
+      'data-gjs-type': 'video',
+      'data-gjs-name': 'Video',
+      'data-gjs-editable': 'false'
     },
     components: [
       {
-        tagName: 'div',
+        tagName: 'video',
         selectable: false,
         hoverable: false,
         draggable: false,
         removable: false,
         editable: false,
         attributes: {
-          class: 'relative overflow-hidden rounded-lg',
-          style: 'padding-bottom: 56.25%;'
+          class: 'w-full rounded-lg shadow-lg',
+          controls: 'true'
         },
         components: [
           {
-            tagName: 'iframe',
+            tagName: 'source',
             selectable: false,
-            hoverable: false,
-            draggable: false,
-            removable: false,
             editable: false,
+            removable: false,
             attributes: {
-              class: 'absolute top-0 left-0 w-full h-full',
-              src: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-              frameborder: '0',
-              allowfullscreen: '',
-              allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+              src: 'https://www.w3schools.com/html/mov_bbb.mp4',
+              type: 'video/mp4'
             }
           }
         ]
       }
     ]
+    // Los traits están definidos en el componente video.js
   }
 },
 {

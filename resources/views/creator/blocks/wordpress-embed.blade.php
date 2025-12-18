@@ -218,40 +218,6 @@
   `
 },
 {
-  id: 'vimeo-embed',
-  label: 'Vimeo',
-  category: 'Redes Sociales',
-  content: `
-    <div class="vimeo-embed bg-gray-900 rounded-lg overflow-hidden">
-      <div class="aspect-video bg-gray-800 flex items-center justify-center">
-        <div class="text-center text-white">
-          <svg class="w-16 h-16 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M23.977 6.416c-.105 2.338-1.739 5.543-4.894 9.609-3.268 4.247-6.026 6.37-8.29 6.37-1.409 0-2.578-1.294-3.553-3.881L5.322 11.4C4.603 8.816 3.834 7.522 3.01 7.522c-.179 0-.806.378-1.881 1.132L0 7.197a315.065 315.065 0 003.501-3.128C5.08 2.701 6.266 1.984 7.055 1.91c1.867-.18 3.016 1.1 3.447 3.838.465 2.953.789 4.789.971 5.507.539 2.45 1.131 3.674 1.776 3.674.502 0 1.256-.796 2.265-2.385 1.004-1.589 1.54-2.797 1.612-3.628.144-1.371-.395-2.061-1.614-2.061-.574 0-1.167.121-1.777.391 1.186-3.868 3.434-5.757 6.762-5.637 2.473.06 3.628 1.664 3.493 4.797l-.013.01z"/>
-          </svg>
-          <div class="text-lg font-semibold">Vimeo</div>
-          <div class="text-sm opacity-75">Video embebido</div>
-        </div>
-      </div>
-      <div class="p-4 bg-gray-800 text-white">
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="font-semibold">Título del Video</div>
-            <div class="text-sm text-gray-400">por Usuario</div>
-          </div>
-          <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            ▶ Reproducir
-          </button>
-        </div>
-        <div class="mt-3 flex items-center space-x-4 text-sm text-gray-400">
-          <span>👁️ 1.2K vistas</span>
-          <span>👍 45 me gusta</span>
-          <span>💬 12 comentarios</span>
-        </div>
-      </div>
-    </div>
-  `
-},
-{
   id: 'tiktok-embed',
   label: 'TikTok',
   category: 'Redes Sociales',
@@ -286,32 +252,47 @@
   `
 },
 {
-  id: 'google-maps-embed',
-  label: 'Google Maps',
+  id: 'google-maps',
+  label: '<b>Google Maps</b>',
   category: 'Redes Sociales',
-  content: `
-    <div class="google-maps-embed bg-white border border-gray-200 rounded-lg overflow-hidden">
-      <div class="flex items-center space-x-3 p-4 border-b border-gray-200">
-        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-          <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
-        </div>
-        <div>
-          <div class="font-semibold text-gray-900">Google Maps</div>
-          <div class="text-sm text-gray-500">Ubicación</div>
-        </div>
-      </div>
-      <div class="h-64 bg-gray-200 flex items-center justify-center">
-        <div class="text-center text-gray-600">
-          <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-          </svg>
-          <p class="text-sm">Mapa de Google Maps</p>
-          <p class="text-xs text-gray-500">Integra Google Maps aquí</p>
-        </div>
-      </div>
-    </div>
-  `
+  attributes: {
+    class: 'gjs-block-google-maps'
+  },
+  content: {
+    type: 'google-maps',
+    tagName: 'div',
+    name: 'Google Maps',
+    editable: false,  // ✅ BLOQUEADO: No edición directa
+    droppable: false, // ✅ BLOQUEADO: No acepta hijos
+    removable: true,  // ✅ PERMITIDO: Se puede eliminar
+    selectable: true, // ✅ PERMITIDO: Se puede seleccionar
+    attributes: {
+      'data-gjs-type': 'google-maps',
+      'data-gjs-name': 'Google Maps',
+      'data-gjs-editable': 'false',
+      class: 'mb-8 google-maps-container',
+      style: 'position: relative; width: 100%; height: 450px; overflow: hidden;'
+    },
+    components: [
+      {
+        tagName: 'iframe',
+        selectable: false,
+        hoverable: false,
+        draggable: false,
+        removable: false,
+        editable: false,
+        attributes: {
+          width: '100%',
+          height: '100%',
+          frameborder: '0',
+          style: 'border: 0;',
+          allowfullscreen: '',
+          loading: 'lazy',
+          referrerpolicy: 'no-referrer-when-downgrade',
+          src: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.184132239345!2d-73.98811768459399!3d40.74844097932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1ses!2ses!4v1234567890123!5m2!1ses!2ses'
+        }
+      }
+    ]
+    // Los traits están definidos en el componente google-maps.js
+  }
 }

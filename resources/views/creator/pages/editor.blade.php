@@ -7,6 +7,18 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Editor - {{ $editable->name ?? $editable->title }} - {{ $website->name }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Suprimir advertencia de producción de Tailwind CDN en desarrollo
+    (function() {
+      const originalWarn = console.warn;
+      console.warn = function(...args) {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+          return; // Suprimir esta advertencia específica
+        }
+        originalWarn.apply(console, args);
+      };
+    })();
+  </script>
   <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
   <style>
     :root {
@@ -1092,6 +1104,51 @@
   </script>
 
   <script src="https://unpkg.com/grapesjs@0.21.7/dist/grapes.min.js"></script>
+  {{-- Módulos del editor (cargar antes del archivo principal) --}}
+  <script src="{{ asset('js/editor-modules/config.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/commands.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/component-loader.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/image-sync.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/utils.js') }}"></script>
+  
+  {{-- Componentes modulares --}}
+  <script src="{{ asset('js/editor-modules/components/image.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/container.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/heading.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/paragraph.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/button.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/text.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/link.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/divider.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/separator.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/table.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/html-code.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/spacer.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/alert.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/icon.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/icon-box.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/icon-list.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/star-rating.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/quote.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/code.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/preformatted.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/verse.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/counter-animated.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/toggle.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/tabs.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/accordion.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/carousel.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/gallery.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/video.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/google-maps.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/image-box-advanced.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/background-image.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/file.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/audio.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/section-inner.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/components/column.js') }}"></script>
+    <script src="{{ asset('js/editor-modules/carousel-utils.js') }}"></script>
+  
   <script src="{{ asset('js/editor-config.js') }}"></script>
   <script>
     // Configurar variables globales para el editor
@@ -1542,9 +1599,6 @@
 
       // Función para cambiar vista de dispositivo
       function switchDevice(device) {
-        console.log('switchDevice llamado con:', device);
-        console.log('Editor disponible:', !!window.editor);
-
         if (window.editor) {
           // Mapear nombres de dispositivos
           const deviceMap = {
@@ -1554,7 +1608,6 @@
           };
 
           const deviceName = deviceMap[device];
-          console.log('Cambiando a dispositivo:', deviceName);
 
           // Cambiar dispositivo en GrapesJS usando el comando correcto
           window.editor.runCommand('set-device-' + device);
@@ -1573,6 +1626,20 @@
             activeBtn.classList.remove('text-gray-500');
             activeBtn.classList.add('text-blue-600', 'bg-blue-50');
           }
+
+          // Actualizar el TraitManager para mostrar propiedades relevantes al dispositivo
+          setTimeout(() => {
+            const selectedComponent = window.editor.getSelected();
+            if (selectedComponent && window.editor.TraitManager) {
+              // Re-renderizar el TraitManager para actualizar las propiedades visibles
+              window.editor.TraitManager.render();
+              
+              // Si hay una función personalizada de actualización, llamarla
+              if (typeof window.forceTraitManagerUpdate === 'function') {
+                window.forceTraitManagerUpdate(selectedComponent);
+              }
+            }
+          }, 100);
         }
       }
 
@@ -1882,6 +1949,20 @@ ${formatHtml(html)}
               activeBtn.classList.remove('text-gray-500');
               activeBtn.classList.add('text-blue-600', 'bg-blue-50');
             }
+
+            // Actualizar el TraitManager cuando cambia el dispositivo
+            setTimeout(() => {
+              const selectedComponent = window.editor.getSelected();
+              if (selectedComponent && window.editor.TraitManager) {
+                // Re-renderizar el TraitManager para actualizar las propiedades visibles
+                window.editor.TraitManager.render();
+                
+                // Si hay una función personalizada de actualización, llamarla
+                if (typeof window.forceTraitManagerUpdate === 'function') {
+                  window.forceTraitManagerUpdate(selectedComponent);
+                }
+              }
+            }, 100);
           });
 
           // Inicializar con vista desktop

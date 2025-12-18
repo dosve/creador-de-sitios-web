@@ -1,7 +1,12 @@
 // Configuración del Editor GrapeJS
 // Este archivo contiene toda la configuración y funcionalidades del editor
+// NOTA: Algunos módulos se han movido a editor-modules/ para mejor organización
+
 // Configuración principal de GrapeJS
-const editorConfig = {
+// Si existe el módulo EditorConfig, usarlo; si no, usar configuración inline
+const editorConfig = (typeof EditorConfig !== 'undefined' && EditorConfig.getConfig) 
+  ? EditorConfig.getConfig() 
+  : {
   container: '#gjs',
   height: '100%',
   width: '100%',
@@ -212,15 +217,72 @@ const editorConfig = {
 };
 
 // Comandos personalizados del editor
-const editorCommands = {
+// Si existe el módulo EditorCommands, usarlo; si no, usar comandos inline
+const editorCommands = (typeof EditorCommands !== 'undefined' && EditorCommands.getCommands)
+  ? EditorCommands.getCommands()
+  : {
   'set-device-desktop': {
-    run: editor => editor.setDevice('Desktop')
+    run: editor => {
+      editor.setDevice('Desktop');
+      // Actualizar etiquetas de traits después de cambiar dispositivo
+      setTimeout(() => {
+        if (typeof window.updateTraitLabelsForDevice === 'function') {
+          window.updateTraitLabelsForDevice();
+        }
+        // Actualizar TraitManager si hay un componente seleccionado
+        const selected = editor.getSelected();
+        if (selected && editor.TraitManager) {
+          editor.TraitManager.render();
+          setTimeout(() => {
+            if (typeof window.updateTraitLabelsForDevice === 'function') {
+              window.updateTraitLabelsForDevice();
+            }
+          }, 100);
+        }
+      }, 100);
+    }
   },
   'set-device-tablet': {
-    run: editor => editor.setDevice('Tablet')
+    run: editor => {
+      editor.setDevice('Tablet');
+      // Actualizar etiquetas de traits después de cambiar dispositivo
+      setTimeout(() => {
+        if (typeof window.updateTraitLabelsForDevice === 'function') {
+          window.updateTraitLabelsForDevice();
+        }
+        // Actualizar TraitManager si hay un componente seleccionado
+        const selected = editor.getSelected();
+        if (selected && editor.TraitManager) {
+          editor.TraitManager.render();
+          setTimeout(() => {
+            if (typeof window.updateTraitLabelsForDevice === 'function') {
+              window.updateTraitLabelsForDevice();
+            }
+          }, 100);
+        }
+      }, 100);
+    }
   },
   'set-device-mobile': {
-    run: editor => editor.setDevice('Mobile')
+    run: editor => {
+      editor.setDevice('Mobile');
+      // Actualizar etiquetas de traits después de cambiar dispositivo
+      setTimeout(() => {
+        if (typeof window.updateTraitLabelsForDevice === 'function') {
+          window.updateTraitLabelsForDevice();
+        }
+        // Actualizar TraitManager si hay un componente seleccionado
+        const selected = editor.getSelected();
+        if (selected && editor.TraitManager) {
+          editor.TraitManager.render();
+          setTimeout(() => {
+            if (typeof window.updateTraitLabelsForDevice === 'function') {
+              window.updateTraitLabelsForDevice();
+            }
+          }, 100);
+        }
+      }, 100);
+    }
   },
   'sw-visibility': {
     run: editor => {
@@ -270,7 +332,13 @@ ${htmlContent}
 
 
 // Función para mostrar placeholder de productos en el editor
+// Si existe el módulo EditorUtils, usarlo; si no, usar función inline
 function showProductsPlaceholder() {
+  if (typeof EditorUtils !== 'undefined' && EditorUtils.showProductsPlaceholder) {
+    return EditorUtils.showProductsPlaceholder();
+  }
+  
+  // Fallback inline
 
   // Buscar contenedores de productos de múltiples formas
   let productsContainers = document.querySelectorAll('#products-container');
@@ -348,7 +416,13 @@ function showProductsPlaceholder() {
 }
 
 // Función para manejar clics en sectores del StyleManager
+// Si existe el módulo EditorUtils, usarlo; si no, usar función inline
 function handleSectorClick(e) {
+  if (typeof EditorUtils !== 'undefined' && EditorUtils.handleSectorClick) {
+    return EditorUtils.handleSectorClick(e);
+  }
+  
+  // Fallback inline
   const sectorTitle = e.target.closest('.gjs-sm-title');
   if (sectorTitle) {
     const sector = sectorTitle.closest('.gjs-sm-sector');
@@ -417,17 +491,12 @@ function initializeManagers() {
   // Función global para forzar la actualización del TraitManager
   window.forceTraitManagerUpdate = function(component) {
     if (editor.TraitManager) {
-      console.log('🔄 Forzando actualización global del TraitManager...');
-      
       // Obtener el componente seleccionado si no se proporciona uno
       const targetComponent = component || editor.getSelected();
       
       if (targetComponent) {
-        console.log('🎯 Componente objetivo para TraitManager:', targetComponent.get('type'));
-        
         // Si es un carrusel, usar solo el sistema personalizado
         if (targetComponent.get('type') === 'carousel') {
-          console.log('🎠 Carrusel detectado: usando solo sistema personalizado');
           window.renderCustomTraits(targetComponent);
           return;
         }
@@ -446,22 +515,84 @@ function initializeManagers() {
         // Re-renderizar desde cero
         editor.TraitManager.render();
         
+        // Actualizar etiquetas de propiedades según el dispositivo activo
+        if (typeof window.updateTraitLabelsForDevice === 'function') {
+          window.updateTraitLabelsForDevice();
+        }
+        
         // Verificar si se renderizaron todos los traits
         setTimeout(() => {
           const traitsInContainer = document.querySelectorAll('.traits-container .gjs-trt-trait');
-          console.log('📋 Traits renderizados después de actualización global:', traitsInContainer.length);
           
           if (traitsInContainer.length === 0) {
-            console.log('⚠️ No se renderizaron traits, usando sistema personalizado...');
-            
             // Usar el sistema de traits personalizado
             window.renderCustomTraits(targetComponent);
+          } else {
+            // Actualizar etiquetas después del renderizado
+            if (typeof window.updateTraitLabelsForDevice === 'function') {
+              window.updateTraitLabelsForDevice();
+            }
           }
         }, 200);
-      } else {
-        console.warn('⚠️ No hay componente seleccionado para actualizar TraitManager');
       }
     }
+  };
+
+  // Función para actualizar las etiquetas de traits según el dispositivo activo
+  window.updateTraitLabelsForDevice = function() {
+    if (!editor || !editor.getDevice) return;
+    
+    const currentDevice = editor.getDevice();
+    const traitsContainer = document.querySelector('.traits-container');
+    if (!traitsContainer) return;
+    
+    // Mapeo de dispositivos a etiquetas
+    const deviceLabels = {
+      'Desktop': 'Desktop',
+      'Tablet': 'Tablet',
+      'Mobile': 'Mobile'
+    };
+    
+    const deviceName = deviceLabels[currentDevice] || 'Desktop';
+    
+    // Agregar o actualizar indicador de dispositivo activo en el panel de propiedades
+    let deviceIndicator = document.querySelector('.device-indicator');
+    if (!deviceIndicator) {
+      deviceIndicator = document.createElement('div');
+      deviceIndicator.className = 'device-indicator mb-3 p-2 bg-blue-50 border border-blue-200 rounded-md';
+      deviceIndicator.style.fontSize = '0.75rem';
+      traitsContainer.insertBefore(deviceIndicator, traitsContainer.firstChild);
+    }
+    
+    const deviceIcons = {
+      'Desktop': '🖥️',
+      'Tablet': '📱',
+      'Mobile': '📱'
+    };
+    
+    deviceIndicator.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span class="text-blue-600 font-semibold">${deviceIcons[deviceName] || '🖥️'} Editando: ${deviceName}</span>
+        <span class="text-gray-500 text-xs">Las propiedades marcadas con (${deviceName}) se aplicarán a este dispositivo</span>
+      </div>
+    `;
+    
+    // Buscar todas las etiquetas de traits y actualizar las que sean específicas de dispositivo
+    const traitLabels = traitsContainer.querySelectorAll('.gjs-trt-label');
+    traitLabels.forEach(label => {
+      const labelText = label.textContent || '';
+      
+      // Si la etiqueta contiene información de dispositivo, resaltarla
+      if (labelText.includes('(Desktop)') || labelText.includes('(Tablet)') || labelText.includes('(Mobile)')) {
+        // Remover clases de resaltado anteriores
+        label.classList.remove('font-bold', 'text-blue-600', 'bg-blue-50', 'px-2', 'py-1', 'rounded');
+        
+        // Resaltar la etiqueta del dispositivo activo
+        if (labelText.includes(`(${deviceName})`)) {
+          label.classList.add('font-bold', 'text-blue-600', 'bg-blue-50', 'px-2', 'py-1', 'rounded');
+        }
+      }
+    });
   };
 
   // Sistema de traits personalizado
@@ -538,86 +669,7 @@ function initializeManagers() {
     }
   };
 
-  // Funciones globales para editar y eliminar imágenes
-  window.editImage = function(slideNum) {
-    console.log(`🔄 Editando imagen ${slideNum}`);
-    const component = editor.getSelected();
-    if (component) {
-      // Abrir el Asset Manager
-      const am = editor.AssetManager;
-      const modal = editor.Modal;
-      
-      // Configurar el callback cuando se seleccione una imagen
-      am.onClick((asset) => {
-        const newSrc = asset.get('src');
-        console.log(`🎠 Imagen seleccionada para slide ${slideNum}:`, newSrc);
-        
-        // Encontrar la imagen específica
-        const carouselContainer = component.view.el.querySelector('.carousel-container') || 
-                                 component.view.el.querySelector('.carousel') || 
-                                 component.view.el;
-        const images = carouselContainer.querySelectorAll('.carousel-slide img') || 
-                     carouselContainer.querySelectorAll('img') ||
-                     [];
-        
-        if (images[slideNum - 1]) {
-          images[slideNum - 1].src = newSrc;
-          images[slideNum - 1].setAttribute('src', newSrc);
-          
-          // Actualizar el trait correspondiente
-          component.set(`slide-${slideNum}`, newSrc);
-          
-          console.log(`✅ Slide ${slideNum} actualizado con nueva imagen`);
-        }
-        
-        // Cerrar el modal
-        modal.close();
-        
-        // Actualizar traits personalizados
-        if (window.renderCustomTraits) {
-          window.renderCustomTraits(component);
-        }
-      });
-      
-      // Mostrar el Asset Manager en un modal
-      modal.setTitle(`Cambiar Imagen ${slideNum}`)
-        .setContent(am.render())
-        .open();
-    }
-  };
-
-  window.deleteImage = function(slideNum) {
-    console.log(`🗑️ Eliminando imagen ${slideNum}`);
-    const component = editor.getSelected();
-    if (component) {
-      // Confirmar eliminación
-      if (confirm(`¿Estás seguro de que quieres eliminar la imagen ${slideNum}?`)) {
-        // Encontrar la imagen específica
-        const carouselContainer = component.view.el.querySelector('.carousel-container') || 
-                                 component.view.el.querySelector('.carousel') || 
-                                 component.view.el;
-        const images = carouselContainer.querySelectorAll('.carousel-slide img') || 
-                     carouselContainer.querySelectorAll('img') ||
-                     [];
-        
-        if (images[slideNum - 1]) {
-          // Restaurar placeholder
-          images[slideNum - 1].src = `https://via.placeholder.com/800x400?text=Slide+${slideNum}`;
-          images[slideNum - 1].setAttribute('src', images[slideNum - 1].src);
-          
-          // Limpiar el trait
-          component.set(`slide-${slideNum}`, '');
-          
-          console.log(`✅ Imagen ${slideNum} eliminada`);
-          
-          // Actualizar traits personalizados
-          if (window.renderCustomTraits) {
-            window.renderCustomTraits(component);
-          }
-        }
-      }
-    }
-  };
+  // ✅ Funciones editImage y deleteImage movidas a módulo: editor-modules/carousel-utils.js
 
   // Función para crear elementos de trait
   function createTraitElement(trait, component) {
@@ -756,15 +808,6 @@ function initializeManagers() {
     console.warn('⚠️ LayerManager no disponible');
   }
 
-  // Intentar seleccionar un componente para activar los managers
-  // (Comentado para evitar deselección automática de componentes seleccionados)
-  // const components = editor.getComponents();
-  // if (components && components.length > 0) {
-  //   const firstComponent = components.at(0);
-  //   if (firstComponent) {
-  //     editor.select(firstComponent);
-  //   }
-  // }
 }
 
 // Inicialización del editor
@@ -778,1632 +821,64 @@ function initializeEditor() {
   // Hacer el editor disponible globalmente
   window.editor = editor;
   
-  // Registrar tipos de componentes personalizados para Layer Manager
-  editor.DomComponents.addType('section', {
-    model: {
-      defaults: {
-        name: 'Sección',
-        icon: '<i class="fa fa-columns"></i>',
-        droppable: true
+  // ✅ Registrar trait personalizado para textarea
+  if (editor.TraitManager) {
+    editor.TraitManager.addType('textarea', {
+      events: {
+        'keyup': 'onChange',
+      },
+      onUpdate: function({ elInput, component }) {
+        elInput.value = component.get(this.attributes.name);
+      },
+      onEvent: function({ elInput, component, event }) {
+        const value = elInput.value;
+        component.set(this.attributes.name, value);
+      },
+      createInput: function({ trait }) {
+        const el = document.createElement('textarea');
+        el.className = 'gjs-trt-textarea';
+        el.placeholder = trait.placeholder || '';
+        el.rows = trait.rows || 4;
+        return el;
       }
-    }
-  });
-  
-  editor.DomComponents.addType('container', {
-    model: {
-      defaults: {
-        name: 'Contenedor',
-        icon: '<i class="fa fa-square-o"></i>',
-        droppable: true,
-        traits: [
-          {
-            type: 'select',
-            name: 'container-width',
-            label: 'Ancho del Contenedor',
-            changeProp: 1,
-            options: [
-              { value: 'w-full', name: 'Ancho Completo (100%)' },
-              { value: 'container', name: 'Contenedor Responsive' },
-              { value: 'max-w-7xl', name: 'Muy Ancho (1280px)' },
-              { value: 'max-w-6xl', name: 'Ancho (1152px)' },
-              { value: 'max-w-4xl', name: 'Mediano (896px)' },
-              { value: 'max-w-2xl', name: 'Pequeño (672px)' }
-            ]
-          },
-          {
-            type: 'select',
-            name: 'padding',
-            label: 'Espaciado Interno',
-            changeProp: 1,
-            options: [
-              { value: 'p-0', name: 'Sin Espaciado' },
-              { value: 'p-2', name: 'Muy Pequeño' },
-              { value: 'p-4', name: 'Pequeño' },
-              { value: 'p-6', name: 'Normal' },
-              { value: 'p-8', name: 'Grande' },
-              { value: 'p-12', name: 'Extra Grande' }
-            ]
-          },
-          {
-            type: 'select',
-            name: 'margin',
-            label: 'Margen',
-            changeProp: 1,
-            options: [
-              { value: 'mx-auto', name: 'Centrado Horizontal' },
-              { value: 'm-0', name: 'Sin Margen' },
-              { value: 'm-4', name: 'Pequeño' },
-              { value: 'm-8', name: 'Mediano' },
-              { value: 'm-12', name: 'Grande' }
-            ]
-          }
-        ]
-      },
-      init() {
-        // Escuchar cambios en los traits del contenedor
-        this.on('change:container-width', this.handleContainerWidthChange);
-        this.on('change:padding', this.handlePaddingChange);
-        this.on('change:margin', this.handleMarginChange);
-        this.on('change:container-layout', this.handleContainerLayoutChange);
-        this.on('change:column-gap', this.handleColumnGapChange);
-        this.on('change:vertical-align', this.handleVerticalAlignChange);
-        this.on('change:horizontal-align', this.handleHorizontalAlignChange);
-      },
-      handleContainerWidthChange() {
-        const width = this.get('container-width');
-        const currentClasses = this.getClasses();
-        
-        // Remover clases de ancho anteriores
-        const widthClasses = ['w-full', 'container', 'max-w-7xl', 'max-w-6xl', 'max-w-4xl', 'max-w-2xl'];
-        widthClasses.forEach(cls => this.removeClass(cls));
-        
-        // Agregar nueva clase de ancho
-        if (width) {
-          this.addClass(width);
-        }
-      },
-      handlePaddingChange() {
-        const padding = this.get('padding');
-        
-        // Remover clases de padding anteriores
-        const paddingClasses = ['p-0', 'p-2', 'p-4', 'p-6', 'p-8', 'p-12'];
-        paddingClasses.forEach(cls => this.removeClass(cls));
-        
-        // Agregar nueva clase de padding
-        if (padding) {
-          this.addClass(padding);
-        }
-      },
-      handleMarginChange() {
-        const margin = this.get('margin');
-        
-        // Remover clases de margen anteriores
-        const marginClasses = ['mx-auto', 'm-0', 'm-4', 'm-8', 'm-12'];
-        marginClasses.forEach(cls => this.removeClass(cls));
-        
-        // Agregar nueva clase de margen
-        if (margin) {
-          this.addClass(margin);
-        }
-      },
-      handleContainerLayoutChange() {
-        // Actualizar layout de columnas del contenedor
-        if (window.updateContainerLayout) {
-          window.updateContainerLayout(this);
-        }
-      },
-      handleColumnGapChange() {
-        if (window.updateContainerLayout) {
-          window.updateContainerLayout(this);
-        }
-      },
-      handleVerticalAlignChange() {
-        if (window.updateContainerLayout) {
-          window.updateContainerLayout(this);
-        }
-      },
-      handleHorizontalAlignChange() {
-        if (window.updateContainerLayout) {
-          window.updateContainerLayout(this);
-        }
-      }
-    }
-  });
-  
-  editor.DomComponents.addType('section-inner', {
-    model: {
-      defaults: {
-        name: 'Grid de Columnas',
-        icon: '<i class="fa fa-th"></i>',
-        droppable: true
-      }
-    }
-  });
-  
-  editor.DomComponents.addType('column', {
-    model: {
-      defaults: {
-        name: 'Columna',
-        icon: '<i class="fa fa-square"></i>',
-        droppable: true
-      }
-    }
-  });
-  
-  editor.DomComponents.addType('heading', {
-    model: {
-      defaults: {
-        name: 'Título',
-        icon: '<i class="fa fa-header"></i>',
-        editable: true,
-        traits: [
-          {
-            type: 'text',
-            name: 'text',
-            label: 'Texto del Título',
-            changeProp: 1,
-          },
-          {
-            type: 'select',
-            name: 'tagName',
-            label: 'Etiqueta HTML',
-            changeProp: 1,
-            options: [
-              { value: 'h1', name: 'H1 (Más grande)' },
-              { value: 'h2', name: 'H2' },
-              { value: 'h3', name: 'H3' },
-              { value: 'h4', name: 'H4' },
-              { value: 'h5', name: 'H5' },
-              { value: 'h6', name: 'H6 (Más pequeño)' }
-            ]
-          },
-          {
-            type: 'select',
-            name: 'text-align',
-            label: 'Alineación',
-            changeProp: 1,
-            options: [
-              { value: 'text-left', name: 'Izquierda' },
-              { value: 'text-center', name: 'Centro' },
-              { value: 'text-right', name: 'Derecha' },
-              { value: 'text-justify', name: 'Justificado' }
-            ]
-          }
-        ]
-      },
-      init() {
-        // Escuchar cambios en los traits
-        this.on('change:text', this.handleTextChange);
-      },
-      handleTextChange() {
-        const text = this.get('text');
-        if (text) {
-          this.components(text);
-        }
-      }
-    }
-  });
-  
-  editor.DomComponents.addType('paragraph', {
-    model: {
-      defaults: {
-        name: 'Párrafo',
-        icon: '<i class="fa fa-paragraph"></i>',
-        editable: true,
-        traits: [
-          {
-            type: 'textarea',
-            name: 'text',
-            label: 'Texto del Párrafo',
-            changeProp: 1,
-          }
-        ]
-      },
-      init() {
-        // Escuchar cambios en los traits
-        this.on('change:text', this.handleTextChange);
-      },
-      handleTextChange() {
-        const text = this.get('text');
-        if (text) {
-          this.components(text);
-        }
-      }
-    }
-  });
-  
-  editor.DomComponents.addType('text', {
-    model: {
-      defaults: {
-        name: 'Texto',
-        icon: '<i class="fa fa-font"></i>',
-        editable: true,
-        traits: [
-          {
-            type: 'textarea',
-            name: 'text',
-            label: 'Contenido de Texto',
-            changeProp: 1,
-          }
-        ]
-      },
-      init() {
-        // Escuchar cambios en los traits
-        this.on('change:text', this.handleTextChange);
-      },
-      handleTextChange() {
-        const text = this.get('text');
-        if (text) {
-          this.components(text);
-        }
-      }
-    }
-  });
-  
-  // Componente de Imagen con traits personalizados
-  editor.DomComponents.addType('image', {
-    extend: 'image',
-    isComponent: (el) => {
-      if (el.tagName === 'IMG') {
-        return { type: 'image' };
-      }
-    },
-    model: {
-      defaults: {
-        name: 'Imagen',
-        tagName: 'img'
-      },
-      // Sobrescribir el método para obtener los traits
-      getTraits() {
-        return [
-          {
-            type: 'button',
-            name: 'select-image',
-            label: '📁 Seleccionar Imagen',
-            text: 'Elegir nueva imagen',
-            full: true,
-            command: (editor) => {
-              const component = editor.getSelected();
-              if (component) {
-                // Abrir el Asset Manager
-                const am = editor.AssetManager;
-                const modal = editor.Modal;
-                
-                // Configurar el callback cuando se seleccione una imagen
-                am.onClick((asset) => {
-                  const newSrc = asset.get('src');
-                  console.log('🖼️ Imagen seleccionada desde Asset Manager:', newSrc);
-                  
-                  // Actualizar la imagen
-                  component.set('src', newSrc);
-                  component.addAttributes({ src: newSrc });
-                  
-                  // Actualizar el DOM
-                  if (component.view && component.view.el) {
-                    component.view.el.src = newSrc;
-                  }
-                  
-                  // Cerrar el modal
-                  modal.close();
-                  
-                  // Forzar actualización del trait manager
-                  editor.TraitManager.render();
-                });
-                
-                // Mostrar el Asset Manager en un modal
-                modal.setTitle('Seleccionar Imagen')
-                  .setContent(am.render())
-                  .open();
-              }
-            }
-          },
-          {
-            type: 'text',
-            name: 'src',
-            label: 'URL de la Imagen',
-            placeholder: 'https://ejemplo.com/imagen.jpg'
-          },
-          {
-            type: 'text',
-            name: 'alt',
-            label: 'Texto Alternativo',
-            placeholder: 'Descripción de la imagen'
-          },
-          {
-            type: 'text',
-            name: 'title',
-            label: 'Título (Tooltip)',
-            placeholder: 'Título al pasar el mouse'
-          },
-          {
-            type: 'select',
-            name: 'loading',
-            label: 'Carga de Imagen',
-            options: [
-              { value: '', name: 'Por defecto' },
-              { value: 'lazy', name: 'Lazy (Diferida)' },
-              { value: 'eager', name: 'Eager (Inmediata)' }
-            ]
-          }
-        ];
-      },
-      init() {
-        console.log('🖼️ Inicializando componente de Imagen...');
-        
-        // Extraer valores de atributos existentes
-        const attrs = this.getAttributes();
-        console.log('📋 Atributos actuales de la imagen:', attrs);
-        
-        // Sincronizar atributos con traits
-        if (attrs.src && !this.get('src')) {
-          this.set('src', attrs.src, { silent: true });
-        }
-        if (attrs.alt && !this.get('alt')) {
-          this.set('alt', attrs.alt, { silent: true });
-        }
-        if (attrs.title && !this.get('title')) {
-          this.set('title', attrs.title, { silent: true });
-        }
-        if (attrs.loading && !this.get('loading')) {
-          this.set('loading', attrs.loading, { silent: true });
-        }
-        
-        // Listener para cambios en los traits
-        this.on('change:src', this.handleSrcChange);
-        this.on('change:alt', this.handleAltChange);
-        this.on('change:title', this.handleTitleChange);
-        this.on('change:loading', this.handleLoadingChange);
-        
-        console.log('✅ Componente Imagen inicializado:', {
-          src: this.get('src') || attrs.src,
-          alt: this.get('alt') || attrs.alt,
-          title: this.get('title') || attrs.title,
-          loading: this.get('loading') || attrs.loading
-        });
-      },
-      handleSrcChange() {
-        const newSrc = this.get('src');
-        console.log('🖼️ Cambiando src de imagen a:', newSrc);
-        
-        if (newSrc && newSrc.trim()) {
-          // Actualizar el atributo src
-          this.addAttributes({ src: newSrc.trim() });
-          
-          // También actualizar el DOM directamente
-          if (this.view && this.view.el) {
-            this.view.el.src = newSrc.trim();
-            console.log('✅ Imagen actualizada en el DOM');
-          }
-        }
-      },
-      handleAltChange() {
-        const newAlt = this.get('alt');
-        console.log('🖼️ Cambiando alt de imagen a:', newAlt);
-        
-        if (newAlt !== undefined) {
-          this.addAttributes({ alt: newAlt });
-          
-          if (this.view && this.view.el) {
-            this.view.el.alt = newAlt;
-          }
-        }
-      },
-      handleTitleChange() {
-        const newTitle = this.get('title');
-        console.log('🖼️ Cambiando title de imagen a:', newTitle);
-        
-        if (newTitle !== undefined) {
-          this.addAttributes({ title: newTitle });
-          
-          if (this.view && this.view.el) {
-            this.view.el.title = newTitle;
-          }
-        }
-      },
-      handleLoadingChange() {
-        const newLoading = this.get('loading');
-        console.log('🖼️ Cambiando loading de imagen a:', newLoading);
-        
-        if (newLoading) {
-          this.addAttributes({ loading: newLoading });
-          
-          if (this.view && this.view.el) {
-            this.view.el.loading = newLoading;
-          }
-        }
-      }
-    }
-  });
-  
-  // Componente de Carrusel - REFORMULADO COMPLETAMENTE
-  editor.DomComponents.addType('carousel', {
-    isComponent: (el) => {
-      // Identificar por clase carousel-container
-      if (el.classList && el.classList.contains('carousel-container')) {
-        return { type: 'carousel' };
-      }
-      
-      // Identificar por estructura de carrusel
-      if (el.querySelector && el.querySelector('.carousel-slide')) {
-        console.log('✅ Carrusel identificado por estructura');
-        return { type: 'carousel' };
-      }
-      
-      return false;
-    },
-    model: {
-      defaults: {
-        name: 'Carrusel',
-        tagName: 'div',
-        draggable: true,
-        droppable: true,
-        selectable: true,
-        hoverable: true,
-        editable: true,
-        removable: true,
-        layerable: true,
-        highlightable: true,
-        badgable: true,
-        toolbar: true
-      },
-      getTraits() {
-        console.log('📋 getTraits() llamado para carrusel');
-        
-        return [
-          {
-            type: 'button',
-            name: 'open-gallery',
-            label: '🖼️ Galería de Imágenes',
-            text: 'Abrir galería para seleccionar o cargar imágenes',
-            full: true,
-            command: (editor) => {
-              const component = editor.getSelected();
-              if (component) {
-                // Abrir el Asset Manager
-                const am = editor.AssetManager;
-                const modal = editor.Modal;
-                
-                // Configurar el callback cuando se seleccione una imagen
-                am.onClick((asset) => {
-                  const newSrc = asset.get('src');
-                  console.log('🎠 Imagen seleccionada para carrusel:', newSrc);
-                  
-                  // Encontrar el contenedor del carrusel
-                  const carouselContainer = component.view.el.querySelector('.carousel-container') || 
-                                          component.view.el.querySelector('.carousel') || 
-                                          component.view.el;
-                  
-                  const existingImages = carouselContainer.querySelectorAll('.carousel-slide img') || 
-                                       carouselContainer.querySelectorAll('img') ||
-                                       [];
-                  
-                  let targetSlide = null;
-                  let slideIndex = 1;
-                  
-                  // Buscar el primer slide vacío (placeholder) o el primer slide disponible
-                  for (let i = 0; i < existingImages.length; i++) {
-                    if (existingImages[i].src.includes('placeholder') || existingImages[i].src.includes('via.placeholder')) {
-                      targetSlide = existingImages[i];
-                      slideIndex = i + 1;
-                      break;
-                    }
-                  }
-                  
-                  // Si no hay slide vacío, usar el primer slide disponible
-                  if (!targetSlide && existingImages.length > 0) {
-                    targetSlide = existingImages[0];
-                    slideIndex = 1;
-                  }
-                  
-                  if (targetSlide) {
-                    // Actualizar slide existente
-                    targetSlide.src = newSrc;
-                    targetSlide.setAttribute('src', newSrc);
-                    
-                    // Guardar en el componente
-                    component.set(`slide-${slideIndex}`, newSrc);
-                    
-                    console.log(`✅ Slide ${slideIndex} actualizado con nueva imagen`);
-                  } else {
-                    // Si no hay slides, crear el primer slide
-                    const newSlide = document.createElement('div');
-                    newSlide.className = 'carousel-slide';
-                    newSlide.innerHTML = `
-                      <img src="${newSrc}" 
-                           alt="Slide 1" 
-                           style="width: 100%; height: 300px; object-fit: cover;">
-                    `;
-                    carouselContainer.appendChild(newSlide);
-                    
-                    // Guardar la URL del slide
-                    component.set('slide-1', newSrc);
-                    component.set('slides', 1);
-                    
-                    console.log(`✅ Primer slide creado con imagen`);
-                  }
-                  
-                  // Cerrar el modal
-                  modal.close();
-                  
-                  // Actualizar el TraitManager
-                  setTimeout(() => {
-                    editor.TraitManager.render();
-                  }, 100);
-                });
-                
-                // Mostrar el Asset Manager en un modal
-                modal.setTitle('Galería de Imágenes - Seleccionar o Cargar')
-                  .setContent(am.render())
-                  .open();
-              }
-            }
-          },
-          {
-            type: 'checkbox',
-            name: 'autoplay',
-            label: 'Reproducción Automática',
-            value: false
-          },
-          {
-            type: 'select',
-            name: 'transition-speed',
-            label: 'Velocidad de Transición',
-            options: [
-              { value: '300', name: 'Rápido (0.3s)' },
-              { value: '500', name: 'Normal (0.5s)' },
-              { value: '1000', name: 'Lento (1s)' }
-            ]
-          },
-          {
-            type: 'checkbox',
-            name: 'show-controls',
-            label: 'Mostrar Controles',
-            value: true
-          },
-          {
-            type: 'checkbox',
-            name: 'show-indicators',
-            label: 'Mostrar Indicadores',
-            value: true
-          }
-        ];
-      },
-      init() {
-        console.log('🎠 Inicializando componente de Carrusel...');
-        console.log('📋 Tipo de componente:', this.get('type'));
-        console.log('📋 Traits definidos:', this.get('traits'));
-        
-        // Inicializar con 3 slides vacíos por defecto
-        if (!this.get('slides')) {
-          this.set('slides', 3);
-        }
-        
-        // Crear slides vacíos si no existen
-        setTimeout(() => {
-          const carouselContainer = this.view?.el?.querySelector('.carousel-container') || 
-                                   this.view?.el?.querySelector('.carousel') || 
-                                   this.view?.el;
-          
-          if (carouselContainer) {
-            const existingSlides = carouselContainer.querySelectorAll('.carousel-slide');
-            const expectedSlides = this.get('slides') || 3;
-            
-            console.log(`🔍 Slides existentes: ${existingSlides.length}, esperados: ${expectedSlides}`);
-            
-            // Si no hay slides o hay menos de los esperados, crear los faltantes
-            for (let i = existingSlides.length; i < expectedSlides; i++) {
-              const slideNum = i + 1;
-              const newSlide = document.createElement('div');
-              newSlide.className = 'carousel-slide';
-              newSlide.innerHTML = `
-                <img src="https://via.placeholder.com/800x400?text=Slide+${slideNum}" 
-                     alt="Slide ${slideNum}" 
-                     style="width: 100%; height: 300px; object-fit: cover;">
-              `;
-              carouselContainer.appendChild(newSlide);
-              console.log(`✅ Slide ${slideNum} creado (placeholder)`);
-            }
-          }
-        }, 200);
-        
-        // Hacer que todas las imágenes hijas NO sean seleccionables
-        const makeImagesNonSelectable = (component = this) => {
-          component.components().each(child => {
-            if (child.get('tagName') === 'img') {
-              child.set({
-                selectable: false,
-                hoverable: false,
-                draggable: false,
-                editable: false,
-                removable: false,
-                layerable: false
-              });
-              console.log('🎠 Imagen de carrusel bloqueada');
-            }
-            // Recursión para todos los hijos
-            if (child.components().length > 0) {
-              makeImagesNonSelectable(child);
-            }
-          });
-        };
-        
-        // Ejecutar ahora y después de renderizar
-        setTimeout(makeImagesNonSelectable, 100);
-        this.on('component:mount', makeImagesNonSelectable);
-        
-        // Extraer URLs iniciales de las imágenes y sincronizar con traits
-        const syncSlideUrls = () => {
-          const slides = this.view?.el?.querySelectorAll('.carousel-slide img') || [];
-          console.log(`📸 Encontrados ${slides.length} slides en el carrusel`);
-          
-          slides.forEach((img, index) => {
-            const slideNum = index + 1;
-            const src = img.src;
-            if (src) {
-              this.set(`slide-${slideNum}`, src, { silent: true });
-              console.log(`✅ Sincronizado slide-${slideNum}: ${src.substring(0, 50)}...`);
-            }
-          });
-          
-          // Forzar actualización del TraitManager
-          if (window.editor && window.editor.TraitManager) {
-            window.editor.TraitManager.render();
-            console.log('🔄 TraitManager actualizado');
-          }
-        };
-        
-        // Función para forzar la actualización del TraitManager cuando se selecciona el carrusel
-        const forceTraitManagerUpdate = () => {
-          if (window.editor && window.editor.TraitManager) {
-            console.log('🔄 Forzando actualización del TraitManager para carrusel...');
-            
-            // Limpiar el contenedor de traits primero
-            const traitsContainer = document.querySelector('.traits-container');
-            if (traitsContainer) {
-              traitsContainer.innerHTML = '';
-            }
-            
-            // Forzar la actualización del componente seleccionado en el editor
-            const selectedComponent = window.editor.getSelected();
-            if (selectedComponent) {
-              console.log('🎯 Componente seleccionado para TraitManager:', selectedComponent.get('type'));
-              
-            // Forzar la actualización del TraitManager con el componente correcto
-            // Nota: setTarget no está disponible en esta versión de GrapesJS
-            // window.editor.TraitManager.setTarget(selectedComponent);
-              
-              // Limpiar completamente el TraitManager
-              if (window.editor.TraitManager.collection) {
-                window.editor.TraitManager.collection.reset();
-              }
-              
-              // Re-renderizar desde cero
-              window.editor.TraitManager.render();
-              
-              // Verificar si se renderizaron todos los traits
-              setTimeout(() => {
-                const traitsInContainer = document.querySelectorAll('.traits-container .gjs-trt-trait');
-                console.log('📋 Traits renderizados después de forzar actualización:', traitsInContainer.length);
-                
-                if (traitsInContainer.length < 8) {
-                  console.log('⚠️ Aún no se muestran todos los traits, intentando método alternativo...');
-                  
-                  // Método alternativo: forzar la actualización del componente
-                  selectedComponent.trigger('change:traits');
-                  selectedComponent.trigger('change:attributes');
-                  
-                  // Forzar nuevamente el target
-                  // Nota: setTarget no está disponible en esta versión de GrapesJS
-                  // window.editor.TraitManager.setTarget(selectedComponent);
-                  
-                  // Re-renderizar una vez más
-                  window.editor.TraitManager.render();
-                  
-                  setTimeout(() => {
-                    const finalTraits = document.querySelectorAll('.traits-container .gjs-trt-trait');
-                    console.log('📋 Traits finales después de método alternativo:', finalTraits.length);
-                  }, 100);
-                }
-              }, 200);
-            } else {
-              console.warn('⚠️ No hay componente seleccionado para actualizar TraitManager');
-            }
-          }
-        };
-        
-        // Exponer la función para uso externo
-        this.forceTraitManagerUpdate = forceTraitManagerUpdate;
-        
-        setTimeout(syncSlideUrls, 200);
-        this.on('component:mount', () => setTimeout(syncSlideUrls, 100));
-        
-        // Listeners para cambios en las imágenes
-        this.on('change:slide-1', this.handleSlideChange);
-        this.on('change:slide-2', this.handleSlideChange);
-        this.on('change:slide-3', this.handleSlideChange);
-        
-        // Listeners para opciones del carrusel
-        this.on('change:autoplay', this.handleAutoplayChange);
-        this.on('change:transition-speed', this.handleTransitionChange);
-        this.on('change:show-controls', this.handleShowControlsChange);
-        this.on('change:show-indicators', this.handleShowIndicatorsChange);
-        
-        console.log('✅ Componente Carrusel inicializado');
-      },
-      
-      // Método para forzar actualización de traits
-      updateTraits() {
-        console.log('🔄 Forzando actualización de traits del carrusel...');
-        
-        // Usar el editor global
-        if (window.editor && window.editor.TraitManager) {
-          try {
-            // Forzar re-renderizado del TraitManager
-            window.editor.TraitManager.render();
-            
-            // Forzar actualización del componente
-            this.trigger('change:traits');
-            
-            console.log('✅ Traits del carrusel actualizados');
-          } catch (error) {
-            console.log('⚠️ Error actualizando traits:', error);
-            // Fallback: solo re-renderizar
-            window.editor.TraitManager.render();
-          }
-        }
-      },
-      view: {
-        onRender() {
-          console.log('🎠 Vista de carrusel renderizada');
-          
-          // Agregar evento de clic para forzar selección
-          this.el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            console.log('🖱️ Clic detectado en carrusel - forzando selección');
-            editor.select(this.model);
-          });
-          
-          // Agregar cursor pointer
-          this.el.style.cursor = 'pointer';
-        }
-      },
-      handleSlideChange(component, value, options) {
-        console.log('🎠 Cambio en slide detectado');
-        
-        // Obtener qué slide cambió
-        const changedAttrs = component.changed;
-        let slideNumber = null;
-        
-        for (let key in changedAttrs) {
-          if (key.startsWith('slide-')) {
-            slideNumber = parseInt(key.replace('slide-', ''));
-            break;
-          }
-        }
-        
-        if (!slideNumber) return;
-        
-        const newUrl = this.get(`slide-${slideNumber}`);
-        console.log(`🖼️ Actualizando slide ${slideNumber} a:`, newUrl);
-        
-        if (newUrl && newUrl.trim() && this.view && this.view.el) {
-          const slides = this.view.el.querySelectorAll('.carousel-slide img');
-          const targetImg = slides[slideNumber - 1];
-          
-          if (targetImg) {
-            targetImg.src = newUrl.trim();
-            targetImg.setAttribute('src', newUrl.trim());
-            console.log(`✅ Slide ${slideNumber} actualizado`);
-          }
-        }
-      },
-      handleAutoplayChange() {
-        const autoplay = this.get('autoplay');
-        console.log('🎠 Autoplay cambiado a:', autoplay);
-        // Aquí puedes agregar lógica para iniciar/detener autoplay
-      },
-      handleTransitionChange() {
-        const speed = this.get('transition-speed');
-        console.log('🎠 Velocidad de transición cambiada a:', speed);
-        const track = this.view.el.querySelector('.carousel-track');
-        if (track) {
-          track.style.transitionDuration = `${speed}ms`;
-        }
-      },
-      handleShowControlsChange() {
-        const show = this.get('show-controls');
-        console.log('🎠 Mostrar controles:', show);
-        const controls = this.view.el.querySelector('.carousel-controls');
-        if (controls) {
-          controls.style.display = show ? 'flex' : 'none';
-        }
-      },
-      handleShowIndicatorsChange() {
-        const show = this.get('show-indicators');
-        console.log('🎠 Mostrar indicadores:', show);
-        const indicators = this.view.el.querySelector('.carousel-indicators');
-        if (indicators) {
-          indicators.style.display = show ? 'flex' : 'none';
-        }
-      }
-    }
-  });
-  
-  // Componente de Galería - VERSIÓN SIMPLIFICADA
-  editor.DomComponents.addType('gallery', {
-    isComponent: (el) => {
-      // Solo verificar el elemento principal de la galería
-      if (el.classList && el.classList.contains('gallery')) {
-        console.log('✅ Galería identificada por clase "gallery"');
-        return { type: 'gallery' };
-      }
-      return false;
-    },
-    model: {
-      defaults: {
-        name: 'Galería',
-        draggable: true,
-        droppable: true,
-        selectable: true,
-        hoverable: true,
-        editable: true,
-        removable: true,
-        layerable: true,
-        highlightable: true,
-        badgable: true,
-        toolbar: true,
-        // Valores por defecto
-        'image-1': '',
-        'image-2': '',
-        'image-3': '',
-        'image-4': '',
-        'columns': '4',
-        'gap': '4',
-        'hover-effect': true,
-        'lightbox': false,
-        // Hacer que el componente sea más fácil de seleccionar
-        style: {
-          'position': 'relative',
-          'cursor': 'pointer',
-          'outline': '2px dashed transparent',
-          'transition': 'outline 0.2s ease'
-        }
-      },
-      getTraits() {
-        console.log('📋 getTraits() llamado para galería');
-        return [
-          {
-            type: 'button',
-            name: 'load-images',
-            label: '📁 Cargar Imágenes',
-            text: 'Seleccionar imágenes de la galería',
-            full: true,
-            command: (editor) => {
-              const component = editor.getSelected();
-              if (component) {
-                // Abrir el Asset Manager
-                const am = editor.AssetManager;
-                const modal = editor.Modal;
-                
-                // Configurar el callback cuando se seleccione una imagen
-                am.onClick((asset) => {
-                  const newSrc = asset.get('src');
-                  console.log('🖼️ Imagen seleccionada para galería:', newSrc);
-                  
-                  // Encontrar la primera imagen vacía o reemplazar la primera
-                  const images = component.view.el.querySelectorAll('.grid img');
-                  let targetIndex = 0;
-                  
-                  // Buscar la primera imagen que esté vacía o sea placeholder
-                  for (let i = 0; i < images.length; i++) {
-                    if (images[i].src.includes('placeholder') || !images[i].src) {
-                      targetIndex = i;
-                      break;
-                    }
-                  }
-                  
-                  // Actualizar la imagen
-                  if (images[targetIndex]) {
-                    images[targetIndex].src = newSrc;
-                    images[targetIndex].setAttribute('src', newSrc);
-                    
-                    // Actualizar el trait correspondiente
-                    const imageNum = targetIndex + 1;
-                    component.set(`image-${imageNum}`, newSrc);
-                    
-                    console.log(`✅ Imagen ${imageNum} actualizada`);
-                  }
-                  
-                  // Cerrar el modal
-                  modal.close();
-                  
-                  // Forzar actualización del trait manager
-                  editor.TraitManager.render();
-                });
-                
-                // Mostrar el Asset Manager en un modal
-                modal.setTitle('Seleccionar Imagen para Galería')
-                  .setContent(am.render())
-                  .open();
-              }
-            }
-          },
-          {
-            type: 'text',
-            name: 'image-1',
-            label: 'Imagen 1 (URL)',
-            placeholder: 'https://ejemplo.com/imagen1.jpg'
-          },
-          {
-            type: 'text',
-            name: 'image-2',
-            label: 'Imagen 2 (URL)',
-            placeholder: 'https://ejemplo.com/imagen2.jpg'
-          },
-          {
-            type: 'text',
-            name: 'image-3',
-            label: 'Imagen 3 (URL)',
-            placeholder: 'https://ejemplo.com/imagen3.jpg'
-          },
-          {
-            type: 'text',
-            name: 'image-4',
-            label: 'Imagen 4 (URL)',
-            placeholder: 'https://ejemplo.com/imagen4.jpg'
-          },
-          {
-            type: 'select',
-            name: 'columns',
-            label: 'Columnas',
-            options: [
-              { value: '2', name: '2 Columnas' },
-              { value: '3', name: '3 Columnas' },
-              { value: '4', name: '4 Columnas' },
-              { value: '5', name: '5 Columnas' },
-              { value: '6', name: '6 Columnas' }
-            ]
-          },
-          {
-            type: 'select',
-            name: 'gap',
-            label: 'Espaciado',
-            options: [
-              { value: '1', name: 'Pequeño (0.25rem)' },
-              { value: '2', name: 'Reducido (0.5rem)' },
-              { value: '4', name: 'Normal (1rem)' },
-              { value: '6', name: 'Grande (1.5rem)' },
-              { value: '8', name: 'Extra Grande (2rem)' }
-            ]
-          },
-          {
-            type: 'checkbox',
-            name: 'hover-effect',
-            label: 'Efecto Hover',
-            value: true
-          },
-          {
-            type: 'checkbox',
-            name: 'lightbox',
-            label: 'Abrir en Lightbox',
-            value: false
-          }
-        ];
-      },
-      init() {
-        console.log('🖼️ Inicializando componente de Galería...');
-        console.log('📋 Tipo de componente:', this.get('type'));
-        
-        // Listeners para cambios en las imágenes
-        this.on('change:image-1', this.handleImageChange);
-        this.on('change:image-2', this.handleImageChange);
-        this.on('change:image-3', this.handleImageChange);
-        this.on('change:image-4', this.handleImageChange);
-        
-        // Listeners para opciones de layout
-        this.on('change:columns', this.handleColumnsChange);
-        this.on('change:gap', this.handleGapChange);
-        this.on('change:hover-effect', this.handleHoverEffectChange);
-        
-        // Sincronizar URLs después de renderizar
-        setTimeout(() => {
-          this.syncImageUrls();
-        }, 300);
-        
-        console.log('✅ Componente Galería inicializado');
-      },
-      view: {
-        onRender() {
-          console.log('🖼️ Vista de galería renderizada');
-          
-          // Hacer que el elemento sea más fácil de seleccionar
-          this.el.style.position = 'relative';
-          this.el.style.cursor = 'pointer';
-          this.el.style.outline = '2px dashed transparent';
-          this.el.style.transition = 'outline 0.2s ease';
-          
-          // Agregar evento de clic para forzar selección
-          this.el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            console.log('🖱️ Clic detectado en galería - forzando selección');
-            editor.select(this.model);
-            return false;
-          });
-          
-          // Agregar evento de mouseover para feedback visual
-          this.el.addEventListener('mouseover', (e) => {
-            this.el.style.outline = '2px dashed #3b82f6';
-          });
-          
-          this.el.addEventListener('mouseout', (e) => {
-            this.el.style.outline = '2px dashed transparent';
-          });
-          
-          // Forzar que el elemento sea seleccionable
-          this.el.setAttribute('data-gjs-selectable', 'true');
-          this.el.setAttribute('data-gjs-hoverable', 'true');
-        }
-      },
-      syncImageUrls() {
-        if (!this.view || !this.view.el) return;
-        
-        const images = this.view.el.querySelectorAll('.grid img') || [];
-        console.log(`📸 Encontradas ${images.length} imágenes en la galería`);
-        
-        images.forEach((img, index) => {
-          const imageNum = index + 1;
-          const src = img.src;
-          if (src && src !== this.get(`image-${imageNum}`)) {
-            this.set(`image-${imageNum}`, src, { silent: true });
-            console.log(`✅ Sincronizada imagen-${imageNum}: ${src.substring(0, 50)}...`);
-          }
-        });
-        
-        // Bloquear imágenes para que no sean seleccionables
-        images.forEach(img => {
-          const component = editor.DomComponents.getComponent(img);
-          if (component) {
-            component.set({
-              selectable: false,
-              hoverable: false,
-              draggable: false,
-              editable: false,
-              removable: false,
-              layerable: false
-            });
-          }
-        });
-      },
-      handleImageChange(component, value, options) {
-        console.log('🖼️ Cambio en imagen de galería detectado');
-        
-        // Obtener qué imagen cambió
-        const changedAttrs = component.changed;
-        let imageNumber = null;
-        
-        for (let key in changedAttrs) {
-          if (key.startsWith('image-')) {
-            imageNumber = parseInt(key.replace('image-', ''));
-            break;
-          }
-        }
-        
-        if (!imageNumber) return;
-        
-        const newUrl = this.get(`image-${imageNumber}`);
-        console.log(`🖼️ Actualizando imagen ${imageNumber} a:`, newUrl);
-        
-        if (newUrl && newUrl.trim() && this.view && this.view.el) {
-          const images = this.view.el.querySelectorAll('.grid img');
-          const targetImg = images[imageNumber - 1];
-          
-          if (targetImg) {
-            targetImg.src = newUrl.trim();
-            targetImg.setAttribute('src', newUrl.trim());
-            console.log(`✅ Imagen ${imageNumber} actualizada`);
-          }
-        }
-      },
-      handleColumnsChange() {
-        const columns = this.get('columns') || '4';
-        console.log('🖼️ Columnas cambiadas a:', columns);
-        
-        const grid = this.view.el.querySelector('.grid');
-        if (grid) {
-          // Remover clases anteriores
-          grid.classList.remove('grid-cols-2', 'grid-cols-3', 'grid-cols-4', 'grid-cols-5', 'grid-cols-6');
-          // Agregar nueva clase
-          grid.classList.add(`grid-cols-${columns}`);
-          
-          // También aplicar responsive
-          grid.classList.remove('md:grid-cols-2', 'md:grid-cols-3', 'md:grid-cols-4', 'md:grid-cols-5', 'md:grid-cols-6');
-          grid.classList.add(`md:grid-cols-${columns}`);
-        }
-      },
-      handleGapChange() {
-        const gap = this.get('gap') || '4';
-        console.log('🖼️ Espaciado cambiado a:', gap);
-        
-        const grid = this.view.el.querySelector('.grid');
-        if (grid) {
-          grid.classList.remove('gap-1', 'gap-2', 'gap-4', 'gap-6', 'gap-8');
-          grid.classList.add(`gap-${gap}`);
-        }
-      },
-      handleHoverEffectChange() {
-        const hasEffect = this.get('hover-effect');
-        console.log('🖼️ Efecto hover:', hasEffect);
-        
-        const images = this.view.el.querySelectorAll('img');
-        images.forEach(img => {
-          if (hasEffect) {
-            img.classList.add('hover:scale-105', 'transition-transform');
-          } else {
-            img.classList.remove('hover:scale-105', 'transition-transform');
-          }
-        });
-      }
-    }
-  });
-  
-  // Componente de YouTube
-  editor.DomComponents.addType('youtube-video', {
-    isComponent: (el) => {
-      if (el.tagName === 'DIV' && (el.classList.contains('youtube-container') || el.getAttribute('data-gjs-type') === 'youtube-video')) {
-        return { type: 'youtube-video' };
-      }
-    },
-    model: {
-      defaults: {
-        name: 'YouTube',
-        icon: '<i class="fa fa-youtube-play"></i>',
-        draggable: true,
-        droppable: false,
-        selectable: true,
-        editable: true,
-        removable: true,
-        copyable: true,
-        badgable: true,
-        stylable: true,
-        highlightable: true,
-        resizable: false,
-        layerable: true,
-        attributes: {
-          'data-gjs-type': 'youtube-video',
-          'data-gjs-name': 'YouTube'
-        },
-        // Definir traits aquí directamente en defaults
-        'video-id': 'dQw4w9WgXcQ',
-        'aspect-ratio': '56.25',
-        'autoplay': false,
-        'controls': '1',
-        traits: [
-          {
-            type: 'text',
-            name: 'video-id',
-            label: 'ID del Video de YouTube',
-            placeholder: 'Ej: dQw4w9WgXcQ',
-            changeProp: 1
-          },
-          {
-            type: 'select',
-            name: 'aspect-ratio',
-            label: 'Proporción',
-            changeProp: 1,
-            options: [
-              { value: '56.25', name: '16:9 (Estándar)' },
-              { value: '75', name: '4:3 (Clásico)' },
-              { value: '100', name: '1:1 (Cuadrado)' }
-            ]
-          },
-          {
-            type: 'checkbox',
-            name: 'autoplay',
-            label: 'Reproducir automáticamente',
-            changeProp: 1
-          },
-          {
-            type: 'checkbox',
-            name: 'controls',
-            label: 'Mostrar controles',
-            changeProp: 1,
-            valueTrue: '1',
-            valueFalse: '0'
-          }
-        ]
-      },
-      init() {
-        console.log('🎬 Inicializando componente de YouTube...');
-        
-        // Buscar iframe recursivamente
-        const findIframe = (component) => {
-          if (component.get('tagName') === 'iframe') {
-            return component;
-          }
-          let found = null;
-          component.components().each(child => {
-            if (!found) {
-              found = findIframe(child);
-            }
-          });
-          return found;
-        };
-        
-        // Extraer el video-id inicial del src del iframe si existe
-        const iframe = findIframe(this);
-        if (iframe) {
-          const src = iframe.getAttributes().src || '';
-          const match = src.match(/embed\/([^?&]+)/);
-          if (match && match[1]) {
-            this.set('video-id', match[1], { silent: true });
-            console.log('📺 Video ID extraído del iframe:', match[1]);
-          }
-        }
-        
-        // Listeners para cambios (después de extraer el ID inicial)
-        this.on('change:video-id', this.handleVideoIdChange);
-        this.on('change:aspect-ratio', this.handleAspectRatioChange);
-        this.on('change:autoplay', this.handleAutoplayChange);
-        this.on('change:controls', this.handleControlsChange);
-        
-        // Log de traits disponibles
-        const traits = this.get('traits');
-        console.log('✅ Componente YouTube inicializado:', {
-          traits: traits,
-          cantidadTraits: traits?.length || 0,
-          videoId: this.get('video-id'),
-          aspectRatio: this.get('aspect-ratio'),
-          selectable: this.get('selectable'),
-          hoverable: this.get('hoverable')
-        });
-        
-        // Forzar que los hijos no sean seleccionables
-        this.components().each(child => {
-          child.set({
-            selectable: false,
-            hoverable: false,
-            draggable: false
-          });
-        });
-        
-        // Asegurar que el aspect ratio esté aplicado desde el inicio
-        this.handleAspectRatioChange();
-      },
-      handleVideoIdChange() {
-        const videoId = this.get('video-id');
-        const autoplay = this.get('autoplay') ? '1' : '0';
-        const controls = this.get('controls') || '1';
-        
-        console.log('📺 Cambiando video ID a:', videoId);
-        console.log('   Autoplay:', autoplay);
-        console.log('   Controls:', controls);
-        
-        if (videoId && videoId.trim()) {
-          // Buscar el iframe de manera recursiva
-          const findIframe = (component) => {
-            if (component.get('tagName') === 'iframe') {
-              return component;
-            }
-            let found = null;
-            component.components().each(child => {
-              if (!found) {
-                found = findIframe(child);
-              }
-            });
-            return found;
-          };
-          
-          const iframe = findIframe(this);
-          console.log('🔍 Iframe encontrado:', !!iframe);
-          
-          if (iframe) {
-            const newSrc = `https://www.youtube.com/embed/${videoId.trim()}?autoplay=${autoplay}&controls=${controls}`;
-            
-            // Actualizar atributos del iframe en el modelo
-            iframe.addAttributes({
-              src: newSrc,
-              allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
-              allowfullscreen: ''
-            });
-            
-            // MÉTODO 1: Actualizar el DOM directamente
-            if (iframe.view && iframe.view.el) {
-              const el = iframe.view.el;
-              
-              // Guardar el padre y clases del iframe
-              const parent = el.parentNode;
-              const classes = el.className;
-              
-              // Crear un nuevo iframe para forzar recarga
-              const newIframe = document.createElement('iframe');
-              newIframe.src = newSrc;
-              newIframe.className = classes;
-              newIframe.setAttribute('frameborder', '0');
-              newIframe.setAttribute('allowfullscreen', '');
-              newIframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-              
-              // Reemplazar el iframe viejo con el nuevo
-              if (parent) {
-                parent.replaceChild(newIframe, el);
-                // Actualizar la referencia en la vista
-                iframe.view.el = newIframe;
-                console.log('🎬 Iframe reemplazado completamente en el DOM');
-              } else {
-                // Si no hay padre, intentar solo cambiar el src
-                el.setAttribute('src', ''); // Limpiar primero
-                setTimeout(() => {
-                  el.setAttribute('src', newSrc);
-                  el.src = newSrc;
-                }, 10);
-                console.log('🎬 Src del iframe actualizado con delay');
-              }
-            }
-            
-            console.log('✅ URL del iframe actualizada:', newSrc);
-          } else {
-            console.warn('⚠️ No se encontró el iframe dentro del componente');
-            console.log('   Componentes hijos:', this.components().length);
-          }
-        }
-      },
-      handleAspectRatioChange() {
-        const aspectRatio = this.get('aspect-ratio') || '56.25';
-        console.log('🎨 handleAspectRatioChange llamado, aspectRatio:', aspectRatio);
-        
-          const wrapper = this.components().at(0);
-        console.log('   Wrapper encontrado:', !!wrapper);
-        
-          if (wrapper) {
-          // Agregar el padding-bottom como estilo inline para que se guarde en el HTML
-          const currentStyle = wrapper.getAttributes().style || '';
-          console.log('   Estilo actual del wrapper:', currentStyle);
-          
-          const styleObj = {};
-          
-          // Parsear estilos existentes
-          if (currentStyle) {
-            currentStyle.split(';').forEach(rule => {
-              const [prop, val] = rule.split(':').map(s => s.trim());
-              if (prop && val) {
-                styleObj[prop] = val;
-              }
-            });
-          }
-          
-          // Agregar o actualizar padding-bottom
-          styleObj['padding-bottom'] = `${aspectRatio}%`;
-          
-          // Convertir de vuelta a string
-          const newStyle = Object.entries(styleObj)
-            .map(([prop, val]) => `${prop}: ${val}`)
-            .join('; ');
-          
-          console.log('   Nuevo estilo calculado:', newStyle);
-          
-          // Aplicar como atributo inline
-          wrapper.addAttributes({ style: newStyle });
-          
-          // Verificar que se aplicó
-          const verifyStyle = wrapper.getAttributes().style;
-          console.log('✅ Estilo verificado después de aplicar:', verifyStyle);
-          
-          // También actualizar el DOM directamente
-          if (wrapper.view && wrapper.view.el) {
-            wrapper.view.el.style.paddingBottom = `${aspectRatio}%`;
-            console.log('   ✅ Estilo aplicado también al DOM directamente');
-          }
-        } else {
-          console.error('❌ No se encontró el wrapper del componente YouTube');
-        }
-      },
-      handleAutoplayChange() {
-        this.handleVideoIdChange(); // Re-generar la URL con el nuevo parámetro
-      },
-      handleControlsChange() {
-        this.handleVideoIdChange(); // Re-generar la URL con el nuevo parámetro
-      }
-    },
-    view: {
-onRender() {
-        const el = this.el;
-        console.log('🎨 Vista de YouTube renderizada:', {
-          elemento: el,
-          classes: el.className,
-          selectable: this.model.get('selectable')
-        });
-        
-        // Agregar listener de clic para asegurar la selección
-        el.addEventListener('click', (e) => {
-          console.log('🖱️ Clic detectado en componente YouTube');
-          e.stopPropagation();
-          
-          // Forzar la selección de este componente
-          if (window.editor) {
-            window.editor.select(this.model);
-            console.log('✅ Componente YouTube seleccionado manualmente');
-          }
-        });
-        
-        // Asegurar que el aspect ratio esté aplicado cuando se renderiza
-        // (importante para componentes cargados desde HTML guardado)
-        setTimeout(() => {
-          this.model.handleAspectRatioChange();
-          console.log('✅ Aspect ratio aplicado al renderizar');
-        }, 100);
-        
-        // NO agregar pointer-events via JavaScript, se maneja con CSS solo en el editor
-        console.log('✅ Vista de YouTube lista (sin modificar pointer-events)');
-      }
-    }
-  });
+    });
+  }
 
-  editor.DomComponents.addType('button', {
-    model: {
-      defaults: {
-        tagName: 'a',
-        name: 'Botón',
-        icon: '<i class="fa fa-hand-pointer-o"></i>',
-        editable: true,
-        stylable: true,  // Permitir aplicar estilos
-        attributes: {
-          href: '#',
-          target: '_self'
-        },
-        traits: [
-          {
-            type: 'text',
-            name: 'text',
-            label: 'Texto del Botón',
-            changeProp: 1,
-          },
-          {
-            type: 'text',
-            name: 'href',
-            label: 'Enlace URL',
-            placeholder: 'https://ejemplo.com'
-          },
-          {
-            type: 'select',
-            name: 'target',
-            label: 'Abrir Enlace',
-            options: [
-              { value: '_self', name: 'Misma Ventana' },
-              { value: '_blank', name: 'Nueva Ventana/Pestaña' }
-            ]
-          },
-          {
-            type: 'select',
-            name: 'button-type',
-            label: 'Tipo de Botón',
-            options: [
-              { value: 'primary', name: 'Principal (Azul)' },
-              { value: 'secondary', name: 'Secundario (Gris)' },
-              { value: 'success', name: 'Éxito (Verde)' },
-              { value: 'danger', name: 'Peligro (Rojo)' },
-              { value: 'warning', name: 'Advertencia (Amarillo)' }
-            ],
-            changeProp: 1,
-          },
-          {
-            type: 'select',
-            name: 'button-size',
-            label: 'Tamaño',
-            options: [
-              { value: 'small', name: 'Pequeño' },
-              { value: 'medium', name: 'Mediano' },
-              { value: 'large', name: 'Grande' }
-            ],
-            changeProp: 1,
-          },
-          {
-            type: 'checkbox',
-            name: 'full-width',
-            label: 'Ancho Completo',
-            changeProp: 1,
-          }
-        ]
-      },
-      init() {
-        // Escuchar cambios en los traits
-        this.on('change:text', this.handleTextChange);
-        this.on('change:attributes:href', this.handleHrefChange);
-        this.on('change:attributes:target', this.handleTargetChange);
-        this.on('change:button-type', this.handleButtonTypeChange);
-        this.on('change:button-size', this.handleButtonSizeChange);
-        this.on('change:full-width', this.handleFullWidthChange);
-      },
-      handleTextChange() {
-        const text = this.get('text');
-        if (text) {
-          this.components(text);
-        }
-      },
-      handleHrefChange() {
-        // El href ya se actualiza automáticamente como atributo
-        const href = this.getAttributes().href;
-        console.log('Button href changed to:', href);
-      },
-      handleTargetChange() {
-        // El target ya se actualiza automáticamente como atributo
-        const target = this.getAttributes().target;
-        console.log('Button target changed to:', target);
-      },
-      handleButtonTypeChange() {
-        const type = this.get('button-type');
-        const currentClasses = this.getClasses();
-        
-        // Remover clases de tipo anteriores
-        const typeClasses = ['bg-blue-600', 'hover:bg-blue-700', 'bg-gray-600', 'hover:bg-gray-700', 
-                            'bg-green-600', 'hover:bg-green-700', 'bg-red-600', 'hover:bg-red-700',
-                            'bg-yellow-500', 'hover:bg-yellow-600', 'text-black'];
-        typeClasses.forEach(cls => this.removeClass(cls));
-        
-        // Agregar nuevas clases según el tipo
-        const typeMap = {
-          'primary': ['bg-blue-600', 'hover:bg-blue-700'],
-          'secondary': ['bg-gray-600', 'hover:bg-gray-700'],
-          'success': ['bg-green-600', 'hover:bg-green-700'],
-          'danger': ['bg-red-600', 'hover:bg-red-700'],
-          'warning': ['bg-yellow-500', 'hover:bg-yellow-600', 'text-black']
-        };
-        
-        if (type && typeMap[type]) {
-          typeMap[type].forEach(cls => this.addClass(cls));
-        }
-      },
-      handleButtonSizeChange() {
-        const size = this.get('button-size');
-        const currentClasses = this.getClasses();
-        
-        // Remover clases de tamaño anteriores
-        const sizeClasses = ['px-3', 'py-1', 'text-sm', 'px-6', 'py-2', 'px-8', 'py-3', 'text-lg'];
-        sizeClasses.forEach(cls => this.removeClass(cls));
-        
-        // Agregar nuevas clases según el tamaño
-        const sizeMap = {
-          'small': ['px-3', 'py-1', 'text-sm'],
-          'medium': ['px-6', 'py-2'],
-          'large': ['px-8', 'py-3', 'text-lg']
-        };
-        
-        if (size && sizeMap[size]) {
-          sizeMap[size].forEach(cls => this.addClass(cls));
-        }
-      },
-      handleFullWidthChange() {
-        const fullWidth = this.get('full-width');
-        if (fullWidth) {
-          this.addClass('w-full');
-          this.addClass('block');
-          this.addClass('text-center');
+  // ✅ Registrar todos los componentes modulares después de inicializar el editor
+  // Todos los componentes están ahora en editor-modules/components/
+  const componentsToRegister = [
+    'Image', 'Container', 'Heading', 'Paragraph', 'Button', 'Text',
+    'Link', 'Divider', 'Separator', 'Table', 'HtmlCode', 'Spacer', 'Alert', 
+    'Icon', 'IconBox', 'IconList', 'StarRating', 'Quote', 'Code', 'Preformatted', 'Verse',
+    'Toggle', 'Tabs', 'Accordion',
+    'Carousel', 'Gallery', 'Video', 'GoogleMaps',
+    'ImageBoxAdvanced', 'BackgroundImage', 'File', 'Audio', 'CounterAnimated',
+    'SectionInner', 'Column'
+  ];
+
+  componentsToRegister.forEach(componentName => {
+    const registerFn = window[`register${componentName}Component`];
+    if (typeof registerFn === 'function') {
+      console.log(`✅ [Editor] Registrando componente: ${componentName}`);
+      registerFn(editor);
+      
+      // Verificar que se registró correctamente
+      if (componentName === 'Toggle') {
+        const toggleType = editor.DomComponents.getType('toggle');
+        if (toggleType) {
+          console.log('✅ [Editor] Componente toggle registrado correctamente en GrapesJS');
         } else {
-          this.removeClass('w-full');
-          this.removeClass('block');
-          this.removeClass('text-center');
+          console.error('❌ [Editor] Componente toggle NO se registró en GrapesJS');
         }
       }
+    } else {
+      console.warn(`⚠️ [Editor] Función register${componentName}Component no encontrada`);
     }
   });
   
-  editor.DomComponents.addType('link', {
-    model: {
-      defaults: {
-        name: 'Enlace',
-        icon: '<i class="fa fa-link"></i>',
-        editable: true
-      }
-    }
-  });
+  // ✅ Todos los componentes duplicados eliminados - ahora están en módulos separados
   
-  editor.DomComponents.addType('divider', {
-    model: {
-      defaults: {
-        name: 'Divisor',
-        icon: '<i class="fa fa-minus"></i>'
-      }
-    }
-  });
+  // Configuración de comandos del editor
 
   // Ocultar indicador de carga y mostrar editor
   const loadingIndicator = document.getElementById('loading-indicator');
@@ -2418,7 +893,177 @@ onRender() {
 
   // Inyectar estilos y scripts en el canvas
   editor.on('load', function() {
-    console.log('🎨 Editor cargado, inyectando estilos y scripts para iframes...');
+    // ✅ CRÍTICO: Sincronizar Background Image después de cargar
+    setTimeout(() => {
+      const syncBackgroundImageAfterLoad = () => {
+        const allComponents = editor.getComponents();
+        const findBackgroundImage = (components) => {
+          if (components && typeof components.forEach === 'function') {
+            components.forEach((component) => {
+              if (component && component.get && component.get('type') === 'background-image') {
+                if (component.view && component.view.el) {
+                  const titleEl = component.view.el.querySelector('h2');
+                  const textEl = component.view.el.querySelector('p');
+                  const buttonEl = component.view.el.querySelector('button, a');
+                  
+                  if (titleEl) {
+                    const domTitle = titleEl.textContent || titleEl.innerText || '';
+                    if (domTitle.trim()) {
+                      component.set('content-title', domTitle.trim(), { silent: false });
+                    }
+                  }
+                  
+                  if (textEl) {
+                    const domText = textEl.textContent || textEl.innerText || '';
+                    if (domText.trim()) {
+                      component.set('content-text', domText.trim(), { silent: false });
+                    }
+                  }
+                  
+                  if (buttonEl) {
+                    const domButtonText = buttonEl.textContent || buttonEl.innerText || '';
+                    if (domButtonText.trim()) {
+                      component.set('button-text', domButtonText.trim(), { silent: false });
+                    }
+                    
+                    const href = buttonEl.getAttribute('href');
+                    if (href) {
+                      component.set('button-link', href, { silent: false });
+                    } else if (buttonEl.tagName === 'BUTTON') {
+                      component.set('button-link', '#', { silent: false });
+                    }
+                  }
+                  
+                  // Forzar actualización del TraitManager
+                  setTimeout(() => {
+                    if (editor.TraitManager) {
+                      editor.TraitManager.render();
+                    }
+                  }, 200);
+                }
+              }
+              
+              if (component && component.components) {
+                const childComponents = component.components();
+                if (childComponents) {
+                  findBackgroundImage(childComponents);
+                }
+              }
+            });
+          }
+        };
+        findBackgroundImage(allComponents);
+      };
+      
+      syncBackgroundImageAfterLoad();
+    }, 500);
+    
+    // Sincronizar todos los botones después de que el editor carga
+    setTimeout(() => {
+      const allComponents = editor.getComponents();
+      
+      // Función recursiva para encontrar todos los botones
+      const findButtons = (components) => {
+        // Usar el método correcto para iterar sobre componentes
+        if (components && typeof components.forEach === 'function') {
+          components.forEach((component) => {
+            if (component && component.get && component.get('type') === 'button') {
+              if (typeof component.syncInitialValues === 'function') {
+                component.syncInitialValues();
+                // Forzar actualización visual
+                if (component.view && component.view.el) {
+                  component.view.render();
+                }
+              }
+            }
+            // Buscar en componentes hijos
+            if (component && component.components) {
+              const childComponents = component.components();
+              if (childComponents && childComponents.length > 0) {
+                findButtons(childComponents);
+              }
+            }
+          });
+        } else if (components && components.length) {
+          // Si es un array
+          components.forEach((component) => {
+            if (component && component.get && component.get('type') === 'button') {
+              if (typeof component.syncInitialValues === 'function') {
+                component.syncInitialValues();
+                if (component.view && component.view.el) {
+                  component.view.render();
+                }
+              }
+            }
+            if (component && component.components) {
+              const childComponents = component.components();
+              if (childComponents && childComponents.length > 0) {
+                findButtons(childComponents);
+              }
+            }
+          });
+        }
+      };
+      
+      findButtons(allComponents);
+      
+      // Función recursiva para encontrar todos los contenedores
+      const findContainers = (components) => {
+        if (!components) return;
+        
+        try {
+          if (typeof components.each === 'function') {
+            components.each((component) => {
+              if (component && component.get && component.get('type') === 'container') {
+                // Forzar actualización visual
+                if (component.view && component.view.el) {
+                  const el = component.view.el;
+                  // Asegurar que tenga las clases básicas
+                  if (!el.className.includes('container-flex')) {
+                    el.classList.add('container-flex');
+                  }
+                  if (!el.className.includes('flex')) {
+                    el.classList.add('flex');
+                  }
+                  component.view.render();
+                }
+              }
+              if (component && component.components) {
+                const childComponents = component.components();
+                if (childComponents) {
+                  findContainers(childComponents);
+                }
+              }
+            });
+          } else if (Array.isArray(components)) {
+            components.forEach((component) => {
+              if (component && component.get && component.get('type') === 'container') {
+                if (component.view && component.view.el) {
+                  const el = component.view.el;
+                  if (!el.className.includes('container-flex')) {
+                    el.classList.add('container-flex');
+                  }
+                  if (!el.className.includes('flex')) {
+                    el.classList.add('flex');
+                  }
+                  component.view.render();
+                }
+              }
+              if (component && component.components) {
+                const childComponents = component.components();
+                if (childComponents) {
+                  findContainers(childComponents);
+                }
+              }
+            });
+          }
+        } catch (error) {
+          console.error('❌ Error en findContainers:', error);
+        }
+      };
+      
+      findContainers(allComponents);
+    }, 500);
     
     // Obtener el canvas frame
     const canvasFrame = editor.Canvas.getFrameEl();
@@ -2437,16 +1082,67 @@ onRender() {
           }
           
           /* Permitir hover en el contenedor de YouTube */
-          [data-gjs-type="youtube-video"] {
+          [data-gjs-type="video"],
+          [data-gjs-type="youtube-video"],
+          [data-gjs-type="google-maps"] {
             cursor: pointer !important;
           }
           
           .youtube-container {
             cursor: pointer !important;
           }
+          
+          /* ✅ Eliminar espacio en blanco inferior del canvas */
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+            min-height: auto !important;
+          }
+          html {
+            margin: 0 !important;
+            padding: 0 !important;
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+          }
+          
+          /* ✅ OCULTAR badge "DIV" para componentes background-image */
+          [data-gjs-type="background-image"] .gjs-badge,
+          [data-gjs-type="background-image"] .gjs-badge-label {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+          }
+          
+          /* ✅ OCULTAR badge para toggle pero mantener toolbar visible */
+          [data-gjs-type="toggle"] .gjs-badge,
+          [data-gjs-type="toggle"] .gjs-badge-label {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+          }
+          
+          /* ✅ ASEGURAR que el toolbar sea visible para toggle */
+          [data-gjs-type="toggle"] .gjs-toolbar,
+          .toggle-container .gjs-toolbar,
+          .gjs-selected[data-gjs-type="toggle"] ~ .gjs-toolbar,
+          .gjs-toolbar[data-toolbar-toggle] {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 9999 !important;
+          }
+          
+          /* ✅ Asegurar que cualquier toolbar cerca de un toggle sea visible */
+          .toggle-container + .gjs-toolbar,
+          .toggle-container ~ .gjs-toolbar {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+          }
         `;
         frameDoc.head.appendChild(styleEl);
-        console.log('✅ Estilos inyectados en el canvas para bloquear iframes');
       }
       
       // Inyectar script de blog si hay un bloque de blog
@@ -2613,7 +1309,6 @@ onRender() {
   // Desactivar el flag después de la carga inicial (2 segundos)
   setTimeout(() => {
     isLoadingContent = false;
-    console.log('✅ Carga inicial completada, actualizaciones de layout habilitadas');
   }, 2000);
 
   // Evento para detectar cuando se suelta un componente en el canvas
@@ -2623,6 +1318,44 @@ onRender() {
       console.log('   Tipo:', component.get('type'));
       console.log('   Nombre:', component.get('name'));
       console.log('   Selectable:', component.get('selectable'));
+      
+      // ✅ Si es un componente de imagen, asegurar que tenga los traits correctos
+      if (component.get('type') === 'image') {
+        console.log('🖼️ Componente de imagen agregado desde bloque, verificando traits...');
+        
+        setTimeout(() => {
+          const imageComponentType = editor.DomComponents.getType('image');
+          if (imageComponentType && imageComponentType.model && imageComponentType.model.defaults && imageComponentType.model.defaults.traits) {
+            const registeredTraits = imageComponentType.model.defaults.traits;
+            
+            // Establecer los traits desde el componente registrado
+            component.set('traits', registeredTraits, { silent: false });
+            console.log('✅ Traits del componente de imagen actualizados desde el componente registrado');
+            
+            // Seleccionar el componente para que se muestren los traits
+            editor.select(component);
+          }
+        }, 100);
+      }
+      
+      // ✅ Si es un componente de contenedor, asegurar que tenga los traits correctos
+      if (component.get('type') === 'container') {
+        console.log('📦 Componente de contenedor agregado desde bloque, verificando traits...');
+        
+        setTimeout(() => {
+          const containerComponentType = editor.DomComponents.getType('container');
+          if (containerComponentType && containerComponentType.model && containerComponentType.model.defaults && containerComponentType.model.defaults.traits) {
+            const registeredTraits = containerComponentType.model.defaults.traits;
+            
+            // Establecer los traits desde el componente registrado
+            component.set('traits', registeredTraits, { silent: false });
+            console.log('✅ Traits del componente de contenedor actualizados desde el componente registrado');
+            
+            // Seleccionar el componente para que se muestren los traits
+            editor.select(component);
+          }
+        }, 100);
+      }
     }
   });
 
@@ -2640,11 +1373,63 @@ onRender() {
           iframe {
             pointer-events: none !important;
           }
-          [data-gjs-type="youtube-video"] {
+          [data-gjs-type="video"],
+          [data-gjs-type="youtube-video"],
+          [data-gjs-type="google-maps"] {
             cursor: pointer !important;
           }
           .youtube-container {
             cursor: pointer !important;
+          }
+          
+          /* ✅ Eliminar espacio en blanco inferior del canvas */
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+            min-height: auto !important;
+          }
+          html {
+            margin: 0 !important;
+            padding: 0 !important;
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+          }
+          
+          /* ✅ OCULTAR badge "DIV" para componentes background-image */
+          [data-gjs-type="background-image"] .gjs-badge,
+          [data-gjs-type="background-image"] .gjs-badge-label {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+          }
+          
+          /* ✅ OCULTAR badge para toggle pero mantener toolbar visible */
+          [data-gjs-type="toggle"] .gjs-badge,
+          [data-gjs-type="toggle"] .gjs-badge-label {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+          }
+          
+          /* ✅ ASEGURAR que el toolbar sea visible para toggle */
+          [data-gjs-type="toggle"] .gjs-toolbar,
+          .toggle-container .gjs-toolbar,
+          .gjs-selected[data-gjs-type="toggle"] ~ .gjs-toolbar,
+          .gjs-toolbar[data-toolbar-toggle] {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 9999 !important;
+          }
+          
+          /* ✅ Asegurar que cualquier toolbar cerca de un toggle sea visible */
+          .toggle-container + .gjs-toolbar,
+          .toggle-container ~ .gjs-toolbar {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
           }
         `;
         frameDoc.head.appendChild(styleEl);
@@ -2655,20 +1440,72 @@ onRender() {
 
   // Configurar eventos del editor
   editor.on('component:add', function (component) {
-    console.log('➕ component:add disparado para:', {
-      tipo: component.get('type'),
-      nombre: component.get('name'),
-      selectable: component.get('selectable'),
-      hoverable: component.get('hoverable')
-    });
+    
+    // Sincronizar botones cuando se agregan (SOLO para componentes tipo 'button', NO para toggles o botones dentro de toggles)
+    if (component.get('type') === 'button') {
+      // ✅ NO aplicar a botones que están dentro de un toggle
+      const parent = component.parent();
+      if (parent && parent.get && parent.get('type') === 'toggle') {
+        console.log('⚠️ [Editor] Ignorando preservación de clases para botón dentro de toggle');
+        return;
+      }
+      setTimeout(() => {
+        if (typeof component.syncInitialValues === 'function') {
+          component.syncInitialValues();
+          // Forzar actualización visual y preservar clases
+          if (component.view && component.view.el) {
+            component.view.render();
+            // Preservar clases después del render
+            setTimeout(() => {
+              if (component.view && component.view.el) {
+                const savedClasses = component.getAttributes().class;
+                if (savedClasses) {
+                  component.view.el.className = savedClasses;
+                  component.setAttributes({ class: savedClasses });
+                  console.log('✅ Clases preservadas después de agregar botón:', savedClasses);
+                }
+              }
+            }, 100);
+          }
+        }
+      }, 200);
+    }
+    
+    // Sincronizar contenedores cuando se agregan
+    if (component.get('type') === 'container') {
+      setTimeout(() => {
+        if (component.view && component.view.el) {
+          const el = component.view.el;
+          // Asegurar que tenga las clases básicas
+          if (!el.className.includes('container-flex')) {
+            el.classList.add('container-flex');
+          }
+          if (!el.className.includes('flex')) {
+            el.classList.add('flex');
+          }
+          // Actualizar atributos en el modelo
+          const currentClass = el.className;
+          component.setAttributes({ class: currentClass });
+          component.view.render();
+          console.log('✅ Contenedor inicializado con clases:', currentClass);
+        }
+      }, 200);
+    }
+    
+    // ✅ El manejo de imágenes se hace completamente en el componente image.js
+    // No es necesario duplicar código aquí - el componente image.js maneja:
+    // - Inicialización con imagen por defecto
+    // - Doble clic para abrir galería
+    // - Actualización de imagen desde galería
+    // - Sincronización de src
     
     // Asegurar que los estilos de bloqueo de iframe estén presentes
-    if (component.get('type') === 'youtube-video') {
+    if (component.get('type') === 'video' || component.get('type') === 'youtube-video' || component.get('type') === 'google-maps') {
       setTimeout(ensureIframeBlockerStyles, 100);
     }
     
     // Generar ID único para widgets que necesitan estilos independientes
-    const widgetTypes = ['button', 'image', 'heading', 'paragraph', 'text', 'link', 'divider', 'icon', 'icon-box', 'youtube-video'];
+    const widgetTypes = ['button', 'image', 'heading', 'paragraph', 'text', 'link', 'divider', 'icon', 'icon-box', 'video', 'youtube-video', 'google-maps', 'image-box-advanced', 'background-image', 'file', 'audio', 'carousel'];
     const componentType = component.get('type');
     
     if (widgetTypes.includes(componentType) || componentType === 'default') {
@@ -2695,44 +1532,332 @@ onRender() {
       console.log('navbar');
     }
     
-    // Si el componente se agregó a una columna o contenedor, ocultar el placeholder
+    // ✅ Si el componente se agregó a un contenedor, ocultar el placeholder
     // Solo hacer esto si NO estamos cargando contenido existente
     if (!isLoadingContent) {
+      const removePlaceholderFromContainer = (container) => {
+        if (!container || !container.components) return;
+        
+        try {
+          const components = container.components();
+          if (!components) return;
+          
+          // Buscar el placeholder
+          let placeholder = null;
+          let componentCount = 0;
+          
+          if (components.models) {
+            components.models.forEach((c) => {
+              componentCount++;
+              const content = c.get('content') || '';
+              const name = c.get('name') || '';
+              const type = c.get('type') || '';
+              
+              // Detectar placeholder por nombre, contenido o tipo
+              if (name === 'Placeholder' || 
+                  content.includes('Arrastra elementos aquí') ||
+                  (type === 'text' && content.includes('↓'))) {
+                placeholder = c;
+              }
+            });
+          } else if (typeof components.each === 'function') {
+            components.each((c) => {
+              componentCount++;
+              if (!placeholder) {
+                const content = c.get('content') || '';
+                const name = c.get('name') || '';
+                const type = c.get('type') || '';
+                
+                if (name === 'Placeholder' || 
+                    content.includes('Arrastra elementos aquí') ||
+                    (type === 'text' && content.includes('↓'))) {
+                  placeholder = c;
+                }
+              }
+            });
+          } else if (Array.isArray(components)) {
+            componentCount = components.length;
+            placeholder = components.find(c => {
+              const content = c.get ? c.get('content') || '' : '';
+              const name = c.get ? c.get('name') || '' : '';
+              const type = c.get ? c.get('type') || '' : '';
+              return name === 'Placeholder' || 
+                     content.includes('Arrastra elementos aquí') ||
+                     (type === 'text' && content.includes('↓'));
+            });
+          }
+          
+          // Remover el placeholder si existe y hay más de un componente (el placeholder + el nuevo)
+          if (placeholder && componentCount > 1) {
+            placeholder.remove();
+            console.log('✅ Placeholder eliminado del contenedor');
+            return true;
+          }
+        } catch (error) {
+          console.error('❌ Error al eliminar placeholder:', error);
+        }
+        return false;
+      };
+      
       const parent = component.parent();
+      if (parent) {
+        const parentType = parent.get('type');
+        const parentClasses = parent.getClasses() || [];
+        const isColumn = parentClasses.includes('column');
+        const isContainer = parentType === 'container' || parentClasses.includes('container-simple') || parentClasses.includes('container-flex');
+        
+        if (isColumn || isContainer) {
+          // ✅ Remover placeholder del contenedor padre (múltiples intentos para asegurar)
+          const tryRemovePlaceholder = () => {
+            const removed = removePlaceholderFromContainer(parent);
+            if (!removed) {
+              // Si no se removió, intentar de nuevo
+              setTimeout(() => removePlaceholderFromContainer(parent), 50);
+            }
+          };
+          
+          tryRemovePlaceholder();
+          setTimeout(tryRemovePlaceholder, 100);
+          setTimeout(tryRemovePlaceholder, 300);
+        }
+        
+        // También verificar el abuelo (por si el componente está dentro de otro)
+        const grandParent = parent.parent();
+        if (grandParent) {
+          const grandParentType = grandParent.get('type');
+          const grandParentClasses = grandParent.getClasses() || [];
+          const isGrandParentContainer = grandParentType === 'container' || 
+                                        grandParentClasses.includes('container-simple') || 
+                                        grandParentClasses.includes('container-flex');
+          
+          if (isGrandParentContainer) {
+            setTimeout(() => {
+              removePlaceholderFromContainer(grandParent);
+            }, 150);
+          }
+        }
+      }
+      
+      // Buscar en todos los contenedores del editor
+      setTimeout(() => {
+        const allComponents = editor.getComponents();
+        const findAndCleanContainers = (components) => {
+          if (!components) return;
+          
+          try {
+            if (typeof components.each === 'function') {
+              components.each((c) => {
+                if (c.get('type') === 'container') {
+                  removePlaceholderFromContainer(c);
+                }
+                if (c.components) {
+                  findAndCleanContainers(c.components());
+                }
+              });
+            } else if (Array.isArray(components)) {
+              components.forEach((c) => {
+                if (c.get && c.get('type') === 'container') {
+                  removePlaceholderFromContainer(c);
+                }
+                if (c.components) {
+                  findAndCleanContainers(c.components());
+                }
+              });
+            }
+          } catch (error) {
+            console.error('❌ Error en findAndCleanContainers:', error);
+          }
+        };
+        
+        findAndCleanContainers(allComponents);
+      }, 200);
+      
+      // Código original para columnas (mantener compatibilidad)
       if (parent) {
         const parentClasses = parent.getClasses();
         const isColumn = parentClasses.includes('column');
-        const isContainer = parentClasses.includes('container-simple') || parent.get('type') === 'container';
         
-        if (isColumn || isContainer) {
-          // Buscar y remover el placeholder
-          const placeholder = parent.components().models.find(c => 
-            c.get('content')?.includes('Arrastra elementos aquí')
-          );
-          if (placeholder && parent.components().length > 1) {
-            placeholder.remove();
+        if (isColumn) {
+          // ✅ Buscar y remover el placeholder (método mejorado)
+          const removeColumnPlaceholder = () => {
+            try {
+              const components = parent.components();
+              if (!components) return;
+              
+              let placeholder = null;
+              let componentCount = 0;
+              
+              if (components.models) {
+                components.models.forEach((c) => {
+                  componentCount++;
+                  const content = (c.get('content') || '').toString();
+                  const name = (c.get('name') || '').toString();
+                  
+                  if (name === 'Placeholder' || 
+                      content.includes('Arrastra elementos aquí') ||
+                      content.includes('↓ Arrastra')) {
+                    placeholder = c;
+                  }
+                });
+              }
+              
+              if (placeholder && componentCount > 1) {
+                placeholder.remove();
+                // También eliminar desde el DOM
+                if (placeholder.view && placeholder.view.el) {
+                  setTimeout(() => {
+                    if (placeholder.view && placeholder.view.el && placeholder.view.el.parentNode) {
+                      placeholder.view.el.remove();
+                    }
+                  }, 50);
+                }
+                console.log('✅ Placeholder eliminado de columna');
+                
+                // Si es columna, remover borde punteado
+                const currentClasses = parent.getClasses();
+                const newClasses = currentClasses.filter(c => 
+                  !['border-2', 'border-dashed', 'border-gray-300', 'flex', 'items-center', 'justify-center'].includes(c)
+                );
+                parent.setClass(newClasses.join(' '));
+              }
+            } catch (error) {
+              console.error('❌ Error al eliminar placeholder de columna:', error);
+            }
+          };
+          
+          // Ejecutar múltiples veces para asegurar
+          removeColumnPlaceholder();
+          setTimeout(removeColumnPlaceholder, 100);
+          setTimeout(removeColumnPlaceholder, 300);
+        }
+      }
+    }
+  });
+  
+  // ✅ Listener adicional para eliminar placeholder cuando se agregan componentes
+  editor.on('component:add', function(component) {
+    // Esperar un momento para que el componente se agregue completamente
+    setTimeout(() => {
+      const parent = component.parent();
+      if (parent) {
+        const parentType = parent.get('type');
+        const parentClasses = parent.getClasses() || [];
+        const isContainer = parentType === 'container' || 
+                           parentClasses.includes('container-simple') || 
+                           parentClasses.includes('container-flex');
+        
+        if (isContainer) {
+          const components = parent.components();
+          if (components) {
+            let placeholder = null;
+            let componentCount = 0;
             
-            // Si es columna, remover borde punteado
-            if (isColumn) {
-              const currentClasses = parent.getClasses();
-              const newClasses = currentClasses.filter(c => 
-                !['border-2', 'border-dashed', 'border-gray-300', 'flex', 'items-center', 'justify-center'].includes(c)
-              );
-              parent.setClass(newClasses.join(' '));
+            // Buscar placeholder
+            if (components.models) {
+              components.models.forEach((c) => {
+                componentCount++;
+                const content = (c.get('content') || '').toString();
+                const name = (c.get('name') || '').toString();
+                
+                if (name === 'Placeholder' || 
+                    content.includes('Arrastra elementos aquí') ||
+                    content.includes('↓ Arrastra')) {
+                  placeholder = c;
+                }
+              });
             }
             
-            // Si es contenedor simple, remover borde punteado también
-            if (isContainer) {
-              const currentClasses = parent.getClasses();
-              const newClasses = currentClasses.filter(c => 
-                !['border-2', 'border-dashed', 'border-gray-300'].includes(c)
-              );
-              parent.setClass(newClasses.join(' '));
+            // Eliminar si hay más de un componente
+            if (placeholder && componentCount > 1) {
+              try {
+                placeholder.remove();
+                // También desde el DOM
+                if (placeholder.view && placeholder.view.el) {
+                  placeholder.view.el.remove();
+                }
+                console.log('✅ Placeholder eliminado (listener adicional)');
+              } catch (error) {
+                console.error('❌ Error:', error);
+              }
             }
           }
         }
       }
-    }
+    }, 150);
+  });
+  
+  // ✅ Listener adicional para eliminar placeholder cuando se agregan componentes a contenedores
+  editor.on('component:add', function(component) {
+    // Esperar un momento para que el componente se agregue completamente
+    setTimeout(() => {
+      try {
+        const parent = component.parent();
+        if (parent) {
+          const parentType = parent.get('type');
+          const parentClasses = parent.getClasses() || [];
+          const isContainer = parentType === 'container' || 
+                             parentClasses.includes('container-simple') || 
+                             parentClasses.includes('container-flex');
+          
+          if (isContainer) {
+            const components = parent.components();
+            if (components) {
+              let placeholder = null;
+              let componentCount = 0;
+              
+              // Buscar placeholder en diferentes formatos
+              if (components.models) {
+                components.models.forEach((c) => {
+                  componentCount++;
+                  const content = (c.get('content') || '').toString();
+                  const name = (c.get('name') || '').toString();
+                  
+                  if (name === 'Placeholder' || 
+                      content.includes('Arrastra elementos aquí') ||
+                      content.includes('↓ Arrastra')) {
+                    placeholder = c;
+                  }
+                });
+              } else if (typeof components.each === 'function') {
+                components.each((c) => {
+                  componentCount++;
+                  if (!placeholder) {
+                    const content = (c.get('content') || '').toString();
+                    const name = (c.get('name') || '').toString();
+                    
+                    if (name === 'Placeholder' || 
+                        content.includes('Arrastra elementos aquí') ||
+                        content.includes('↓ Arrastra')) {
+                      placeholder = c;
+                    }
+                  }
+                });
+              }
+              
+              // Eliminar si hay más de un componente
+              if (placeholder && componentCount > 1) {
+                try {
+                  placeholder.remove();
+                  // También desde el DOM
+                  if (placeholder.view && placeholder.view.el) {
+                    setTimeout(() => {
+                      if (placeholder.view && placeholder.view.el && placeholder.view.el.parentNode) {
+                        placeholder.view.el.remove();
+                      }
+                    }, 50);
+                  }
+                  console.log('✅ Placeholder eliminado del contenedor (listener adicional, componentes:', componentCount, ')');
+                } catch (error) {
+                  console.error('❌ Error al eliminar placeholder:', error);
+                }
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error en listener de placeholder:', error);
+      }
+    }, 200);
   });
   
   // Evento cuando cambia un trait (propiedad) de un componente
@@ -3023,7 +2148,14 @@ onRender() {
         'column': 'Columna',
         'icon': 'Icono',
         'icon-box': 'Caja de Icono',
+        'video': 'Video',
         'youtube-video': 'YouTube',
+        'google-maps': 'Google Maps',
+        'image-box-advanced': 'Caja de Imagen Avanzada',
+        'background-image': 'Imagen de Fondo',
+        'file': 'Archivo',
+        'audio': 'Reproductor de Audio',
+        'carousel': 'Carrusel',
         'carousel': 'Carrusel',
         'gallery': 'Galería'
       };
@@ -3055,8 +2187,82 @@ onRender() {
     }
   });
   
-  // Evento para forzar selección de carrusel y galería cuando se detecte
+  // Evento para forzar selección de carrusel, galería y toggle cuando se detecte
   editor.on('component:add', function (component) {
+    const componentType = component.get('type');
+    console.log('📦 [Editor] Componente agregado:', componentType);
+    
+    if (componentType === 'toggle') {
+      console.log('🔄 [Editor] Toggle detectado, configurando selección...');
+      
+      // Verificar que el componente esté registrado correctamente
+      const toggleType = editor.DomComponents.getType('toggle');
+      if (!toggleType) {
+        console.error('❌ [Editor] Componente toggle NO está registrado en GrapesJS!');
+        // Intentar registrar ahora
+        if (window.registerToggleComponent) {
+          console.log('🔄 [Editor] Intentando registrar toggle ahora...');
+          window.registerToggleComponent(editor);
+        }
+      } else {
+        console.log('✅ [Editor] Componente toggle está registrado correctamente');
+      }
+      
+      // Forzar que sea seleccionable (GrapesJS generará toolbar automáticamente)
+      component.set({
+        draggable: true,
+        selectable: true,
+        hoverable: true,
+        removable: true,
+        // ✅ NO establecer toolbar - GrapesJS lo generará automáticamente
+        highlightable: true,
+        badgable: true,
+        layerable: true
+      });
+      
+      console.log('✅ [Editor] Propiedades del toggle configuradas:', {
+        selectable: component.get('selectable'),
+        removable: component.get('removable'),
+        toolbar: component.get('toolbar')
+      });
+      
+      // Agregar evento de clic después de un breve delay
+      setTimeout(() => {
+        if (component.view && component.view.el) {
+          const el = component.view.el;
+          console.log('🔧 [Editor] Configurando elemento DOM del toggle:', el);
+          
+          // Asegurar que el contenedor sea seleccionable
+          el.setAttribute('data-gjs-selectable', 'true');
+          el.setAttribute('data-gjs-removable', 'true');
+          el.setAttribute('data-gjs-highlightable', 'true');
+          el.setAttribute('data-gjs-hoverable', 'true');
+          el.setAttribute('data-gjs-badgable', 'true');
+          
+          // Asegurar propiedades del modelo nuevamente (igual que Carousel)
+          component.set({
+            draggable: true,
+            selectable: true,
+            removable: true,
+            // ✅ NO establecer toolbar - GrapesJS lo generará automáticamente
+            highlightable: true,
+            hoverable: true,
+            badgable: true,
+            layerable: true
+          });
+          
+          // ✅ NO agregar listeners personalizados - dejar que GrapesJS maneje todo naturalmente
+          // Solo asegurar estilos básicos
+          el.style.cursor = 'pointer';
+          el.style.position = 'relative';
+          
+          console.log('✅ [Editor] Toggle configurado - sin listeners personalizados');
+        } else {
+          console.error('❌ [Editor] No se encontró elemento DOM del toggle');
+        }
+      }, 300);
+    }
+    
     if (component.get('type') === 'carousel') {
       console.log('🎠 Carrusel detectado, configurando selección...');
       
@@ -3106,8 +2312,832 @@ onRender() {
     }
   });
 
+  // ✅ Asegurar que los componentes toggle muestren el toolbar cuando se seleccionan
+  editor.on('component:selected', function (component) {
+    if (!component) return;
+    
+    const componentType = component.get('type');
+    console.log('🎯 [Editor] Componente seleccionado:', componentType);
+    
+    // Si es un toggle, asegurar que tenga todas las propiedades necesarias
+    if (componentType === 'toggle') {
+      console.log('🔄 [Editor] Toggle seleccionado, asegurando propiedades...');
+      
+      // Forzar propiedades para asegurar que el toolbar aparezca (igual que Carousel)
+      component.set({
+        draggable: true,
+        selectable: true,
+        removable: true,
+        toolbar: true,
+        highlightable: true,
+        hoverable: true,
+        badgable: true,
+        layerable: true     // ✅ Agregar layerable
+      }, { silent: false });
+      
+      console.log('✅ [Editor] Propiedades del toggle actualizadas:', {
+        selectable: component.get('selectable'),
+        removable: component.get('removable'),
+        draggable: component.get('draggable'),
+        badgable: component.get('badgable'),
+        layerable: component.get('layerable')
+      });
+      
+      // Asegurar atributos en el DOM
+      if (component.view && component.view.el) {
+        const el = component.view.el;
+        el.setAttribute('data-gjs-selectable', 'true');
+        el.setAttribute('data-gjs-removable', 'true');
+        el.setAttribute('data-gjs-highlightable', 'true');
+        el.setAttribute('data-gjs-badgable', 'true');
+        el.setAttribute('data-gjs-hoverable', 'true');
+        el.style.outline = '2px solid #3b82f6';
+        
+        console.log('✅ [Editor] Atributos DOM del toggle configurados');
+        
+        // ✅ Verificar el toolbar en múltiples ubicaciones
+        setTimeout(() => {
+          const canvasFrame = editor.Canvas.getFrameEl();
+          if (canvasFrame && canvasFrame.contentDocument) {
+            const frameDoc = canvasFrame.contentDocument;
+            const frameBody = frameDoc.body || frameDoc.documentElement;
+            
+            // Buscar toolbar en múltiples lugares
+            let toolbar = frameDoc.querySelector('.gjs-toolbar');
+            if (!toolbar && frameBody) {
+              toolbar = frameBody.querySelector('.gjs-toolbar');
+            }
+            
+            // Buscar también en el contenedor del canvas
+            const canvasView = editor.Canvas.getCanvasView();
+            if (canvasView && canvasView.el) {
+              const canvasEl = canvasView.el;
+              if (!toolbar) {
+                toolbar = canvasEl.querySelector('.gjs-toolbar');
+              }
+            }
+            
+            // Buscar en el documento principal también
+            if (!toolbar) {
+              toolbar = document.querySelector('.gjs-toolbar');
+            }
+            
+            console.log('🔍 [Editor] Toolbar verificado en frame:', frameDoc.querySelector('.gjs-toolbar'));
+            console.log('🔍 [Editor] Toolbar verificado en canvasView:', canvasView && canvasView.el ? canvasView.el.querySelector('.gjs-toolbar') : 'canvasView no disponible');
+            console.log('🔍 [Editor] Toolbar encontrado final:', toolbar);
+            
+            if (toolbar) {
+              const toolbarItems = toolbar.querySelectorAll('.gjs-toolbar-item');
+              console.log('✅ [Editor] Toolbar encontrado con', toolbarItems.length, 'items');
+              
+              // ✅ CRÍTICO: Si el toolbar está vacío o oculto, forzar su actualización
+              if (toolbarItems.length === 0 || toolbar.style.display === 'none') {
+                console.log('🔄 [Editor] Toolbar vacío u oculto - forzando actualización...');
+                
+                // Forzar que sea visible PRIMERO
+                toolbar.style.display = 'block';
+                toolbar.style.visibility = 'visible';
+                toolbar.style.opacity = '1';
+                toolbar.removeAttribute('style');
+                toolbar.setAttribute('style', 'pointer-events: all; display: block !important; visibility: visible !important; opacity: 1 !important;');
+                
+                // Asegurar que el componente tenga las propiedades ANTES de actualizar el toolbar
+                component.set({
+                  selectable: true,
+                  removable: true,
+                  // ✅ NO establecer toolbar - GrapesJS lo generará automáticamente
+                  highlightable: true,
+                  hoverable: true,
+                  badgable: true,
+                  layerable: true,
+                  draggable: true
+                }, { silent: false });
+                
+                // Forzar update del canvas view para que renderice el toolbar con los botones
+                const canvasView = editor.Canvas.getCanvasView();
+                if (canvasView) {
+                  // Actualizar la selección en el canvas view
+                  if (canvasView.updateSelected) {
+                    canvasView.updateSelected();
+                  }
+                  
+                  // Intentar acceder al toolbar de GrapesJS y forzar su renderizado
+                  // El toolbar está en el CanvasView
+                  
+                  // Método 1: Intentar acceder directamente al toolbar manager de GrapesJS
+                  if (editor.Toolbar) {
+                    console.log('✅ [Editor] Editor.Toolbar encontrado, forzando render...');
+                    // El Toolbar de GrapesJS puede tener un método para renderizar
+                  }
+                  
+                  // Método 2: Forzar render accediendo a través del Canvas
+                  if (editor.Canvas && editor.Canvas.getToolbarEl) {
+                    const toolbarEl = editor.Canvas.getToolbarEl();
+                    if (toolbarEl) {
+                      console.log('✅ [Editor] Toolbar element encontrado vía Canvas.getToolbarEl()');
+                    }
+                  }
+                  
+                  // Método 3: Intentar forzar el render del toolbar accediendo a canvasView.toolbarEl
+                  if (canvasView.toolbarEl) {
+                    console.log('✅ [Editor] canvasView.toolbarEl encontrado');
+                    // No limpiar, solo forzar que sea visible
+                    canvasView.toolbarEl.style.display = 'block';
+                    canvasView.toolbarEl.style.visibility = 'visible';
+                  }
+                  
+                  // Método 4: Forzar render del toolbar accediendo al CanvasView
+                  if (canvasView.toolbar && typeof canvasView.toolbar.render === 'function') {
+                    console.log('✅ [Editor] canvasView.toolbar.render encontrado, ejecutando...');
+                    canvasView.toolbar.render(component);
+                  }
+                  
+                  // Método 5: Intentar usar el método de GrapesJS para actualizar el toolbar
+                  if (canvasView.updateToolbar && typeof canvasView.updateToolbar === 'function') {
+                    console.log('✅ [Editor] canvasView.updateToolbar encontrado, ejecutando...');
+                    canvasView.updateToolbar();
+                  }
+                  
+                  // Método 6: También intentar usar el método showToolbar si existe
+                  if (canvasView.showToolbar && typeof canvasView.showToolbar === 'function') {
+                    console.log('✅ [Editor] canvasView.showToolbar encontrado, ejecutando...');
+                    canvasView.showToolbar(component);
+                  }
+                  
+                  // Método 7: Trigger del evento component:toolbar:render si existe
+                  if (component.trigger) {
+                    component.trigger('component:toolbar:render');
+                    component.trigger('toolbar:render');
+                  }
+                  
+                  // Método 8: Forzar refresh completo del canvas (usar refresh, no updateCanvas)
+                  editor.refresh();
+                }
+                
+                // ✅ NO re-seleccionar para evitar loops infinitos
+                // En su lugar, solo verificar una vez más después de un delay
+                setTimeout(() => {
+                  const newToolbar = canvasView && canvasView.el ? canvasView.el.querySelector('.gjs-toolbar') : null;
+                  if (newToolbar) {
+                    const newItems = newToolbar.querySelectorAll('.gjs-toolbar-item');
+                    console.log('🔍 [Editor] Toolbar después de actualización:', newItems.length, 'items');
+                    
+                    if (newItems.length === 0) {
+                      console.warn('⚠️ [Editor] Toolbar sigue vacío - creando botones manualmente...');
+                      
+                      // ✅ Crear botones del toolbar manualmente si GrapesJS no los genera
+                      try {
+                        const deleteBtn = document.createElement('div');
+                        deleteBtn.className = 'gjs-toolbar-item';
+                        deleteBtn.innerHTML = '<i class="fa fa-trash"></i>';
+                        deleteBtn.title = 'Eliminar';
+                        deleteBtn.style.cursor = 'pointer';
+                        deleteBtn.addEventListener('click', (e) => {
+                          e.stopPropagation();
+                          if (component) {
+                            component.remove();
+                            editor.select(null);
+                          }
+                        });
+                        
+                        toolbar.appendChild(deleteBtn);
+                        console.log('✅ [Editor] Botón de eliminar creado manualmente');
+                      } catch (error) {
+                        console.error('❌ [Editor] Error al crear botón manual:', error);
+                      }
+                    } else {
+                      console.log('✅ [Editor] Toolbar ahora tiene', newItems.length, 'items');
+                    }
+                  }
+                }, 300);
+              }
+              
+              // Verificar que sea visible
+              const style = window.getComputedStyle(toolbar);
+              console.log('🔍 [Editor] Toolbar estilo:', {
+                display: style.display,
+                visibility: style.visibility,
+                opacity: style.opacity
+              });
+            } else {
+              console.warn('⚠️ [Editor] Toolbar NO encontrado en ningún lugar');
+              console.log('🔍 [Editor] Propiedades del componente:', {
+                selectable: component.get('selectable'),
+                removable: component.get('removable'),
+                draggable: component.get('draggable'),
+                badgable: component.get('badgable'),
+                layerable: component.get('layerable')
+              });
+              
+              // ✅ Intentar forzar creación del toolbar de múltiples formas
+              console.log('🔄 [Editor] Intentando forzar creación del toolbar...');
+              
+              // Método 1: Actualizar canvas
+              editor.refresh();
+              
+              // Método 2: Forzar actualización del canvas view
+              if (canvasView) {
+                if (canvasView.updateSelected) {
+                  canvasView.updateSelected();
+                }
+                
+                // Forzar re-render del canvas view
+                if (canvasView.updateCanvas) {
+                  canvasView.updateCanvas();
+                }
+                
+                // Intentar trigger del evento de selección
+                if (canvasView.trigger) {
+                  canvasView.trigger('component:select', component);
+                }
+              }
+              
+              // Método 3: Ejecutar comando de toolbar si existe
+              if (editor.Commands && editor.Commands.has('core:component-toolbar')) {
+                try {
+                  editor.Commands.run('core:component-toolbar');
+                  console.log('✅ [Editor] Comando core:component-toolbar ejecutado');
+                } catch (e) {
+                  console.log('⚠️ [Editor] No se pudo ejecutar core:component-toolbar:', e);
+                }
+              }
+              
+              // Método 4: Deseleccionar y volver a seleccionar para forzar render
+              setTimeout(() => {
+                editor.select(null);
+                setTimeout(() => {
+                  editor.select(component);
+                  
+                  // Buscar nuevamente después de re-seleccionar
+                  setTimeout(() => {
+                    toolbar = frameDoc.querySelector('.gjs-toolbar') || 
+                             (frameBody ? frameBody.querySelector('.gjs-toolbar') : null) ||
+                             (canvasView && canvasView.el ? canvasView.el.querySelector('.gjs-toolbar') : null);
+                    
+                    if (toolbar) {
+                      console.log('✅ [Editor] Toolbar encontrado después de re-seleccionar');
+                      
+                      // Asegurar visibilidad
+                      toolbar.style.display = 'block';
+                      toolbar.style.visibility = 'visible';
+                      toolbar.style.opacity = '1';
+                    } else {
+                      console.error('❌ [Editor] Toolbar AÚN NO encontrado después de todos los intentos');
+                    }
+                  }, 150);
+                }, 50);
+              }, 100);
+            }
+          }
+        }, 600);
+      }
+    }
+  });
+  
   // Cargar formularios cuando se selecciona el bloque de formulario
   editor.on('component:selected', function (component) {
+    // ✅ Actualizar formulario para componentes Verse, Code, Paragraph y Heading cuando se seleccionan
+    let componentType = component.get('type');
+    
+    if (componentType === 'verse') {
+      console.log('🎯 [Editor] Componente Verse seleccionado');
+      
+      // ✅ CRÍTICO: Sincronizar el modelo ANTES de que se renderice el TraitManager
+      // Esto es lo que hace BackgroundImage - sincroniza primero, luego GrapesJS renderiza con los valores correctos
+      if (component.syncContentFromDOM && typeof component.syncContentFromDOM === 'function') {
+        // Sincronizar inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
+        component.syncContentFromDOM();
+        
+        // Forzar re-render del TraitManager después de sincronizar
+        setTimeout(() => {
+          if (editor.TraitManager && editor.TraitManager.render) {
+            editor.TraitManager.render();
+            console.log('✅ [Editor] TraitManager re-renderizado para Verse');
+            
+            // ✅ CRÍTICO: Forzar actualización de los inputs después del render
+            // Usar múltiples intentos porque el render puede tardar
+            const updateVerseInputs = (attempt = 1) => {
+              const modelContent = component.get('verse-content') || '';
+              const modelAuthor = component.get('verse-author') || '';
+              
+              // Buscar inputs con múltiples selectores
+              const contentInput = document.querySelector('textarea[name="verse-content"]') ||
+                                 document.querySelector('.traits-container textarea[data-name="verse-content"]') ||
+                                 document.querySelector('.gjs-trt-trait[data-trait-name="verse-content"] textarea') ||
+                                 document.querySelector('.gjs-trt-trait textarea');
+              const authorInput = document.querySelector('input[name="verse-author"]') ||
+                                document.querySelector('.traits-container input[data-name="verse-author"]') ||
+                                document.querySelector('.gjs-trt-trait[data-trait-name="verse-author"] input') ||
+                                document.querySelector('.gjs-trt-trait input[type="text"]');
+              
+              console.log(`🔍 [Editor] Intento ${attempt} - Inputs encontrados:`, {
+                content: !!contentInput,
+                author: !!authorInput,
+                contentValue: contentInput ? contentInput.value.substring(0, 30) : 'N/A',
+                modelContent: modelContent.substring(0, 30)
+              });
+              
+              if (contentInput) {
+                if (contentInput.value !== modelContent) {
+                  contentInput.value = modelContent;
+                  // Disparar eventos para que GrapesJS lo detecte
+                  contentInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  contentInput.dispatchEvent(new Event('change', { bubbles: true }));
+                  console.log('✅ [Editor] Input de contenido Verse actualizado manualmente');
+                } else {
+                  console.log('ℹ️ [Editor] Input de contenido Verse ya tiene el valor correcto');
+                }
+              } else if (attempt < 5) {
+                console.warn(`⚠️ [Editor] No se encontró input de contenido Verse, reintentando...`);
+                setTimeout(() => updateVerseInputs(attempt + 1), 100);
+                return;
+              } else {
+                console.warn('⚠️ [Editor] No se encontró input de contenido Verse después de 5 intentos');
+              }
+              
+              if (authorInput) {
+                if (authorInput.value !== modelAuthor) {
+                  authorInput.value = modelAuthor;
+                  // Disparar eventos para que GrapesJS lo detecte
+                  authorInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  authorInput.dispatchEvent(new Event('change', { bubbles: true }));
+                  console.log('✅ [Editor] Input de autor Verse actualizado manualmente');
+                } else {
+                  console.log('ℹ️ [Editor] Input de autor Verse ya tiene el valor correcto');
+                }
+              } else if (attempt < 5) {
+                console.warn(`⚠️ [Editor] No se encontró input de autor Verse, reintentando...`);
+                setTimeout(() => updateVerseInputs(attempt + 1), 100);
+                return;
+              } else {
+                console.warn('⚠️ [Editor] No se encontró input de autor Verse después de 5 intentos');
+              }
+            };
+            
+            setTimeout(() => updateVerseInputs(1), 200);
+          }
+        }, 50);
+      }
+    }
+    
+    if (componentType === 'code') {
+      console.log('🎯 [Editor] Componente Code seleccionado');
+      
+      // ✅ CRÍTICO: Sincronizar el modelo ANTES de que se renderice el TraitManager
+      // Esto es lo que hace BackgroundImage - sincroniza primero, luego GrapesJS renderiza con los valores correctos
+      if (component.syncContentFromDOM && typeof component.syncContentFromDOM === 'function') {
+        // Sincronizar inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
+        component.syncContentFromDOM();
+        
+        // Forzar re-render del TraitManager después de sincronizar
+        setTimeout(() => {
+          if (editor.TraitManager && editor.TraitManager.render) {
+            editor.TraitManager.render();
+            console.log('✅ [Editor] TraitManager re-renderizado para Code');
+            
+            // ✅ CRÍTICO: Forzar actualización de los inputs después del render
+            const updateCodeInputs = (attempt = 1) => {
+              const modelContent = component.get('code-content') || '';
+              
+              const contentInput = document.querySelector('textarea[name="code-content"]') ||
+                                 document.querySelector('.traits-container textarea[data-name="code-content"]') ||
+                                 document.querySelector('.gjs-trt-trait[data-trait-name="code-content"] textarea') ||
+                                 document.querySelector('.gjs-trt-trait textarea');
+              
+              console.log(`🔍 [Editor] Intento ${attempt} - Input Code encontrado:`, {
+                found: !!contentInput,
+                currentValue: contentInput ? contentInput.value.substring(0, 30) : 'N/A',
+                modelContent: modelContent.substring(0, 30)
+              });
+              
+              if (contentInput) {
+                if (contentInput.value !== modelContent) {
+                  contentInput.value = modelContent;
+                  // Disparar eventos para que GrapesJS lo detecte
+                  contentInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  contentInput.dispatchEvent(new Event('change', { bubbles: true }));
+                  console.log('✅ [Editor] Input de contenido Code actualizado manualmente');
+                } else {
+                  console.log('ℹ️ [Editor] Input de contenido Code ya tiene el valor correcto');
+                }
+              } else if (attempt < 5) {
+                console.warn(`⚠️ [Editor] No se encontró input de contenido Code, reintentando...`);
+                setTimeout(() => updateCodeInputs(attempt + 1), 100);
+              } else {
+                console.warn('⚠️ [Editor] No se encontró input de contenido Code después de 5 intentos');
+              }
+            };
+            
+            setTimeout(() => updateCodeInputs(1), 200);
+          }
+        }, 50);
+      }
+    }
+    
+    if (componentType === 'paragraph') {
+      console.log('🎯 [Editor] Componente Paragraph seleccionado');
+      
+      // ✅ CRÍTICO: Sincronizar el modelo ANTES de que se renderice el TraitManager
+      if (component.syncContentFromDOM && typeof component.syncContentFromDOM === 'function') {
+        // Sincronizar inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
+        component.syncContentFromDOM();
+        
+        // Forzar re-render del TraitManager después de sincronizar
+        setTimeout(() => {
+          if (editor.TraitManager && editor.TraitManager.render) {
+            editor.TraitManager.render();
+            console.log('✅ [Editor] TraitManager re-renderizado para Paragraph');
+            
+            // ✅ CRÍTICO: Forzar actualización de los inputs después del render
+            const updateParagraphInputs = (attempt = 1) => {
+              const modelText = component.get('paragraph-text') || '';
+              
+              const textInput = document.querySelector('input[name="paragraph-text"]') ||
+                              document.querySelector('.traits-container input[data-name="paragraph-text"]') ||
+                              document.querySelector('.gjs-trt-trait[data-trait-name="paragraph-text"] input') ||
+                              document.querySelector('.gjs-trt-trait input[type="text"]');
+              
+              console.log(`🔍 [Editor] Intento ${attempt} - Input Paragraph encontrado:`, {
+                found: !!textInput,
+                currentValue: textInput ? textInput.value.substring(0, 30) : 'N/A',
+                modelText: modelText.substring(0, 30)
+              });
+              
+              if (textInput) {
+                if (textInput.value !== modelText) {
+                  textInput.value = modelText;
+                  // Disparar eventos para que GrapesJS lo detecte
+                  textInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  textInput.dispatchEvent(new Event('change', { bubbles: true }));
+                  console.log('✅ [Editor] Input de texto Paragraph actualizado manualmente');
+                } else {
+                  console.log('ℹ️ [Editor] Input de texto Paragraph ya tiene el valor correcto');
+                }
+              } else if (attempt < 5) {
+                console.warn(`⚠️ [Editor] No se encontró input de texto Paragraph, reintentando...`);
+                setTimeout(() => updateParagraphInputs(attempt + 1), 100);
+              } else {
+                console.warn('⚠️ [Editor] No se encontró input de texto Paragraph después de 5 intentos');
+              }
+            };
+            
+            setTimeout(() => updateParagraphInputs(1), 200);
+          }
+        }, 50);
+      }
+    }
+    
+    if (componentType === 'heading') {
+      console.log('🎯 [Editor] Componente Heading seleccionado');
+      
+      // ✅ CRÍTICO: Sincronizar el modelo ANTES de que se renderice el TraitManager
+      if (component.syncContentFromDOM && typeof component.syncContentFromDOM === 'function') {
+        // Sincronizar inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
+        component.syncContentFromDOM();
+        
+        // Forzar re-render del TraitManager después de sincronizar
+        setTimeout(() => {
+          if (editor.TraitManager && editor.TraitManager.render) {
+            editor.TraitManager.render();
+            console.log('✅ [Editor] TraitManager re-renderizado para Heading');
+            
+            // ✅ CRÍTICO: Forzar actualización de los inputs después del render
+            const updateHeadingInputs = (attempt = 1) => {
+              const modelText = component.get('heading-text') || '';
+              
+              const textInput = document.querySelector('input[name="heading-text"]') ||
+                              document.querySelector('.traits-container input[data-name="heading-text"]') ||
+                              document.querySelector('.gjs-trt-trait[data-trait-name="heading-text"] input') ||
+                              document.querySelector('.gjs-trt-trait input[type="text"]');
+              
+              console.log(`🔍 [Editor] Intento ${attempt} - Input Heading encontrado:`, {
+                found: !!textInput,
+                currentValue: textInput ? textInput.value.substring(0, 30) : 'N/A',
+                modelText: modelText.substring(0, 30)
+              });
+              
+              if (textInput) {
+                if (textInput.value !== modelText) {
+                  textInput.value = modelText;
+                  // Disparar eventos para que GrapesJS lo detecte
+                  textInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  textInput.dispatchEvent(new Event('change', { bubbles: true }));
+                  console.log('✅ [Editor] Input de texto Heading actualizado manualmente');
+                } else {
+                  console.log('ℹ️ [Editor] Input de texto Heading ya tiene el valor correcto');
+                }
+              } else if (attempt < 5) {
+                console.warn(`⚠️ [Editor] No se encontró input de texto Heading, reintentando...`);
+                setTimeout(() => updateHeadingInputs(attempt + 1), 100);
+              } else {
+                console.warn('⚠️ [Editor] No se encontró input de texto Heading después de 5 intentos');
+              }
+            };
+            
+            setTimeout(() => updateHeadingInputs(1), 200);
+          }
+        }, 50);
+      }
+    }
+    
+    // Continuar con el código original...
+    // Forzar actualización del TraitManager para componentes refactorizados
+    componentType = component.get('type'); // Reutilizar la variable ya declarada
+    const refactoredComponents = ['text', 'heading', 'paragraph', 'button', 'container', 'image'];
+    
+    if (refactoredComponents.includes(componentType)) {
+      console.log('🔄 Componente refactorizado seleccionado:', componentType);
+      
+      // Sincronizar contenedores cuando se seleccionan
+      if (componentType === 'container') {
+        setTimeout(() => {
+          if (component.view && component.view.el) {
+            const el = component.view.el;
+            // Asegurar que tenga las clases básicas
+            if (!el.className.includes('container-flex')) {
+              el.classList.add('container-flex');
+            }
+            if (!el.className.includes('flex')) {
+              el.classList.add('flex');
+            }
+            // Actualizar atributos en el modelo
+            const currentClass = el.className;
+            component.setAttributes({ class: currentClass });
+            console.log('✅ Contenedor sincronizado:', currentClass);
+          }
+        }, 50);
+      }
+      
+      // ✅ El manejo de imágenes se hace completamente en el componente image.js
+      // No es necesario duplicar código aquí - el componente image.js maneja:
+      // - Inicialización con imagen por defecto
+      // - Doble clic para abrir galería
+      // - Actualización de imagen desde galería
+      // - Sincronización de src
+      
+      // Si el componente tiene un método de sincronización, ejecutarlo
+      if (componentType === 'button') {
+        console.log('🔍 Verificando método syncInitialValues en botón...');
+        console.log('🔍 syncInitialValues existe?', typeof component.syncInitialValues);
+        console.log('🔍 Componente completo:', component);
+        
+        if (typeof component.syncInitialValues === 'function') {
+          console.log('🔄 Sincronizando botón desde component:selected...');
+          try {
+            // Ejecutar sincronización inmediatamente
+            component.syncInitialValues();
+            console.log('✅ syncInitialValues ejecutado');
+          } catch (error) {
+            console.error('❌ Error ejecutando syncInitialValues:', error);
+          }
+          
+          // Forzar actualización del TraitManager después de sincronizar
+          setTimeout(() => {
+            if (editor.TraitManager) {
+              // Establecer el componente como target (método compatible)
+              if (typeof editor.TraitManager.setTarget === 'function') {
+                editor.TraitManager.setTarget(component);
+              } else {
+                editor.TraitManager.component = component;
+              }
+              
+              // Forzar actualización de todos los traits del botón
+              const buttonTraits = ['button-text', 'button-href', 'button-target', 'button-style', 'button-size', 'button-width', 'button-align', 'button-radius'];
+              console.log('🔄 Actualizando traits del botón...');
+              buttonTraits.forEach(traitName => {
+                const value = component.get(traitName);
+                console.log(`  - ${traitName}:`, value);
+                if (value !== undefined && value !== null && value !== '') {
+                  // Establecer el valor en el modelo
+                  component.set(traitName, value, { silent: false });
+                  // Forzar actualización del trait
+                  component.trigger(`change:${traitName}`, component, value);
+                  console.log(`✅ Trait ${traitName} establecido:`, value);
+                }
+              });
+              
+              // Renderizar el TraitManager
+              editor.TraitManager.render();
+              console.log('✅ TraitManager actualizado');
+            }
+          }, 200);
+        } else {
+          console.warn('⚠️ syncInitialValues no es una función, intentando sincronización manual...');
+          // Sincronización manual si el método no está disponible
+          if (component.view && component.view.el) {
+            const el = component.view.el;
+            const classList = (el.className || '').split(' ').filter(c => c.trim());
+            const textContent = el.textContent || el.innerText || '';
+            
+            console.log('📝 Sincronización manual - Texto:', textContent);
+            console.log('📝 Sincronización manual - Clases:', classList);
+            
+            if (textContent.trim()) {
+              component.set('button-text', textContent.trim(), { silent: false });
+              console.log('✅ Texto establecido:', textContent.trim());
+            } else {
+              component.set('button-text', '', { silent: false });
+              console.log('ℹ️ Sin texto, estableciendo vacío');
+            }
+            
+            const href = el.getAttribute('href') || '#';
+            component.set('button-href', href, { silent: false });
+            console.log('✅ Href establecido:', href);
+            
+            const target = el.getAttribute('target') || '_self';
+            component.set('button-target', target, { silent: false });
+            console.log('✅ Target establecido:', target);
+            
+            // Detectar estilo - buscar cualquier bg-color y hover:bg-color
+            const styleOptions = [
+              { value: 'bg-blue-600 hover:bg-blue-700', color: 'blue' },
+              { value: 'bg-gray-600 hover:bg-gray-700', color: 'gray' },
+              { value: 'bg-green-600 hover:bg-green-700', color: 'green' },
+              { value: 'bg-red-600 hover:bg-red-700', color: 'red' },
+              { value: 'bg-yellow-600 hover:bg-yellow-700', color: 'yellow' },
+              { value: 'bg-purple-600 hover:bg-purple-700', color: 'purple' },
+              { value: 'bg-pink-600 hover:bg-pink-700', color: 'pink' }
+            ];
+            
+            // Buscar cualquier clase bg-color-XXX
+            const bgClass = classList.find(c => c.match(/^bg-(blue|gray|green|red|yellow|purple|pink)-\d+$/));
+            if (bgClass) {
+              const colorMatch = bgClass.match(/^bg-(\w+)-\d+$/);
+              if (colorMatch) {
+                const color = colorMatch[1];
+                const styleMatch = styleOptions.find(opt => opt.color === color);
+                if (styleMatch) {
+                  component.set('button-style', styleMatch.value, { silent: false });
+                  console.log('✅ Estilo detectado:', styleMatch.value, '(basado en:', bgClass, ')');
+                }
+              }
+            }
+            
+            // Detectar tamaño
+            const sizeOptions = [
+              { value: 'px-4 py-2 text-sm', px: 'px-4', py: 'py-2', text: 'text-sm' },
+              { value: 'px-6 py-2 text-base', px: 'px-6', py: 'py-2', text: 'text-base' },
+              { value: 'px-8 py-3 text-lg', px: 'px-8', py: 'py-3', text: 'text-lg' },
+              { value: 'px-10 py-4 text-xl', px: 'px-10', py: 'py-4', text: 'text-xl' }
+            ];
+            let sizeMatch = sizeOptions.find(opt => 
+              classList.includes(opt.px) && classList.includes(opt.py) && classList.includes(opt.text)
+            );
+            if (!sizeMatch) {
+              const textSizeClass = classList.find(c => ['text-sm', 'text-base', 'text-lg', 'text-xl'].includes(c));
+              if (textSizeClass) {
+                sizeMatch = sizeOptions.find(opt => opt.text === textSizeClass);
+              }
+            }
+            if (sizeMatch) {
+              component.set('button-size', sizeMatch.value, { silent: false });
+              console.log('✅ Tamaño detectado:', sizeMatch.value);
+            }
+            
+            // Detectar ancho
+            const widthClasses = ['w-auto', 'w-full', 'w-24', 'w-32', 'w-40', 'w-48', 'w-64', 'w-1/2', 'w-1/3', 'w-2/3', 'w-3/4'];
+            const widthMatch = classList.find(c => widthClasses.includes(c));
+            if (widthMatch) {
+              component.set('button-width', widthMatch, { silent: false });
+              console.log('✅ Ancho detectado:', widthMatch);
+            } else {
+              // Si no hay ancho específico, dejar vacío
+              component.set('button-width', '', { silent: false });
+              console.log('ℹ️ Sin ancho específico, usando automático');
+            }
+            
+            // Detectar alineación
+            if (classList.includes('mx-auto')) {
+              component.set('button-align', 'block mx-auto', { silent: false });
+              console.log('✅ Alineación detectada: Centrado');
+            } else if (classList.includes('ml-auto')) {
+              component.set('button-align', 'block ml-auto', { silent: false });
+              console.log('✅ Alineación detectada: Derecha');
+            } else if (classList.includes('mr-auto')) {
+              component.set('button-align', 'block mr-auto', { silent: false });
+              console.log('✅ Alineación detectada: Izquierda');
+            } else {
+              component.set('button-align', '', { silent: false });
+              console.log('ℹ️ Sin alineación específica');
+            }
+            
+            // Detectar bordes redondeados
+            const radiusOptions = [
+              { value: 'rounded-none', class: 'rounded-none' },
+              { value: 'rounded', class: 'rounded' },
+              { value: 'rounded-md', class: 'rounded-md' },
+              { value: 'rounded-lg', class: 'rounded-lg' },
+              { value: 'rounded-full', class: 'rounded-full' }
+            ];
+            const radiusMatch = radiusOptions.find(opt => classList.includes(opt.class));
+            if (radiusMatch) {
+              component.set('button-radius', radiusMatch.value, { silent: false });
+              console.log('✅ Radio detectado:', radiusMatch.value);
+            } else {
+              // Si no hay radio específico, usar rounded-md por defecto
+              component.set('button-radius', 'rounded-md', { silent: false });
+              console.log('ℹ️ Sin radio específico, usando rounded-md');
+            }
+            
+            // Forzar actualización del TraitManager después de establecer todos los valores
+            setTimeout(() => {
+              if (editor.TraitManager) {
+                console.log('🔄 Renderizando TraitManager con valores sincronizados...');
+                
+                // Verificar que los valores se establecieron correctamente
+                const buttonTraits = ['button-text', 'button-href', 'button-target', 'button-style', 'button-size', 'button-width', 'button-align', 'button-radius'];
+                console.log('📋 Valores establecidos en el modelo:');
+                buttonTraits.forEach(traitName => {
+                  const value = component.get(traitName);
+                  console.log(`  - ${traitName}:`, value);
+                });
+                
+                // Usar el método correcto para establecer el target
+                if (typeof editor.TraitManager.setTarget === 'function') {
+                  editor.TraitManager.setTarget(component);
+                } else {
+                  // Método alternativo: establecer el componente directamente
+                  editor.TraitManager.component = component;
+                }
+                
+                // Asegurar que los traits estén definidos en el modelo
+                const currentTraits = component.get('traits') || [];
+                console.log('📋 Traits actuales en el modelo:', currentTraits.length);
+                
+                // Si no hay 8 traits, forzar la actualización de los traits desde defaults
+                if (currentTraits.length < 8) {
+                  console.log('⚠️ Faltan traits, forzando actualización desde defaults...');
+                  // Obtener los traits desde el tipo de componente
+                  const componentType = editor.DomComponents.getType('button');
+                  if (componentType && componentType.model && componentType.model.defaults && componentType.model.defaults.traits) {
+                    component.set('traits', componentType.model.defaults.traits, { silent: false });
+                    console.log('✅ Traits actualizados desde defaults');
+                  }
+                }
+                
+                // Forzar actualización de los traits antes de renderizar
+                buttonTraits.forEach(traitName => {
+                  const value = component.get(traitName);
+                  if (value !== undefined) {
+                    // Asegurar que el valor esté en el modelo
+                    component.set(traitName, value, { silent: false });
+                  }
+                });
+                
+                // Renderizar el TraitManager
+                editor.TraitManager.render();
+                
+                // Verificar cuántos traits se renderizaron
+                setTimeout(() => {
+                  const traitsRendered = document.querySelectorAll('.traits-container .gjs-trt-trait').length;
+                  console.log(`✅ TraitManager actualizado (sincronización manual) - Traits renderizados: ${traitsRendered}`);
+                }, 100);
+              }
+            }, 200);
+          }
+        }
+      }
+      
+      // Asegurar que el TraitManager se actualice
+      setTimeout(() => {
+        if (editor.TraitManager) {
+          // Intentar usar setTarget si está disponible
+          if (typeof editor.TraitManager.setTarget === 'function') {
+            editor.TraitManager.setTarget(component);
+          }
+          
+          // Forzar renderizado
+          editor.TraitManager.render();
+          
+          // Verificar que se renderizaron los traits
+          setTimeout(() => {
+            const traitsInContainer = document.querySelectorAll('.traits-container .gjs-trt-trait');
+            console.log('📋 Traits renderizados:', traitsInContainer.length);
+            
+            if (traitsInContainer.length === 0) {
+              console.warn('⚠️ No se renderizaron traits, intentando método alternativo...');
+              
+              // Método alternativo: forzar actualización del componente
+              component.trigger('change:traits');
+              component.trigger('change:attributes');
+              
+              // Re-renderizar
+              editor.TraitManager.render();
+              
+              // Si aún no funciona, usar el sistema personalizado
+              setTimeout(() => {
+                const traitsStillEmpty = document.querySelectorAll('.traits-container .gjs-trt-trait').length === 0;
+                if (traitsStillEmpty && window.renderCustomTraits) {
+                  console.log('🔄 Usando sistema de traits personalizado...');
+                  window.renderCustomTraits(component);
+                }
+              }, 300);
+            }
+          }, 200);
+        }
+      }, 100);
+    }
+    
     // Si es el bloque de formulario, cargar formularios disponibles
     const isFormBlock = component.get('type') === 'form-dynamic' || component.get('attributes')?.class === 'gjs-block-form';
     if (isFormBlock) {
@@ -3160,10 +3190,10 @@ onRender() {
     
     // Debug específico para carrusel
     if (component.get('type') === 'carousel') {
-      // Usar el TraitManager estándar de GrapesJS
+      // El TraitManager se actualiza automáticamente cuando se selecciona un componente
+      // No es necesario llamar a setTarget manualmente
       setTimeout(() => {
         if (editor.TraitManager) {
-          editor.TraitManager.setTarget(component);
           editor.TraitManager.render();
         }
       }, 100);
@@ -3187,7 +3217,14 @@ onRender() {
         'column': 'Columna',
         'icon': 'Icono',
         'icon-box': 'Caja de Icono',
+        'video': 'Video',
         'youtube-video': 'YouTube',
+        'google-maps': 'Google Maps',
+        'image-box-advanced': 'Caja de Imagen Avanzada',
+        'background-image': 'Imagen de Fondo',
+        'file': 'Archivo',
+        'audio': 'Reproductor de Audio',
+        'carousel': 'Carrusel',
         'carousel': 'Carrusel',
         'gallery': 'Galería'
       };
@@ -3231,24 +3268,20 @@ onRender() {
     
     // Imagen
     if (componentType === 'image') {
-      console.log('🖼️ Componente de Imagen seleccionado:', {
-        tipo: componentType,
-        nombre: component.get('name'),
-        src: component.get('src'),
-        alt: component.get('alt'),
-        traits: component.get('traits'),
-        cantidadTraits: component.get('traits')?.length || 0
-      });
+      // Log deshabilitado para reducir ruido en consola
+      // console.log('🖼️ Componente de Imagen seleccionado:', {
+      //   tipo: componentType,
+      //   nombre: component.get('name'),
+      //   src: component.get('src'),
+      //   alt: component.get('alt'),
+      //   traits: component.get('traits'),
+      //   cantidadTraits: component.get('traits')?.length || 0
+      // });
       
       // Forzar la actualización del TraitManager para Imagen
       setTimeout(() => {
         if (editor.TraitManager) {
           editor.TraitManager.render();
-          console.log('🔄 TraitManager actualizado para Imagen');
-          
-          // Verificar si los traits se renderizaron
-          const traitsInContainer = document.querySelectorAll('.traits-container .gjs-trt-trait');
-          console.log('📋 Traits renderizados:', traitsInContainer.length);
         }
       }, 100);
     }
@@ -3269,13 +3302,6 @@ onRender() {
     
     // Galería
     if (componentType === 'gallery') {
-      console.log('🖼️ Componente de Galería seleccionado:', {
-        tipo: componentType,
-        nombre: component.get('name'),
-        traits: component.get('traits'),
-        cantidadTraits: component.get('traits')?.length || 0
-      });
-      
       // Sincronizar URLs si el componente tiene el método
       if (component.syncImageUrls) {
         component.syncImageUrls();
@@ -3285,14 +3311,6 @@ onRender() {
       setTimeout(() => {
         if (editor.TraitManager) {
           editor.TraitManager.render();
-          console.log('🔄 TraitManager actualizado para Galería');
-          
-          const traitsInContainer = document.querySelectorAll('.traits-container .gjs-trt-trait');
-          console.log('📋 Traits renderizados:', traitsInContainer.length);
-          
-          // Verificar si aparecieron los campos de imagen
-          const imageFields = document.querySelectorAll('.traits-container input[placeholder*="imagen"]');
-          console.log('🖼️ Campos de imagen encontrados:', imageFields.length);
         }
       }, 100);
     }
@@ -3323,21 +3341,11 @@ onRender() {
     }, 50);
     
     // Configurar el selector para usar el ID del componente (estilos únicos)
-    const widgetTypes = ['button', 'image', 'heading', 'paragraph', 'text', 'link', 'divider', 'icon', 'icon-box', 'section', 'container', 'column', 'youtube-video'];
+    const widgetTypes = ['button', 'image', 'heading', 'paragraph', 'text', 'link', 'divider', 'icon', 'icon-box', 'section', 'container', 'column', 'video', 'youtube-video', 'google-maps'];
     
     // Obtener selectores actuales
     const currentSelectors = component.getSelectors ? component.getSelectors() : null;
     const currentSelectorsCount = currentSelectors ? currentSelectors.length : 0;
-    
-    console.log('🔍 Componente seleccionado:', {
-      tipo: componentType,
-      id: component.getId(),
-      cantidadSelectores: currentSelectorsCount,
-      selectoresActuales: currentSelectors?.map(s => ({
-        name: s.get('name'),
-        type: s.get('type')
-      }))
-    });
     
     //Asegurar que el componente tenga un ID único
     let componentId = component.getId();
@@ -3379,11 +3387,6 @@ onRender() {
     } else {
       // Para componentes que no soportan setSelectors (como links/buttons)
       // Forzar que los estilos se apliquen mediante reglas CSS directas con su ID
-      console.log('ℹ️ Componente sin setSelectors, usando ID para estilos:', {
-        tipo: componentType,
-        id: componentId,
-        cantidadSelectores: currentSelectorsCount
-      });
       
       // Configurar el StyleManager para usar el ID del componente
       const sm = editor.StyleManager;
@@ -3397,7 +3400,6 @@ onRender() {
     // Esto SIEMPRE debe ejecutarse para mostrar el panel de estilos
     if (editor.StyleManager) {
       editor.StyleManager.render();
-      console.log('🔄 StyleManager actualizado para el componente');
     }
 
     // Forzar actualización del StyleManager cuando se selecciona un componente
@@ -3410,10 +3412,6 @@ onRender() {
         const stylesContainer = document.querySelector('.styles-container');
         const stylesContainerWidget = document.querySelector('.styles-container-widget');
         
-        console.log('📋 Contenedores encontrados:', {
-          stylesContainer: !!stylesContainer,
-          stylesContainerWidget: !!stylesContainerWidget
-        });
         
         if (stylesContainer && stylesContainerWidget) {
           // Esperar a que el StyleManager se haya renderizado completamente
@@ -3423,11 +3421,9 @@ onRender() {
                                stylesContainer.querySelector('[data-gjs-type="sectors"]') ||
                                stylesContainer.firstElementChild;
             
-            console.log('🔍 Buscando StyleManager en .styles-container:', !!smContainer);
             
             if (smContainer) {
               const sectorsCount = smContainer.querySelectorAll('.gjs-sm-sector').length;
-              console.log('✅ StyleManager renderizado con', sectorsCount, 'sectores');
               
               // Limpiar el contenedor de widgets
               stylesContainerWidget.innerHTML = '';
@@ -3435,10 +3431,8 @@ onRender() {
               // MOVER (no clonar) el contenedor completo para mantener toda la funcionalidad
               stylesContainerWidget.appendChild(smContainer);
               
-              console.log('✅ StyleManager movido al contenedor visible con funcionalidad completa');
             } else {
-              console.warn('⚠️ No se encontró el StyleManager en .styles-container');
-              console.log('Contenido de .styles-container:', stylesContainer.innerHTML.substring(0, 200));
+              // StyleManager no encontrado (log removido)
             }
           }, 200);
         } else {
@@ -3469,31 +3463,18 @@ onRender() {
   // === EVENTOS PARA RASTREAR CAMBIOS DE ESTILOS ===
   
   // Evento cuando cambia cualquier propiedad de estilo (informativo solamente)
-  editor.on('styleable:change', function(property, value) {
-    const selected = editor.getSelected();
-    const componentId = selected?.getId();
-    
-    // Solo log informativo, la aplicación real se hace en el listener de change:value
-    console.log('🎨 EVENTO ESTILO:', {
-      propiedad: property.get ? property.get('property') : 'desconocido',
-      valor: value,
-      componente: selected?.get('type'),
-      componenteId: componentId
-    });
-  });
-  
   // Evento cuando se actualiza un componente (incluye cambios de estilo)
-  editor.on('component:update', function(component) {
-    const componentType = component.get('type');
-    const componentId = component.getId();
-    
-    console.log('🔄 COMPONENTE ACTUALIZADO:', {
-      id: componentId,
-      tipo: componentType,
-      estilos: component.getStyle(),
-      atributos: component.getAttributes()
-    });
-  });
+  // Log deshabilitado para reducir ruido en consola
+  // editor.on('component:update', function(component) {
+  //   const componentType = component.get('type');
+  //   const componentId = component.getId();
+  //   console.log('🔄 COMPONENTE ACTUALIZADO:', {
+  //     id: componentId,
+  //     tipo: componentType,
+  //     estilos: component.getStyle(),
+  //     atributos: component.getAttributes()
+  //   });
+  // });
   
   // Evento cuando cambia el estilo de un componente específico
   editor.on('component:styleUpdate', function(component) {
@@ -3504,17 +3485,19 @@ onRender() {
   });
   
   // Evento cuando se añade una regla CSS
-  editor.on('style:custom', function(props) {
-    console.log('📝 REGLA CSS AÑADIDA:', props);
-  });
+  // Log deshabilitado para reducir ruido en consola
+  // editor.on('style:custom', function(props) {
+  //   console.log('📝 REGLA CSS AÑADIDA:', props);
+  // });
   
   // Listener para detectar cambios en el StyleManager
-  editor.on('style:target', function(target) {
-    console.log('🎯 TARGET DE ESTILOS CAMBIADO:', {
-      target: target,
-      selector: target?.getSelectors?.().map(s => s.get('name'))
-    });
-  });
+  // Log deshabilitado para reducir ruido en consola
+  // editor.on('style:target', function(target) {
+  //   console.log('🎯 TARGET DE ESTILOS CAMBIADO:', {
+  //     target: target,
+  //     selector: target?.getSelectors?.().map(s => s.get('name'))
+  //   });
+  // });
   
   // Listener para cambios en las propiedades del StyleManager
   try {
@@ -3538,15 +3521,16 @@ onRender() {
               label: s.get('label')
             }));
             
-            console.log('💅 PROPIEDAD DE ESTILO MODIFICADA:', {
-              propiedad: propertyName,
-              valorNuevo: propertyValue,
-              componente: selected.get('type'),
-              componenteId: componentId,
-              cantidadSelectores: selectors?.length || 0,
-              selectoresDetallados: selectorDetails,
-              estilosActuales: selected.getStyle ? selected.getStyle() : {}
-            });
+            // Log deshabilitado para reducir ruido en consola
+            // console.log('💅 PROPIEDAD DE ESTILO MODIFICADA:', {
+            //   propiedad: propertyName,
+            //   valorNuevo: propertyValue,
+            //   componente: selected.get('type'),
+            //   componenteId: componentId,
+            //   cantidadSelectores: selectors?.length || 0,
+            //   selectoresDetallados: selectorDetails,
+            //   estilosActuales: selected.getStyle ? selected.getStyle() : {}
+            // });
             
             // FORZAR APLICACIÓN DEL ESTILO DIRECTAMENTE AL CSS CON EL ID  
             // Usar !important para sobrescribir estilos de Tailwind
@@ -3583,30 +3567,29 @@ onRender() {
                   if (componentModel && componentModel.view && componentModel.view.el) {
                     const camelProp = propertyName.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
                     componentModel.view.el.style[camelProp] = finalValue;
-                    console.log('✅ Estilo aplicado como inline también:', {
-                      componente: componentId,
-                      propiedad: propertyName,
-                      valor: finalValue
-                    });
+                    // Log deshabilitado para reducir ruido en consola
+                    // console.log('✅ Estilo aplicado como inline también:', {
+                    //   componente: componentId,
+                    //   propiedad: propertyName,
+                    //   valor: finalValue
+                    // });
                   }
                 } catch (inlineError) {
                   console.warn('⚠️ No se pudo aplicar estilo inline:', inlineError);
                 }
                 
-                const cssForComponent = editor.getCss().match(new RegExp(`#${componentId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^{]*\\{[^}]*\\}`, 'g'));
-                
-                console.log('✅ ESTILO FORZADO AL CSS:', {
-                  selector: `#${componentId}`,
-                  propiedad: propertyName,
-                  valorOriginal: propertyValue,
-                  valorFinal: finalValue,
-                  cssDelComponente: cssForComponent ? cssForComponent[0] : 'No encontrado'
-                });
-                
-                // Log adicional para debugging
-                if (cssForComponent) {
-                  console.log('📋 CSS completo del botón:', cssForComponent[0]);
-                }
+                // Logs deshabilitados para reducir ruido en consola
+                // const cssForComponent = editor.getCss().match(new RegExp(`#${componentId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^{]*\\{[^}]*\\}`, 'g'));
+                // console.log('✅ ESTILO FORZADO AL CSS:', {
+                //   selector: `#${componentId}`,
+                //   propiedad: propertyName,
+                //   valorOriginal: propertyValue,
+                //   valorFinal: finalValue,
+                //   cssDelComponente: cssForComponent ? cssForComponent[0] : 'No encontrado'
+                // });
+                // if (cssForComponent) {
+                //   console.log('📋 CSS completo del botón:', cssForComponent[0]);
+                // }
                 
                 // Forzar actualización del canvas
                 editor.trigger('change:canvasOffset');
@@ -3636,7 +3619,6 @@ onRender() {
         });
       }
     });
-    console.log('✅ Listeners de propiedades de estilo configurados');
   } catch (error) {
     console.warn('⚠️ No se pudieron configurar los listeners de propiedades:', error);
   }
@@ -3658,6 +3640,94 @@ onRender() {
   } else if (existingHtml) {
     editor.setComponents(decodeHtml(existingHtml));
   }
+  
+  // Sincronizar imágenes después de cargar el contenido
+  if (typeof ImageSync !== 'undefined' && ImageSync.syncAfterLoad) {
+    ImageSync.syncAfterLoad(editor);
+  } else {
+    // Fallback si el módulo no está cargado
+    setTimeout(() => {
+      const imageComponents = editor.DomComponents.getWrapper().find('*').filter(comp => {
+        const type = comp.get('type');
+        const tagName = comp.get('tagName');
+        return type === 'image' || tagName === 'img';
+      });
+      
+      imageComponents.forEach(imgComp => {
+        const currentSrc = imgComp.getAttributes().src;
+        if (currentSrc && currentSrc.trim() && currentSrc !== 'undefined') {
+          if (imgComp.get('image-src') !== currentSrc) {
+            imgComp.set('image-src', currentSrc.trim(), { silent: true });
+          }
+        }
+      });
+    }, 500);
+  }
+  
+  // ✅ CRÍTICO: Sincronizar Background Image después de cargar contenido
+  setTimeout(() => {
+    const syncBackgroundImageAfterInit = () => {
+      const allComponents = editor.getComponents();
+      const findBackgroundImage = (components) => {
+        if (components && typeof components.forEach === 'function') {
+          components.forEach((component) => {
+            if (component && component.get && component.get('type') === 'background-image') {
+              if (component.view && component.view.el) {
+                const titleEl = component.view.el.querySelector('h2');
+                const textEl = component.view.el.querySelector('p');
+                const buttonEl = component.view.el.querySelector('button, a');
+                
+                if (titleEl) {
+                  const domTitle = titleEl.textContent || titleEl.innerText || '';
+                  if (domTitle.trim()) {
+                    component.set('content-title', domTitle.trim(), { silent: false });
+                  }
+                }
+                
+                if (textEl) {
+                  const domText = textEl.textContent || textEl.innerText || '';
+                  if (domText.trim()) {
+                    component.set('content-text', domText.trim(), { silent: false });
+                  }
+                }
+                
+                if (buttonEl) {
+                  const domButtonText = buttonEl.textContent || buttonEl.innerText || '';
+                  if (domButtonText.trim()) {
+                    component.set('button-text', domButtonText.trim(), { silent: false });
+                  }
+                  
+                  const href = buttonEl.getAttribute('href');
+                  if (href) {
+                    component.set('button-link', href, { silent: false });
+                  } else if (buttonEl.tagName === 'BUTTON') {
+                    component.set('button-link', '#', { silent: false });
+                  }
+                }
+                
+                // Forzar actualización del TraitManager
+                setTimeout(() => {
+                  if (editor.TraitManager) {
+                    editor.TraitManager.render();
+                  }
+                }, 100);
+              }
+            }
+            
+            if (component && component.components) {
+              const childComponents = component.components();
+              if (childComponents) {
+                findBackgroundImage(childComponents);
+              }
+            }
+          });
+        }
+      };
+      findBackgroundImage(allComponents);
+    };
+    
+    syncBackgroundImageAfterInit();
+  }, 1000);
   
   // Función para asignar nombres descriptivos a componentes existentes
   function assignDescriptiveNames() {
@@ -3719,7 +3789,6 @@ onRender() {
         editor.LayerManager.render();
       }
       
-      console.log('✅ Nombres descriptivos asignados a todos los componentes');
     } catch (error) {
       console.error('❌ Error asignando nombres descriptivos:', error);
     }
@@ -3769,6 +3838,124 @@ onRender() {
   //   setTimeout(initializeManagers, 100);
   // });
 
+  // Listener para cambios de dispositivo - actualizar etiquetas de traits
+  editor.on('change:device', function() {
+    setTimeout(() => {
+      if (typeof window.updateTraitLabelsForDevice === 'function') {
+        window.updateTraitLabelsForDevice();
+      }
+    }, 150);
+  });
+
+  // Listener para cuando se selecciona un componente - actualizar etiquetas
+  editor.on('component:selected', function(component) {
+    // ✅ Asegurar que los traits del componente de imagen se apliquen correctamente
+    if (component && component.get('type') === 'image') {
+      console.log('🖼️ Componente de imagen seleccionado, verificando traits...');
+      
+      // Obtener los traits del componente registrado
+      const imageComponentType = editor.DomComponents.getType('image');
+      if (imageComponentType && imageComponentType.model && imageComponentType.model.defaults && imageComponentType.model.defaults.traits) {
+        const registeredTraits = imageComponentType.model.defaults.traits;
+        
+        // Verificar si el componente tiene los traits correctos
+        const currentTraits = component.get('traits') || [];
+        const hasButtonTrait = currentTraits.some(t => {
+          const traitName = typeof t === 'object' && t.name ? t.name : (typeof t === 'string' ? t : null);
+          return traitName === 'select-image-gallery';
+        });
+        
+        // Si no tiene el botón, forzar la actualización de los traits
+        if (!hasButtonTrait && registeredTraits.length > 0) {
+          console.log('⚠️ El componente de imagen no tiene el botón de galería, actualizando traits...');
+          
+          // Establecer los traits desde el componente registrado
+          component.set('traits', registeredTraits, { silent: false });
+          
+          // Forzar actualización del TraitManager
+          setTimeout(() => {
+            if (editor.TraitManager) {
+              if (typeof editor.TraitManager.setTarget === 'function') {
+                editor.TraitManager.setTarget(component);
+              }
+              editor.TraitManager.render();
+              
+              // Verificar que se renderizó el botón
+              setTimeout(() => {
+                const buttonTrait = document.querySelector('.traits-container [data-trait-name="select-image-gallery"]');
+                if (buttonTrait) {
+                  console.log('✅ Botón de galería renderizado correctamente');
+                } else {
+                  console.warn('⚠️ El botón de galería no se renderizó, intentando método alternativo...');
+                  // Intentar renderizar nuevamente
+                  editor.TraitManager.render();
+                }
+              }, 100);
+            }
+          }, 150);
+        } else {
+          console.log('✅ El componente de imagen ya tiene los traits correctos');
+        }
+      }
+    }
+    
+    // ✅ Asegurar que los traits del componente de contenedor se apliquen correctamente
+    if (component && component.get('type') === 'container') {
+      console.log('📦 Componente de contenedor seleccionado, verificando traits...');
+      
+      // Obtener los traits del componente registrado
+      const containerComponentType = editor.DomComponents.getType('container');
+      if (containerComponentType && containerComponentType.model && containerComponentType.model.defaults && containerComponentType.model.defaults.traits) {
+        const registeredTraits = containerComponentType.model.defaults.traits;
+        
+        // Verificar si el componente tiene los traits correctos
+        const currentTraits = component.get('traits') || [];
+        const hasLayoutModeTrait = currentTraits.some(t => {
+          const traitName = typeof t === 'object' && t.name ? t.name : (typeof t === 'string' ? t : null);
+          return traitName === 'container-layout-mode';
+        });
+        
+        // Si no tiene el trait de modo de layout, forzar la actualización de los traits
+        if (!hasLayoutModeTrait && registeredTraits.length > 0) {
+          console.log('⚠️ El componente de contenedor no tiene todos los traits, actualizando...');
+          
+          // Establecer los traits desde el componente registrado
+          component.set('traits', registeredTraits, { silent: false });
+          
+          // Forzar actualización del TraitManager
+          setTimeout(() => {
+            if (editor.TraitManager) {
+              if (typeof editor.TraitManager.setTarget === 'function') {
+                editor.TraitManager.setTarget(component);
+              }
+              editor.TraitManager.render();
+              
+              // Verificar que se renderizaron los traits
+              setTimeout(() => {
+                const traitsRendered = document.querySelectorAll('.traits-container .gjs-trt-trait').length;
+                if (traitsRendered >= 10) {
+                  console.log('✅ Traits del contenedor renderizados correctamente:', traitsRendered);
+                } else {
+                  console.warn('⚠️ No se renderizaron todos los traits, intentando método alternativo...');
+                  // Intentar renderizar nuevamente
+                  editor.TraitManager.render();
+                }
+              }, 100);
+            }
+          }, 150);
+        } else {
+          console.log('✅ El componente de contenedor ya tiene los traits correctos');
+        }
+      }
+    }
+    
+    setTimeout(() => {
+      if (typeof window.updateTraitLabelsForDevice === 'function') {
+        window.updateTraitLabelsForDevice();
+      }
+    }, 200);
+  });
+
   // Función para forzar actualización de managers
   window.updateManagers = function () {
     if (window.editor) {
@@ -3799,16 +3986,10 @@ onRender() {
 
   // Función para agregar !important a los estilos de IDs personalizados
   function addImportantToCustomIds(css) {
-    console.log('🔧 PROCESANDO CSS PARA AGREGAR !IMPORTANT');
-    console.log('📥 CSS Original length:', css.length);
-    
     // Buscar todas las reglas CSS de IDs personalizados (formato: tipo-timestamp-random o element-timestamp-random)
     const regex = /#([a-z\-]+-\d+(?:-\d+)?)\s*\{([^}]+)\}/g;
     
     let modifiedCss = css.replace(regex, function(match, id, styles) {
-      console.log(`🎯 Procesando ID: #${id}`);
-      console.log(`  Estilos originales: ${styles.substring(0, 200)}`);
-      
       // Dividir los estilos en propiedades individuales
       const properties = styles.split(';').map(prop => prop.trim()).filter(prop => prop);
       
@@ -3818,19 +3999,14 @@ onRender() {
           const [property, ...valueParts] = prop.split(':');
           const value = valueParts.join(':').trim(); // Por si el valor tiene ':'
           const newProp = `${property.trim()}:${value} !important`;
-          console.log(`    ✅ ${property.trim()}: ${value} → ${value} !important`);
           return newProp;
         }
         return prop;
       });
       
       const result = `#${id}{${importantProps.join(';')};}`;
-      console.log(`  📤 Estilos modificados: ${result.substring(0, 200)}`);
       return result;
     });
-    
-    console.log('📤 CSS Modificado length:', modifiedCss.length);
-    console.log('✨ Total de reglas procesadas:', (modifiedCss.match(regex) || []).length);
     
     return modifiedCss;
   }
@@ -3839,9 +4015,7 @@ onRender() {
   document.getElementById('save-btn')?.addEventListener('click', function () {
     // Antes de obtener el HTML, asegurar que todos los componentes con estilos personalizados
     // tengan sus estilos aplicados como inline
-    console.log('🔄 SINCRONIZANDO ESTILOS ANTES DE GUARDAR...');
     const allComponents = editor.DomComponents.getWrapper().find('*');
-    let componentsWithStyles = 0;
     
     allComponents.forEach(comp => {
       const compId = comp.getId();
@@ -3853,214 +4027,414 @@ onRender() {
           if (styles && Object.keys(styles).length > 0) {
             // Aplicar cada estilo como inline
             comp.addStyle(styles);
-            componentsWithStyles++;
-            console.log(`  ✅ Estilos sincronizados para #${compId}:`, Object.keys(styles));
           }
         }
       }
     });
     
-    console.log(`✨ Total de componentes con estilos sincronizados: ${componentsWithStyles}`);
-    
-    const htmlContent = editor.getHtml();
-    let cssContent = editor.getCss();
-    
-    console.log('💾 GUARDANDO PÁGINA:');
-    console.log('📄 HTML (primeros 1000 chars):', htmlContent.substring(0, 1000));
-    console.log('🎨 CSS ORIGINAL:', cssContent);
-    
-    // Verificar IDs personalizados en el CSS
-    const customIDs = cssContent.match(/#[a-z\-]+-\d+(?:-\d+)?/g);
-    console.log('🆔 IDs personalizados encontrados en CSS:', customIDs);
-    
-    // Verificar estilos inline en el HTML
-    const inlineStylesCount = (htmlContent.match(/style="/g) || []).length;
-    console.log('🎨 Componentes con estilos inline en HTML:', inlineStylesCount);
-    
-    // Verificar si hay iframes de YouTube en el HTML
-    const youtubeIframes = htmlContent.match(/<iframe[^>]*youtube[^>]*>/gi);
-    if (youtubeIframes) {
-      console.log('📺 YouTube iframes encontrados:', youtubeIframes.length);
-      youtubeIframes.forEach((iframe, index) => {
-        console.log(`  ${index + 1}. ${iframe}`);
-      });
+    // SINCRONIZAR IMAGENES: Usar módulo de sincronización
+    if (typeof ImageSync !== 'undefined' && ImageSync.syncBeforeSave) {
+      ImageSync.syncBeforeSave(editor);
     } else {
-      console.log('⚠️ NO se encontraron iframes de YouTube en el HTML');
-    }
-    
-    // Buscar el contenedor específico en el HTML
-    const containerMatch = htmlContent.match(/id="element-1761617610642-720"[^>]*>/);
-    if (containerMatch) {
-      console.log('🔍 Contenedor encontrado en HTML:', containerMatch[0]);
-      const hasInlineStyle = containerMatch[0].includes('style=');
-      console.log('  ✅ Tiene estilos inline:', hasInlineStyle);
-    }
-    
-    // Agregar !important a los estilos de IDs personalizados
-    cssContent = addImportantToCustomIds(cssContent);
-    
-    console.log('🎨 CSS CON !IMPORTANT:', cssContent);
-    console.log('📊 Total CSS caracteres:', cssContent.length);
-
-    const requestData = {
-      html_content: htmlContent,
-      css_content: cssContent,
-      enable_store: document.getElementById('enable-store')?.checked || false
-    };
-
-    // Agregar grapesjs_data si es un componente
-    if (window.editableType === 'component') {
-      requestData.grapesjs_data = JSON.stringify(editor.getProjectData());
-    }
-
-    fetch(window.saveUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || window.csrfToken
-      },
-      body: JSON.stringify(requestData)
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          // Mostrar mensaje de éxito
-          const btn = document.getElementById('save-btn');
-          const originalText = btn.textContent;
-          btn.textContent = '✓ Guardado';
-          btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-          btn.classList.add('bg-green-600');
-
-          setTimeout(() => {
-            btn.textContent = originalText;
-            btn.classList.remove('bg-green-600');
-            btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-          }, 2000);
-        } else {
-          alert('Error al guardar: ' + (data.message || 'Error desconocido'));
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('Error al guardar la página');
+      // Fallback si el módulo no está cargado
+      console.log('⚠️ ImageSync no disponible, usando fallback');
+      const imageComponents = allComponents.filter(comp => {
+        const type = comp.get('type');
+        const tagName = comp.get('tagName');
+        return type === 'image' || tagName === 'img';
       });
+      
+      imageComponents.forEach(imgComp => {
+        const imageSrc = imgComp.get('image-src');
+        const currentSrc = imgComp.getAttributes().src;
+        const defaultImageSrc = '/images/default-image.jpg';
+        
+        let finalSrc;
+        if (imageSrc && imageSrc.trim() && imageSrc !== 'undefined' && imageSrc !== defaultImageSrc) {
+          finalSrc = imageSrc.trim();
+        } else if (currentSrc && currentSrc.trim() && currentSrc !== 'undefined' && currentSrc !== defaultImageSrc) {
+          finalSrc = currentSrc.trim();
+        } else {
+          finalSrc = defaultImageSrc;
+        }
+        
+        // ✅ Actualizar atributos del modelo
+        imgComp.setAttributes({ src: finalSrc });
+        
+        // ✅ Actualizar el DOM directamente
+        if (imgComp.view && imgComp.view.el) {
+          imgComp.view.el.src = finalSrc;
+          imgComp.view.el.setAttribute('src', finalSrc);
+        }
+        
+        // ✅ Sincronizar image-src
+        if (imgComp.get('image-src') !== finalSrc) {
+          imgComp.set('image-src', finalSrc, { silent: true });
+        }
+        
+        // ✅ Forzar renderizado
+        if (imgComp.view) {
+          imgComp.view.render();
+        }
+      });
+    }
+    
+    // ✅ Esperar un momento para que ImageSync procese todos los cambios antes de obtener el HTML
+    setTimeout(() => {
+      // ✅ CRÍTICO: Sincronizar imágenes de Image Box Advanced antes de guardar
+      const syncImageBoxAdvancedBeforeSave = () => {
+        const allComponents = editor.getComponents();
+        const findImageBoxAdvanced = (components) => {
+          if (components && typeof components.forEach === 'function') {
+            components.forEach((component) => {
+              if (component && component.get && component.get('type') === 'image-box-advanced') {
+                const imageUrl = component.get('image-url');
+                const defaultImageUrl = '/images/default-image.jpg';
+                
+                // Forzar actualización del componente img interno
+                if (typeof component.updateImage === 'function') {
+                  component.updateImage();
+                }
+                
+                // Asegurar que el componente img tenga el src correcto
+                const findImage = (comp) => {
+                  if (comp.get('tagName') === 'img') {
+                    return comp;
+                  }
+                  let found = null;
+                  comp.components().each(child => {
+                    if (!found) {
+                      found = findImage(child);
+                    }
+                  });
+                  return found;
+                };
+                
+                const imgComponent = findImage(component);
+                if (imgComponent) {
+                  const finalSrc = (imageUrl && imageUrl !== defaultImageUrl) ? imageUrl : defaultImageUrl;
+                  
+                  // Actualizar atributos del modelo
+                  imgComponent.setAttributes({ src: finalSrc });
+                  
+                  // Actualizar modelo
+                  if (imgComponent.get('src') !== finalSrc) {
+                    imgComponent.set('src', finalSrc, { silent: true });
+                  }
+                  
+                  // Actualizar DOM
+                  if (imgComponent.view && imgComponent.view.el) {
+                    imgComponent.view.el.src = finalSrc;
+                    imgComponent.view.el.setAttribute('src', finalSrc);
+                  }
+                  
+                  // Actualizar también el DOM del contenedor
+                  if (component.view && component.view.el) {
+                    const img = component.view.el.querySelector('img');
+                    if (img) {
+                      img.src = finalSrc;
+                      img.setAttribute('src', finalSrc);
+                    }
+                  }
+                }
+              }
+              
+              if (component && component.components) {
+                const childComponents = component.components();
+                if (childComponents) {
+                  findImageBoxAdvanced(childComponents);
+                }
+              }
+            });
+          }
+        };
+        
+        findImageBoxAdvanced(allComponents);
+      };
+      
+      // Sincronizar antes de obtener el HTML
+      syncImageBoxAdvancedBeforeSave();
+      
+      // ✅ CRÍTICO: Sincronizar Background Image antes de guardar
+      const syncBackgroundImageBeforeSave = () => {
+        console.log('💾 [Save] syncBackgroundImageBeforeSave() llamado');
+        const allComponents = editor.getComponents();
+        const findBackgroundImage = (components) => {
+          if (components && typeof components.forEach === 'function') {
+            components.forEach((component) => {
+              if (component && component.get && component.get('type') === 'background-image') {
+                console.log('✅ [Save] Background Image encontrado, sincronizando...');
+                // Asegurar que los valores de los traits estén sincronizados con el DOM
+                if (component.view && component.view.el) {
+                  console.log('✅ [Save] view.el encontrado para Background Image');
+                  const titleEl = component.view.el.querySelector('h2');
+                  const textEl = component.view.el.querySelector('p');
+                  const buttonEl = component.view.el.querySelector('button, a');
+                  
+                  console.log('🔍 [Save] Elementos encontrados:', {
+                    titleEl: !!titleEl,
+                    textEl: !!textEl,
+                    buttonEl: !!buttonEl
+                  });
+                  
+                  // ✅ CRÍTICO: Primero obtener el valor del modelo (puede estar más actualizado que el DOM)
+                  const modelTitle = component.get('content-title');
+                  const modelText = component.get('content-text');
+                  const modelButtonText = component.get('button-text');
+                  const modelButtonLink = component.get('button-link');
+                  
+                  console.log('📊 [Save] Valores del modelo:', {
+                    title: modelTitle,
+                    text: modelText,
+                    buttonText: modelButtonText,
+                    buttonLink: modelButtonLink
+                  });
+                  
+                  // Sincronizar título - PRIORIDAD AL MODELO
+                  const titleText = modelTitle || (titleEl ? (titleEl.textContent || titleEl.innerText || '') : '');
+                  console.log('📝 [Save] Título final a usar:', titleText);
+                  if (titleText && titleText.trim()) {
+                    component.set('content-title', titleText.trim(), { silent: true });
+                    console.log('✅ [Save] Título sincronizado en modelo');
+                    // Asegurar que el componente h2 tenga el contenido correcto
+                    const findTitle = (comp) => {
+                      if (comp.get('tagName') === 'h2') return comp;
+                      let found = null;
+                      comp.components().each(child => {
+                        if (!found) found = findTitle(child);
+                      });
+                      return found;
+                    };
+                    const titleComponent = findTitle(component);
+                    if (titleComponent) {
+                      titleComponent.set('content', titleText.trim());
+                      console.log('✅ [Save] Componente h2 actualizado con:', titleText.trim());
+                      // Actualizar también el DOM directamente
+                      if (titleComponent.view && titleComponent.view.el) {
+                        titleComponent.view.el.textContent = titleText.trim();
+                      }
+                    }
+                    // Actualizar también el DOM del contenedor
+                    if (titleEl) {
+                      titleEl.textContent = titleText.trim();
+                    }
+                  }
+                  
+                  // Sincronizar texto - PRIORIDAD AL MODELO
+                  const textContent = modelText || (textEl ? (textEl.textContent || textEl.innerText || '') : '');
+                  console.log('📝 [Save] Texto final a usar:', textContent);
+                  if (textContent && textContent.trim()) {
+                    component.set('content-text', textContent.trim(), { silent: true });
+                    console.log('✅ [Save] Texto sincronizado en modelo');
+                    const findText = (comp) => {
+                      if (comp.get('tagName') === 'p') return comp;
+                      let found = null;
+                      comp.components().each(child => {
+                        if (!found) found = findText(child);
+                      });
+                      return found;
+                    };
+                    const textComponent = findText(component);
+                    if (textComponent) {
+                      textComponent.set('content', textContent.trim());
+                      console.log('✅ [Save] Componente p actualizado con:', textContent.trim());
+                      // Actualizar también el DOM directamente
+                      if (textComponent.view && textComponent.view.el) {
+                        textComponent.view.el.textContent = textContent.trim();
+                      }
+                    } else {
+                      console.warn('⚠️ [Save] No se encontró componente p');
+                    }
+                    // Actualizar también el DOM del contenedor
+                    if (textEl) {
+                      textEl.textContent = textContent.trim();
+                    }
+                  }
+                  
+                  // Sincronizar botón - PRIORIDAD AL MODELO
+                  const buttonText = modelButtonText || (buttonEl ? (buttonEl.textContent || buttonEl.innerText || '') : '');
+                  const buttonLink = modelButtonLink || (buttonEl ? (buttonEl.getAttribute('href') || '#') : '#');
+                  console.log('📝 [Save] Botón texto final a usar:', buttonText);
+                  console.log('📝 [Save] Botón href final a usar:', buttonLink);
+                  
+                  if (buttonText && buttonText.trim()) {
+                    component.set('button-text', buttonText.trim(), { silent: true });
+                    component.set('button-link', buttonLink, { silent: true });
+                    console.log('✅ [Save] Botón sincronizado en modelo');
+                    const findButton = (comp) => {
+                      if (comp.get('tagName') === 'button' || comp.get('tagName') === 'a') return comp;
+                      let found = null;
+                      comp.components().each(child => {
+                        if (!found) found = findButton(child);
+                      });
+                      return found;
+                    };
+                    const buttonComponent = findButton(component);
+                    if (buttonComponent) {
+                      buttonComponent.set('content', buttonText.trim());
+                      console.log('✅ [Save] Componente button/a actualizado con:', buttonText.trim());
+                      
+                      // Manejar conversión entre button y a según el enlace
+                      if (buttonLink && buttonLink !== '#' && buttonLink.trim() !== '') {
+                        if (buttonComponent.get('tagName') === 'button') {
+                          buttonComponent.set('tagName', 'a');
+                          buttonComponent.setAttributes({
+                            ...buttonComponent.getAttributes(),
+                            href: buttonLink
+                          });
+                          console.log('✅ [Save] Botón convertido a enlace con href:', buttonLink);
+                        } else {
+                          buttonComponent.setAttributes({
+                            ...buttonComponent.getAttributes(),
+                            href: buttonLink
+                          });
+                          console.log('✅ [Save] Enlace actualizado con href:', buttonLink);
+                        }
+                      } else {
+                        if (buttonComponent.get('tagName') === 'a') {
+                          buttonComponent.set('tagName', 'button');
+                          const attrs = buttonComponent.getAttributes();
+                          delete attrs.href;
+                          buttonComponent.setAttributes(attrs);
+                          console.log('✅ [Save] Enlace convertido a botón');
+                        }
+                      }
+                      
+                      // Actualizar también el DOM directamente
+                      if (buttonComponent.view && buttonComponent.view.el) {
+                        buttonComponent.view.el.textContent = buttonText.trim();
+                        if (buttonLink && buttonLink !== '#' && buttonLink.trim() !== '') {
+                          if (buttonComponent.view.el.tagName === 'BUTTON') {
+                            const newLink = document.createElement('a');
+                            newLink.href = buttonLink;
+                            newLink.className = buttonComponent.view.el.className;
+                            newLink.textContent = buttonText.trim();
+                            buttonComponent.view.el.parentNode.replaceChild(newLink, buttonComponent.view.el);
+                            buttonComponent.view.el = newLink;
+                          } else {
+                            buttonComponent.view.el.setAttribute('href', buttonLink);
+                          }
+                        } else {
+                          if (buttonComponent.view.el.tagName === 'A') {
+                            const newButton = document.createElement('button');
+                            newButton.className = buttonComponent.view.el.className;
+                            newButton.textContent = buttonText.trim();
+                            buttonComponent.view.el.parentNode.replaceChild(newButton, buttonComponent.view.el);
+                            buttonComponent.view.el = newButton;
+                          }
+                        }
+                      }
+                    } else {
+                      console.warn('⚠️ [Save] No se encontró componente button/a');
+                    }
+                    
+                    // Actualizar también el DOM del contenedor
+                    if (buttonEl) {
+                      buttonEl.textContent = buttonText.trim();
+                      if (buttonLink && buttonLink !== '#' && buttonLink.trim() !== '') {
+                        if (buttonEl.tagName === 'BUTTON') {
+                          const newLink = document.createElement('a');
+                          newLink.href = buttonLink;
+                          newLink.className = buttonEl.className;
+                          newLink.textContent = buttonText.trim();
+                          buttonEl.parentNode.replaceChild(newLink, buttonEl);
+                        } else {
+                          buttonEl.setAttribute('href', buttonLink);
+                        }
+                      } else {
+                        if (buttonEl.tagName === 'A') {
+                          const newButton = document.createElement('button');
+                          newButton.className = buttonEl.className;
+                          newButton.textContent = buttonText.trim();
+                          buttonEl.parentNode.replaceChild(newButton, buttonEl);
+                        }
+                      }
+                    }
+                  }
+                  
+                  // Verificar valores finales antes de guardar
+                  console.log('📊 [Save] Valores finales en modelo antes de guardar:', {
+                    'content-title': component.get('content-title'),
+                    'content-text': component.get('content-text'),
+                    'button-text': component.get('button-text'),
+                    'button-link': component.get('button-link')
+                  });
+                } else {
+                  console.warn('⚠️ [Save] view.el no disponible para Background Image');
+                }
+              }
+              
+              if (component && component.components) {
+                const childComponents = component.components();
+                if (childComponents) {
+                  findBackgroundImage(childComponents);
+                }
+              }
+            });
+          }
+        };
+        findBackgroundImage(allComponents);
+      };
+      
+      syncBackgroundImageBeforeSave();
+      
+      const htmlContent = editor.getHtml();
+      let cssContent = editor.getCss();
+      
+      // Agregar !important a los estilos de IDs personalizados
+      cssContent = addImportantToCustomIds(cssContent);
+
+      const requestData = {
+        html_content: htmlContent,
+        css_content: cssContent,
+        enable_store: document.getElementById('enable-store')?.checked || false
+      };
+
+      // Agregar grapesjs_data si es un componente
+      if (window.editableType === 'component') {
+        requestData.grapesjs_data = JSON.stringify(editor.getProjectData());
+      }
+
+      fetch(window.saveUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || window.csrfToken
+        },
+        body: JSON.stringify(requestData)
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Mostrar mensaje de éxito
+            const btn = document.getElementById('save-btn');
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Guardado';
+            btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            btn.classList.add('bg-green-600');
+
+            setTimeout(() => {
+              btn.textContent = originalText;
+              btn.classList.remove('bg-green-600');
+              btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            }, 2000);
+          } else {
+            alert('Error al guardar: ' + (data.message || 'Error desconocido'));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error al guardar la página');
+        });
+    }, 150);
   });
 
+  return editor;
 }
 
 // Exportar funciones para uso global
 // Funciones globales para editar y eliminar imágenes del carrusel
-window.editImage = function(slideNum) {
-  console.log('🖼️ Editando imagen del slide:', slideNum);
-  
-  const editor = window.editor;
-  if (!editor) {
-    console.error('❌ Editor no disponible');
-    return;
-  }
-  
-  const component = editor.getSelected();
-  if (!component) {
-    console.error('❌ No hay componente seleccionado');
-    return;
-  }
-  
-  // Abrir el Asset Manager
-  const am = editor.AssetManager;
-  const modal = editor.Modal;
-  
-  // Configurar el callback cuando se seleccione una imagen
-  am.onClick((asset) => {
-    const newSrc = asset.get('src');
-    console.log('🎠 Nueva imagen seleccionada para slide', slideNum, ':', newSrc);
-    
-    // Encontrar el contenedor del carrusel
-    const carouselContainer = component.view.el.querySelector('.carousel-container') || 
-                            component.view.el.querySelector('.carousel') || 
-                            component.view.el;
-    
-    // Buscar la imagen específica del slide
-    const existingImages = carouselContainer.querySelectorAll('.carousel-slide img') || 
-                         carouselContainer.querySelectorAll('img') ||
-                         [];
-    
-    if (existingImages[slideNum - 1]) {
-      // Actualizar la imagen existente
-      existingImages[slideNum - 1].src = newSrc;
-      existingImages[slideNum - 1].setAttribute('src', newSrc);
-      
-      // Guardar en el componente
-      component.set(`slide-${slideNum}`, newSrc);
-      
-      console.log(`✅ Slide ${slideNum} actualizado con nueva imagen`);
-    } else {
-      console.error(`❌ No se encontró el slide ${slideNum}`);
-    }
-    
-    // Cerrar el modal
-    modal.close();
-    
-    // Actualizar traits personalizados para mostrar la nueva imagen
-    if (window.renderCustomTraits) {
-      window.renderCustomTraits(component);
-    }
-  });
-  
-  // Mostrar el Asset Manager en un modal
-  modal.setTitle(`Editar Imagen del Slide ${slideNum}`)
-    .setContent(am.render())
-    .open();
-};
-
-window.deleteImage = function(slideNum) {
-  console.log('🗑️ Eliminando imagen del slide:', slideNum);
-  
-  // Confirmar eliminación
-  if (!confirm(`¿Estás seguro de que quieres eliminar la imagen del slide ${slideNum}?`)) {
-    return;
-  }
-  
-  const editor = window.editor;
-  if (!editor) {
-    console.error('❌ Editor no disponible');
-    return;
-  }
-  
-  const component = editor.getSelected();
-  if (!component) {
-    console.error('❌ No hay componente seleccionado');
-    return;
-  }
-  
-  // Encontrar el contenedor del carrusel
-  const carouselContainer = component.view.el.querySelector('.carousel-container') || 
-                          component.view.el.querySelector('.carousel') || 
-                          component.view.el;
-  
-  // Buscar la imagen específica del slide
-  const existingImages = carouselContainer.querySelectorAll('.carousel-slide img') || 
-                       carouselContainer.querySelectorAll('img') ||
-                       [];
-  
-  if (existingImages[slideNum - 1]) {
-    // Reemplazar con imagen placeholder
-    const placeholderSrc = `https://via.placeholder.com/800x400?text=Slide+${slideNum}`;
-    existingImages[slideNum - 1].src = placeholderSrc;
-    existingImages[slideNum - 1].setAttribute('src', placeholderSrc);
-    
-    // Limpiar del componente
-    component.unset(`slide-${slideNum}`);
-    
-    console.log(`✅ Slide ${slideNum} eliminado (reemplazado con placeholder)`);
-  } else {
-    console.error(`❌ No se encontró el slide ${slideNum}`);
-  }
-  
-  // Actualizar traits personalizados para ocultar la imagen eliminada
-  if (window.renderCustomTraits) {
-    window.renderCustomTraits(component);
-  }
-};
+// ✅ Funciones editImage y deleteImage movidas a módulo: editor-modules/carousel-utils.js
 
 window.initializeEditor = initializeEditor;
 window.showProductsPlaceholder = showProductsPlaceholder;
