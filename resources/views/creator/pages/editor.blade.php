@@ -678,6 +678,35 @@
     }
 
 
+    /* Estilos para listas */
+    .list-circle {
+      list-style-type: circle;
+    }
+
+    .list-square {
+      list-style-type: square;
+    }
+
+    .list-decimal-leading-zero {
+      list-style-type: decimal-leading-zero;
+    }
+
+    .list-lower-roman {
+      list-style-type: lower-roman;
+    }
+
+    .list-upper-roman {
+      list-style-type: upper-roman;
+    }
+
+    .list-lower-alpha {
+      list-style-type: lower-alpha;
+    }
+
+    .list-upper-alpha {
+      list-style-type: upper-alpha;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .gjs-blocks-cs {
@@ -899,7 +928,7 @@
       <div class="flex items-center justify-center min-h-screen px-4 py-8">
         <div class="relative w-full max-w-4xl bg-white rounded-lg shadow-xl">
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
+            <h2 class="flex items-center gap-2 text-xl font-semibold text-gray-900">
               <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
               </svg>
@@ -912,15 +941,15 @@
             </button>
           </div>
           <div class="px-6 py-4 max-h-[70vh] overflow-y-auto">
-            <p class="text-sm text-gray-600 mb-4">
+            <p class="mb-4 text-sm text-gray-600">
               Describe cómo quieres actualizar el contenido de esta página. La IA mejorará el contenido existente considerando la plantilla y estilos de tu sitio.
             </p>
-            
+
             <!-- Contenido Actual -->
             <div class="mb-4">
               <label class="block mb-2 text-sm font-medium text-gray-700">Contenido Actual de la Página</label>
-              <div class="p-3 bg-gray-50 border border-gray-200 rounded-md max-h-40 overflow-y-auto">
-                <pre id="ai-current-content" class="text-xs text-gray-600 whitespace-pre-wrap font-mono"></pre>
+              <div class="p-3 overflow-y-auto border border-gray-200 rounded-md bg-gray-50 max-h-40">
+                <pre id="ai-current-content" class="font-mono text-xs text-gray-600 whitespace-pre-wrap"></pre>
               </div>
               <p class="mt-1 text-xs text-gray-500">Este es el contenido HTML actual que se actualizará</p>
             </div>
@@ -934,7 +963,7 @@
               </p>
             </div>
           </div>
-          <div class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200">
+          <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
             <button id="ai-modal-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
               Cancelar
             </button>
@@ -1110,45 +1139,47 @@
   <script src="{{ asset('js/editor-modules/component-loader.js') }}"></script>
   <script src="{{ asset('js/editor-modules/image-sync.js') }}"></script>
   <script src="{{ asset('js/editor-modules/utils.js') }}"></script>
-  
+
   {{-- Componentes modulares --}}
   <script src="{{ asset('js/editor-modules/components/image.js') }}"></script>
   <script src="{{ asset('js/editor-modules/components/container.js') }}"></script>
   <script src="{{ asset('js/editor-modules/components/heading.js') }}"></script>
   <script src="{{ asset('js/editor-modules/components/paragraph.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/list-unordered.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/list-ordered.js') }}"></script>
   <script src="{{ asset('js/editor-modules/components/button.js') }}"></script>
   <script src="{{ asset('js/editor-modules/components/text.js') }}"></script>
   <script src="{{ asset('js/editor-modules/components/link.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/divider.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/separator.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/table.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/html-code.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/spacer.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/alert.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/icon.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/icon-box.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/icon-list.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/star-rating.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/quote.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/code.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/preformatted.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/verse.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/counter-animated.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/toggle.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/tabs.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/accordion.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/carousel.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/gallery.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/video.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/google-maps.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/image-box-advanced.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/background-image.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/file.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/audio.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/section-inner.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/components/column.js') }}"></script>
-    <script src="{{ asset('js/editor-modules/carousel-utils.js') }}"></script>
-  
+  <script src="{{ asset('js/editor-modules/components/divider.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/separator.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/table.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/html-code.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/spacer.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/alert.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/icon.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/icon-box.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/icon-list.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/star-rating.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/quote.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/code.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/preformatted.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/verse.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/counter-animated.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/toggle.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/tabs.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/accordion.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/carousel.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/gallery.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/video.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/google-maps.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/image-box-advanced.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/background-image.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/file.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/audio.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/section-inner.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/components/column.js') }}"></script>
+  <script src="{{ asset('js/editor-modules/carousel-utils.js') }}"></script>
+
   <script src="{{ asset('js/editor-config.js') }}"></script>
   <script>
     // Configurar variables globales para el editor
@@ -1251,15 +1282,15 @@
             // Limpiar el contenido para mostrar (quitar espacios excesivos)
             const cleanContent = currentContent.replace(/>\s+</g, '><').trim();
             // Mostrar una versión truncada si es muy largo
-            const displayContent = cleanContent.length > 500 
-              ? cleanContent.substring(0, 500) + '...\n\n[Contenido truncado - se enviará completo]' 
-              : cleanContent;
-            
+            const displayContent = cleanContent.length > 500 ?
+              cleanContent.substring(0, 500) + '...\n\n[Contenido truncado - se enviará completo]' :
+              cleanContent;
+
             document.getElementById('ai-current-content').textContent = displayContent || 'Página vacía - se generará contenido nuevo';
           } else {
             document.getElementById('ai-current-content').textContent = 'Editor no inicializado';
           }
-          
+
           aiModal.classList.remove('hidden');
           aiPromptInput.focus();
         });
@@ -1292,7 +1323,7 @@
       if (aiGenerateSubmit) {
         aiGenerateSubmit.addEventListener('click', function() {
           const prompt = aiPromptInput.value.trim();
-          
+
           if (!prompt || prompt.length < 10) {
             alert('Por favor describe cómo quieres actualizar el contenido (mínimo 10 caracteres)');
             return;
@@ -1311,68 +1342,68 @@
 
           // Enviar petición a OpenAI con el contenido actual
           fetch('{{ route("creator.pages.generate-ai-content") }}', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': '{{ csrf_token() }}',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-              prompt: prompt,
-              current_content: currentContent,
-              page_id: {{ $editable->id ?? 'null' }},
-              website_id: {{ $website->id }}
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                prompt: prompt,
+                current_content: currentContent,
+                page_id: {{ $editable->id ?? 'null' }},
+                website_id: {{ $website->id }}
+              })
             })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success && data.html_content) {
-              // Reemplazar TODO el contenido en GrapesJS
-              if (window.editor) {
-                try {
-                  // Método 1: Intentar usar setComponents si existe
-                  if (typeof window.editor.setComponents === 'function') {
-                    window.editor.setComponents(data.html_content);
-                  } 
-                  // Método 2: Limpiar y agregar nuevo contenido
-                  else if (typeof window.editor.getWrapper === 'function') {
-                    const wrapper = window.editor.getWrapper();
-                    if (wrapper && wrapper.components) {
-                      wrapper.components().reset();
-                      window.editor.addComponents(data.html_content);
-                    } else {
-                      // Método 3: Usar el método directo de reset
+            .then(response => response.json())
+            .then(data => {
+              if (data.success && data.html_content) {
+                // Reemplazar TODO el contenido en GrapesJS
+                if (window.editor) {
+                  try {
+                    // Método 1: Intentar usar setComponents si existe
+                    if (typeof window.editor.setComponents === 'function') {
+                      window.editor.setComponents(data.html_content);
+                    }
+                    // Método 2: Limpiar y agregar nuevo contenido
+                    else if (typeof window.editor.getWrapper === 'function') {
+                      const wrapper = window.editor.getWrapper();
+                      if (wrapper && wrapper.components) {
+                        wrapper.components().reset();
+                        window.editor.addComponents(data.html_content);
+                      } else {
+                        // Método 3: Usar el método directo de reset
+                        window.editor.set('components', data.html_content);
+                      }
+                    }
+                    // Método 4: Usar el método directo
+                    else {
                       window.editor.set('components', data.html_content);
                     }
+
+                    closeAiModalFunc();
+                    alert('Contenido actualizado exitosamente con IA');
+                  } catch (error) {
+                    console.error('Error al actualizar contenido:', error);
+                    alert('Error al actualizar el contenido en el editor. Por favor intenta guardar manualmente.');
                   }
-                  // Método 4: Usar el método directo
-                  else {
-                    window.editor.set('components', data.html_content);
-                  }
-                  
-                  closeAiModalFunc();
-                  alert('Contenido actualizado exitosamente con IA');
-                } catch (error) {
-                  console.error('Error al actualizar contenido:', error);
-                  alert('Error al actualizar el contenido en el editor. Por favor intenta guardar manualmente.');
+                } else {
+                  alert('Error: El editor no está listo. Por favor recarga la página.');
                 }
               } else {
-                alert('Error: El editor no está listo. Por favor recarga la página.');
+                alert('Error: ' + (data.message || 'No se pudo actualizar el contenido'));
               }
-            } else {
-              alert('Error: ' + (data.message || 'No se pudo actualizar el contenido'));
-            }
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            alert('Error al actualizar el contenido. Por favor intenta nuevamente.');
-          })
-          .finally(() => {
-            // Restaurar botón
-            aiGenerateText.classList.remove('hidden');
-            aiGenerateLoading.classList.add('hidden');
-            aiGenerateSubmit.disabled = false;
-          });
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('Error al actualizar el contenido. Por favor intenta nuevamente.');
+            })
+            .finally(() => {
+              // Restaurar botón
+              aiGenerateText.classList.remove('hidden');
+              aiGenerateLoading.classList.add('hidden');
+              aiGenerateSubmit.disabled = false;
+            });
         });
       }
 
@@ -1633,7 +1664,7 @@
             if (selectedComponent && window.editor.TraitManager) {
               // Re-renderizar el TraitManager para actualizar las propiedades visibles
               window.editor.TraitManager.render();
-              
+
               // Si hay una función personalizada de actualización, llamarla
               if (typeof window.forceTraitManagerUpdate === 'function') {
                 window.forceTraitManagerUpdate(selectedComponent);
@@ -1956,7 +1987,7 @@ ${formatHtml(html)}
               if (selectedComponent && window.editor.TraitManager) {
                 // Re-renderizar el TraitManager para actualizar las propiedades visibles
                 window.editor.TraitManager.render();
-                
+
                 // Si hay una función personalizada de actualización, llamarla
                 if (typeof window.forceTraitManagerUpdate === 'function') {
                   window.forceTraitManagerUpdate(selectedComponent);
@@ -1978,8 +2009,7 @@ ${formatHtml(html)}
     // Configurar las credenciales API del sitio web
     window.websiteApiKey = "{{ $website->api_key }}";
     window.websiteApiUrl = "{{ $website->api_base_url }}";
-    window.websiteId = {{ $website->id }};
-
+    window.websiteId = {{$website->id}};
   </script>
 
   <!-- Componente para cargar productos dinámicamente -->

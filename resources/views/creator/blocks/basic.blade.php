@@ -514,3 +514,196 @@
     // Los traits están definidos en el componente link.js
   }
 },
+{
+  id: 'unordered-list'
+  , label: '<b>Lista No Ordenada</b>'
+  , category: 'Básicos'
+  , attributes: {
+    class: 'gjs-block-list'
+  }
+  , content: {
+    type: 'unordered-list',
+    tagName: 'ul',
+    name: 'Lista No Ordenada',
+    editable: false,
+    droppable: true,
+    removable: true,
+    selectable: true,
+    attributes: { 
+      class: 'list-component list-disc list-inside space-y-2 mb-4',
+      'data-gjs-name': 'Lista No Ordenada',
+      'data-gjs-editable': 'false'
+    },
+    components: [
+      {
+        type: 'list-item',
+        tagName: 'li',
+        content: 'Elemento de lista 1',
+        editable: true,
+        attributes: { class: 'list-item' }
+      },
+      {
+        type: 'list-item',
+        tagName: 'li',
+        content: 'Elemento de lista 2',
+        editable: true,
+        attributes: { class: 'list-item' }
+      },
+      {
+        type: 'list-item',
+        tagName: 'li',
+        content: 'Elemento de lista 3',
+        editable: true,
+        attributes: { class: 'list-item' }
+      }
+    ],
+    traits: [
+      {
+        type: 'select',
+        name: 'list-style',
+        label: 'Estilo de Viñeta',
+        changeProp: 1,
+        options: [
+          { value: 'list-disc', name: 'Círculo (Disc)' },
+          { value: 'list-circle', name: 'Círculo Vacío (Circle)' },
+          { value: 'list-square', name: 'Cuadrado (Square)' },
+          { value: 'list-none', name: 'Sin Viñeta' }
+        ]
+      },
+      {
+        type: 'select',
+        name: 'list-position',
+        label: 'Posición de Viñeta',
+        changeProp: 1,
+        options: [
+          { value: 'list-inside', name: 'Dentro' },
+          { value: 'list-outside', name: 'Fuera' }
+        ]
+      },
+      {
+        type: 'select',
+        name: 'list-spacing',
+        label: 'Espaciado entre Elementos',
+        changeProp: 1,
+        options: [
+          { value: 'space-y-1', name: 'Muy Pequeño (4px)' },
+          { value: 'space-y-2', name: 'Pequeño (8px)' },
+          { value: 'space-y-3', name: 'Mediano (12px)' },
+          { value: 'space-y-4', name: 'Grande (16px)' },
+          { value: 'space-y-6', name: 'Extra Grande (24px)' }
+        ]
+      },
+      {
+        type: 'select',
+        name: 'list-margin',
+        label: 'Espaciado Inferior',
+        changeProp: 1,
+        options: [
+          { value: 'mb-0', name: 'Sin Espaciado' },
+          { value: 'mb-2', name: 'Pequeño (8px)' },
+          { value: 'mb-4', name: 'Normal (16px)' },
+          { value: 'mb-6', name: 'Grande (24px)' },
+          { value: 'mb-8', name: 'Extra Grande (32px)' }
+        ]
+      }
+    ]
+  }
+},
+{
+  id: 'ordered-list'
+  , label: '<b>Lista Ordenada</b>'
+  , category: 'Básicos'
+  , attributes: {
+    class: 'gjs-block-list'
+  }
+  , content: {
+    type: 'ordered-list',
+    tagName: 'ol',
+    name: 'Lista Ordenada',
+    editable: false,
+    droppable: true,
+    removable: true,
+    selectable: true,
+    attributes: { 
+      class: 'list-component list-decimal list-inside space-y-2 mb-4',
+      'data-gjs-name': 'Lista Ordenada',
+      'data-gjs-editable': 'false'
+    },
+    components: [
+      {
+        type: 'list-item',
+        tagName: 'li',
+        content: 'Primer elemento',
+        editable: true,
+        attributes: { class: 'list-item' }
+      },
+      {
+        type: 'list-item',
+        tagName: 'li',
+        content: 'Segundo elemento',
+        editable: true,
+        attributes: { class: 'list-item' }
+      },
+      {
+        type: 'list-item',
+        tagName: 'li',
+        content: 'Tercer elemento',
+        editable: true,
+        attributes: { class: 'list-item' }
+      }
+    ],
+    traits: [
+      {
+        type: 'select',
+        name: 'list-type',
+        label: 'Tipo de Numeración',
+        changeProp: 1,
+        options: [
+          { value: 'list-decimal', name: 'Números (1, 2, 3...)' },
+          { value: 'list-decimal-leading-zero', name: 'Números con Cero (01, 02, 03...)' },
+          { value: 'list-lower-roman', name: 'Romanos Minúsculas (i, ii, iii...)' },
+          { value: 'list-upper-roman', name: 'Romanos Mayúsculas (I, II, III...)' },
+          { value: 'list-lower-alpha', name: 'Letras Minúsculas (a, b, c...)' },
+          { value: 'list-upper-alpha', name: 'Letras Mayúsculas (A, B, C...)' },
+          { value: 'list-none', name: 'Sin Numeración' }
+        ]
+      },
+      {
+        type: 'select',
+        name: 'list-position',
+        label: 'Posición de Numeración',
+        changeProp: 1,
+        options: [
+          { value: 'list-inside', name: 'Dentro' },
+          { value: 'list-outside', name: 'Fuera' }
+        ]
+      },
+      {
+        type: 'select',
+        name: 'list-spacing',
+        label: 'Espaciado entre Elementos',
+        changeProp: 1,
+        options: [
+          { value: 'space-y-1', name: 'Muy Pequeño (4px)' },
+          { value: 'space-y-2', name: 'Pequeño (8px)' },
+          { value: 'space-y-3', name: 'Mediano (12px)' },
+          { value: 'space-y-4', name: 'Grande (16px)' },
+          { value: 'space-y-6', name: 'Extra Grande (24px)' }
+        ]
+      },
+      {
+        type: 'select',
+        name: 'list-margin',
+        label: 'Espaciado Inferior',
+        changeProp: 1,
+        options: [
+          { value: 'mb-0', name: 'Sin Espaciado' },
+          { value: 'mb-2', name: 'Pequeño (8px)' },
+          { value: 'mb-4', name: 'Normal (16px)' },
+          { value: 'mb-6', name: 'Grande (24px)' },
+          { value: 'mb-8', name: 'Extra Grande (32px)' }
+        ]
+      }
+    ]
+  }
+},
