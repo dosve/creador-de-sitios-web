@@ -153,7 +153,7 @@
     selectable: true, // ✅ PERMITIDO: Se puede seleccionar
     content: 'Título Principal',
     attributes: { 
-      class: 'heading-component text-2xl font-bold text-gray-900 mb-4',
+      class: 'heading-component text-2xl font-bold text-gray-900',
       'data-gjs-name': 'Título',
       'data-gjs-editable': 'false'  // ✅ Protección adicional
     },

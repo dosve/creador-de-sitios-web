@@ -1,15 +1,15 @@
 // Módulo del Componente Heading
 // Componente de título (H1-H6) con múltiples opciones de estilo
 
-(function() {
+(function () {
   'use strict';
-  
+
   function registerHeadingComponent(editor) {
     if (!editor || !editor.DomComponents) {
       console.warn('⚠️ Editor no disponible para registrar componente Heading');
       return;
     }
-    
+
     editor.DomComponents.addType('heading', {
       isComponent: (el) => {
         if (el.classList && el.classList.contains('heading-component')) {
@@ -28,7 +28,7 @@
           removable: true,
           selectable: true,
           attributes: {
-            class: 'heading-component text-2xl font-bold text-gray-900 mb-4',
+            class: 'heading-component text-2xl font-bold text-gray-900',
             'data-gjs-name': 'Título',
             'data-gjs-editable': 'false'
           },
@@ -130,7 +130,7 @@
                 const el = this.view.el;
                 const textContent = el.textContent || el.innerText || '';
                 const modelText = this.get('heading-text') || '';
-                
+
                 // ✅ CRÍTICO: Siempre actualizar el modelo con silent: false para forzar actualización del TraitManager
                 // Esto asegura que los inputs del formulario se actualicen incluso si el contenido ya está sincronizado
                 if (textContent.trim()) {
@@ -142,13 +142,13 @@
                   console.log('ℹ️ [Heading] No hay contenido en DOM, forzando actualización del formulario con valor del modelo');
                   this.set('heading-text', modelText, { silent: false });
                 }
-                
+
                 const tagName = el.tagName.toLowerCase();
                 const currentTag = this.get('heading-tag');
                 if (tagName !== currentTag) {
                   this.set('heading-tag', tagName, { silent: false });
                 }
-                
+
                 const classList = el.className.split(' ');
                 const sizeMatch = classList.find(c => c.startsWith('text-') && ['xl', '2xl', '3xl', '4xl', '5xl', '6xl'].some(s => c.includes(s)));
                 if (sizeMatch) {
@@ -157,7 +157,7 @@
                     this.set('heading-size', sizeMatch, { silent: false });
                   }
                 }
-                
+
                 const colorMatch = classList.find(c => c.startsWith('text-') && ['gray', 'blue', 'green', 'red', 'purple', 'white'].some(col => c.includes(col)));
                 if (colorMatch) {
                   const currentColor = this.get('heading-color');
@@ -165,7 +165,7 @@
                     this.set('heading-color', colorMatch, { silent: false });
                   }
                 }
-                
+
                 const alignMatch = classList.find(c => ['text-left', 'text-center', 'text-right'].includes(c));
                 if (alignMatch) {
                   const currentAlign = this.get('heading-align');
@@ -173,7 +173,7 @@
                     this.set('heading-align', alignMatch, { silent: false });
                   }
                 }
-                
+
                 const weightMatch = classList.find(c => ['font-normal', 'font-medium', 'font-semibold', 'font-bold', 'font-extrabold'].includes(c));
                 if (weightMatch) {
                   const currentWeight = this.get('heading-weight');
@@ -181,7 +181,7 @@
                     this.set('heading-weight', weightMatch, { silent: false });
                   }
                 }
-                
+
                 const marginMatch = classList.find(c => ['mb-0', 'mb-2', 'mb-4', 'mb-6', 'mb-8'].includes(c));
                 if (marginMatch) {
                   const currentMargin = this.get('heading-margin');
@@ -196,7 +196,7 @@
               console.warn('⚠️ [Heading] Error al sincronizar contenido desde DOM:', e);
             }
           };
-          
+
           const syncInitialValues = () => {
             if (this.view && this.view.el) {
               const el = this.view.el;
@@ -206,40 +206,45 @@
               }
               const tagName = el.tagName.toLowerCase();
               this.set('heading-tag', tagName, { silent: true });
-              
+
               const classList = el.className.split(' ');
               const sizeMatch = classList.find(c => c.startsWith('text-') && ['xl', '2xl', '3xl', '4xl', '5xl', '6xl'].some(s => c.includes(s)));
               if (sizeMatch) this.set('heading-size', sizeMatch, { silent: true });
-              
+
               const colorMatch = classList.find(c => c.startsWith('text-') && ['gray', 'blue', 'green', 'red', 'purple', 'white'].some(col => c.includes(col)));
               if (colorMatch) this.set('heading-color', colorMatch, { silent: true });
-              
+
               const alignMatch = classList.find(c => ['text-left', 'text-center', 'text-right'].includes(c));
               if (alignMatch) this.set('heading-align', alignMatch, { silent: true });
-              
+
               const weightMatch = classList.find(c => ['font-normal', 'font-medium', 'font-semibold', 'font-bold', 'font-extrabold'].includes(c));
               if (weightMatch) this.set('heading-weight', weightMatch, { silent: true });
-              
+
               const marginMatch = classList.find(c => ['mb-0', 'mb-2', 'mb-4', 'mb-6', 'mb-8'].includes(c));
               if (marginMatch) this.set('heading-margin', marginMatch, { silent: true });
             }
           };
-          
+
           setTimeout(syncInitialValues, 100);
           this.on('component:mount', syncInitialValues);
-          
+
           // ✅ CRÍTICO: Sincronizar cuando el componente se selecciona (para actualizar el formulario)
           // ✅ La actualización manual de inputs se maneja en editor-config.js para evitar duplicación
           this.on('component:selected', () => {
             console.log('🎯 [Heading] Componente seleccionado, sincronizando contenido desde DOM...');
-            
+
             // Sincronizar desde DOM inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
             // El editor-config.js se encargará de re-renderizar el TraitManager y actualizar los inputs
             if (this.syncContentFromDOM && typeof this.syncContentFromDOM === 'function') {
               this.syncContentFromDOM();
             }
           });
-          
+
+          // Inicializar valores por defecto si no existen
+          if (!this.get('heading-margin')) {
+            this.set('heading-margin', 'mb-0', { silent: true });
+          }
+
           this.on('change:heading-text', this.updateText, this);
           this.on('change:heading-tag', this.updateTag, this);
           this.on('change:heading-size', this.updateSize, this);
@@ -250,32 +255,32 @@
         },
         updateText() {
           const text = this.get('heading-text') || '';
-          
+
           // ✅ CRÍTICO: Verificar si el usuario está editando actualmente el título
           // Si está editando, no actualizar el DOM para evitar que desaparezca
           if (this.view && this.view.el) {
             const el = this.view.el;
-            
+
             // Verificar si el elemento tiene foco o está siendo editado
-            const isEditing = document.activeElement === el || 
-                            el === document.querySelector('h1:focus, h2:focus, h3:focus, h4:focus, h5:focus, h6:focus') ||
-                            el.getAttribute('contenteditable') === 'true';
-            
+            const isEditing = document.activeElement === el ||
+              el === document.querySelector('h1:focus, h2:focus, h3:focus, h4:focus, h5:focus, h6:focus') ||
+              el.getAttribute('contenteditable') === 'true';
+
             if (isEditing) {
               // Si está siendo editado, no actualizar para evitar interferir
               console.log('⚠️ [Heading] Título está siendo editado, no actualizar DOM');
               return;
             }
-            
+
             // Solo actualizar si el contenido es diferente para evitar bucles
             const currentText = el.textContent || el.innerText || '';
             if (currentText === text) {
               return; // Ya está actualizado, no hacer nada
             }
-            
+
             // Actualizar el texto
             el.textContent = text;
-            
+
             // Actualizar componentes y content solo si es necesario
             if (this.components && typeof this.components === 'function') {
               this.components(text);
@@ -299,7 +304,7 @@
             this.view.el.parentNode.replaceChild(newEl, this.view.el);
             this.view.el = newEl;
             this.set('tagName', tag);
-            this.setAttributes({ 
+            this.setAttributes({
               class: currentClass,
               'data-gjs-name': 'Título',
               'data-gjs-editable': 'false'
@@ -356,13 +361,17 @@
           }
         },
         updateMargin() {
-          const margin = this.get('heading-margin') || 'mb-4';
+          const margin = this.get('heading-margin') || 'mb-0';
           if (this.view && this.view.el) {
             const el = this.view.el;
             const currentAttrs = this.getAttributes();
             let currentClass = currentAttrs.class || el.className || '';
+            // Remover cualquier clase de margin existente
             currentClass = currentClass.replace(/mb-[0-8]/g, '').trim();
-            currentClass = (currentClass + ' ' + margin).trim().replace(/\s+/g, ' ');
+            // Solo agregar la clase de margin si no es mb-0 (sin espaciado)
+            if (margin && margin !== 'mb-0') {
+              currentClass = (currentClass + ' ' + margin).trim().replace(/\s+/g, ' ');
+            }
             el.className = currentClass;
             this.setAttributes({ class: currentClass });
           }
@@ -377,9 +386,9 @@
         }
       }
     });
-    
+
   }
-  
+
   if (typeof window !== 'undefined' && window.editor) {
     registerHeadingComponent(window.editor);
   } else {
@@ -389,12 +398,12 @@
         clearInterval(checkEditor);
       }
     }, 100);
-    
+
     setTimeout(() => {
       clearInterval(checkEditor);
     }, 10000);
   }
-  
+
   if (typeof window !== 'undefined') {
     window.registerHeadingComponent = registerHeadingComponent;
   }
