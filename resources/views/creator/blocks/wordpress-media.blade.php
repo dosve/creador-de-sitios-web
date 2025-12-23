@@ -240,4 +240,108 @@
     ]
     // Los traits están definidos en el componente background-image.js
   }
+},
+{
+  id: 'background-color',
+  label: '<b>Color de Fondo</b>',
+  category: 'Multimedia',
+  attributes: {
+    class: 'gjs-block-background-color'
+  },
+  content: {
+    type: 'background-color',
+    tagName: 'div',
+    name: 'Color de Fondo',
+    editable: false,
+    droppable: true,
+    removable: true,
+    selectable: true,
+    attributes: {
+      'data-gjs-type': 'background-color',
+      'data-gjs-name': 'Color de Fondo',
+      'data-gjs-editable': 'false',
+      class: 'background-color-section relative rounded-lg overflow-hidden mb-8',
+      style: 'background-color: #2563eb; height: 384px;'
+    },
+    components: [
+      {
+        tagName: 'div',
+        editable: false,
+        droppable: true,
+        selectable: false,
+        removable: false,
+        attributes: {
+          class: 'relative z-10 flex items-center justify-center h-full text-center text-white p-8',
+          'data-gjs-editable': 'false',
+          'data-gjs-selectable': 'false',
+          'data-gjs-draggable': 'false',
+          'data-gjs-removable': 'false'
+        },
+        components: [
+          {
+            tagName: 'div',
+            editable: false,
+            droppable: true,
+            selectable: false,
+            removable: false,
+            attributes: {
+              'data-gjs-editable': 'false',
+              'data-gjs-selectable': 'false',
+              'data-gjs-draggable': 'false',
+              'data-gjs-removable': 'false',
+              'contenteditable': 'false'
+            },
+            components: [
+              {
+                tagName: 'h2',
+                editable: true,
+                droppable: false,
+                selectable: true,
+                removable: false,
+                attributes: {
+                  class: 'text-3xl font-bold mb-4',
+                  'data-gjs-editable': 'true',
+                  'data-gjs-selectable': 'true',
+                  'data-gjs-draggable': 'false',
+                  'data-gjs-removable': 'false'
+                },
+                content: 'Contenido sobre Color'
+              },
+              {
+                tagName: 'p',
+                editable: true,
+                droppable: false,
+                selectable: true,
+                removable: false,
+                attributes: {
+                  class: 'text-lg mb-6',
+                  'data-gjs-editable': 'true',
+                  'data-gjs-selectable': 'true',
+                  'data-gjs-draggable': 'false',
+                  'data-gjs-removable': 'false'
+                },
+                content: 'Texto superpuesto sobre el color de fondo'
+              },
+              {
+                tagName: 'button',
+                editable: true,
+                droppable: false,
+                selectable: true,
+                removable: false,
+                attributes: {
+                  class: 'bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100',
+                  'data-gjs-editable': 'true',
+                  'data-gjs-selectable': 'true',
+                  'data-gjs-draggable': 'false',
+                  'data-gjs-removable': 'false'
+                },
+                content: 'Botón de Acción'
+              }
+            ]
+          }
+        ]
+      }
+    ]
+    // Los traits están definidos en el componente background-color.js
+  }
 }

@@ -250,11 +250,38 @@
         },
         updateText() {
           const text = this.get('heading-text') || '';
+          
+          // ✅ CRÍTICO: Verificar si el usuario está editando actualmente el título
+          // Si está editando, no actualizar el DOM para evitar que desaparezca
           if (this.view && this.view.el) {
-            this.view.el.textContent = text;
-            this.components(text);
-            if (this.get('content') !== undefined) {
-              this.set('content', text);
+            const el = this.view.el;
+            
+            // Verificar si el elemento tiene foco o está siendo editado
+            const isEditing = document.activeElement === el || 
+                            el === document.querySelector('h1:focus, h2:focus, h3:focus, h4:focus, h5:focus, h6:focus') ||
+                            el.getAttribute('contenteditable') === 'true';
+            
+            if (isEditing) {
+              // Si está siendo editado, no actualizar para evitar interferir
+              console.log('⚠️ [Heading] Título está siendo editado, no actualizar DOM');
+              return;
+            }
+            
+            // Solo actualizar si el contenido es diferente para evitar bucles
+            const currentText = el.textContent || el.innerText || '';
+            if (currentText === text) {
+              return; // Ya está actualizado, no hacer nada
+            }
+            
+            // Actualizar el texto
+            el.textContent = text;
+            
+            // Actualizar componentes y content solo si es necesario
+            if (this.components && typeof this.components === 'function') {
+              this.components(text);
+            }
+            if (this.get('content') !== undefined && this.get('content') !== text) {
+              this.set('content', text, { silent: true });
             }
           }
         },

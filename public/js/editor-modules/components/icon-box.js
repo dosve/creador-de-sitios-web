@@ -17,12 +17,36 @@
           return false;
         }
         
+        // ✅ CRÍTICO: Verificar primero si tiene el atributo data-gjs-type para evitar conflictos
+        const gjsType = el.getAttribute && el.getAttribute('data-gjs-type');
+        if (gjsType === 'icon-box') {
+          return { type: 'icon-box' };
+        }
+        // Si tiene otro tipo definido, no es icon-box
+        if (gjsType && gjsType !== 'icon-box') {
+          return false;
+        }
+        
+        // Verificar clases específicas de icon-box
         if (el.classList && (el.classList.contains('icon-box-container') || el.classList.contains('icon-box') || el.classList.contains('icon-box-horizontal'))) {
           return { type: 'icon-box' };
         }
-        if (el.tagName === 'DIV' && el.querySelector && typeof el.querySelector === 'function' && 
-            (el.querySelector('.icon-box') || el.querySelector('.icon-box-horizontal') || el.querySelector('.icon-wrapper'))) {
-          return { type: 'icon-box' };
+        
+        // ✅ CRÍTICO: Solo detectar como icon-box si tiene la estructura completa de icon-box
+        // No solo un icon-wrapper, sino también debe tener contenido de icon-box (título y descripción)
+        if (el.tagName === 'DIV' && el.querySelector && typeof el.querySelector === 'function') {
+          // Verificar si tiene la estructura completa de icon-box
+          const hasIconBox = el.querySelector('.icon-box') || el.querySelector('.icon-box-horizontal');
+          const hasIconBoxContent = el.querySelector('.icon-box-title') || el.querySelector('.icon-box-description');
+          
+          // Solo es icon-box si tiene AMBAS: la estructura de icon-box Y el contenido específico
+          // O si tiene el atributo data-gjs-type='icon-box'
+          if (hasIconBox && hasIconBoxContent) {
+            return { type: 'icon-box' };
+          }
+          
+          // NO detectar como icon-box si solo tiene icon-wrapper (podría ser un componente icon separado)
+          // El icon-wrapper solo no es suficiente para ser icon-box
         }
         return false;
       },

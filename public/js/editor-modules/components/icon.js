@@ -16,12 +16,31 @@
           return false;
         }
         
+        // ✅ CRÍTICO: Verificar primero si tiene el atributo data-gjs-type para evitar conflictos
+        const gjsType = el.getAttribute && el.getAttribute('data-gjs-type');
+        if (gjsType === 'icon') {
+          return { type: 'icon' };
+        }
+        // Si tiene otro tipo definido (como icon-box), no es icon
+        if (gjsType && gjsType !== 'icon') {
+          return false;
+        }
+        
         if (el.classList && el.classList.contains('icon-container')) {
           return { type: 'icon' };
         }
-        if (el.tagName === 'DIV' && el.querySelector && typeof el.querySelector === 'function' && 
-            el.querySelector('.icon-wrapper')) {
-          return { type: 'icon' };
+        
+        // ✅ CRÍTICO: Solo detectar como icon si NO tiene estructura de icon-box
+        // Un icon-box tiene .icon-box-title o .icon-box-description, un icon individual no
+        if (el.tagName === 'DIV' && el.querySelector && typeof el.querySelector === 'function') {
+          const hasIconWrapper = el.querySelector('.icon-wrapper');
+          const hasIconBoxStructure = el.querySelector('.icon-box-title') || el.querySelector('.icon-box-description') || 
+                                     el.querySelector('.icon-box') || el.querySelector('.icon-box-horizontal');
+          
+          // Solo es icon si tiene icon-wrapper PERO NO tiene estructura de icon-box
+          if (hasIconWrapper && !hasIconBoxStructure) {
+            return { type: 'icon' };
+          }
         }
         return false;
       },
@@ -323,7 +342,84 @@
           el.setAttribute('data-gjs-highlightable', 'true');
           el.setAttribute('data-gjs-hoverable', 'true');
           
+          // ✅ CRÍTICO: Sincronizar valores desde el DOM cuando se renderiza
+          // Esto asegura que los valores guardados se carguen correctamente
           let iconWrapper = el.querySelector('.icon-wrapper');
+          if (iconWrapper) {
+            const svg = iconWrapper.querySelector('svg');
+            const path = iconWrapper.querySelector('path');
+            
+            if (path && path.getAttribute('d')) {
+              // Intentar identificar el tipo de icono desde el path guardado
+              const savedPath = path.getAttribute('d');
+              const iconTypes = ['lightning', 'star', 'heart', 'check', 'user', 'mail', 'phone', 'home', 'settings', 'search', 'shield', 'clock', 'chart', 'users', 'globe', 'rocket'];
+              
+              let detectedType = 'lightning'; // Por defecto
+              for (const iconType of iconTypes) {
+                const expectedPath = component.getIconPath(iconType);
+                if (expectedPath === savedPath) {
+                  detectedType = iconType;
+                  break;
+                }
+              }
+              
+              // Sincronizar el tipo de icono al modelo si es diferente
+              const currentType = component.get('icon-type');
+              if (currentType !== detectedType) {
+                component.set('icon-type', detectedType, { silent: true });
+                console.log('✅ [Icon] Tipo de icono sincronizado desde DOM:', detectedType);
+              }
+              
+              // Sincronizar el tamaño desde las clases del SVG
+              if (svg) {
+                // ✅ CRÍTICO: Convertir className a string (puede ser DOMTokenList o SVGAnimatedString)
+                const svgClasses = (typeof svg.className === 'string' ? svg.className : 
+                                   (svg.className?.baseVal || svg.className?.value || svg.getAttribute('class') || '')) || '';
+                const sizeMap = {
+                  'w-8 h-8': 'small',
+                  'w-12 h-12': 'medium',
+                  'w-16 h-16': 'large',
+                  'w-24 h-24': 'xlarge'
+                };
+                
+                for (const [sizeClass, sizeValue] of Object.entries(sizeMap)) {
+                  if (String(svgClasses).includes(sizeClass)) {
+                    const currentSize = component.get('icon-size');
+                    if (currentSize !== sizeValue) {
+                      component.set('icon-size', sizeValue, { silent: true });
+                      console.log('✅ [Icon] Tamaño sincronizado desde DOM:', sizeValue);
+                    }
+                    break;
+                  }
+                }
+                
+                // Sincronizar el color desde el estilo
+                const svgColor = svg.style.color || svg.getAttribute('style');
+                if (svgColor) {
+                  const colorMatch = svgColor.match(/color:\s*([^;]+)/);
+                  if (colorMatch) {
+                    const detectedColor = colorMatch[1].trim();
+                    const currentColor = component.get('icon-color');
+                    if (currentColor !== detectedColor) {
+                      component.set('icon-color', detectedColor, { silent: true });
+                      console.log('✅ [Icon] Color sincronizado desde DOM:', detectedColor);
+                    }
+                  }
+                }
+              }
+              
+              // Sincronizar el enlace si existe
+              const linkEl = el.querySelector('.icon-link');
+              if (linkEl && linkEl.tagName === 'A') {
+                const linkHref = linkEl.getAttribute('href') || '';
+                const currentLink = component.get('icon-link');
+                if (currentLink !== linkHref) {
+                  component.set('icon-link', linkHref, { silent: true });
+                  console.log('✅ [Icon] Enlace sincronizado desde DOM:', linkHref);
+                }
+              }
+            }
+          }
           
           if (!iconWrapper) {
             const type = component.get('icon-type') || 'lightning';
@@ -368,6 +464,67 @@
               el.appendChild(linkEl);
             } else {
               el.appendChild(iconWrapper);
+            }
+          } else {
+            // ✅ CRÍTICO: Si el icono ya existe, actualizarlo desde el modelo
+            // Esto asegura que si el modelo tiene un valor diferente, se actualice el DOM
+            const type = component.get('icon-type') || 'lightning';
+            const size = component.get('icon-size') || 'large';
+            const color = component.get('icon-color') || '#2563eb';
+            const link = component.get('icon-link') || '';
+            const iconPath = component.getIconPath(type);
+            const sizeClass = component.getIconSize(size);
+            
+            const svg = iconWrapper.querySelector('svg');
+            const path = iconWrapper.querySelector('path');
+            
+            if (svg && path) {
+              // Actualizar el path del icono
+              const currentPath = path.getAttribute('d');
+              if (currentPath !== iconPath) {
+                path.setAttribute('d', iconPath);
+              }
+              
+              // Actualizar el tamaño
+              // ✅ CRÍTICO: Convertir className a string antes de usar métodos de string
+              const currentSvgClasses = (typeof svg.className === 'string' ? svg.className : 
+                                        (svg.className?.baseVal || svg.className?.value || svg.getAttribute('class') || '')) || '';
+              const currentSizeClass = String(currentSvgClasses).split(' ').find(c => c.startsWith('w-') && c.includes('h-'));
+              if (!String(currentSvgClasses).includes(sizeClass)) {
+                const otherClasses = String(currentSvgClasses).split(' ').filter(c => !c.startsWith('w-') || !c.includes('h-')).join(' ');
+                svg.setAttribute('class', sizeClass + (otherClasses ? ' ' + otherClasses : ''));
+              }
+              
+              // Actualizar el color
+              const currentColor = svg.style.color || '';
+              if (currentColor !== color) {
+                svg.style.setProperty('color', color, 'important');
+              }
+            }
+            
+            // Actualizar el enlace si es necesario
+            const linkEl = el.querySelector('.icon-link');
+            if (link && (!linkEl || linkEl.tagName !== 'A')) {
+              // Crear enlace si no existe
+              const newLinkEl = document.createElement('a');
+              newLinkEl.href = link;
+              newLinkEl.className = 'icon-link';
+              newLinkEl.setAttribute('data-gjs-editable', 'false');
+              newLinkEl.setAttribute('data-gjs-selectable', 'false');
+              iconWrapper.parentNode.insertBefore(newLinkEl, iconWrapper);
+              newLinkEl.appendChild(iconWrapper);
+            } else if (link && linkEl && linkEl.tagName === 'A') {
+              // Actualizar href si el enlace existe
+              if (linkEl.getAttribute('href') !== link) {
+                linkEl.setAttribute('href', link);
+              }
+            } else if (!link && linkEl && linkEl.tagName === 'A') {
+              // Remover enlace si ya no es necesario
+              const iconWrapperInLink = linkEl.querySelector('.icon-wrapper');
+              if (iconWrapperInLink) {
+                linkEl.parentNode.insertBefore(iconWrapperInLink, linkEl);
+                linkEl.remove();
+              }
             }
           }
           

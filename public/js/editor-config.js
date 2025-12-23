@@ -610,10 +610,66 @@ function initializeManagers() {
 
     // Obtener los traits del componente
     let traits = [];
+
+    // ✅ CRÍTICO: Función auxiliar para convertir objetos de Backbone a objetos planos
+    const convertTraitToPlain = (trait) => {
+      // Si es un objeto de Backbone, convertir a objeto plano
+      if (trait && trait.get && typeof trait.get === 'function') {
+        // Intentar usar toJSON primero
+        if (trait.toJSON && typeof trait.toJSON === 'function') {
+          const json = trait.toJSON();
+          // Asegurar que type esté presente
+          if (!json.type && trait.get('type')) {
+            json.type = trait.get('type');
+          }
+          return json;
+        }
+        // Si no tiene toJSON, construir manualmente
+        const plain = {};
+        // Obtener todas las propiedades comunes
+        ['type', 'name', 'label', 'placeholder', 'options', 'text', 'command', 'content', 'changeProp'].forEach(prop => {
+          const value = trait.get(prop);
+          if (value !== undefined && value !== null) {
+            plain[prop] = value;
+          }
+        });
+        // Agregar cualquier otro atributo
+        if (trait.attributes) {
+          Object.assign(plain, trait.attributes);
+        }
+        return plain;
+      }
+      // Si ya es un objeto plano, retornarlo tal cual
+      return trait;
+    };
+
     if (component.getTraits && typeof component.getTraits === 'function') {
-      traits = component.getTraits();
+      const traitsCollection = component.getTraits();
+      // ✅ CRÍTICO: Convertir objetos de Backbone a objetos planos
+      if (traitsCollection) {
+        // Si es una colección de Backbone
+        if (traitsCollection.toJSON && typeof traitsCollection.toJSON === 'function') {
+          traits = traitsCollection.toJSON();
+        } else if (traitsCollection.length !== undefined) {
+          // Si tiene length, es iterable
+          traits = Array.from(traitsCollection).map(convertTraitToPlain);
+        } else if (Array.isArray(traitsCollection)) {
+          traits = traitsCollection.map(convertTraitToPlain);
+        } else {
+          traits = [convertTraitToPlain(traitsCollection)];
+        }
+      }
     } else if (component.get('traits')) {
-      traits = component.get('traits').toJSON();
+      const traitsCollection = component.get('traits');
+      // Si es una colección de Backbone, convertir a JSON
+      if (traitsCollection.toJSON && typeof traitsCollection.toJSON === 'function') {
+        traits = traitsCollection.toJSON();
+      } else if (Array.isArray(traitsCollection)) {
+        // Si es un array, convertir cada elemento si es necesario
+        traits = traitsCollection.map(convertTraitToPlain);
+      } else {
+        traits = [convertTraitToPlain(traitsCollection)];
+      }
     }
 
     console.log('📋 Traits a renderizar:', traits.length);
@@ -624,7 +680,30 @@ function initializeManagers() {
     }
 
     // Renderizar cada trait
+    // ✅ CRÍTICO: Filtrar y convertir traits antes de renderizar
     traits.forEach(trait => {
+      // Si el trait es un objeto de Backbone, convertirlo a objeto plano
+      if (trait && trait.get && typeof trait.get === 'function') {
+        trait = trait.toJSON ? trait.toJSON() : {
+          type: trait.get('type'),
+          name: trait.get('name'),
+          label: trait.get('label'),
+          placeholder: trait.get('placeholder'),
+          options: trait.get('options'),
+          text: trait.get('text'),
+          command: trait.get('command'),
+          content: trait.get('content'),
+          changeProp: trait.get('changeProp'),
+          ...trait.attributes
+        };
+      }
+
+      // Validar que el trait tenga type definido
+      if (!trait || !trait.type) {
+        console.warn('⚠️ Trait sin type definido, omitiendo:', trait);
+        return; // Saltar este trait
+      }
+
       const traitElement = createTraitElement(trait, component);
       if (traitElement) {
         traitsContainer.appendChild(traitElement);
@@ -673,13 +752,19 @@ function initializeManagers() {
 
   // Función para crear elementos de trait
   function createTraitElement(trait, component) {
+    // ✅ CRÍTICO: Validar que el trait tenga type definido
+    if (!trait || !trait.type) {
+      console.warn('⚠️ createTraitElement: Trait sin type definido:', trait);
+      return null;
+    }
+
     const container = document.createElement('div');
     container.className = 'gjs-trt-trait custom-trait';
-    container.setAttribute('data-trait-name', trait.name);
+    container.setAttribute('data-trait-name', trait.name || '');
 
     const label = document.createElement('label');
     label.className = 'gjs-trt-label';
-    label.textContent = trait.label || trait.name;
+    label.textContent = trait.label || trait.name || 'Sin nombre';
     container.appendChild(label);
 
     const fieldContainer = document.createElement('div');
@@ -746,28 +831,60 @@ function initializeManagers() {
     }
 
     if (input && trait.type !== 'button') {
-      // Agregar event listener para cambios
-      input.addEventListener('change', (e) => {
-        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-        component.set(trait.name, value);
-        console.log(`🔄 Trait actualizado: ${trait.name} = ${value}`);
+      // ✅ CRÍTICO: Para traits de texto, usar { silent: true } durante la edición
+      // y solo disparar el evento completo cuando se pierde el foco o se presiona Enter
+      if (trait.type === 'text' && trait.name === 'heading-text') {
+        // Listener para cambios en tiempo real (silent para evitar re-renderizado)
+        input.addEventListener('input', (e) => {
+          const value = e.target.value;
+          // Usar { silent: true } para evitar que se dispare updateText() durante la edición
+          component.set(trait.name, value, { silent: true });
+        });
 
-        // Ejecutar onUpdate si existe
-        if (trait.onUpdate && typeof trait.onUpdate === 'function') {
-          trait.onUpdate(value, component);
-        }
-      });
+        // Listener para cuando se presiona Enter o se pierde el foco (actualizar completamente)
+        const handleFinalUpdate = (e) => {
+          const value = e.target.value;
+          // Usar { silent: false } solo cuando se termina de editar
+          component.set(trait.name, value, { silent: false });
+          console.log(`✅ Trait actualizado (final): ${trait.name} = ${value}`);
 
-      input.addEventListener('input', (e) => {
-        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-        component.set(trait.name, value);
-        console.log(`🔄 Trait actualizado (input): ${trait.name} = ${value}`);
+          // Ejecutar onUpdate si existe
+          if (trait.onUpdate && typeof trait.onUpdate === 'function') {
+            trait.onUpdate(value, component);
+          }
+        };
 
-        // Ejecutar onUpdate si existe
-        if (trait.onUpdate && typeof trait.onUpdate === 'function') {
-          trait.onUpdate(value, component);
-        }
-      });
+        input.addEventListener('blur', handleFinalUpdate);
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            input.blur(); // Esto disparará el evento blur que actualizará el componente
+          }
+        });
+      } else {
+        // Para otros tipos de traits, usar el comportamiento normal
+        input.addEventListener('change', (e) => {
+          const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+          component.set(trait.name, value);
+          console.log(`🔄 Trait actualizado: ${trait.name} = ${value}`);
+
+          // Ejecutar onUpdate si existe
+          if (trait.onUpdate && typeof trait.onUpdate === 'function') {
+            trait.onUpdate(value, component);
+          }
+        });
+
+        input.addEventListener('input', (e) => {
+          const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+          component.set(trait.name, value);
+          console.log(`🔄 Trait actualizado (input): ${trait.name} = ${value}`);
+
+          // Ejecutar onUpdate si existe
+          if (trait.onUpdate && typeof trait.onUpdate === 'function') {
+            trait.onUpdate(value, component);
+          }
+        });
+      }
     }
 
     fieldContainer.appendChild(input);
@@ -852,7 +969,7 @@ function initializeEditor() {
     'Icon', 'IconBox', 'IconList', 'StarRating', 'Quote', 'Code', 'Preformatted', 'Verse',
     'Toggle', 'Tabs', 'Accordion',
     'Carousel', 'Gallery', 'Video', 'GoogleMaps',
-    'ImageBoxAdvanced', 'BackgroundImage', 'File', 'Audio', 'CounterAnimated',
+    'ImageBoxAdvanced', 'BackgroundImage', 'BackgroundColor', 'File', 'Audio', 'CounterAnimated',
     'SectionInner', 'Column'
   ];
 
@@ -2357,6 +2474,203 @@ function initializeEditor() {
         layerable: true,
         copyable: true
       }, { silent: false });
+    }
+
+    // ✅ CRÍTICO: Si es background-color, asegurar que tenga todas las propiedades necesarias
+    if (componentType === 'background-color') {
+      console.log('🔄 [Editor] Background Color seleccionado, asegurando propiedades...');
+
+      // Forzar propiedades para asegurar que el toolbar aparezca
+      component.set({
+        draggable: true,
+        selectable: true,
+        removable: true,
+        toolbar: true,
+        highlightable: true,
+        hoverable: true,
+        badgable: true,
+        layerable: true,
+        copyable: true
+      }, { silent: false });
+
+      console.log('✅ [Editor] Propiedades del background-color actualizadas:', {
+        selectable: component.get('selectable'),
+        removable: component.get('removable'),
+        draggable: component.get('draggable'),
+        toolbar: component.get('toolbar'),
+        badgable: component.get('badgable'),
+        layerable: component.get('layerable')
+      });
+
+      // Asegurar atributos en el DOM
+      if (component.view && component.view.el) {
+        const el = component.view.el;
+        el.setAttribute('data-gjs-selectable', 'true');
+        el.setAttribute('data-gjs-removable', 'true');
+        el.setAttribute('data-gjs-draggable', 'true');
+        el.setAttribute('data-gjs-droppable', 'true');
+        el.setAttribute('data-gjs-highlightable', 'true');
+        el.setAttribute('data-gjs-toolbar', 'true');
+        el.setAttribute('data-gjs-layerable', 'true');
+        el.setAttribute('data-gjs-copyable', 'true');
+        el.setAttribute('data-gjs-badgable', 'true');
+        el.setAttribute('data-gjs-hoverable', 'true');
+        el.setAttribute('data-gjs-name', 'Color de Fondo');
+
+        console.log('✅ [Editor] Atributos DOM del background-color configurados');
+
+        // ✅ Verificar el toolbar en múltiples ubicaciones
+        setTimeout(() => {
+          const canvasFrame = editor.Canvas.getFrameEl();
+          if (canvasFrame && canvasFrame.contentDocument) {
+            const frameDoc = canvasFrame.contentDocument;
+            const frameBody = frameDoc.body || frameDoc.documentElement;
+
+            // Buscar toolbar en múltiples lugares
+            let toolbar = frameDoc.querySelector('.gjs-toolbar');
+            if (!toolbar && frameBody) {
+              toolbar = frameBody.querySelector('.gjs-toolbar');
+            }
+
+            // Buscar también en el contenedor del canvas
+            const canvasView = editor.Canvas.getCanvasView();
+            if (canvasView && canvasView.el) {
+              const canvasEl = canvasView.el;
+              if (!toolbar) {
+                toolbar = canvasEl.querySelector('.gjs-toolbar');
+              }
+            }
+
+            // Buscar en el documento principal también
+            if (!toolbar) {
+              toolbar = document.querySelector('.gjs-toolbar');
+            }
+
+            console.log('🔍 [Editor] Toolbar verificado en frame para background-color:', frameDoc.querySelector('.gjs-toolbar'));
+            console.log('🔍 [Editor] Toolbar verificado en canvasView para background-color:', canvasView && canvasView.el ? canvasView.el.querySelector('.gjs-toolbar') : 'canvasView no disponible');
+            console.log('🔍 [Editor] Toolbar encontrado final para background-color:', toolbar);
+
+            if (toolbar) {
+              const toolbarItems = toolbar.querySelectorAll('.gjs-toolbar-item');
+              console.log('✅ [Editor] Toolbar encontrado con', toolbarItems.length, 'items para background-color');
+
+              // ✅ CRÍTICO: Si el toolbar está vacío o oculto, forzar su actualización
+              if (toolbarItems.length === 0 || toolbar.style.display === 'none') {
+                console.log('🔄 [Editor] Toolbar vacío u oculto para background-color - forzando actualización...');
+
+                // Forzar que sea visible PRIMERO
+                toolbar.style.display = 'block';
+                toolbar.style.visibility = 'visible';
+                toolbar.style.opacity = '1';
+                toolbar.removeAttribute('style');
+                toolbar.setAttribute('style', 'pointer-events: all; display: block !important; visibility: visible !important; opacity: 1 !important;');
+
+                // Asegurar que el componente tenga las propiedades ANTES de actualizar el toolbar
+                component.set({
+                  selectable: true,
+                  removable: true,
+                  toolbar: true,
+                  highlightable: true,
+                  hoverable: true,
+                  badgable: true,
+                  layerable: true,
+                  draggable: true,
+                  copyable: true
+                }, { silent: false });
+
+                // Forzar update del canvas view para que renderice el toolbar con los botones
+                if (canvasView) {
+                  // Actualizar la selección en el canvas view
+                  if (canvasView.updateSelected) {
+                    canvasView.updateSelected();
+                  }
+
+                  // Método 3: Intentar forzar el render del toolbar accediendo a canvasView.toolbarEl
+                  if (canvasView.toolbarEl) {
+                    console.log('✅ [Editor] canvasView.toolbarEl encontrado para background-color');
+                    canvasView.toolbarEl.style.display = 'block';
+                    canvasView.toolbarEl.style.visibility = 'visible';
+                  }
+
+                  // Método 4: Forzar render del toolbar accediendo al CanvasView
+                  if (canvasView.toolbar && typeof canvasView.toolbar.render === 'function') {
+                    console.log('✅ [Editor] canvasView.toolbar.render encontrado para background-color, ejecutando...');
+                    canvasView.toolbar.render(component);
+                  }
+
+                  // Método 5: Intentar usar el método de GrapesJS para actualizar el toolbar
+                  if (canvasView.updateToolbar && typeof canvasView.updateToolbar === 'function') {
+                    console.log('✅ [Editor] canvasView.updateToolbar encontrado para background-color, ejecutando...');
+                    canvasView.updateToolbar();
+                  }
+
+                  // Método 6: También intentar usar el método showToolbar si existe
+                  if (canvasView.showToolbar && typeof canvasView.showToolbar === 'function') {
+                    console.log('✅ [Editor] canvasView.showToolbar encontrado para background-color, ejecutando...');
+                    canvasView.showToolbar(component);
+                  }
+
+                  // Método 7: Trigger del evento component:toolbar:render si existe
+                  if (component.trigger) {
+                    component.trigger('component:toolbar:render');
+                    component.trigger('toolbar:render');
+                  }
+
+                  // Método 8: Forzar refresh completo del canvas
+                  editor.refresh();
+                }
+
+                // Verificar después de un delay
+                setTimeout(() => {
+                  const newToolbar = canvasView && canvasView.el ? canvasView.el.querySelector('.gjs-toolbar') : null;
+                  if (newToolbar) {
+                    const newItems = newToolbar.querySelectorAll('.gjs-toolbar-item');
+                    console.log('🔍 [Editor] Toolbar después de actualización para background-color:', newItems.length, 'items');
+
+                    if (newItems.length === 0) {
+                      console.warn('⚠️ [Editor] Toolbar sigue vacío para background-color - creando botones manualmente...');
+
+                      // ✅ Crear botones del toolbar manualmente si GrapesJS no los genera
+                      try {
+                        const deleteBtn = document.createElement('div');
+                        deleteBtn.className = 'gjs-toolbar-item';
+                        deleteBtn.innerHTML = '<i class="fa fa-trash"></i>';
+                        deleteBtn.title = 'Eliminar';
+                        deleteBtn.style.cursor = 'pointer';
+                        deleteBtn.addEventListener('click', (e) => {
+                          e.stopPropagation();
+                          if (component) {
+                            component.remove();
+                            editor.select(null);
+                          }
+                        });
+
+                        newToolbar.appendChild(deleteBtn);
+                        console.log('✅ [Editor] Botón de eliminar creado manualmente para background-color');
+                      } catch (error) {
+                        console.error('❌ [Editor] Error al crear botón manual para background-color:', error);
+                      }
+                    } else {
+                      console.log('✅ [Editor] Toolbar ahora tiene', newItems.length, 'items para background-color');
+                    }
+                  }
+                }, 300);
+              }
+
+              // Verificar que sea visible
+              if (toolbar.style.display === 'none' || toolbar.style.visibility === 'hidden') {
+                toolbar.style.display = 'block';
+                toolbar.style.visibility = 'visible';
+              }
+            } else {
+              console.warn('⚠️ [Editor] Toolbar no encontrado para background-color');
+            }
+          }
+        }, 100);
+      }
+    }
+
+    if (componentType === 'background-image') {
 
       console.log('✅ [Editor] Propiedades del background-image actualizadas:', {
         selectable: component.get('selectable'),

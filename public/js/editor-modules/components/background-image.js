@@ -638,6 +638,26 @@
         updateTitle() {
           const title = this.get('content-title') || 'Contenido sobre Imagen';
           
+          // ✅ CRÍTICO: Verificar si el usuario está editando actualmente el título
+          // Si está editando, no actualizar el DOM para evitar que desaparezca
+          if (this.view && this.view.el) {
+            const titleEl = this.view.el.querySelector('h2');
+            if (titleEl) {
+              // Verificar si el elemento tiene foco (está siendo editado)
+              const isEditing = document.activeElement === titleEl || titleEl === document.querySelector('h2:focus');
+              if (isEditing) {
+                // Si está siendo editado, no actualizar para evitar interferir
+                console.log('⚠️ [BackgroundImage] Título está siendo editado, no actualizar DOM');
+                return;
+              }
+              
+              // Solo actualizar si el contenido es diferente para evitar bucles
+              if (titleEl.textContent === title) {
+                return; // Ya está actualizado, no hacer nada
+              }
+            }
+          }
+          
           // Buscar el componente h2
           const findTitle = (component) => {
             if (component.get('tagName') === 'h2') {
@@ -657,8 +677,11 @@
             console.log('✅ [BackgroundImage] Componente h2 encontrado, actualizando');
             titleComponent.set('content', title);
             if (titleComponent.view && titleComponent.view.el) {
-              titleComponent.view.el.textContent = title;
-              console.log('✅ [BackgroundImage] DOM del componente h2 actualizado');
+              // Solo actualizar si el contenido es diferente
+              if (titleComponent.view.el.textContent !== title) {
+                titleComponent.view.el.textContent = title;
+                console.log('✅ [BackgroundImage] DOM del componente h2 actualizado');
+              }
             }
           } else {
             console.warn('⚠️ [BackgroundImage] No se encontró componente h2');
@@ -668,8 +691,11 @@
           if (this.view && this.view.el) {
             const titleEl = this.view.el.querySelector('h2');
             if (titleEl) {
-              titleEl.textContent = title;
-              console.log('✅ [BackgroundImage] DOM h2 actualizado directamente');
+              // Solo actualizar si el contenido es diferente
+              if (titleEl.textContent !== title) {
+                titleEl.textContent = title;
+                console.log('✅ [BackgroundImage] DOM h2 actualizado directamente');
+              }
             } else {
               console.warn('⚠️ [BackgroundImage] No se encontró h2 en el DOM');
             }
@@ -1529,6 +1555,22 @@
               // ✅ PERMITIDO: Edición directa en el canvas
               titleEl.setAttribute('data-gjs-editable', 'true');
               titleEl.setAttribute('data-gjs-selectable', 'true');
+              
+              // ✅ CRÍTICO: Agregar listeners de input para sincronizar cambios del DOM al modelo
+              titleEl._inputListener = (e) => {
+                const newTitle = e.target.textContent || e.target.innerText || '';
+                // Usar { silent: true } para evitar que dispare updateTitle() que podría causar re-renderizado
+                component.set('content-title', newTitle.trim(), { silent: true });
+              };
+              
+              titleEl._blurListener = (e) => {
+                const newTitle = e.target.textContent || e.target.innerText || '';
+                component.set('content-title', newTitle.trim(), { silent: false });
+              };
+              
+              titleEl.addEventListener('input', titleEl._inputListener);
+              titleEl.addEventListener('blur', titleEl._blurListener);
+              
               contentContainer.appendChild(titleEl);
             }
 
@@ -1576,13 +1618,38 @@
               titleEl.setAttribute('data-gjs-selectable', 'true');
               titleEl.removeAttribute('contenteditable'); // Permitir edición
               
+              // Sincronizar valor inicial desde el DOM al modelo
               const domTitle = titleEl.textContent || titleEl.innerText || '';
               if (domTitle.trim()) {
                 component.set('content-title', domTitle.trim(), { silent: true });
               }
+              
               // Aplicar color del título desde el modelo
               const titleColor = component.get('title-color') || '#ffffff';
               titleEl.style.setProperty('color', titleColor, 'important');
+              
+              // ✅ CRÍTICO: Agregar listener de input para sincronizar cambios del DOM al modelo
+              // Remover listener anterior si existe para evitar duplicados
+              if (titleEl._inputListener) {
+                titleEl.removeEventListener('input', titleEl._inputListener);
+                titleEl.removeEventListener('blur', titleEl._blurListener);
+              }
+              
+              // Listener para cambios en tiempo real
+              titleEl._inputListener = (e) => {
+                const newTitle = e.target.textContent || e.target.innerText || '';
+                // Usar { silent: true } para evitar que dispare updateTitle() que podría causar re-renderizado
+                component.set('content-title', newTitle.trim(), { silent: true });
+              };
+              
+              // Listener para cuando se pierde el foco (guardar definitivamente)
+              titleEl._blurListener = (e) => {
+                const newTitle = e.target.textContent || e.target.innerText || '';
+                component.set('content-title', newTitle.trim(), { silent: false });
+              };
+              
+              titleEl.addEventListener('input', titleEl._inputListener);
+              titleEl.addEventListener('blur', titleEl._blurListener);
             }
             
             if (textEl) {

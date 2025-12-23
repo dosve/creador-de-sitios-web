@@ -1174,6 +1174,7 @@
   <script src="{{ asset('js/editor-modules/components/google-maps.js') }}"></script>
   <script src="{{ asset('js/editor-modules/components/image-box-advanced.js') }}"></script>
   <script src="{{ asset('js/editor-modules/components/background-image.js') }}?v={{ time() }}"></script>
+  <script src="{{ asset('js/editor-modules/components/background-color.js') }}?v={{ time() }}"></script>
   <script src="{{ asset('js/editor-modules/components/file.js') }}"></script>
   <script src="{{ asset('js/editor-modules/components/audio.js') }}"></script>
   <script src="{{ asset('js/editor-modules/components/section-inner.js') }}"></script>
