@@ -190,49 +190,46 @@
             components: [
               {
                 tagName: 'h2',
-                editable: false,  // ✅ BLOQUEADO: Solo desde propiedades
+                editable: true,  // ✅ PERMITIDO: Edición directa en el canvas
                 droppable: false,
-                selectable: false,
-                removable: false,
+                selectable: true,  // ✅ PERMITIDO: Se puede seleccionar para editar
+                removable: false,  // ✅ BLOQUEADO: No se puede eliminar individualmente
                 attributes: {
                   class: 'text-3xl font-bold mb-4',
-                  'data-gjs-editable': 'false',
-                  'data-gjs-selectable': 'false',
+                  'data-gjs-editable': 'true',
+                  'data-gjs-selectable': 'true',
                   'data-gjs-draggable': 'false',
-                  'data-gjs-removable': 'false',
-                  'contenteditable': 'false'
+                  'data-gjs-removable': 'false'
                 },
                 content: 'Contenido sobre Imagen'
               },
               {
                 tagName: 'p',
-                editable: false,  // ✅ BLOQUEADO: Solo desde propiedades
+                editable: true,  // ✅ PERMITIDO: Edición directa en el canvas
                 droppable: false,
-                selectable: false,
-                removable: false,
+                selectable: true,  // ✅ PERMITIDO: Se puede seleccionar para editar
+                removable: false,  // ✅ BLOQUEADO: No se puede eliminar individualmente
                 attributes: {
                   class: 'text-lg mb-6',
-                  'data-gjs-editable': 'false',
-                  'data-gjs-selectable': 'false',
+                  'data-gjs-editable': 'true',
+                  'data-gjs-selectable': 'true',
                   'data-gjs-draggable': 'false',
-                  'data-gjs-removable': 'false',
-                  'contenteditable': 'false'
+                  'data-gjs-removable': 'false'
                 },
                 content: 'Texto superpuesto sobre la imagen de fondo'
               },
               {
                 tagName: 'button',
-                editable: false,  // ✅ BLOQUEADO: Solo desde propiedades
+                editable: true,  // ✅ PERMITIDO: Edición directa en el canvas
                 droppable: false,
-                selectable: false,
-                removable: false,
+                selectable: true,  // ✅ PERMITIDO: Se puede seleccionar para editar
+                removable: false,  // ✅ BLOQUEADO: No se puede eliminar individualmente
                 attributes: {
                   class: 'bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100',
-                  'data-gjs-editable': 'false',
-                  'data-gjs-selectable': 'false',
+                  'data-gjs-editable': 'true',
+                  'data-gjs-selectable': 'true',
                   'data-gjs-draggable': 'false',
-                  'data-gjs-removable': 'false',
-                  'contenteditable': 'false'
+                  'data-gjs-removable': 'false'
                 },
                 content: 'Botón de Acción'
               }

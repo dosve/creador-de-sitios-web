@@ -28,7 +28,7 @@
           editable: false,   // ✅ BLOQUEADO: No edición directa del contenedor
           removable: true,
           copyable: true,
-          badgable: false,  // ✅ OCULTO: No mostrar badge "DIV"
+          badgable: true,  // ✅ HABILITADO: Mostrar badge con nombre personalizado
           stylable: true,
           highlightable: true,
           toolbar: true,    // ✅ PERMITIDO: Mostrar toolbar con controles de eliminación
@@ -38,7 +38,8 @@
             'data-gjs-type': 'background-image',
             'data-gjs-name': 'Imagen de Fondo',
             'data-gjs-editable': 'false',
-            'data-gjs-badgable': 'false'  // ✅ OCULTO: No mostrar badge
+            'data-gjs-removable': 'true',  // ✅ HABILITADO: Permitir eliminación
+            'data-gjs-badgable': 'true'  // ✅ HABILITADO: Mostrar badge con nombre personalizado
           },
           'background-image-url': '/images/default-image.jpg',
           'overlay-opacity': '50',
@@ -213,6 +214,72 @@
           ]
         },
         init() {
+          // ✅ CRÍTICO: Asegurar que removable sea true desde el inicio
+          this.set('removable', true, { silent: true });
+          
+          // ✅ CRÍTICO: Asegurar atributos del toolbar cuando se selecciona el componente
+          this.on('component:selected', () => {
+            if (this.view && this.view.el) {
+              const el = this.view.el;
+              
+              // Establecer en el modelo primero
+              this.set('removable', true);
+              this.set('selectable', true);
+              this.set('draggable', true);
+              this.set('droppable', true);
+              this.set('highlightable', true);
+              this.set('toolbar', true);
+              this.set('layerable', true);
+              this.set('copyable', true);
+              this.set('badgable', true);  // ✅ HABILITADO: Mostrar badge
+              
+              // Luego establecer en el DOM
+              // ✅ CRÍTICO: Establecer explícitamente removable: true en el DOM
+              el.setAttribute('data-gjs-removable', 'true');
+              el.setAttribute('data-gjs-selectable', 'true');
+              el.setAttribute('data-gjs-draggable', 'true');
+              el.setAttribute('data-gjs-droppable', 'true');
+              el.setAttribute('data-gjs-highlightable', 'true');
+              el.setAttribute('data-gjs-toolbar', 'true');
+              el.setAttribute('data-gjs-layerable', 'true');
+              el.setAttribute('data-gjs-copyable', 'true');
+              el.setAttribute('data-gjs-badgable', 'true');  // ✅ HABILITADO: Mostrar badge
+              el.setAttribute('data-gjs-name', 'Imagen de Fondo');  // ✅ Asegurar nombre personalizado
+              
+              // ✅ CRÍTICO: También establecer en el modelo usando setAttributes
+              this.setAttributes({
+                'data-gjs-removable': 'true',
+                'data-gjs-selectable': 'true',
+                'data-gjs-draggable': 'true',
+                'data-gjs-droppable': 'true',
+                'data-gjs-highlightable': 'true',
+                'data-gjs-toolbar': 'true',
+                'data-gjs-layerable': 'true',
+                'data-gjs-copyable': 'true',
+                'data-gjs-badgable': 'true',
+                'data-gjs-name': 'Imagen de Fondo'
+              }, { silent: true });
+              
+              // ✅ CRÍTICO: Forzar actualización después de un breve delay
+              setTimeout(() => {
+                this.set('removable', true, { silent: true });
+                el.setAttribute('data-gjs-removable', 'true');
+                if (this.view && this.view.updateAttributes) {
+                  this.view.updateAttributes();
+                }
+              }, 50);
+            }
+          });
+          
+          // ✅ CRÍTICO: También asegurar cuando el componente se monta
+          this.on('component:mount', () => {
+            setTimeout(() => {
+              this.set('removable', true, { silent: true });
+              if (this.view && this.view.el) {
+                this.view.el.setAttribute('data-gjs-removable', 'true');
+              }
+            }, 100);
+          });
           
           this.on('change:background-image-url', this.updateBackgroundImage, this);
           this.on('change:overlay-opacity', this.updateOverlay, this);
@@ -225,6 +292,113 @@
           this.on('change:text-color', this.updateTextColor, this);
           this.on('change:button-bg-color', this.updateButtonBgColor, this);
           this.on('change:button-text-color', this.updateButtonTextColor, this);
+          
+          // ✅ CRÍTICO: Sincronizar cambios cuando se edita directamente en el canvas
+          this.on('component:update', () => {
+            // Sincronizar valores desde el DOM cuando se edita directamente
+            if (this.view && this.view.el) {
+              const titleEl = this.view.el.querySelector('h2');
+              const textEl = this.view.el.querySelector('p');
+              const buttonEl = this.view.el.querySelector('button, a');
+              
+              if (titleEl) {
+                const titleText = titleEl.textContent || titleEl.innerText || '';
+                if (titleText.trim() && titleText !== this.get('content-title')) {
+                  this.set('content-title', titleText.trim());
+                }
+              }
+              
+              if (textEl) {
+                const textContent = textEl.textContent || textEl.innerText || '';
+                if (textContent.trim() && textContent !== this.get('content-text')) {
+                  this.set('content-text', textContent.trim());
+                }
+              }
+              
+              if (buttonEl) {
+                const buttonText = buttonEl.textContent || buttonEl.innerText || '';
+                if (buttonText.trim() && buttonText !== this.get('button-text')) {
+                  this.set('button-text', buttonText.trim());
+                }
+                
+                const href = buttonEl.getAttribute('href');
+                if (href && href !== this.get('button-link')) {
+                  this.set('button-link', href);
+                }
+              }
+            }
+          });
+          
+          // ✅ CRÍTICO: Habilitar edición en componentes internos
+          const enableEditingOnChildren = () => {
+            const findTitle = (comp) => {
+              if (comp.get('tagName') === 'h2') return comp;
+              let found = null;
+              comp.components().each(child => {
+                if (!found) found = findTitle(child);
+              });
+              return found;
+            };
+            
+            const findText = (comp) => {
+              if (comp.get('tagName') === 'p') return comp;
+              let found = null;
+              comp.components().each(child => {
+                if (!found) found = findText(child);
+              });
+              return found;
+            };
+            
+            const findButton = (comp) => {
+              if (comp.get('tagName') === 'button' || comp.get('tagName') === 'a') return comp;
+              let found = null;
+              comp.components().each(child => {
+                if (!found) found = findButton(child);
+              });
+              return found;
+            };
+            
+            // Habilitar edición en componentes internos
+            const titleComp = findTitle(this);
+            if (titleComp) {
+              titleComp.set({
+                editable: true,
+                selectable: true
+              });
+              titleComp.addAttributes({
+                'data-gjs-editable': 'true',
+                'data-gjs-selectable': 'true'
+              });
+            }
+            
+            const textComp = findText(this);
+            if (textComp) {
+              textComp.set({
+                editable: true,
+                selectable: true
+              });
+              textComp.addAttributes({
+                'data-gjs-editable': 'true',
+                'data-gjs-selectable': 'true'
+              });
+            }
+            
+            const buttonComp = findButton(this);
+            if (buttonComp) {
+              buttonComp.set({
+                editable: true,
+                selectable: true
+              });
+              buttonComp.addAttributes({
+                'data-gjs-editable': 'true',
+                'data-gjs-selectable': 'true'
+              });
+            }
+          };
+          
+          // Ejecutar después de un breve delay para asegurar que los componentes estén cargados
+          setTimeout(enableEditingOnChildren, 100);
+          this.on('component:mount', enableEditingOnChildren);
           
           // ✅ CRÍTICO: Sincronizar valores iniciales desde el DOM siempre
           // Esto asegura que los valores guardados se carguen correctamente
@@ -1273,10 +1447,61 @@
       view: {
         onRender() {
           const el = this.el;
+          const component = this.model;
+          
+          // ✅ CRÍTICO: Establecer atributos del toolbar PRIMERO, antes de cualquier otra lógica
+          // Esto asegura que GrapesJS los reconozca desde el inicio
+          component.set('removable', true);
+          component.set('selectable', true);
+          component.set('draggable', true);
+          component.set('droppable', true);
+          component.set('highlightable', true);
+          component.set('toolbar', true);
+          component.set('layerable', true);
+          component.set('copyable', true);
+          component.set('badgable', true);  // ✅ HABILITADO: Mostrar badge con nombre personalizado
+          
+          // Establecer en el DOM inmediatamente
+          // ✅ CRÍTICO: Establecer explícitamente removable: true en el DOM
+          el.setAttribute('data-gjs-removable', 'true');
+          el.setAttribute('data-gjs-selectable', 'true');
+          el.setAttribute('data-gjs-draggable', 'true');
+          el.setAttribute('data-gjs-droppable', 'true');
+          el.setAttribute('data-gjs-highlightable', 'true');
+          el.setAttribute('data-gjs-toolbar', 'true');
+          el.setAttribute('data-gjs-layerable', 'true');
+          el.setAttribute('data-gjs-copyable', 'true');
+          el.setAttribute('data-gjs-badgable', 'true');  // ✅ HABILITADO: Mostrar badge
+          el.setAttribute('data-gjs-name', 'Imagen de Fondo');  // ✅ Asegurar nombre personalizado
+          
+          // ✅ CRÍTICO: También establecer en el modelo usando setAttributes para forzar actualización
+          component.setAttributes({
+            'data-gjs-removable': 'true',
+            'data-gjs-selectable': 'true',
+            'data-gjs-draggable': 'true',
+            'data-gjs-droppable': 'true',
+            'data-gjs-highlightable': 'true',
+            'data-gjs-toolbar': 'true',
+            'data-gjs-layerable': 'true',
+            'data-gjs-copyable': 'true',
+            'data-gjs-badgable': 'true',
+            'data-gjs-name': 'Imagen de Fondo'
+          }, { silent: true });
+          
+          // ✅ CRÍTICO: Forzar actualización del componente después de un breve delay
+          // para asegurar que GrapesJS reconozca los cambios
+          setTimeout(() => {
+            // Forzar actualización de la vista
+            if (this.view && this.view.updateAttributes) {
+              this.view.updateAttributes();
+            }
+            // Asegurar que removable sigue siendo true
+            component.set('removable', true, { silent: true });
+            el.setAttribute('data-gjs-removable', 'true');
+          }, 50);
           
           // ✅ CRÍTICO: Sincronizar valores desde el DOM cuando se renderiza
           // Esto asegura que los valores guardados se carguen correctamente
-          const component = this.model;
           if (component) {
             let titleEl = el.querySelector('h2');
             let textEl = el.querySelector('p');
@@ -1301,9 +1526,9 @@
               titleEl.className = 'text-3xl font-bold mb-4';
               titleEl.textContent = modelTitle;
               titleEl.style.setProperty('color', titleColor, 'important');
-              titleEl.setAttribute('data-gjs-editable', 'false');
-              titleEl.setAttribute('data-gjs-selectable', 'false');
-              titleEl.setAttribute('contenteditable', 'false');
+              // ✅ PERMITIDO: Edición directa en el canvas
+              titleEl.setAttribute('data-gjs-editable', 'true');
+              titleEl.setAttribute('data-gjs-selectable', 'true');
               contentContainer.appendChild(titleEl);
             }
 
@@ -1314,9 +1539,9 @@
               textEl.className = 'text-lg mb-6';
               textEl.textContent = modelText;
               textEl.style.setProperty('color', textColor, 'important');
-              textEl.setAttribute('data-gjs-editable', 'false');
-              textEl.setAttribute('data-gjs-selectable', 'false');
-              textEl.setAttribute('contenteditable', 'false');
+              // ✅ PERMITIDO: Edición directa en el canvas
+              textEl.setAttribute('data-gjs-editable', 'true');
+              textEl.setAttribute('data-gjs-selectable', 'true');
               contentContainer.appendChild(textEl);
             }
 
@@ -1331,9 +1556,9 @@
               buttonEl.textContent = modelButtonText;
               buttonEl.style.setProperty('background-color', buttonBgColor, 'important');
               buttonEl.style.setProperty('color', buttonTextColor, 'important');
-              buttonEl.setAttribute('data-gjs-editable', 'false');
-              buttonEl.setAttribute('data-gjs-selectable', 'false');
-              buttonEl.setAttribute('contenteditable', 'false');
+              // ✅ PERMITIDO: Edición directa en el canvas
+              buttonEl.setAttribute('data-gjs-editable', 'true');
+              buttonEl.setAttribute('data-gjs-selectable', 'true');
               if (isLink) {
                 buttonEl.setAttribute('href', modelButtonLink);
               }
@@ -1346,6 +1571,11 @@
             buttonEl = el.querySelector('button, a');
             
             if (titleEl) {
+              // ✅ PERMITIDO: Habilitar edición directa en elementos existentes
+              titleEl.setAttribute('data-gjs-editable', 'true');
+              titleEl.setAttribute('data-gjs-selectable', 'true');
+              titleEl.removeAttribute('contenteditable'); // Permitir edición
+              
               const domTitle = titleEl.textContent || titleEl.innerText || '';
               if (domTitle.trim()) {
                 component.set('content-title', domTitle.trim(), { silent: true });
@@ -1356,6 +1586,11 @@
             }
             
             if (textEl) {
+              // ✅ PERMITIDO: Habilitar edición directa en elementos existentes
+              textEl.setAttribute('data-gjs-editable', 'true');
+              textEl.setAttribute('data-gjs-selectable', 'true');
+              textEl.removeAttribute('contenteditable'); // Permitir edición
+              
               const domText = textEl.textContent || textEl.innerText || '';
               if (domText.trim()) {
                 component.set('content-text', domText.trim(), { silent: true });
@@ -1366,6 +1601,11 @@
             }
             
             if (buttonEl) {
+              // ✅ PERMITIDO: Habilitar edición directa en elementos existentes
+              buttonEl.setAttribute('data-gjs-editable', 'true');
+              buttonEl.setAttribute('data-gjs-selectable', 'true');
+              buttonEl.removeAttribute('contenteditable'); // Permitir edición
+              
               const domButtonText = buttonEl.textContent || buttonEl.innerText || '';
               if (domButtonText.trim()) {
                 component.set('button-text', domButtonText.trim(), { silent: true });
@@ -1386,30 +1626,16 @@
             }
           }
           
-          // ✅ BANDERA: Evitar bucles infinitos en el observer
-          if (this._isProtecting) return;
-          this._isProtecting = true;
-
-          // ✅ OCULTO: Ocultar badge "DIV" del componente
-          el.setAttribute('data-gjs-badgable', 'false');
-          el.setAttribute('data-gjs-badge', 'false');
+          // ✅ HABILITADO: Mostrar badge con nombre personalizado "Imagen de Fondo"
+          el.setAttribute('data-gjs-badgable', 'true');
+          // Asegurar que el nombre se muestre correctamente
+          el.setAttribute('data-gjs-name', 'Imagen de Fondo');
           
-          // Proteger el contenedor principal completamente
-          // ✅ IMPORTANTE: NO establecer data-gjs-removable aquí para permitir eliminación
+          // ✅ CRÍTICO: Establecer atributos básicos (similar al componente de lista)
           el.setAttribute('contenteditable', 'false');
           el.setAttribute('data-gjs-editable', 'false');
-          el.setAttribute('data-gjs-selectable', 'true'); // ✅ PERMITIDO: Se puede seleccionar para propiedades
-          el.setAttribute('data-gjs-draggable', 'true');
-          el.setAttribute('data-gjs-droppable', 'true');
-          el.setAttribute('data-gjs-highlightable', 'true'); // ✅ CRÍTICO: Necesario para mostrar el toolbar
-          el.setAttribute('data-gjs-toolbar', 'true'); // ✅ CRÍTICO: Asegurar que el toolbar se muestre
-          el.setAttribute('data-gjs-layerable', 'true'); // ✅ CRÍTICO: Necesario para mostrar controles en el toolbar
-          el.setAttribute('data-gjs-copyable', 'true'); // ✅ CRÍTICO: Necesario para mostrar controles en el toolbar
-          // ✅ CRÍTICO: Asegurar que el componente principal sea eliminable
-          // No establecer data-gjs-removable para que use el valor del modelo (removable: true)
-          if (el.hasAttribute('data-gjs-removable')) {
-            el.removeAttribute('data-gjs-removable');
-          }
+          
+          // Nota: Los atributos del toolbar ya se establecieron al principio de onRender()
           
           // ✅ DEBUG: CÓDIGO DE PROTECCIÓN COMENTADO PARA IDENTIFICAR EL PROBLEMA
           // ✅ CRÍTICO: Proteger TODOS los elementos internos recursivamente
@@ -1470,8 +1696,10 @@
           protectAllElements(el);
           */
           
+          // ✅ DEBUG: OBSERVER COMENTADO PARA IDENTIFICAR EL PROBLEMA
           // Observar cambios en el DOM SOLO para nuevos elementos (childList)
           // NO observar cambios en atributos para evitar bucles infinitos
+          /*
           const observer = new MutationObserver((mutations) => {
             // Solo procesar si hay nuevos elementos agregados
             const hasNewChildren = mutations.some(mutation => 
@@ -1514,6 +1742,7 @@
           setTimeout(() => {
             this._isProtecting = false;
           }, 200);
+          */
           
         },
         onRemove() {

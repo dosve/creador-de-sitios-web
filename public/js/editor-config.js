@@ -559,7 +559,7 @@ function initializeManagers() {
     let deviceIndicator = document.querySelector('.device-indicator');
     if (!deviceIndicator) {
       deviceIndicator = document.createElement('div');
-      deviceIndicator.className = 'device-indicator mb-3 p-2 bg-blue-50 border border-blue-200 rounded-md';
+      deviceIndicator.className = 'p-2 mb-3 border border-blue-200 rounded-md device-indicator bg-blue-50';
       deviceIndicator.style.fontSize = '0.75rem';
       traitsContainer.insertBefore(deviceIndicator, traitsContainer.firstChild);
     }
@@ -1222,7 +1222,7 @@ function initializeEditor() {
                 // Renderizar posts reales
                 data.data.forEach(post => {
                   const postEl = document.createElement('article');
-                  postEl.className = 'bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow';
+                  postEl.className = 'overflow-hidden transition-shadow bg-white rounded-lg shadow-lg hover:shadow-xl';
                   
                   const excerpt = post.excerpt || (post.content || '').substring(0, 150) + '...';
                   const publishDate = new Date(post.created_at || post.published_at).toLocaleDateString('es-ES', {
@@ -2340,6 +2340,199 @@ function initializeEditor() {
 
     const componentType = component.get('type');
     console.log('🎯 [Editor] Componente seleccionado:', componentType);
+
+    // ✅ CRÍTICO: Si es background-image, asegurar que tenga todas las propiedades necesarias
+    if (componentType === 'background-image') {
+      console.log('🔄 [Editor] Background Image seleccionado, asegurando propiedades...');
+
+      // Forzar propiedades para asegurar que el toolbar aparezca
+      component.set({
+        draggable: true,
+        selectable: true,
+        removable: true,
+        toolbar: true,
+        highlightable: true,
+        hoverable: true,
+        badgable: true,
+        layerable: true,
+        copyable: true
+      }, { silent: false });
+
+      console.log('✅ [Editor] Propiedades del background-image actualizadas:', {
+        selectable: component.get('selectable'),
+        removable: component.get('removable'),
+        draggable: component.get('draggable'),
+        toolbar: component.get('toolbar'),
+        badgable: component.get('badgable'),
+        layerable: component.get('layerable')
+      });
+
+      // Asegurar atributos en el DOM
+      if (component.view && component.view.el) {
+        const el = component.view.el;
+        el.setAttribute('data-gjs-selectable', 'true');
+        el.setAttribute('data-gjs-removable', 'true');
+        el.setAttribute('data-gjs-draggable', 'true');
+        el.setAttribute('data-gjs-droppable', 'true');
+        el.setAttribute('data-gjs-highlightable', 'true');
+        el.setAttribute('data-gjs-toolbar', 'true');
+        el.setAttribute('data-gjs-layerable', 'true');
+        el.setAttribute('data-gjs-copyable', 'true');
+        el.setAttribute('data-gjs-badgable', 'true');
+        el.setAttribute('data-gjs-hoverable', 'true');
+
+        console.log('✅ [Editor] Atributos DOM del background-image configurados');
+
+        // ✅ Verificar el toolbar en múltiples ubicaciones
+        setTimeout(() => {
+          const canvasFrame = editor.Canvas.getFrameEl();
+          if (canvasFrame && canvasFrame.contentDocument) {
+            const frameDoc = canvasFrame.contentDocument;
+            const frameBody = frameDoc.body || frameDoc.documentElement;
+
+            // Buscar toolbar en múltiples lugares
+            let toolbar = frameDoc.querySelector('.gjs-toolbar');
+            if (!toolbar && frameBody) {
+              toolbar = frameBody.querySelector('.gjs-toolbar');
+            }
+
+            // Buscar también en el contenedor del canvas
+            const canvasView = editor.Canvas.getCanvasView();
+            if (canvasView && canvasView.el) {
+              const canvasEl = canvasView.el;
+              if (!toolbar) {
+                toolbar = canvasEl.querySelector('.gjs-toolbar');
+              }
+            }
+
+            // Buscar en el documento principal también
+            if (!toolbar) {
+              toolbar = document.querySelector('.gjs-toolbar');
+            }
+
+            console.log('🔍 [Editor] Toolbar verificado en frame:', frameDoc.querySelector('.gjs-toolbar'));
+            console.log('🔍 [Editor] Toolbar verificado en canvasView:', canvasView && canvasView.el ? canvasView.el.querySelector('.gjs-toolbar') : 'canvasView no disponible');
+            console.log('🔍 [Editor] Toolbar encontrado final:', toolbar);
+
+            if (toolbar) {
+              const toolbarItems = toolbar.querySelectorAll('.gjs-toolbar-item');
+              console.log('✅ [Editor] Toolbar encontrado con', toolbarItems.length, 'items');
+
+              // ✅ CRÍTICO: Si el toolbar está vacío o oculto, forzar su actualización
+              if (toolbarItems.length === 0 || toolbar.style.display === 'none') {
+                console.log('🔄 [Editor] Toolbar vacío u oculto - forzando actualización...');
+
+                // Forzar que sea visible PRIMERO
+                toolbar.style.display = 'block';
+                toolbar.style.visibility = 'visible';
+                toolbar.style.opacity = '1';
+                toolbar.removeAttribute('style');
+                toolbar.setAttribute('style', 'pointer-events: all; display: block !important; visibility: visible !important; opacity: 1 !important;');
+
+                // Asegurar que el componente tenga las propiedades ANTES de actualizar el toolbar
+                component.set({
+                  selectable: true,
+                  removable: true,
+                  toolbar: true,
+                  highlightable: true,
+                  hoverable: true,
+                  badgable: true,
+                  layerable: true,
+                  draggable: true,
+                  copyable: true
+                }, { silent: false });
+
+                // Forzar update del canvas view para que renderice el toolbar con los botones
+                if (canvasView) {
+                  // Actualizar la selección en el canvas view
+                  if (canvasView.updateSelected) {
+                    canvasView.updateSelected();
+                  }
+
+                  // Método 3: Intentar forzar el render del toolbar accediendo a canvasView.toolbarEl
+                  if (canvasView.toolbarEl) {
+                    console.log('✅ [Editor] canvasView.toolbarEl encontrado');
+                    canvasView.toolbarEl.style.display = 'block';
+                    canvasView.toolbarEl.style.visibility = 'visible';
+                  }
+
+                  // Método 4: Forzar render del toolbar accediendo al CanvasView
+                  if (canvasView.toolbar && typeof canvasView.toolbar.render === 'function') {
+                    console.log('✅ [Editor] canvasView.toolbar.render encontrado, ejecutando...');
+                    canvasView.toolbar.render(component);
+                  }
+
+                  // Método 5: Intentar usar el método de GrapesJS para actualizar el toolbar
+                  if (canvasView.updateToolbar && typeof canvasView.updateToolbar === 'function') {
+                    console.log('✅ [Editor] canvasView.updateToolbar encontrado, ejecutando...');
+                    canvasView.updateToolbar();
+                  }
+
+                  // Método 6: También intentar usar el método showToolbar si existe
+                  if (canvasView.showToolbar && typeof canvasView.showToolbar === 'function') {
+                    console.log('✅ [Editor] canvasView.showToolbar encontrado, ejecutando...');
+                    canvasView.showToolbar(component);
+                  }
+
+                  // Método 7: Trigger del evento component:toolbar:render si existe
+                  if (component.trigger) {
+                    component.trigger('component:toolbar:render');
+                    component.trigger('toolbar:render');
+                  }
+
+                  // Método 8: Forzar refresh completo del canvas
+                  editor.refresh();
+                }
+
+                // Verificar después de un delay
+                setTimeout(() => {
+                  const newToolbar = canvasView && canvasView.el ? canvasView.el.querySelector('.gjs-toolbar') : null;
+                  if (newToolbar) {
+                    const newItems = newToolbar.querySelectorAll('.gjs-toolbar-item');
+                    console.log('🔍 [Editor] Toolbar después de actualización:', newItems.length, 'items');
+
+                    if (newItems.length === 0) {
+                      console.warn('⚠️ [Editor] Toolbar sigue vacío - creando botones manualmente...');
+
+                      // ✅ Crear botones del toolbar manualmente si GrapesJS no los genera
+                      try {
+                        const deleteBtn = document.createElement('div');
+                        deleteBtn.className = 'gjs-toolbar-item';
+                        deleteBtn.innerHTML = '<i class="fa fa-trash"></i>';
+                        deleteBtn.title = 'Eliminar';
+                        deleteBtn.style.cursor = 'pointer';
+                        deleteBtn.addEventListener('click', (e) => {
+                          e.stopPropagation();
+                          if (component) {
+                            component.remove();
+                            editor.select(null);
+                          }
+                        });
+
+                        newToolbar.appendChild(deleteBtn);
+                        console.log('✅ [Editor] Botón de eliminar creado manualmente');
+                      } catch (error) {
+                        console.error('❌ [Editor] Error al crear botón manual:', error);
+                      }
+                    } else {
+                      console.log('✅ [Editor] Toolbar ahora tiene', newItems.length, 'items');
+                    }
+                  }
+                }, 300);
+              }
+
+              // Verificar que sea visible
+              if (toolbar.style.display === 'none' || toolbar.style.visibility === 'hidden') {
+                toolbar.style.display = 'block';
+                toolbar.style.visibility = 'visible';
+              }
+            } else {
+              console.warn('⚠️ [Editor] Toolbar no encontrado para background-image');
+            }
+          }
+        }, 100);
+      }
+    }
 
     // Si es un toggle, asegurar que tenga todas las propiedades necesarias
     if (componentType === 'toggle') {
@@ -3757,58 +3950,77 @@ function initializeEditor() {
       const allComponents = editor.DomComponents.getWrapper().find('*');
 
       allComponents.forEach(component => {
-        const currentName = component.get('name');
-        if (!currentName || currentName === 'Div' || currentName === 'Default' || currentName === 'Box') {
-          const type = component.get('type');
-          const tagName = component.get('tagName');
+        // ✅ CRÍTICO: Validar que el componente existe y tiene el método get
+        if (!component || typeof component.get !== 'function') {
+          return; // Saltar componentes inválidos
+        }
 
-          const nameMap = {
-            'text': 'Texto',
-            'image': 'Imagen',
-            'button': 'Botón',
-            'link': 'Enlace',
-            'heading': 'Título',
-            'paragraph': 'Párrafo',
-            'divider': 'Divisor',
-            'section': 'Sección',
-            'container': 'Contenedor',
-            'column': 'Columna',
-            'icon': 'Icono',
-            'icon-box': 'Caja de Icono',
-            'youtube-video': 'YouTube'
-          };
+        try {
+          const currentName = component.get('name');
+          if (!currentName || currentName === 'Div' || currentName === 'Default' || currentName === 'Box') {
+            const type = component.get('type');
+            const tagName = component.get('tagName');
 
-          const tagNameMap = {
-            'h1': 'Título H1',
-            'h2': 'Título H2',
-            'h3': 'Título H3',
-            'h4': 'Título H4',
-            'h5': 'Título H5',
-            'h6': 'Título H6',
-            'p': 'Párrafo',
-            'a': 'Enlace',
-            'img': 'Imagen',
-            'button': 'Botón',
-            'section': 'Sección',
-            'nav': 'Navegación',
-            'footer': 'Footer',
-            'header': 'Header',
-            'form': 'Formulario',
-            'input': 'Campo de Entrada',
-            'textarea': 'Área de Texto',
-            'label': 'Etiqueta',
-            'hr': 'Divisor',
-            'div': 'Contenedor'
-          };
+            const nameMap = {
+              'text': 'Texto',
+              'image': 'Imagen',
+              'button': 'Botón',
+              'link': 'Enlace',
+              'heading': 'Título',
+              'paragraph': 'Párrafo',
+              'divider': 'Divisor',
+              'section': 'Sección',
+              'container': 'Contenedor',
+              'column': 'Columna',
+              'icon': 'Icono',
+              'icon-box': 'Caja de Icono',
+              'youtube-video': 'YouTube'
+            };
 
-          const newName = nameMap[type] || tagNameMap[tagName] || (tagName ? tagName.toUpperCase() : 'Elemento');
-          component.set('name', newName);
+            const tagNameMap = {
+              'h1': 'Título H1',
+              'h2': 'Título H2',
+              'h3': 'Título H3',
+              'h4': 'Título H4',
+              'h5': 'Título H5',
+              'h6': 'Título H6',
+              'p': 'Párrafo',
+              'a': 'Enlace',
+              'img': 'Imagen',
+              'button': 'Botón',
+              'section': 'Sección',
+              'nav': 'Navegación',
+              'footer': 'Footer',
+              'header': 'Header',
+              'form': 'Formulario',
+              'input': 'Campo de Entrada',
+              'textarea': 'Área de Texto',
+              'label': 'Etiqueta',
+              'hr': 'Divisor',
+              'div': 'Contenedor'
+            };
+
+            const newName = nameMap[type] || tagNameMap[tagName] || (tagName ? tagName.toUpperCase() : 'Elemento');
+            // ✅ CRÍTICO: Usar { silent: true } para evitar que la actualización del nombre dispare
+            // una re-renderización inmediata del LayerManager, que podría estar oculto o no inicializado
+            component.set('name', newName, { silent: true });
+          }
+        } catch (componentError) {
+          // Ignorar errores individuales de componentes para continuar con los demás
+          console.debug('Error procesando componente individual:', componentError);
         }
       });
 
-      // Actualizar Layer Manager
+      // Actualizar Layer Manager solo una vez al final
       if (editor.LayerManager) {
-        editor.LayerManager.render();
+        // Usar setTimeout para asegurar que se ejecute después de todas las actualizaciones
+        setTimeout(() => {
+          try {
+            editor.LayerManager.render();
+          } catch (renderError) {
+            console.debug('Error renderizando Layer Manager:', renderError);
+          }
+        }, 100);
       }
 
     } catch (error) {
