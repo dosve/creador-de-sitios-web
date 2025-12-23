@@ -2183,7 +2183,29 @@ function initializeEditor() {
       };
       
       const newName = nameMap[type] || tagNameMap[tagName] || (tagName ? tagName.toUpperCase() : 'Elemento');
-      component.set('name', newName);
+      // Usar silent: true para evitar actualizar la vista del Layer Manager si no está lista
+      // Esto previene el error "Cannot set properties of null (setting 'innerText')"
+      try {
+        component.set('name', newName, { silent: true });
+        // Si el Layer Manager está disponible y el panel está visible, actualizar la vista
+        if (editor.LayerManager) {
+          const layersPanel = document.getElementById('layers-panel');
+          if (layersPanel && !layersPanel.classList.contains('hidden')) {
+            // Forzar actualización solo si el panel está visible
+            setTimeout(() => {
+              try {
+                editor.LayerManager.render();
+              } catch (renderError) {
+                // Ignorar errores de renderizado si el panel no está listo
+                console.debug('Layer Manager no listo para renderizar:', renderError);
+              }
+            }, 0);
+          }
+        }
+      } catch (error) {
+        // Si hay un error, simplemente ignorarlo para evitar romper el flujo
+        console.debug('Error al establecer nombre del componente:', error);
+      }
     }
   });
   
