@@ -2480,7 +2480,7 @@ function initializeEditor() {
     if (componentType === 'background-color') {
       console.log('🔄 [Editor] Background Color seleccionado, asegurando propiedades...');
 
-      // Forzar propiedades para asegurar que el toolbar aparezca
+      // Forzar propiedades para asegurar que el toolbar aparezca INMEDIATAMENTE
       component.set({
         draggable: true,
         selectable: true,
@@ -2502,7 +2502,7 @@ function initializeEditor() {
         layerable: component.get('layerable')
       });
 
-      // Asegurar atributos en el DOM
+      // Asegurar atributos en el DOM INMEDIATAMENTE
       if (component.view && component.view.el) {
         const el = component.view.el;
         el.setAttribute('data-gjs-selectable', 'true');
@@ -2519,157 +2519,119 @@ function initializeEditor() {
 
         console.log('✅ [Editor] Atributos DOM del background-color configurados');
 
-        // ✅ Verificar el toolbar en múltiples ubicaciones
-        setTimeout(() => {
+        // ✅ Verificar el toolbar INMEDIATAMENTE y luego con delay
+        // Función para verificar y crear toolbar
+        const checkAndCreateToolbar = () => {
           const canvasFrame = editor.Canvas.getFrameEl();
-          if (canvasFrame && canvasFrame.contentDocument) {
-            const frameDoc = canvasFrame.contentDocument;
-            const frameBody = frameDoc.body || frameDoc.documentElement;
+          const canvasView = editor.Canvas.getCanvasView();
 
-            // Buscar toolbar en múltiples lugares
-            let toolbar = frameDoc.querySelector('.gjs-toolbar');
-            if (!toolbar && frameBody) {
-              toolbar = frameBody.querySelector('.gjs-toolbar');
-            }
+          if (!canvasFrame || !canvasFrame.contentDocument) {
+            return;
+          }
 
-            // Buscar también en el contenedor del canvas
-            const canvasView = editor.Canvas.getCanvasView();
-            if (canvasView && canvasView.el) {
-              const canvasEl = canvasView.el;
-              if (!toolbar) {
-                toolbar = canvasEl.querySelector('.gjs-toolbar');
-              }
-            }
+          const frameDoc = canvasFrame.contentDocument;
+          const frameBody = frameDoc.body || frameDoc.documentElement;
 
-            // Buscar en el documento principal también
+          // Buscar toolbar en múltiples lugares
+          let toolbar = frameDoc.querySelector('.gjs-toolbar');
+          if (!toolbar && frameBody) {
+            toolbar = frameBody.querySelector('.gjs-toolbar');
+          }
+
+          // Buscar también en el contenedor del canvas
+          if (canvasView && canvasView.el) {
+            const canvasEl = canvasView.el;
             if (!toolbar) {
-              toolbar = document.querySelector('.gjs-toolbar');
-            }
-
-            console.log('🔍 [Editor] Toolbar verificado en frame para background-color:', frameDoc.querySelector('.gjs-toolbar'));
-            console.log('🔍 [Editor] Toolbar verificado en canvasView para background-color:', canvasView && canvasView.el ? canvasView.el.querySelector('.gjs-toolbar') : 'canvasView no disponible');
-            console.log('🔍 [Editor] Toolbar encontrado final para background-color:', toolbar);
-
-            if (toolbar) {
-              const toolbarItems = toolbar.querySelectorAll('.gjs-toolbar-item');
-              console.log('✅ [Editor] Toolbar encontrado con', toolbarItems.length, 'items para background-color');
-
-              // ✅ CRÍTICO: Si el toolbar está vacío o oculto, forzar su actualización
-              if (toolbarItems.length === 0 || toolbar.style.display === 'none') {
-                console.log('🔄 [Editor] Toolbar vacío u oculto para background-color - forzando actualización...');
-
-                // Forzar que sea visible PRIMERO
-                toolbar.style.display = 'block';
-                toolbar.style.visibility = 'visible';
-                toolbar.style.opacity = '1';
-                toolbar.removeAttribute('style');
-                toolbar.setAttribute('style', 'pointer-events: all; display: block !important; visibility: visible !important; opacity: 1 !important;');
-
-                // Asegurar que el componente tenga las propiedades ANTES de actualizar el toolbar
-                component.set({
-                  selectable: true,
-                  removable: true,
-                  toolbar: true,
-                  highlightable: true,
-                  hoverable: true,
-                  badgable: true,
-                  layerable: true,
-                  draggable: true,
-                  copyable: true
-                }, { silent: false });
-
-                // Forzar update del canvas view para que renderice el toolbar con los botones
-                if (canvasView) {
-                  // Actualizar la selección en el canvas view
-                  if (canvasView.updateSelected) {
-                    canvasView.updateSelected();
-                  }
-
-                  // Método 3: Intentar forzar el render del toolbar accediendo a canvasView.toolbarEl
-                  if (canvasView.toolbarEl) {
-                    console.log('✅ [Editor] canvasView.toolbarEl encontrado para background-color');
-                    canvasView.toolbarEl.style.display = 'block';
-                    canvasView.toolbarEl.style.visibility = 'visible';
-                  }
-
-                  // Método 4: Forzar render del toolbar accediendo al CanvasView
-                  if (canvasView.toolbar && typeof canvasView.toolbar.render === 'function') {
-                    console.log('✅ [Editor] canvasView.toolbar.render encontrado para background-color, ejecutando...');
-                    canvasView.toolbar.render(component);
-                  }
-
-                  // Método 5: Intentar usar el método de GrapesJS para actualizar el toolbar
-                  if (canvasView.updateToolbar && typeof canvasView.updateToolbar === 'function') {
-                    console.log('✅ [Editor] canvasView.updateToolbar encontrado para background-color, ejecutando...');
-                    canvasView.updateToolbar();
-                  }
-
-                  // Método 6: También intentar usar el método showToolbar si existe
-                  if (canvasView.showToolbar && typeof canvasView.showToolbar === 'function') {
-                    console.log('✅ [Editor] canvasView.showToolbar encontrado para background-color, ejecutando...');
-                    canvasView.showToolbar(component);
-                  }
-
-                  // Método 7: Trigger del evento component:toolbar:render si existe
-                  if (component.trigger) {
-                    component.trigger('component:toolbar:render');
-                    component.trigger('toolbar:render');
-                  }
-
-                  // Método 8: Forzar refresh completo del canvas
-                  editor.refresh();
-                }
-
-                // Verificar después de un delay
-                setTimeout(() => {
-                  const newToolbar = canvasView && canvasView.el ? canvasView.el.querySelector('.gjs-toolbar') : null;
-                  if (newToolbar) {
-                    const newItems = newToolbar.querySelectorAll('.gjs-toolbar-item');
-                    console.log('🔍 [Editor] Toolbar después de actualización para background-color:', newItems.length, 'items');
-
-                    if (newItems.length === 0) {
-                      console.warn('⚠️ [Editor] Toolbar sigue vacío para background-color - creando botones manualmente...');
-
-                      // ✅ Crear botones del toolbar manualmente si GrapesJS no los genera
-                      try {
-                        const deleteBtn = document.createElement('div');
-                        deleteBtn.className = 'gjs-toolbar-item';
-                        deleteBtn.innerHTML = '<i class="fa fa-trash"></i>';
-                        deleteBtn.title = 'Eliminar';
-                        deleteBtn.style.cursor = 'pointer';
-                        deleteBtn.addEventListener('click', (e) => {
-                          e.stopPropagation();
-                          if (component) {
-                            component.remove();
-                            editor.select(null);
-                          }
-                        });
-
-                        newToolbar.appendChild(deleteBtn);
-                        console.log('✅ [Editor] Botón de eliminar creado manualmente para background-color');
-                      } catch (error) {
-                        console.error('❌ [Editor] Error al crear botón manual para background-color:', error);
-                      }
-                    } else {
-                      console.log('✅ [Editor] Toolbar ahora tiene', newItems.length, 'items para background-color');
-                    }
-                  }
-                }, 300);
-              }
-
-              // Verificar que sea visible
-              if (toolbar.style.display === 'none' || toolbar.style.visibility === 'hidden') {
-                toolbar.style.display = 'block';
-                toolbar.style.visibility = 'visible';
-              }
-            } else {
-              console.warn('⚠️ [Editor] Toolbar no encontrado para background-color');
+              toolbar = canvasEl.querySelector('.gjs-toolbar');
             }
           }
-        }, 100);
+
+          // Buscar en el documento principal también
+          if (!toolbar) {
+            toolbar = document.querySelector('.gjs-toolbar');
+          }
+
+          if (toolbar) {
+            const toolbarItems = toolbar.querySelectorAll('.gjs-toolbar-item');
+
+            // Solo crear botón manual si el toolbar está completamente vacío
+            // Si GrapesJS ya generó botones, NO crear botón manual para evitar duplicados
+            if (toolbarItems.length === 0) {
+              // El toolbar está completamente vacío, crear botón manual como último recurso
+              try {
+                const deleteBtn = frameDoc.createElement('div');
+                deleteBtn.className = 'gjs-toolbar-item';
+                deleteBtn.innerHTML = '<i class="fa fa-trash"></i>';
+                deleteBtn.title = 'Eliminar';
+                deleteBtn.setAttribute('data-toolbar-action', 'delete');
+                deleteBtn.style.cursor = 'pointer';
+                deleteBtn.style.display = 'flex';
+                deleteBtn.style.alignItems = 'center';
+                deleteBtn.style.justifyContent = 'center';
+                deleteBtn.style.padding = '5px';
+                deleteBtn.style.color = '#fff';
+                deleteBtn.style.backgroundColor = '#dc3545';
+                deleteBtn.style.borderRadius = '3px';
+                deleteBtn.style.margin = '0 2px';
+                deleteBtn.style.minWidth = '30px';
+                deleteBtn.style.minHeight = '30px';
+                deleteBtn.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  if (component) {
+                    console.log('🗑️ [Editor] Eliminando componente background-color');
+                    component.remove();
+                    editor.select(null);
+                  }
+                });
+
+                toolbar.appendChild(deleteBtn);
+                toolbar.style.display = 'block';
+                toolbar.style.visibility = 'visible';
+                console.log('✅ [Editor] Botón de eliminar creado manualmente para background-color (toolbar vacío)');
+              } catch (error) {
+                console.error('❌ [Editor] Error al crear botón manual para background-color:', error);
+              }
+            } else {
+              // El toolbar tiene botones, solo asegurar que sea visible
+              // NO crear botón manual si ya hay botones (GrapesJS ya los generó)
+              toolbar.style.display = 'block';
+              toolbar.style.visibility = 'visible';
+              console.log('✅ [Editor] Toolbar ya tiene', toolbarItems.length, 'botones - no crear botón manual duplicado');
+            }
+          }
+        };
+
+        // Ejecutar inmediatamente
+        checkAndCreateToolbar();
+
+        // También ejecutar con delays para asegurar que aparezca
+        setTimeout(() => {
+          checkAndCreateToolbar();
+
+          // Forzar actualización del canvas view
+          const canvasView = editor.Canvas.getCanvasView();
+          if (canvasView) {
+            if (canvasView.updateSelected) {
+              canvasView.updateSelected();
+            }
+            if (canvasView.updateToolbar && typeof canvasView.updateToolbar === 'function') {
+              canvasView.updateToolbar();
+            }
+            if (canvasView.toolbar && typeof canvasView.toolbar.render === 'function') {
+              canvasView.toolbar.render(component);
+            }
+          }
+
+          // Verificar nuevamente después de un delay más largo
+          setTimeout(() => {
+            checkAndCreateToolbar();
+          }, 200);
+        }, 50);
       }
     }
 
+    // ✅ CRÍTICO: Si es background-image, asegurar que tenga todas las propiedades necesarias
     if (componentType === 'background-image') {
 
       console.log('✅ [Editor] Propiedades del background-image actualizadas:', {
