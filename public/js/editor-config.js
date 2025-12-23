@@ -4,307 +4,307 @@
 
 // Configuración principal de GrapeJS
 // Si existe el módulo EditorConfig, usarlo; si no, usar configuración inline
-const editorConfig = (typeof EditorConfig !== 'undefined' && EditorConfig.getConfig) 
-  ? EditorConfig.getConfig() 
+const editorConfig = (typeof EditorConfig !== 'undefined' && EditorConfig.getConfig)
+  ? EditorConfig.getConfig()
   : {
-  container: '#gjs',
-  height: '100%',
-  width: '100%',
-  storageManager: false,
-  undoManager: true,
-  assetManager: {
-    upload: false,
-    uploadText: 'Arrastra archivos aquí o haz clic para subir',
-    addBtnText: 'Agregar imagen',
-    // Imágenes de ejemplo por defecto
-    assets: [
-      'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=800',
-      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800',
-      'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800',
-      'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=800',
-      'https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?w=800',
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800'
-    ],
-    // Permitir agregar imágenes por URL
-    modalTitle: 'Seleccionar Imagen',
-    multiUpload: false
-  },
-  layerManager: {
-    appendTo: '.layers-container',
-    // Mostrar nombres personalizados en lugar de tipos HTML
-    showWrapper: false,
-    sortable: true,
-    hidable: true
-  },
-  traitManager: {
-    appendTo: '.traits-container',
-    // Configuración adicional para traits estilo Elementor
-    textareaAutoResize: true,
-  },
-  selectorManager: {
-    // Configuración para selectores únicos por componente
-    componentFirst: true,
-    custom: true
-  },
-  styleManager: {
-    appendTo: '.styles-container',
-    // Aplicar estilos al componente seleccionado, no a toda la clase
-    clearProperties: false,
-    sectors: [
-      {
-        name: 'General',
-        open: false,
-        buildProps: ['float', 'display', 'position', 'top', 'right', 'left', 'bottom', 'z-index']
-      },
-      {
-        name: 'Dimension',
-        open: false,
-        buildProps: ['width', 'height', 'max-width', 'min-width', 'max-height', 'min-height', 'margin', 'padding']
-      },
-      {
-        name: 'Typography',
-        open: false,
-        buildProps: ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'color', 'line-height', 'text-align', 'text-decoration']
-      },
-      {
-        name: 'Decorations',
-        open: false,
-        buildProps: ['opacity', 'background-color', 'border-radius', 'border', 'box-shadow', 'background', 'border-width', 'border-style', 'border-color']
-      },
-      {
-        name: 'Flexbox',
-        open: false,
-        buildProps: ['flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'align-content', 'flex-grow', 'flex-shrink']
-      },
-      {
-        name: 'Grid',
-        open: false,
-        buildProps: ['grid-template-columns', 'grid-template-rows', 'grid-gap', 'grid-column', 'grid-row', 'justify-self', 'align-self']
-      },
-      {
-        name: 'Extra',
-        open: false,
-        buildProps: ['transition', 'perspective', 'transform', 'filter', 'backdrop-filter']
-      }
-    ]
-  },
-  blockManager: {
-    appendTo: '#gjs-blocks',
-    blocks: window.editorBlocks || []
-  },
-  panels: {
-    defaults: [
-      {
-        id: 'basic-actions',
-        el: '.panel__basic-actions',
-        buttons: [
-          {
-            id: 'visibility',
-            active: true,
-            className: 'btn-toggle-borders',
-            label: '<i class="fa fa-clone"></i>',
-            command: 'sw-visibility',
-          },
-          {
-            id: 'export',
-            className: 'btn-open-export',
-            label: '<i class="fa fa-code"></i>',
-            command: 'export-template',
-            context: 'export-template',
-          },
-          {
-            id: 'show-json',
-            className: 'btn-show-json',
-            label: '<i class="fa fa-file-code-o"></i>',
-            context: 'show-json',
-            command(editor) {
-              editor.Modal.setTitle('Components JSON')
-                .setContent(`<textarea style="width:100%; height: 250px;">
+    container: '#gjs',
+    height: '100%',
+    width: '100%',
+    storageManager: false,
+    undoManager: true,
+    assetManager: {
+      upload: false,
+      uploadText: 'Arrastra archivos aquí o haz clic para subir',
+      addBtnText: 'Agregar imagen',
+      // Imágenes de ejemplo por defecto
+      assets: [
+        'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=800',
+        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800',
+        'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800',
+        'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=800',
+        'https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?w=800',
+        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800'
+      ],
+      // Permitir agregar imágenes por URL
+      modalTitle: 'Seleccionar Imagen',
+      multiUpload: false
+    },
+    layerManager: {
+      appendTo: '.layers-container',
+      // Mostrar nombres personalizados en lugar de tipos HTML
+      showWrapper: false,
+      sortable: true,
+      hidable: true
+    },
+    traitManager: {
+      appendTo: '.traits-container',
+      // Configuración adicional para traits estilo Elementor
+      textareaAutoResize: true,
+    },
+    selectorManager: {
+      // Configuración para selectores únicos por componente
+      componentFirst: true,
+      custom: true
+    },
+    styleManager: {
+      appendTo: '.styles-container',
+      // Aplicar estilos al componente seleccionado, no a toda la clase
+      clearProperties: false,
+      sectors: [
+        {
+          name: 'General',
+          open: false,
+          buildProps: ['float', 'display', 'position', 'top', 'right', 'left', 'bottom', 'z-index']
+        },
+        {
+          name: 'Dimension',
+          open: false,
+          buildProps: ['width', 'height', 'max-width', 'min-width', 'max-height', 'min-height', 'margin', 'padding']
+        },
+        {
+          name: 'Typography',
+          open: false,
+          buildProps: ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'color', 'line-height', 'text-align', 'text-decoration']
+        },
+        {
+          name: 'Decorations',
+          open: false,
+          buildProps: ['opacity', 'background-color', 'border-radius', 'border', 'box-shadow', 'background', 'border-width', 'border-style', 'border-color']
+        },
+        {
+          name: 'Flexbox',
+          open: false,
+          buildProps: ['flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'align-content', 'flex-grow', 'flex-shrink']
+        },
+        {
+          name: 'Grid',
+          open: false,
+          buildProps: ['grid-template-columns', 'grid-template-rows', 'grid-gap', 'grid-column', 'grid-row', 'justify-self', 'align-self']
+        },
+        {
+          name: 'Extra',
+          open: false,
+          buildProps: ['transition', 'perspective', 'transform', 'filter', 'backdrop-filter']
+        }
+      ]
+    },
+    blockManager: {
+      appendTo: '#gjs-blocks',
+      blocks: window.editorBlocks || []
+    },
+    panels: {
+      defaults: [
+        {
+          id: 'basic-actions',
+          el: '.panel__basic-actions',
+          buttons: [
+            {
+              id: 'visibility',
+              active: true,
+              className: 'btn-toggle-borders',
+              label: '<i class="fa fa-clone"></i>',
+              command: 'sw-visibility',
+            },
+            {
+              id: 'export',
+              className: 'btn-open-export',
+              label: '<i class="fa fa-code"></i>',
+              command: 'export-template',
+              context: 'export-template',
+            },
+            {
+              id: 'show-json',
+              className: 'btn-show-json',
+              label: '<i class="fa fa-file-code-o"></i>',
+              context: 'show-json',
+              command(editor) {
+                editor.Modal.setTitle('Components JSON')
+                  .setContent(`<textarea style="width:100%; height: 250px;">
                   ${JSON.stringify(editor.getComponents(), null, 2)}
                 </textarea>`)
-                .open();
+                  .open();
+              },
+            }
+          ],
+        },
+        {
+          id: 'panel-devices',
+          el: '.panel__devices',
+          buttons: [
+            {
+              id: 'device-desktop',
+              label: '<i class="fa fa-television"></i>',
+              command: 'set-device-desktop',
+              active: true,
+              togglable: false,
             },
-          }
-        ],
+            {
+              id: 'device-tablet',
+              label: '<i class="fa fa-tablet"></i>',
+              command: 'set-device-tablet',
+              togglable: false,
+            },
+            {
+              id: 'device-mobile',
+              label: '<i class="fa fa-mobile"></i>',
+              command: 'set-device-mobile',
+              togglable: false,
+            }
+          ],
+        }
+      ],
+    },
+    deviceManager: {
+      devices: [
+        {
+          name: 'Desktop',
+          width: '',
+        },
+        {
+          name: 'Tablet',
+          width: '768px',
+          widthMedia: '992px',
+        },
+        {
+          name: 'Mobile',
+          width: '320px',
+          widthMedia: '768px',
+        }
+      ]
+    },
+    canvas: {
+      styles: [
+        'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css'
+      ]
+    },
+    plugins: [],
+    pluginsOpts: {},
+    // Configuraciones adicionales
+    allowScripts: 1,
+    showOffsets: 1,
+    showOffsetsSelected: 1,
+    noticeOnUnload: 0,
+    height: '100%',
+    width: '100%',
+    // Configuración de comandos
+    commands: [
+      {
+        id: 'copy',
+        run: 'core:copy',
+        keys: 'ctrl+c'
       },
       {
-        id: 'panel-devices',
-        el: '.panel__devices',
-        buttons: [
-          {
-            id: 'device-desktop',
-            label: '<i class="fa fa-television"></i>',
-            command: 'set-device-desktop',
-            active: true,
-            togglable: false,
-          },
-          {
-            id: 'device-tablet',
-            label: '<i class="fa fa-tablet"></i>',
-            command: 'set-device-tablet',
-            togglable: false,
-          },
-          {
-            id: 'device-mobile',
-            label: '<i class="fa fa-mobile"></i>',
-            command: 'set-device-mobile',
-            togglable: false,
-          }
-        ],
-      }
-    ],
-  },
-  deviceManager: {
-    devices: [
-      {
-        name: 'Desktop',
-        width: '',
+        id: 'paste',
+        run: 'core:paste',
+        keys: 'ctrl+v'
       },
       {
-        name: 'Tablet',
-        width: '768px',
-        widthMedia: '992px',
+        id: 'undo',
+        run: 'core:undo',
+        keys: 'ctrl+z'
       },
       {
-        name: 'Mobile',
-        width: '320px',
-        widthMedia: '768px',
+        id: 'redo',
+        run: 'core:redo',
+        keys: 'ctrl+y'
+      },
+      {
+        id: 'select-all',
+        run: 'core:select-all',
+        keys: 'ctrl+a'
       }
     ]
-  },
-  canvas: {
-    styles: [
-      'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css'
-    ]
-  },
-  plugins: [],
-  pluginsOpts: {},
-  // Configuraciones adicionales
-  allowScripts: 1,
-  showOffsets: 1,
-  showOffsetsSelected: 1,
-  noticeOnUnload: 0,
-  height: '100%',
-  width: '100%',
-  // Configuración de comandos
-  commands: [
-    {
-      id: 'copy',
-      run: 'core:copy',
-      keys: 'ctrl+c'
-    },
-    {
-      id: 'paste',
-      run: 'core:paste',
-      keys: 'ctrl+v'
-    },
-    {
-      id: 'undo',
-      run: 'core:undo',
-      keys: 'ctrl+z'
-    },
-    {
-      id: 'redo',
-      run: 'core:redo',
-      keys: 'ctrl+y'
-    },
-    {
-      id: 'select-all',
-      run: 'core:select-all',
-      keys: 'ctrl+a'
-    }
-  ]
-};
+  };
 
 // Comandos personalizados del editor
 // Si existe el módulo EditorCommands, usarlo; si no, usar comandos inline
 const editorCommands = (typeof EditorCommands !== 'undefined' && EditorCommands.getCommands)
   ? EditorCommands.getCommands()
   : {
-  'set-device-desktop': {
-    run: editor => {
-      editor.setDevice('Desktop');
-      // Actualizar etiquetas de traits después de cambiar dispositivo
-      setTimeout(() => {
-        if (typeof window.updateTraitLabelsForDevice === 'function') {
-          window.updateTraitLabelsForDevice();
-        }
-        // Actualizar TraitManager si hay un componente seleccionado
-        const selected = editor.getSelected();
-        if (selected && editor.TraitManager) {
-          editor.TraitManager.render();
-          setTimeout(() => {
-            if (typeof window.updateTraitLabelsForDevice === 'function') {
-              window.updateTraitLabelsForDevice();
-            }
-          }, 100);
-        }
-      }, 100);
-    }
-  },
-  'set-device-tablet': {
-    run: editor => {
-      editor.setDevice('Tablet');
-      // Actualizar etiquetas de traits después de cambiar dispositivo
-      setTimeout(() => {
-        if (typeof window.updateTraitLabelsForDevice === 'function') {
-          window.updateTraitLabelsForDevice();
-        }
-        // Actualizar TraitManager si hay un componente seleccionado
-        const selected = editor.getSelected();
-        if (selected && editor.TraitManager) {
-          editor.TraitManager.render();
-          setTimeout(() => {
-            if (typeof window.updateTraitLabelsForDevice === 'function') {
-              window.updateTraitLabelsForDevice();
-            }
-          }, 100);
-        }
-      }, 100);
-    }
-  },
-  'set-device-mobile': {
-    run: editor => {
-      editor.setDevice('Mobile');
-      // Actualizar etiquetas de traits después de cambiar dispositivo
-      setTimeout(() => {
-        if (typeof window.updateTraitLabelsForDevice === 'function') {
-          window.updateTraitLabelsForDevice();
-        }
-        // Actualizar TraitManager si hay un componente seleccionado
-        const selected = editor.getSelected();
-        if (selected && editor.TraitManager) {
-          editor.TraitManager.render();
-          setTimeout(() => {
-            if (typeof window.updateTraitLabelsForDevice === 'function') {
-              window.updateTraitLabelsForDevice();
-            }
-          }, 100);
-        }
-      }, 100);
-    }
-  },
-  'sw-visibility': {
-    run: editor => {
-      // Toggle visibility de bordes y offsets
-      const canvas = editor.Canvas;
-      const canvasEl = canvas.getElement();
-      const toggleClass = 'gjs-hide-offsets';
-
-      if (canvasEl.classList.contains(toggleClass)) {
-        canvasEl.classList.remove(toggleClass);
-      } else {
-        canvasEl.classList.add(toggleClass);
+    'set-device-desktop': {
+      run: editor => {
+        editor.setDevice('Desktop');
+        // Actualizar etiquetas de traits después de cambiar dispositivo
+        setTimeout(() => {
+          if (typeof window.updateTraitLabelsForDevice === 'function') {
+            window.updateTraitLabelsForDevice();
+          }
+          // Actualizar TraitManager si hay un componente seleccionado
+          const selected = editor.getSelected();
+          if (selected && editor.TraitManager) {
+            editor.TraitManager.render();
+            setTimeout(() => {
+              if (typeof window.updateTraitLabelsForDevice === 'function') {
+                window.updateTraitLabelsForDevice();
+              }
+            }, 100);
+          }
+        }, 100);
       }
-    }
-  },
-  'export-template': {
-    run: editor => {
-      const htmlContent = editor.getHtml();
-      const cssContent = editor.getCss();
+    },
+    'set-device-tablet': {
+      run: editor => {
+        editor.setDevice('Tablet');
+        // Actualizar etiquetas de traits después de cambiar dispositivo
+        setTimeout(() => {
+          if (typeof window.updateTraitLabelsForDevice === 'function') {
+            window.updateTraitLabelsForDevice();
+          }
+          // Actualizar TraitManager si hay un componente seleccionado
+          const selected = editor.getSelected();
+          if (selected && editor.TraitManager) {
+            editor.TraitManager.render();
+            setTimeout(() => {
+              if (typeof window.updateTraitLabelsForDevice === 'function') {
+                window.updateTraitLabelsForDevice();
+              }
+            }, 100);
+          }
+        }, 100);
+      }
+    },
+    'set-device-mobile': {
+      run: editor => {
+        editor.setDevice('Mobile');
+        // Actualizar etiquetas de traits después de cambiar dispositivo
+        setTimeout(() => {
+          if (typeof window.updateTraitLabelsForDevice === 'function') {
+            window.updateTraitLabelsForDevice();
+          }
+          // Actualizar TraitManager si hay un componente seleccionado
+          const selected = editor.getSelected();
+          if (selected && editor.TraitManager) {
+            editor.TraitManager.render();
+            setTimeout(() => {
+              if (typeof window.updateTraitLabelsForDevice === 'function') {
+                window.updateTraitLabelsForDevice();
+              }
+            }, 100);
+          }
+        }, 100);
+      }
+    },
+    'sw-visibility': {
+      run: editor => {
+        // Toggle visibility de bordes y offsets
+        const canvas = editor.Canvas;
+        const canvasEl = canvas.getElement();
+        const toggleClass = 'gjs-hide-offsets';
 
-      // Crear y descargar archivo
-      const blob = new Blob([`<!DOCTYPE html>
+        if (canvasEl.classList.contains(toggleClass)) {
+          canvasEl.classList.remove(toggleClass);
+        } else {
+          canvasEl.classList.add(toggleClass);
+        }
+      }
+    },
+    'export-template': {
+      run: editor => {
+        const htmlContent = editor.getHtml();
+        const cssContent = editor.getCss();
+
+        // Crear y descargar archivo
+        const blob = new Blob([`<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -318,17 +318,17 @@ ${htmlContent}
 </body>
 </html>`], { type: 'text/html' });
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'template.html';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'template.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
     }
-  }
-};
+  };
 
 
 // Función para mostrar placeholder de productos en el editor
@@ -337,7 +337,7 @@ function showProductsPlaceholder() {
   if (typeof EditorUtils !== 'undefined' && EditorUtils.showProductsPlaceholder) {
     return EditorUtils.showProductsPlaceholder();
   }
-  
+
   // Fallback inline
 
   // Buscar contenedores de productos de múltiples formas
@@ -421,7 +421,7 @@ function handleSectorClick(e) {
   if (typeof EditorUtils !== 'undefined' && EditorUtils.handleSectorClick) {
     return EditorUtils.handleSectorClick(e);
   }
-  
+
   // Fallback inline
   const sectorTitle = e.target.closest('.gjs-sm-title');
   if (sectorTitle) {
@@ -489,41 +489,41 @@ function initializeManagers() {
   }
 
   // Función global para forzar la actualización del TraitManager
-  window.forceTraitManagerUpdate = function(component) {
+  window.forceTraitManagerUpdate = function (component) {
     if (editor.TraitManager) {
       // Obtener el componente seleccionado si no se proporciona uno
       const targetComponent = component || editor.getSelected();
-      
+
       if (targetComponent) {
         // Si es un carrusel, usar solo el sistema personalizado
         if (targetComponent.get('type') === 'carousel') {
           window.renderCustomTraits(targetComponent);
           return;
         }
-        
+
         // Limpiar el contenedor de traits primero
         const traitsContainer = document.querySelector('.traits-container');
         if (traitsContainer) {
           traitsContainer.innerHTML = '';
         }
-        
+
         // Limpiar completamente el TraitManager
         if (editor.TraitManager.collection) {
           editor.TraitManager.collection.reset();
         }
-        
+
         // Re-renderizar desde cero
         editor.TraitManager.render();
-        
+
         // Actualizar etiquetas de propiedades según el dispositivo activo
         if (typeof window.updateTraitLabelsForDevice === 'function') {
           window.updateTraitLabelsForDevice();
         }
-        
+
         // Verificar si se renderizaron todos los traits
         setTimeout(() => {
           const traitsInContainer = document.querySelectorAll('.traits-container .gjs-trt-trait');
-          
+
           if (traitsInContainer.length === 0) {
             // Usar el sistema de traits personalizado
             window.renderCustomTraits(targetComponent);
@@ -539,22 +539,22 @@ function initializeManagers() {
   };
 
   // Función para actualizar las etiquetas de traits según el dispositivo activo
-  window.updateTraitLabelsForDevice = function() {
+  window.updateTraitLabelsForDevice = function () {
     if (!editor || !editor.getDevice) return;
-    
+
     const currentDevice = editor.getDevice();
     const traitsContainer = document.querySelector('.traits-container');
     if (!traitsContainer) return;
-    
+
     // Mapeo de dispositivos a etiquetas
     const deviceLabels = {
       'Desktop': 'Desktop',
       'Tablet': 'Tablet',
       'Mobile': 'Mobile'
     };
-    
+
     const deviceName = deviceLabels[currentDevice] || 'Desktop';
-    
+
     // Agregar o actualizar indicador de dispositivo activo en el panel de propiedades
     let deviceIndicator = document.querySelector('.device-indicator');
     if (!deviceIndicator) {
@@ -563,30 +563,30 @@ function initializeManagers() {
       deviceIndicator.style.fontSize = '0.75rem';
       traitsContainer.insertBefore(deviceIndicator, traitsContainer.firstChild);
     }
-    
+
     const deviceIcons = {
       'Desktop': '🖥️',
       'Tablet': '📱',
       'Mobile': '📱'
     };
-    
+
     deviceIndicator.innerHTML = `
       <div class="flex items-center gap-2">
         <span class="text-blue-600 font-semibold">${deviceIcons[deviceName] || '🖥️'} Editando: ${deviceName}</span>
         <span class="text-gray-500 text-xs">Las propiedades marcadas con (${deviceName}) se aplicarán a este dispositivo</span>
       </div>
     `;
-    
+
     // Buscar todas las etiquetas de traits y actualizar las que sean específicas de dispositivo
     const traitLabels = traitsContainer.querySelectorAll('.gjs-trt-label');
     traitLabels.forEach(label => {
       const labelText = label.textContent || '';
-      
+
       // Si la etiqueta contiene información de dispositivo, resaltarla
       if (labelText.includes('(Desktop)') || labelText.includes('(Tablet)') || labelText.includes('(Mobile)')) {
         // Remover clases de resaltado anteriores
         label.classList.remove('font-bold', 'text-blue-600', 'bg-blue-50', 'px-2', 'py-1', 'rounded');
-        
+
         // Resaltar la etiqueta del dispositivo activo
         if (labelText.includes(`(${deviceName})`)) {
           label.classList.add('font-bold', 'text-blue-600', 'bg-blue-50', 'px-2', 'py-1', 'rounded');
@@ -596,18 +596,18 @@ function initializeManagers() {
   };
 
   // Sistema de traits personalizado
-  window.renderCustomTraits = function(component) {
+  window.renderCustomTraits = function (component) {
     console.log('🎨 Renderizando traits personalizados para:', component.get('type'));
-    
+
     const traitsContainer = document.querySelector('.traits-container');
     if (!traitsContainer) {
       console.error('❌ No se encontró el contenedor de traits');
       return;
     }
-    
+
     // Limpiar el contenedor
     traitsContainer.innerHTML = '';
-    
+
     // Obtener los traits del componente
     let traits = [];
     if (component.getTraits && typeof component.getTraits === 'function') {
@@ -615,14 +615,14 @@ function initializeManagers() {
     } else if (component.get('traits')) {
       traits = component.get('traits').toJSON();
     }
-    
+
     console.log('📋 Traits a renderizar:', traits.length);
-    
+
     if (traits.length === 0) {
       traitsContainer.innerHTML = '<div class="text-gray-500 text-sm p-4">No hay propiedades disponibles</div>';
       return;
     }
-    
+
     // Renderizar cada trait
     traits.forEach(trait => {
       const traitElement = createTraitElement(trait, component);
@@ -630,20 +630,20 @@ function initializeManagers() {
         traitsContainer.appendChild(traitElement);
       }
     });
-    
+
     console.log('✅ Traits personalizados renderizados:', traitsContainer.children.length);
-    
+
     // Proteger los traits personalizados del carrusel
     if (component.get('type') === 'carousel') {
       console.log('🛡️ Protegiendo traits del carrusel de interferencias');
-      
+
       // Marcar el contenedor como protegido
       traitsContainer.setAttribute('data-protected', 'true');
       traitsContainer.setAttribute('data-component-type', 'carousel');
-      
+
       // Interceptar intentos de limpiar el contenedor
       const originalInnerHTML = traitsContainer.innerHTML;
-      
+
       // Crear un observer para detectar cambios no deseados
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
@@ -658,9 +658,9 @@ function initializeManagers() {
           }
         });
       });
-      
+
       observer.observe(traitsContainer, { childList: true });
-      
+
       // Limpiar el observer después de 30 segundos
       setTimeout(() => {
         observer.disconnect();
@@ -676,17 +676,17 @@ function initializeManagers() {
     const container = document.createElement('div');
     container.className = 'gjs-trt-trait custom-trait';
     container.setAttribute('data-trait-name', trait.name);
-    
+
     const label = document.createElement('label');
     label.className = 'gjs-trt-label';
     label.textContent = trait.label || trait.name;
     container.appendChild(label);
-    
+
     const fieldContainer = document.createElement('div');
     fieldContainer.className = 'gjs-trt-field';
-    
+
     let input;
-    
+
     switch (trait.type) {
       case 'text':
         input = document.createElement('input');
@@ -695,14 +695,14 @@ function initializeManagers() {
         input.placeholder = trait.placeholder || '';
         input.value = component.get(trait.name) || '';
         break;
-        
+
       case 'textarea':
         input = document.createElement('textarea');
         input.className = 'gjs-trt-textarea';
         input.placeholder = trait.placeholder || '';
         input.value = component.get(trait.name) || '';
         break;
-        
+
       case 'select':
         input = document.createElement('select');
         input.className = 'gjs-trt-select';
@@ -716,14 +716,14 @@ function initializeManagers() {
         }
         input.value = component.get(trait.name) || '';
         break;
-        
+
       case 'checkbox':
         input = document.createElement('input');
         input.type = 'checkbox';
         input.className = 'gjs-trt-checkbox';
         input.checked = component.get(trait.name) || false;
         break;
-        
+
       case 'button':
         input = document.createElement('button');
         input.type = 'button';
@@ -733,46 +733,46 @@ function initializeManagers() {
           input.addEventListener('click', () => trait.command(editor));
         }
         break;
-        
+
       case 'custom':
         // Para traits personalizados, usar el contenido HTML directamente
         fieldContainer.innerHTML = trait.content || '';
         container.appendChild(fieldContainer);
         return container;
-        
+
       default:
         console.warn('⚠️ Tipo de trait no soportado:', trait.type);
         return null;
     }
-    
+
     if (input && trait.type !== 'button') {
       // Agregar event listener para cambios
       input.addEventListener('change', (e) => {
         const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
         component.set(trait.name, value);
         console.log(`🔄 Trait actualizado: ${trait.name} = ${value}`);
-        
+
         // Ejecutar onUpdate si existe
         if (trait.onUpdate && typeof trait.onUpdate === 'function') {
           trait.onUpdate(value, component);
         }
       });
-      
+
       input.addEventListener('input', (e) => {
         const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
         component.set(trait.name, value);
         console.log(`🔄 Trait actualizado (input): ${trait.name} = ${value}`);
-        
+
         // Ejecutar onUpdate si existe
         if (trait.onUpdate && typeof trait.onUpdate === 'function') {
           trait.onUpdate(value, component);
         }
       });
     }
-    
+
     fieldContainer.appendChild(input);
     container.appendChild(fieldContainer);
-    
+
     return container;
   }
 
@@ -820,21 +820,21 @@ function initializeEditor() {
 
   // Hacer el editor disponible globalmente
   window.editor = editor;
-  
+
   // ✅ Registrar trait personalizado para textarea
   if (editor.TraitManager) {
     editor.TraitManager.addType('textarea', {
       events: {
         'keyup': 'onChange',
       },
-      onUpdate: function({ elInput, component }) {
+      onUpdate: function ({ elInput, component }) {
         elInput.value = component.get(this.attributes.name);
       },
-      onEvent: function({ elInput, component, event }) {
+      onEvent: function ({ elInput, component, event }) {
         const value = elInput.value;
         component.set(this.attributes.name, value);
       },
-      createInput: function({ trait }) {
+      createInput: function ({ trait }) {
         const el = document.createElement('textarea');
         el.className = 'gjs-trt-textarea';
         el.placeholder = trait.placeholder || '';
@@ -848,7 +848,7 @@ function initializeEditor() {
   // Todos los componentes están ahora en editor-modules/components/
   const componentsToRegister = [
     'Image', 'Container', 'Heading', 'Paragraph', 'Button', 'Text',
-    'Link', 'Divider', 'Separator', 'Table', 'HtmlCode', 'Spacer', 'Alert', 
+    'Link', 'Divider', 'Separator', 'Table', 'HtmlCode', 'Spacer', 'Alert',
     'Icon', 'IconBox', 'IconList', 'StarRating', 'Quote', 'Code', 'Preformatted', 'Verse',
     'Toggle', 'Tabs', 'Accordion',
     'Carousel', 'Gallery', 'Video', 'GoogleMaps',
@@ -861,7 +861,7 @@ function initializeEditor() {
     if (typeof registerFn === 'function') {
       console.log(`✅ [Editor] Registrando componente: ${componentName}`);
       registerFn(editor);
-      
+
       // Verificar que se registró correctamente
       if (componentName === 'Toggle') {
         const toggleType = editor.DomComponents.getType('toggle');
@@ -875,9 +875,9 @@ function initializeEditor() {
       console.warn(`⚠️ [Editor] Función register${componentName}Component no encontrada`);
     }
   });
-  
+
   // ✅ Todos los componentes duplicados eliminados - ahora están en módulos separados
-  
+
   // Configuración de comandos del editor
 
   // Ocultar indicador de carga y mostrar editor
@@ -892,7 +892,7 @@ function initializeEditor() {
   }
 
   // Inyectar estilos y scripts en el canvas
-  editor.on('load', function() {
+  editor.on('load', function () {
     // ✅ CRÍTICO: Sincronizar Background Image después de cargar
     setTimeout(() => {
       const syncBackgroundImageAfterLoad = () => {
@@ -905,27 +905,27 @@ function initializeEditor() {
                   const titleEl = component.view.el.querySelector('h2');
                   const textEl = component.view.el.querySelector('p');
                   const buttonEl = component.view.el.querySelector('button, a');
-                  
+
                   if (titleEl) {
                     const domTitle = titleEl.textContent || titleEl.innerText || '';
                     if (domTitle.trim()) {
                       component.set('content-title', domTitle.trim(), { silent: false });
                     }
                   }
-                  
+
                   if (textEl) {
                     const domText = textEl.textContent || textEl.innerText || '';
                     if (domText.trim()) {
                       component.set('content-text', domText.trim(), { silent: false });
                     }
                   }
-                  
+
                   if (buttonEl) {
                     const domButtonText = buttonEl.textContent || buttonEl.innerText || '';
                     if (domButtonText.trim()) {
                       component.set('button-text', domButtonText.trim(), { silent: false });
                     }
-                    
+
                     const href = buttonEl.getAttribute('href');
                     if (href) {
                       component.set('button-link', href, { silent: false });
@@ -933,7 +933,7 @@ function initializeEditor() {
                       component.set('button-link', '#', { silent: false });
                     }
                   }
-                  
+
                   // Forzar actualización del TraitManager
                   setTimeout(() => {
                     if (editor.TraitManager) {
@@ -942,7 +942,7 @@ function initializeEditor() {
                   }, 200);
                 }
               }
-              
+
               if (component && component.components) {
                 const childComponents = component.components();
                 if (childComponents) {
@@ -954,14 +954,14 @@ function initializeEditor() {
         };
         findBackgroundImage(allComponents);
       };
-      
+
       syncBackgroundImageAfterLoad();
     }, 500);
-    
+
     // Sincronizar todos los botones después de que el editor carga
     setTimeout(() => {
       const allComponents = editor.getComponents();
-      
+
       // Función recursiva para encontrar todos los botones
       const findButtons = (components) => {
         // Usar el método correcto para iterar sobre componentes
@@ -1004,13 +1004,13 @@ function initializeEditor() {
           });
         }
       };
-      
+
       findButtons(allComponents);
-      
+
       // Función recursiva para encontrar todos los contenedores
       const findContainers = (components) => {
         if (!components) return;
-        
+
         try {
           if (typeof components.each === 'function') {
             components.each((component) => {
@@ -1061,15 +1061,15 @@ function initializeEditor() {
           console.error('❌ Error en findContainers:', error);
         }
       };
-      
+
       findContainers(allComponents);
     }, 500);
-    
+
     // Obtener el canvas frame
     const canvasFrame = editor.Canvas.getFrameEl();
     if (canvasFrame && canvasFrame.contentDocument) {
       const frameDoc = canvasFrame.contentDocument;
-      
+
       // Crear e inyectar estilos en el head del iframe del canvas
       let styleEl = frameDoc.getElementById('iframe-blocker-styles');
       if (!styleEl) {
@@ -1144,18 +1144,18 @@ function initializeEditor() {
         `;
         frameDoc.head.appendChild(styleEl);
       }
-      
+
       // Inyectar script de blog si hay un bloque de blog
       injectBlogScriptInCanvas(frameDoc);
     }
   });
-  
+
   // Función para inyectar script de blog en el canvas
   function injectBlogScriptInCanvas(frameDoc) {
     // Verificar si hay un bloque de blog
-    const hasBlogBlock = frameDoc.querySelector('#blog-posts-container') || 
-                         frameDoc.querySelector('[data-dynamic-blog="true"]');
-    
+    const hasBlogBlock = frameDoc.querySelector('#blog-posts-container') ||
+      frameDoc.querySelector('[data-dynamic-blog="true"]');
+
     if (hasBlogBlock) {
       // Remover script anterior si existe para reinyectarlo
       const oldScript = frameDoc.getElementById('blog-script-injected');
@@ -1163,21 +1163,21 @@ function initializeEditor() {
         oldScript.remove();
       }
       console.log('📝 Bloque de blog detectado, inyectando script...');
-      
+
       // Obtener el website ID de la variable global o del atributo data
-      const websiteId = window.websiteId || 
-                       window.currentWebsiteId || 
-                       (frameDoc.querySelector('#blog-posts-container')?.dataset?.websiteId) ||
-                       (frameDoc.querySelector('[data-dynamic-blog="true"]')?.querySelector('[data-website-id]')?.dataset?.websiteId) ||
-                       null;
-      
+      const websiteId = window.websiteId ||
+        window.currentWebsiteId ||
+        (frameDoc.querySelector('#blog-posts-container')?.dataset?.websiteId) ||
+        (frameDoc.querySelector('[data-dynamic-blog="true"]')?.querySelector('[data-website-id]')?.dataset?.websiteId) ||
+        null;
+
       console.log('🌐 Website ID para blog:', websiteId);
-      
+
       if (!websiteId || websiteId === "" || websiteId === null) {
         console.log("⚠️ Website ID no válido o no encontrado");
         return;
       }
-      
+
       // Crear el script
       const scriptEl = frameDoc.createElement('script');
       scriptEl.id = 'blog-script-injected';
@@ -1270,14 +1270,14 @@ function initializeEditor() {
           setTimeout(loadBlogPosts, 500);
         })();
       `;
-      
+
       frameDoc.body.appendChild(scriptEl);
       console.log('✅ Script de blog inyectado en canvas');
     }
   }
-  
+
   // También inyectar cuando se actualiza el canvas o se agrega un componente
-  editor.on('update', function() {
+  editor.on('update', function () {
     setTimeout(() => {
       const canvasFrame = editor.Canvas.getFrameEl();
       if (canvasFrame && canvasFrame.contentDocument) {
@@ -1286,9 +1286,9 @@ function initializeEditor() {
       }
     }, 300);
   });
-  
+
   // Inyectar cuando se agrega un componente (para detectar bloques de blog agregados)
-  editor.on('component:add', function() {
+  editor.on('component:add', function () {
     setTimeout(() => {
       const canvasFrame = editor.Canvas.getFrameEl();
       if (canvasFrame && canvasFrame.contentDocument) {
@@ -1305,52 +1305,52 @@ function initializeEditor() {
 
   // Flag para saber si estamos cargando contenido existente
   let isLoadingContent = true;
-  
+
   // Desactivar el flag después de la carga inicial (2 segundos)
   setTimeout(() => {
     isLoadingContent = false;
   }, 2000);
 
   // Evento para detectar cuando se suelta un componente en el canvas
-  editor.on('block:drag:stop', function(component) {
+  editor.on('block:drag:stop', function (component) {
     console.log('📦 Componente añadido al canvas');
     if (component && component.get) {
       console.log('   Tipo:', component.get('type'));
       console.log('   Nombre:', component.get('name'));
       console.log('   Selectable:', component.get('selectable'));
-      
+
       // ✅ Si es un componente de imagen, asegurar que tenga los traits correctos
       if (component.get('type') === 'image') {
         console.log('🖼️ Componente de imagen agregado desde bloque, verificando traits...');
-        
+
         setTimeout(() => {
           const imageComponentType = editor.DomComponents.getType('image');
           if (imageComponentType && imageComponentType.model && imageComponentType.model.defaults && imageComponentType.model.defaults.traits) {
             const registeredTraits = imageComponentType.model.defaults.traits;
-            
+
             // Establecer los traits desde el componente registrado
             component.set('traits', registeredTraits, { silent: false });
             console.log('✅ Traits del componente de imagen actualizados desde el componente registrado');
-            
+
             // Seleccionar el componente para que se muestren los traits
             editor.select(component);
           }
         }, 100);
       }
-      
+
       // ✅ Si es un componente de contenedor, asegurar que tenga los traits correctos
       if (component.get('type') === 'container') {
         console.log('📦 Componente de contenedor agregado desde bloque, verificando traits...');
-        
+
         setTimeout(() => {
           const containerComponentType = editor.DomComponents.getType('container');
           if (containerComponentType && containerComponentType.model && containerComponentType.model.defaults && containerComponentType.model.defaults.traits) {
             const registeredTraits = containerComponentType.model.defaults.traits;
-            
+
             // Establecer los traits desde el componente registrado
             component.set('traits', registeredTraits, { silent: false });
             console.log('✅ Traits del componente de contenedor actualizados desde el componente registrado');
-            
+
             // Seleccionar el componente para que se muestren los traits
             editor.select(component);
           }
@@ -1364,7 +1364,7 @@ function initializeEditor() {
     const canvasFrame = editor.Canvas.getFrameEl();
     if (canvasFrame && canvasFrame.contentDocument) {
       const frameDoc = canvasFrame.contentDocument;
-      
+
       let styleEl = frameDoc.getElementById('iframe-blocker-styles');
       if (!styleEl) {
         styleEl = frameDoc.createElement('style');
@@ -1440,7 +1440,7 @@ function initializeEditor() {
 
   // Configurar eventos del editor
   editor.on('component:add', function (component) {
-    
+
     // Sincronizar botones cuando se agregan (SOLO para componentes tipo 'button', NO para toggles o botones dentro de toggles)
     if (component.get('type') === 'button') {
       // ✅ NO aplicar a botones que están dentro de un toggle
@@ -1470,7 +1470,7 @@ function initializeEditor() {
         }
       }, 200);
     }
-    
+
     // Sincronizar contenedores cuando se agregan
     if (component.get('type') === 'container') {
       setTimeout(() => {
@@ -1491,23 +1491,23 @@ function initializeEditor() {
         }
       }, 200);
     }
-    
+
     // ✅ El manejo de imágenes se hace completamente en el componente image.js
     // No es necesario duplicar código aquí - el componente image.js maneja:
     // - Inicialización con imagen por defecto
     // - Doble clic para abrir galería
     // - Actualización de imagen desde galería
     // - Sincronización de src
-    
+
     // Asegurar que los estilos de bloqueo de iframe estén presentes
     if (component.get('type') === 'video' || component.get('type') === 'youtube-video' || component.get('type') === 'google-maps') {
       setTimeout(ensureIframeBlockerStyles, 100);
     }
-    
+
     // Generar ID único para widgets que necesitan estilos independientes
     const widgetTypes = ['button', 'image', 'heading', 'paragraph', 'text', 'link', 'divider', 'icon', 'icon-box', 'video', 'youtube-video', 'google-maps', 'image-box-advanced', 'background-image', 'file', 'audio', 'carousel'];
     const componentType = component.get('type');
-    
+
     if (widgetTypes.includes(componentType) || componentType === 'default') {
       // Verificar si el componente ya tiene un ID único
       let compId = component.getId();
@@ -1520,7 +1520,7 @@ function initializeEditor() {
         component.setId(uniqueId);
       }
     }
-    
+
     // Si es un bloque de productos, mostrar placeholder
     if (component.get('type') === 'products-list' ||
       component.get('attributes').class === 'gjs-block-products') {
@@ -1531,32 +1531,32 @@ function initializeEditor() {
     if (component?.attributes?.tagName === 'nav') {
       console.log('navbar');
     }
-    
+
     // ✅ Si el componente se agregó a un contenedor, ocultar el placeholder
     // Solo hacer esto si NO estamos cargando contenido existente
     if (!isLoadingContent) {
       const removePlaceholderFromContainer = (container) => {
         if (!container || !container.components) return;
-        
+
         try {
           const components = container.components();
           if (!components) return;
-          
+
           // Buscar el placeholder
           let placeholder = null;
           let componentCount = 0;
-          
+
           if (components.models) {
             components.models.forEach((c) => {
               componentCount++;
               const content = c.get('content') || '';
               const name = c.get('name') || '';
               const type = c.get('type') || '';
-              
+
               // Detectar placeholder por nombre, contenido o tipo
-              if (name === 'Placeholder' || 
-                  content.includes('Arrastra elementos aquí') ||
-                  (type === 'text' && content.includes('↓'))) {
+              if (name === 'Placeholder' ||
+                content.includes('Arrastra elementos aquí') ||
+                (type === 'text' && content.includes('↓'))) {
                 placeholder = c;
               }
             });
@@ -1567,10 +1567,10 @@ function initializeEditor() {
                 const content = c.get('content') || '';
                 const name = c.get('name') || '';
                 const type = c.get('type') || '';
-                
-                if (name === 'Placeholder' || 
-                    content.includes('Arrastra elementos aquí') ||
-                    (type === 'text' && content.includes('↓'))) {
+
+                if (name === 'Placeholder' ||
+                  content.includes('Arrastra elementos aquí') ||
+                  (type === 'text' && content.includes('↓'))) {
                   placeholder = c;
                 }
               }
@@ -1581,12 +1581,12 @@ function initializeEditor() {
               const content = c.get ? c.get('content') || '' : '';
               const name = c.get ? c.get('name') || '' : '';
               const type = c.get ? c.get('type') || '' : '';
-              return name === 'Placeholder' || 
-                     content.includes('Arrastra elementos aquí') ||
-                     (type === 'text' && content.includes('↓'));
+              return name === 'Placeholder' ||
+                content.includes('Arrastra elementos aquí') ||
+                (type === 'text' && content.includes('↓'));
             });
           }
-          
+
           // Remover el placeholder si existe y hay más de un componente (el placeholder + el nuevo)
           if (placeholder && componentCount > 1) {
             placeholder.remove();
@@ -1598,14 +1598,14 @@ function initializeEditor() {
         }
         return false;
       };
-      
+
       const parent = component.parent();
       if (parent) {
         const parentType = parent.get('type');
         const parentClasses = parent.getClasses() || [];
         const isColumn = parentClasses.includes('column');
         const isContainer = parentType === 'container' || parentClasses.includes('container-simple') || parentClasses.includes('container-flex');
-        
+
         if (isColumn || isContainer) {
           // ✅ Remover placeholder del contenedor padre (múltiples intentos para asegurar)
           const tryRemovePlaceholder = () => {
@@ -1615,21 +1615,21 @@ function initializeEditor() {
               setTimeout(() => removePlaceholderFromContainer(parent), 50);
             }
           };
-          
+
           tryRemovePlaceholder();
           setTimeout(tryRemovePlaceholder, 100);
           setTimeout(tryRemovePlaceholder, 300);
         }
-        
+
         // También verificar el abuelo (por si el componente está dentro de otro)
         const grandParent = parent.parent();
         if (grandParent) {
           const grandParentType = grandParent.get('type');
           const grandParentClasses = grandParent.getClasses() || [];
-          const isGrandParentContainer = grandParentType === 'container' || 
-                                        grandParentClasses.includes('container-simple') || 
-                                        grandParentClasses.includes('container-flex');
-          
+          const isGrandParentContainer = grandParentType === 'container' ||
+            grandParentClasses.includes('container-simple') ||
+            grandParentClasses.includes('container-flex');
+
           if (isGrandParentContainer) {
             setTimeout(() => {
               removePlaceholderFromContainer(grandParent);
@@ -1637,13 +1637,13 @@ function initializeEditor() {
           }
         }
       }
-      
+
       // Buscar en todos los contenedores del editor
       setTimeout(() => {
         const allComponents = editor.getComponents();
         const findAndCleanContainers = (components) => {
           if (!components) return;
-          
+
           try {
             if (typeof components.each === 'function') {
               components.each((c) => {
@@ -1668,39 +1668,39 @@ function initializeEditor() {
             console.error('❌ Error en findAndCleanContainers:', error);
           }
         };
-        
+
         findAndCleanContainers(allComponents);
       }, 200);
-      
+
       // Código original para columnas (mantener compatibilidad)
       if (parent) {
         const parentClasses = parent.getClasses();
         const isColumn = parentClasses.includes('column');
-        
+
         if (isColumn) {
           // ✅ Buscar y remover el placeholder (método mejorado)
           const removeColumnPlaceholder = () => {
             try {
               const components = parent.components();
               if (!components) return;
-              
+
               let placeholder = null;
               let componentCount = 0;
-              
+
               if (components.models) {
                 components.models.forEach((c) => {
                   componentCount++;
                   const content = (c.get('content') || '').toString();
                   const name = (c.get('name') || '').toString();
-                  
-                  if (name === 'Placeholder' || 
-                      content.includes('Arrastra elementos aquí') ||
-                      content.includes('↓ Arrastra')) {
+
+                  if (name === 'Placeholder' ||
+                    content.includes('Arrastra elementos aquí') ||
+                    content.includes('↓ Arrastra')) {
                     placeholder = c;
                   }
                 });
               }
-              
+
               if (placeholder && componentCount > 1) {
                 placeholder.remove();
                 // También eliminar desde el DOM
@@ -1712,10 +1712,10 @@ function initializeEditor() {
                   }, 50);
                 }
                 console.log('✅ Placeholder eliminado de columna');
-                
+
                 // Si es columna, remover borde punteado
                 const currentClasses = parent.getClasses();
-                const newClasses = currentClasses.filter(c => 
+                const newClasses = currentClasses.filter(c =>
                   !['border-2', 'border-dashed', 'border-gray-300', 'flex', 'items-center', 'justify-center'].includes(c)
                 );
                 parent.setClass(newClasses.join(' '));
@@ -1724,7 +1724,7 @@ function initializeEditor() {
               console.error('❌ Error al eliminar placeholder de columna:', error);
             }
           };
-          
+
           // Ejecutar múltiples veces para asegurar
           removeColumnPlaceholder();
           setTimeout(removeColumnPlaceholder, 100);
@@ -1733,40 +1733,40 @@ function initializeEditor() {
       }
     }
   });
-  
+
   // ✅ Listener adicional para eliminar placeholder cuando se agregan componentes
-  editor.on('component:add', function(component) {
+  editor.on('component:add', function (component) {
     // Esperar un momento para que el componente se agregue completamente
     setTimeout(() => {
       const parent = component.parent();
       if (parent) {
         const parentType = parent.get('type');
         const parentClasses = parent.getClasses() || [];
-        const isContainer = parentType === 'container' || 
-                           parentClasses.includes('container-simple') || 
-                           parentClasses.includes('container-flex');
-        
+        const isContainer = parentType === 'container' ||
+          parentClasses.includes('container-simple') ||
+          parentClasses.includes('container-flex');
+
         if (isContainer) {
           const components = parent.components();
           if (components) {
             let placeholder = null;
             let componentCount = 0;
-            
+
             // Buscar placeholder
             if (components.models) {
               components.models.forEach((c) => {
                 componentCount++;
                 const content = (c.get('content') || '').toString();
                 const name = (c.get('name') || '').toString();
-                
-                if (name === 'Placeholder' || 
-                    content.includes('Arrastra elementos aquí') ||
-                    content.includes('↓ Arrastra')) {
+
+                if (name === 'Placeholder' ||
+                  content.includes('Arrastra elementos aquí') ||
+                  content.includes('↓ Arrastra')) {
                   placeholder = c;
                 }
               });
             }
-            
+
             // Eliminar si hay más de un componente
             if (placeholder && componentCount > 1) {
               try {
@@ -1785,9 +1785,9 @@ function initializeEditor() {
       }
     }, 150);
   });
-  
+
   // ✅ Listener adicional para eliminar placeholder cuando se agregan componentes a contenedores
-  editor.on('component:add', function(component) {
+  editor.on('component:add', function (component) {
     // Esperar un momento para que el componente se agregue completamente
     setTimeout(() => {
       try {
@@ -1795,26 +1795,26 @@ function initializeEditor() {
         if (parent) {
           const parentType = parent.get('type');
           const parentClasses = parent.getClasses() || [];
-          const isContainer = parentType === 'container' || 
-                             parentClasses.includes('container-simple') || 
-                             parentClasses.includes('container-flex');
-          
+          const isContainer = parentType === 'container' ||
+            parentClasses.includes('container-simple') ||
+            parentClasses.includes('container-flex');
+
           if (isContainer) {
             const components = parent.components();
             if (components) {
               let placeholder = null;
               let componentCount = 0;
-              
+
               // Buscar placeholder en diferentes formatos
               if (components.models) {
                 components.models.forEach((c) => {
                   componentCount++;
                   const content = (c.get('content') || '').toString();
                   const name = (c.get('name') || '').toString();
-                  
-                  if (name === 'Placeholder' || 
-                      content.includes('Arrastra elementos aquí') ||
-                      content.includes('↓ Arrastra')) {
+
+                  if (name === 'Placeholder' ||
+                    content.includes('Arrastra elementos aquí') ||
+                    content.includes('↓ Arrastra')) {
                     placeholder = c;
                   }
                 });
@@ -1824,16 +1824,16 @@ function initializeEditor() {
                   if (!placeholder) {
                     const content = (c.get('content') || '').toString();
                     const name = (c.get('name') || '').toString();
-                    
-                    if (name === 'Placeholder' || 
-                        content.includes('Arrastra elementos aquí') ||
-                        content.includes('↓ Arrastra')) {
+
+                    if (name === 'Placeholder' ||
+                      content.includes('Arrastra elementos aquí') ||
+                      content.includes('↓ Arrastra')) {
                       placeholder = c;
                     }
                   }
                 });
               }
-              
+
               // Eliminar si hay más de un componente
               if (placeholder && componentCount > 1) {
                 try {
@@ -1859,18 +1859,18 @@ function initializeEditor() {
       }
     }, 200);
   });
-  
+
   // Evento cuando cambia un trait (propiedad) de un componente
   // Cambiado a 'component:trait:change' para evitar ejecuciones innecesarias
-  editor.on('component:trait:change', function(component) {
+  editor.on('component:trait:change', function (component) {
     // Si es el bloque de formulario y cambió el form-id, actualizar el atributo
     const componentType = component.get('type');
     if (componentType === 'form-dynamic' || component.get('attributes')?.class === 'gjs-block-form') {
       const formId = component.get('traits').find(t => t.get('name') === 'form-id')?.get('value') || '';
-      
+
       // Actualizar el atributo data-form-id en el componente
       component.addAttributes({ 'data-form-id': formId });
-      
+
       // Actualizar el contenido del placeholder si existe
       const viewEl = component.view && component.view.el;
       if (viewEl) {
@@ -1890,12 +1890,12 @@ function initializeEditor() {
     if (isLoadingContent) {
       return;
     }
-    
+
     // Si es una sección, actualizar el layout de columnas
     if (component.get('tagName') === 'section') {
       updateSectionLayout(component);
     }
-    
+
     // Si es un contenedor, actualizar el layout de columnas
     if (component.get('type') === 'container') {
       updateContainerLayout(component);
@@ -1909,18 +1909,18 @@ function initializeEditor() {
     const verticalAlign = section.getTrait('vertical-align')?.getValue() || 'items-start';
     const horizontalAlign = section.getTrait('horizontal-align')?.getValue() || 'justify-start';
     const contentWidth = section.getTrait('content-width')?.getValue() || 'container';
-    
+
     // Buscar el contenedor interno de columnas
     const container = section.components().at(0);
     if (!container) return;
-    
+
     const innerSection = container.components().at(0);
     if (!innerSection) return;
-    
+
     // Actualizar clases del contenedor
     let containerClasses = `${contentWidth} mx-auto`;
     container.setClass(containerClasses);
-    
+
     // Mapeo de layouts a clases de grid
     const layoutClasses = {
       '1-column': 'grid grid-cols-1',
@@ -1931,15 +1931,15 @@ function initializeEditor() {
       '4-columns': 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
       '3-columns-center': 'grid grid-cols-1 md:grid-cols-4'
     };
-    
+
     // Aplicar clases de layout
     let gridClasses = `section-inner ${layoutClasses[layout]} ${gap} ${verticalAlign} ${horizontalAlign}`;
     innerSection.setClass(gridClasses);
-    
+
     // Actualizar el número de columnas según el layout
     const currentColumns = innerSection.components().length;
     const targetColumns = getColumnCount(layout);
-    
+
     if (currentColumns < targetColumns) {
       // Agregar columnas faltantes
       for (let i = currentColumns; i < targetColumns; i++) {
@@ -1947,7 +1947,7 @@ function initializeEditor() {
           type: 'column',
           tagName: 'div',
           name: `Columna ${i + 1}`,
-          attributes: { 
+          attributes: {
             class: `${getColumnClass(layout, i)} min-h-[100px] border-2 border-dashed border-gray-300 rounded-lg p-4 flex items-center justify-center`,
             'data-gjs-droppable': 'true',
             'data-gjs-draggable': 'false',
@@ -1960,7 +1960,7 @@ function initializeEditor() {
               tagName: 'div',
               name: 'Placeholder',
               content: `↓ Arrastra elementos aquí (Columna ${i + 1}) ↓`,
-              attributes: { 
+              attributes: {
                 class: 'text-gray-400 text-sm pointer-events-none',
                 'data-gjs-type': 'text',
                 'data-gjs-editable': 'false',
@@ -1978,20 +1978,20 @@ function initializeEditor() {
         if (lastColumn) lastColumn.remove();
       }
     }
-    
+
     // Actualizar clases de columnas individuales
     innerSection.components().forEach((column, index) => {
       const baseClass = getColumnClass(layout, index);
       // Verificar si la columna tiene contenido más allá del placeholder
-      const hasContent = column.components().length > 1 || 
-                        (column.components().length === 1 && 
-                         !column.components().at(0)?.get('content')?.includes('Arrastra elementos aquí'));
-      
+      const hasContent = column.components().length > 1 ||
+        (column.components().length === 1 &&
+          !column.components().at(0)?.get('content')?.includes('Arrastra elementos aquí'));
+
       // Si tiene contenido, remover el borde punteado, si no, mantenerlo
       if (hasContent) {
         column.setClass(`${baseClass} min-h-[100px] p-4`);
         // Ocultar el placeholder si existe
-        const placeholder = column.components().models.find(c => 
+        const placeholder = column.components().models.find(c =>
           c.get('content')?.includes('Arrastra elementos aquí')
         );
         if (placeholder) {
@@ -2002,7 +2002,7 @@ function initializeEditor() {
       }
     });
   }
-  
+
   // Función para obtener el número de columnas según el layout
   function getColumnCount(layout) {
     const columnCounts = {
@@ -2016,7 +2016,7 @@ function initializeEditor() {
     };
     return columnCounts[layout] || 1;
   }
-  
+
   // Función para obtener la clase CSS de cada columna según el layout
   function getColumnClass(layout, index) {
     const columnClasses = {
@@ -2037,11 +2037,11 @@ function initializeEditor() {
     const gap = container.get('column-gap') || 'gap-6';
     const verticalAlign = container.get('vertical-align') || 'items-start';
     const horizontalAlign = container.get('horizontal-align') || 'justify-start';
-    
+
     // Buscar el grid interno de columnas
     const innerSection = container.components().at(0);
     if (!innerSection) return;
-    
+
     // Mapeo de layouts a clases de grid
     const layoutClasses = {
       '1-column': 'grid grid-cols-1',
@@ -2052,15 +2052,15 @@ function initializeEditor() {
       '4-columns': 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
       '3-columns-center': 'grid grid-cols-1 md:grid-cols-4'
     };
-    
+
     // Aplicar clases de layout
     let gridClasses = `section-inner ${layoutClasses[layout]} ${gap} ${verticalAlign} ${horizontalAlign}`;
     innerSection.setClass(gridClasses);
-    
+
     // Actualizar el número de columnas según el layout
     const currentColumns = innerSection.components().length;
     const targetColumns = getColumnCount(layout);
-    
+
     if (currentColumns < targetColumns) {
       // Agregar columnas faltantes
       for (let i = currentColumns; i < targetColumns; i++) {
@@ -2068,7 +2068,7 @@ function initializeEditor() {
           type: 'column',
           tagName: 'div',
           name: `Columna ${i + 1}`,
-          attributes: { 
+          attributes: {
             class: `${getColumnClass(layout, i)} min-h-[100px] border-2 border-dashed border-gray-300 rounded-lg p-4 flex items-center justify-center`,
             'data-gjs-droppable': 'true',
             'data-gjs-draggable': 'false',
@@ -2081,7 +2081,7 @@ function initializeEditor() {
               tagName: 'div',
               name: 'Placeholder',
               content: `↓ Arrastra elementos aquí (Columna ${i + 1}) ↓`,
-              attributes: { 
+              attributes: {
                 class: 'text-gray-400 text-sm pointer-events-none',
                 'data-gjs-type': 'text',
                 'data-gjs-editable': 'false',
@@ -2099,20 +2099,20 @@ function initializeEditor() {
         if (lastColumn) lastColumn.remove();
       }
     }
-    
+
     // Actualizar clases de columnas individuales
     innerSection.components().forEach((column, index) => {
       const baseClass = getColumnClass(layout, index);
       // Verificar si la columna tiene contenido más allá del placeholder
-      const hasContent = column.components().length > 1 || 
-                        (column.components().length === 1 && 
-                         !column.components().at(0)?.get('content')?.includes('Arrastra elementos aquí'));
-      
+      const hasContent = column.components().length > 1 ||
+        (column.components().length === 1 &&
+          !column.components().at(0)?.get('content')?.includes('Arrastra elementos aquí'));
+
       // Si tiene contenido, remover el borde punteado, si no, mantenerlo
       if (hasContent) {
         column.setClass(`${baseClass} min-h-[100px] p-4`);
         // Ocultar el placeholder si existe
-        const placeholder = column.components().models.find(c => 
+        const placeholder = column.components().models.find(c =>
           c.get('content')?.includes('Arrastra elementos aquí')
         );
         if (placeholder) {
@@ -2123,7 +2123,7 @@ function initializeEditor() {
       }
     });
   }
-  
+
   // Hacer la función disponible globalmente para los manejadores de traits
   window.updateContainerLayout = updateContainerLayout;
 
@@ -2133,7 +2133,7 @@ function initializeEditor() {
     if (!component.get('name') || component.get('name') === 'Div' || component.get('name') === 'Default') {
       const type = component.get('type');
       const tagName = component.get('tagName');
-      
+
       // Asignar nombres descriptivos basados en el tipo o tagName
       const nameMap = {
         'text': 'Texto',
@@ -2159,7 +2159,7 @@ function initializeEditor() {
         'carousel': 'Carrusel',
         'gallery': 'Galería'
       };
-      
+
       const tagNameMap = {
         'h1': 'Título H1',
         'h2': 'Título H2',
@@ -2181,7 +2181,7 @@ function initializeEditor() {
         'label': 'Etiqueta',
         'hr': 'Divisor'
       };
-      
+
       const newName = nameMap[type] || tagNameMap[tagName] || (tagName ? tagName.toUpperCase() : 'Elemento');
       // Usar silent: true para evitar actualizar la vista del Layer Manager si no está lista
       // Esto previene el error "Cannot set properties of null (setting 'innerText')"
@@ -2208,15 +2208,15 @@ function initializeEditor() {
       }
     }
   });
-  
+
   // Evento para forzar selección de carrusel, galería y toggle cuando se detecte
   editor.on('component:add', function (component) {
     const componentType = component.get('type');
     console.log('📦 [Editor] Componente agregado:', componentType);
-    
+
     if (componentType === 'toggle') {
       console.log('🔄 [Editor] Toggle detectado, configurando selección...');
-      
+
       // Verificar que el componente esté registrado correctamente
       const toggleType = editor.DomComponents.getType('toggle');
       if (!toggleType) {
@@ -2229,7 +2229,7 @@ function initializeEditor() {
       } else {
         console.log('✅ [Editor] Componente toggle está registrado correctamente');
       }
-      
+
       // Forzar que sea seleccionable (GrapesJS generará toolbar automáticamente)
       component.set({
         draggable: true,
@@ -2241,26 +2241,26 @@ function initializeEditor() {
         badgable: true,
         layerable: true
       });
-      
+
       console.log('✅ [Editor] Propiedades del toggle configuradas:', {
         selectable: component.get('selectable'),
         removable: component.get('removable'),
         toolbar: component.get('toolbar')
       });
-      
+
       // Agregar evento de clic después de un breve delay
       setTimeout(() => {
         if (component.view && component.view.el) {
           const el = component.view.el;
           console.log('🔧 [Editor] Configurando elemento DOM del toggle:', el);
-          
+
           // Asegurar que el contenedor sea seleccionable
           el.setAttribute('data-gjs-selectable', 'true');
           el.setAttribute('data-gjs-removable', 'true');
           el.setAttribute('data-gjs-highlightable', 'true');
           el.setAttribute('data-gjs-hoverable', 'true');
           el.setAttribute('data-gjs-badgable', 'true');
-          
+
           // Asegurar propiedades del modelo nuevamente (igual que Carousel)
           component.set({
             draggable: true,
@@ -2272,29 +2272,29 @@ function initializeEditor() {
             badgable: true,
             layerable: true
           });
-          
+
           // ✅ NO agregar listeners personalizados - dejar que GrapesJS maneje todo naturalmente
           // Solo asegurar estilos básicos
           el.style.cursor = 'pointer';
           el.style.position = 'relative';
-          
+
           console.log('✅ [Editor] Toggle configurado - sin listeners personalizados');
         } else {
           console.error('❌ [Editor] No se encontró elemento DOM del toggle');
         }
       }, 300);
     }
-    
+
     if (component.get('type') === 'carousel') {
       console.log('🎠 Carrusel detectado, configurando selección...');
-      
+
       // Forzar que sea seleccionable
       component.set({
         selectable: true,
         hoverable: true,
         editable: true
       });
-      
+
       // Agregar evento de clic después de un breve delay
       setTimeout(() => {
         if (component.view && component.view.el) {
@@ -2308,17 +2308,17 @@ function initializeEditor() {
         }
       }, 100);
     }
-    
+
     if (component.get('type') === 'gallery') {
       console.log('🖼️ Galería detectada, configurando selección...');
-      
+
       // Forzar que sea seleccionable
       component.set({
         selectable: true,
         hoverable: true,
         editable: true
       });
-      
+
       // Agregar evento de clic después de un breve delay
       setTimeout(() => {
         if (component.view && component.view.el) {
@@ -2337,14 +2337,14 @@ function initializeEditor() {
   // ✅ Asegurar que los componentes toggle muestren el toolbar cuando se seleccionan
   editor.on('component:selected', function (component) {
     if (!component) return;
-    
+
     const componentType = component.get('type');
     console.log('🎯 [Editor] Componente seleccionado:', componentType);
-    
+
     // Si es un toggle, asegurar que tenga todas las propiedades necesarias
     if (componentType === 'toggle') {
       console.log('🔄 [Editor] Toggle seleccionado, asegurando propiedades...');
-      
+
       // Forzar propiedades para asegurar que el toolbar aparezca (igual que Carousel)
       component.set({
         draggable: true,
@@ -2356,7 +2356,7 @@ function initializeEditor() {
         badgable: true,
         layerable: true     // ✅ Agregar layerable
       }, { silent: false });
-      
+
       console.log('✅ [Editor] Propiedades del toggle actualizadas:', {
         selectable: component.get('selectable'),
         removable: component.get('removable'),
@@ -2364,7 +2364,7 @@ function initializeEditor() {
         badgable: component.get('badgable'),
         layerable: component.get('layerable')
       });
-      
+
       // Asegurar atributos en el DOM
       if (component.view && component.view.el) {
         const el = component.view.el;
@@ -2374,22 +2374,22 @@ function initializeEditor() {
         el.setAttribute('data-gjs-badgable', 'true');
         el.setAttribute('data-gjs-hoverable', 'true');
         el.style.outline = '2px solid #3b82f6';
-        
+
         console.log('✅ [Editor] Atributos DOM del toggle configurados');
-        
+
         // ✅ Verificar el toolbar en múltiples ubicaciones
         setTimeout(() => {
           const canvasFrame = editor.Canvas.getFrameEl();
           if (canvasFrame && canvasFrame.contentDocument) {
             const frameDoc = canvasFrame.contentDocument;
             const frameBody = frameDoc.body || frameDoc.documentElement;
-            
+
             // Buscar toolbar en múltiples lugares
             let toolbar = frameDoc.querySelector('.gjs-toolbar');
             if (!toolbar && frameBody) {
               toolbar = frameBody.querySelector('.gjs-toolbar');
             }
-            
+
             // Buscar también en el contenedor del canvas
             const canvasView = editor.Canvas.getCanvasView();
             if (canvasView && canvasView.el) {
@@ -2398,31 +2398,31 @@ function initializeEditor() {
                 toolbar = canvasEl.querySelector('.gjs-toolbar');
               }
             }
-            
+
             // Buscar en el documento principal también
             if (!toolbar) {
               toolbar = document.querySelector('.gjs-toolbar');
             }
-            
+
             console.log('🔍 [Editor] Toolbar verificado en frame:', frameDoc.querySelector('.gjs-toolbar'));
             console.log('🔍 [Editor] Toolbar verificado en canvasView:', canvasView && canvasView.el ? canvasView.el.querySelector('.gjs-toolbar') : 'canvasView no disponible');
             console.log('🔍 [Editor] Toolbar encontrado final:', toolbar);
-            
+
             if (toolbar) {
               const toolbarItems = toolbar.querySelectorAll('.gjs-toolbar-item');
               console.log('✅ [Editor] Toolbar encontrado con', toolbarItems.length, 'items');
-              
+
               // ✅ CRÍTICO: Si el toolbar está vacío o oculto, forzar su actualización
               if (toolbarItems.length === 0 || toolbar.style.display === 'none') {
                 console.log('🔄 [Editor] Toolbar vacío u oculto - forzando actualización...');
-                
+
                 // Forzar que sea visible PRIMERO
                 toolbar.style.display = 'block';
                 toolbar.style.visibility = 'visible';
                 toolbar.style.opacity = '1';
                 toolbar.removeAttribute('style');
                 toolbar.setAttribute('style', 'pointer-events: all; display: block !important; visibility: visible !important; opacity: 1 !important;');
-                
+
                 // Asegurar que el componente tenga las propiedades ANTES de actualizar el toolbar
                 component.set({
                   selectable: true,
@@ -2434,7 +2434,7 @@ function initializeEditor() {
                   layerable: true,
                   draggable: true
                 }, { silent: false });
-                
+
                 // Forzar update del canvas view para que renderice el toolbar con los botones
                 const canvasView = editor.Canvas.getCanvasView();
                 if (canvasView) {
@@ -2442,16 +2442,16 @@ function initializeEditor() {
                   if (canvasView.updateSelected) {
                     canvasView.updateSelected();
                   }
-                  
+
                   // Intentar acceder al toolbar de GrapesJS y forzar su renderizado
                   // El toolbar está en el CanvasView
-                  
+
                   // Método 1: Intentar acceder directamente al toolbar manager de GrapesJS
                   if (editor.Toolbar) {
                     console.log('✅ [Editor] Editor.Toolbar encontrado, forzando render...');
                     // El Toolbar de GrapesJS puede tener un método para renderizar
                   }
-                  
+
                   // Método 2: Forzar render accediendo a través del Canvas
                   if (editor.Canvas && editor.Canvas.getToolbarEl) {
                     const toolbarEl = editor.Canvas.getToolbarEl();
@@ -2459,7 +2459,7 @@ function initializeEditor() {
                       console.log('✅ [Editor] Toolbar element encontrado vía Canvas.getToolbarEl()');
                     }
                   }
-                  
+
                   // Método 3: Intentar forzar el render del toolbar accediendo a canvasView.toolbarEl
                   if (canvasView.toolbarEl) {
                     console.log('✅ [Editor] canvasView.toolbarEl encontrado');
@@ -2467,35 +2467,35 @@ function initializeEditor() {
                     canvasView.toolbarEl.style.display = 'block';
                     canvasView.toolbarEl.style.visibility = 'visible';
                   }
-                  
+
                   // Método 4: Forzar render del toolbar accediendo al CanvasView
                   if (canvasView.toolbar && typeof canvasView.toolbar.render === 'function') {
                     console.log('✅ [Editor] canvasView.toolbar.render encontrado, ejecutando...');
                     canvasView.toolbar.render(component);
                   }
-                  
+
                   // Método 5: Intentar usar el método de GrapesJS para actualizar el toolbar
                   if (canvasView.updateToolbar && typeof canvasView.updateToolbar === 'function') {
                     console.log('✅ [Editor] canvasView.updateToolbar encontrado, ejecutando...');
                     canvasView.updateToolbar();
                   }
-                  
+
                   // Método 6: También intentar usar el método showToolbar si existe
                   if (canvasView.showToolbar && typeof canvasView.showToolbar === 'function') {
                     console.log('✅ [Editor] canvasView.showToolbar encontrado, ejecutando...');
                     canvasView.showToolbar(component);
                   }
-                  
+
                   // Método 7: Trigger del evento component:toolbar:render si existe
                   if (component.trigger) {
                     component.trigger('component:toolbar:render');
                     component.trigger('toolbar:render');
                   }
-                  
+
                   // Método 8: Forzar refresh completo del canvas (usar refresh, no updateCanvas)
                   editor.refresh();
                 }
-                
+
                 // ✅ NO re-seleccionar para evitar loops infinitos
                 // En su lugar, solo verificar una vez más después de un delay
                 setTimeout(() => {
@@ -2503,10 +2503,10 @@ function initializeEditor() {
                   if (newToolbar) {
                     const newItems = newToolbar.querySelectorAll('.gjs-toolbar-item');
                     console.log('🔍 [Editor] Toolbar después de actualización:', newItems.length, 'items');
-                    
+
                     if (newItems.length === 0) {
                       console.warn('⚠️ [Editor] Toolbar sigue vacío - creando botones manualmente...');
-                      
+
                       // ✅ Crear botones del toolbar manualmente si GrapesJS no los genera
                       try {
                         const deleteBtn = document.createElement('div');
@@ -2521,7 +2521,7 @@ function initializeEditor() {
                             editor.select(null);
                           }
                         });
-                        
+
                         toolbar.appendChild(deleteBtn);
                         console.log('✅ [Editor] Botón de eliminar creado manualmente');
                       } catch (error) {
@@ -2533,7 +2533,7 @@ function initializeEditor() {
                   }
                 }, 300);
               }
-              
+
               // Verificar que sea visible
               const style = window.getComputedStyle(toolbar);
               console.log('🔍 [Editor] Toolbar estilo:', {
@@ -2550,30 +2550,30 @@ function initializeEditor() {
                 badgable: component.get('badgable'),
                 layerable: component.get('layerable')
               });
-              
+
               // ✅ Intentar forzar creación del toolbar de múltiples formas
               console.log('🔄 [Editor] Intentando forzar creación del toolbar...');
-              
+
               // Método 1: Actualizar canvas
               editor.refresh();
-              
+
               // Método 2: Forzar actualización del canvas view
               if (canvasView) {
                 if (canvasView.updateSelected) {
                   canvasView.updateSelected();
                 }
-                
+
                 // Forzar re-render del canvas view
                 if (canvasView.updateCanvas) {
                   canvasView.updateCanvas();
                 }
-                
+
                 // Intentar trigger del evento de selección
                 if (canvasView.trigger) {
                   canvasView.trigger('component:select', component);
                 }
               }
-              
+
               // Método 3: Ejecutar comando de toolbar si existe
               if (editor.Commands && editor.Commands.has('core:component-toolbar')) {
                 try {
@@ -2583,22 +2583,22 @@ function initializeEditor() {
                   console.log('⚠️ [Editor] No se pudo ejecutar core:component-toolbar:', e);
                 }
               }
-              
+
               // Método 4: Deseleccionar y volver a seleccionar para forzar render
               setTimeout(() => {
                 editor.select(null);
                 setTimeout(() => {
                   editor.select(component);
-                  
+
                   // Buscar nuevamente después de re-seleccionar
                   setTimeout(() => {
-                    toolbar = frameDoc.querySelector('.gjs-toolbar') || 
-                             (frameBody ? frameBody.querySelector('.gjs-toolbar') : null) ||
-                             (canvasView && canvasView.el ? canvasView.el.querySelector('.gjs-toolbar') : null);
-                    
+                    toolbar = frameDoc.querySelector('.gjs-toolbar') ||
+                      (frameBody ? frameBody.querySelector('.gjs-toolbar') : null) ||
+                      (canvasView && canvasView.el ? canvasView.el.querySelector('.gjs-toolbar') : null);
+
                     if (toolbar) {
                       console.log('✅ [Editor] Toolbar encontrado después de re-seleccionar');
-                      
+
                       // Asegurar visibilidad
                       toolbar.style.display = 'block';
                       toolbar.style.visibility = 'visible';
@@ -2615,50 +2615,50 @@ function initializeEditor() {
       }
     }
   });
-  
+
   // Cargar formularios cuando se selecciona el bloque de formulario
   editor.on('component:selected', function (component) {
     // ✅ Actualizar formulario para componentes Verse, Code, Paragraph y Heading cuando se seleccionan
     let componentType = component.get('type');
-    
+
     if (componentType === 'verse') {
       console.log('🎯 [Editor] Componente Verse seleccionado');
-      
+
       // ✅ CRÍTICO: Sincronizar el modelo ANTES de que se renderice el TraitManager
       // Esto es lo que hace BackgroundImage - sincroniza primero, luego GrapesJS renderiza con los valores correctos
       if (component.syncContentFromDOM && typeof component.syncContentFromDOM === 'function') {
         // Sincronizar inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
         component.syncContentFromDOM();
-        
+
         // Forzar re-render del TraitManager después de sincronizar
         setTimeout(() => {
           if (editor.TraitManager && editor.TraitManager.render) {
             editor.TraitManager.render();
             console.log('✅ [Editor] TraitManager re-renderizado para Verse');
-            
+
             // ✅ CRÍTICO: Forzar actualización de los inputs después del render
             // Usar múltiples intentos porque el render puede tardar
             const updateVerseInputs = (attempt = 1) => {
               const modelContent = component.get('verse-content') || '';
               const modelAuthor = component.get('verse-author') || '';
-              
+
               // Buscar inputs con múltiples selectores
               const contentInput = document.querySelector('textarea[name="verse-content"]') ||
-                                 document.querySelector('.traits-container textarea[data-name="verse-content"]') ||
-                                 document.querySelector('.gjs-trt-trait[data-trait-name="verse-content"] textarea') ||
-                                 document.querySelector('.gjs-trt-trait textarea');
+                document.querySelector('.traits-container textarea[data-name="verse-content"]') ||
+                document.querySelector('.gjs-trt-trait[data-trait-name="verse-content"] textarea') ||
+                document.querySelector('.gjs-trt-trait textarea');
               const authorInput = document.querySelector('input[name="verse-author"]') ||
-                                document.querySelector('.traits-container input[data-name="verse-author"]') ||
-                                document.querySelector('.gjs-trt-trait[data-trait-name="verse-author"] input') ||
-                                document.querySelector('.gjs-trt-trait input[type="text"]');
-              
+                document.querySelector('.traits-container input[data-name="verse-author"]') ||
+                document.querySelector('.gjs-trt-trait[data-trait-name="verse-author"] input') ||
+                document.querySelector('.gjs-trt-trait input[type="text"]');
+
               console.log(`🔍 [Editor] Intento ${attempt} - Inputs encontrados:`, {
                 content: !!contentInput,
                 author: !!authorInput,
                 contentValue: contentInput ? contentInput.value.substring(0, 30) : 'N/A',
                 modelContent: modelContent.substring(0, 30)
               });
-              
+
               if (contentInput) {
                 if (contentInput.value !== modelContent) {
                   contentInput.value = modelContent;
@@ -2676,7 +2676,7 @@ function initializeEditor() {
               } else {
                 console.warn('⚠️ [Editor] No se encontró input de contenido Verse después de 5 intentos');
               }
-              
+
               if (authorInput) {
                 if (authorInput.value !== modelAuthor) {
                   authorInput.value = modelAuthor;
@@ -2695,43 +2695,43 @@ function initializeEditor() {
                 console.warn('⚠️ [Editor] No se encontró input de autor Verse después de 5 intentos');
               }
             };
-            
+
             setTimeout(() => updateVerseInputs(1), 200);
           }
         }, 50);
       }
     }
-    
+
     if (componentType === 'code') {
       console.log('🎯 [Editor] Componente Code seleccionado');
-      
+
       // ✅ CRÍTICO: Sincronizar el modelo ANTES de que se renderice el TraitManager
       // Esto es lo que hace BackgroundImage - sincroniza primero, luego GrapesJS renderiza con los valores correctos
       if (component.syncContentFromDOM && typeof component.syncContentFromDOM === 'function') {
         // Sincronizar inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
         component.syncContentFromDOM();
-        
+
         // Forzar re-render del TraitManager después de sincronizar
         setTimeout(() => {
           if (editor.TraitManager && editor.TraitManager.render) {
             editor.TraitManager.render();
             console.log('✅ [Editor] TraitManager re-renderizado para Code');
-            
+
             // ✅ CRÍTICO: Forzar actualización de los inputs después del render
             const updateCodeInputs = (attempt = 1) => {
               const modelContent = component.get('code-content') || '';
-              
+
               const contentInput = document.querySelector('textarea[name="code-content"]') ||
-                                 document.querySelector('.traits-container textarea[data-name="code-content"]') ||
-                                 document.querySelector('.gjs-trt-trait[data-trait-name="code-content"] textarea') ||
-                                 document.querySelector('.gjs-trt-trait textarea');
-              
+                document.querySelector('.traits-container textarea[data-name="code-content"]') ||
+                document.querySelector('.gjs-trt-trait[data-trait-name="code-content"] textarea') ||
+                document.querySelector('.gjs-trt-trait textarea');
+
               console.log(`🔍 [Editor] Intento ${attempt} - Input Code encontrado:`, {
                 found: !!contentInput,
                 currentValue: contentInput ? contentInput.value.substring(0, 30) : 'N/A',
                 modelContent: modelContent.substring(0, 30)
               });
-              
+
               if (contentInput) {
                 if (contentInput.value !== modelContent) {
                   contentInput.value = modelContent;
@@ -2749,42 +2749,42 @@ function initializeEditor() {
                 console.warn('⚠️ [Editor] No se encontró input de contenido Code después de 5 intentos');
               }
             };
-            
+
             setTimeout(() => updateCodeInputs(1), 200);
           }
         }, 50);
       }
     }
-    
+
     if (componentType === 'paragraph') {
       console.log('🎯 [Editor] Componente Paragraph seleccionado');
-      
+
       // ✅ CRÍTICO: Sincronizar el modelo ANTES de que se renderice el TraitManager
       if (component.syncContentFromDOM && typeof component.syncContentFromDOM === 'function') {
         // Sincronizar inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
         component.syncContentFromDOM();
-        
+
         // Forzar re-render del TraitManager después de sincronizar
         setTimeout(() => {
           if (editor.TraitManager && editor.TraitManager.render) {
             editor.TraitManager.render();
             console.log('✅ [Editor] TraitManager re-renderizado para Paragraph');
-            
+
             // ✅ CRÍTICO: Forzar actualización de los inputs después del render
             const updateParagraphInputs = (attempt = 1) => {
               const modelText = component.get('paragraph-text') || '';
-              
+
               const textInput = document.querySelector('input[name="paragraph-text"]') ||
-                              document.querySelector('.traits-container input[data-name="paragraph-text"]') ||
-                              document.querySelector('.gjs-trt-trait[data-trait-name="paragraph-text"] input') ||
-                              document.querySelector('.gjs-trt-trait input[type="text"]');
-              
+                document.querySelector('.traits-container input[data-name="paragraph-text"]') ||
+                document.querySelector('.gjs-trt-trait[data-trait-name="paragraph-text"] input') ||
+                document.querySelector('.gjs-trt-trait input[type="text"]');
+
               console.log(`🔍 [Editor] Intento ${attempt} - Input Paragraph encontrado:`, {
                 found: !!textInput,
                 currentValue: textInput ? textInput.value.substring(0, 30) : 'N/A',
                 modelText: modelText.substring(0, 30)
               });
-              
+
               if (textInput) {
                 if (textInput.value !== modelText) {
                   textInput.value = modelText;
@@ -2802,42 +2802,42 @@ function initializeEditor() {
                 console.warn('⚠️ [Editor] No se encontró input de texto Paragraph después de 5 intentos');
               }
             };
-            
+
             setTimeout(() => updateParagraphInputs(1), 200);
           }
         }, 50);
       }
     }
-    
+
     if (componentType === 'heading') {
       console.log('🎯 [Editor] Componente Heading seleccionado');
-      
+
       // ✅ CRÍTICO: Sincronizar el modelo ANTES de que se renderice el TraitManager
       if (component.syncContentFromDOM && typeof component.syncContentFromDOM === 'function') {
         // Sincronizar inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
         component.syncContentFromDOM();
-        
+
         // Forzar re-render del TraitManager después de sincronizar
         setTimeout(() => {
           if (editor.TraitManager && editor.TraitManager.render) {
             editor.TraitManager.render();
             console.log('✅ [Editor] TraitManager re-renderizado para Heading');
-            
+
             // ✅ CRÍTICO: Forzar actualización de los inputs después del render
             const updateHeadingInputs = (attempt = 1) => {
               const modelText = component.get('heading-text') || '';
-              
+
               const textInput = document.querySelector('input[name="heading-text"]') ||
-                              document.querySelector('.traits-container input[data-name="heading-text"]') ||
-                              document.querySelector('.gjs-trt-trait[data-trait-name="heading-text"] input') ||
-                              document.querySelector('.gjs-trt-trait input[type="text"]');
-              
+                document.querySelector('.traits-container input[data-name="heading-text"]') ||
+                document.querySelector('.gjs-trt-trait[data-trait-name="heading-text"] input') ||
+                document.querySelector('.gjs-trt-trait input[type="text"]');
+
               console.log(`🔍 [Editor] Intento ${attempt} - Input Heading encontrado:`, {
                 found: !!textInput,
                 currentValue: textInput ? textInput.value.substring(0, 30) : 'N/A',
                 modelText: modelText.substring(0, 30)
               });
-              
+
               if (textInput) {
                 if (textInput.value !== modelText) {
                   textInput.value = modelText;
@@ -2855,21 +2855,21 @@ function initializeEditor() {
                 console.warn('⚠️ [Editor] No se encontró input de texto Heading después de 5 intentos');
               }
             };
-            
+
             setTimeout(() => updateHeadingInputs(1), 200);
           }
         }, 50);
       }
     }
-    
+
     // Continuar con el código original...
     // Forzar actualización del TraitManager para componentes refactorizados
     componentType = component.get('type'); // Reutilizar la variable ya declarada
     const refactoredComponents = ['text', 'heading', 'paragraph', 'button', 'container', 'image'];
-    
+
     if (refactoredComponents.includes(componentType)) {
       console.log('🔄 Componente refactorizado seleccionado:', componentType);
-      
+
       // Sincronizar contenedores cuando se seleccionan
       if (componentType === 'container') {
         setTimeout(() => {
@@ -2889,20 +2889,20 @@ function initializeEditor() {
           }
         }, 50);
       }
-      
+
       // ✅ El manejo de imágenes se hace completamente en el componente image.js
       // No es necesario duplicar código aquí - el componente image.js maneja:
       // - Inicialización con imagen por defecto
       // - Doble clic para abrir galería
       // - Actualización de imagen desde galería
       // - Sincronización de src
-      
+
       // Si el componente tiene un método de sincronización, ejecutarlo
       if (componentType === 'button') {
         console.log('🔍 Verificando método syncInitialValues en botón...');
         console.log('🔍 syncInitialValues existe?', typeof component.syncInitialValues);
         console.log('🔍 Componente completo:', component);
-        
+
         if (typeof component.syncInitialValues === 'function') {
           console.log('🔄 Sincronizando botón desde component:selected...');
           try {
@@ -2912,7 +2912,7 @@ function initializeEditor() {
           } catch (error) {
             console.error('❌ Error ejecutando syncInitialValues:', error);
           }
-          
+
           // Forzar actualización del TraitManager después de sincronizar
           setTimeout(() => {
             if (editor.TraitManager) {
@@ -2922,7 +2922,7 @@ function initializeEditor() {
               } else {
                 editor.TraitManager.component = component;
               }
-              
+
               // Forzar actualización de todos los traits del botón
               const buttonTraits = ['button-text', 'button-href', 'button-target', 'button-style', 'button-size', 'button-width', 'button-align', 'button-radius'];
               console.log('🔄 Actualizando traits del botón...');
@@ -2937,7 +2937,7 @@ function initializeEditor() {
                   console.log(`✅ Trait ${traitName} establecido:`, value);
                 }
               });
-              
+
               // Renderizar el TraitManager
               editor.TraitManager.render();
               console.log('✅ TraitManager actualizado');
@@ -2950,10 +2950,10 @@ function initializeEditor() {
             const el = component.view.el;
             const classList = (el.className || '').split(' ').filter(c => c.trim());
             const textContent = el.textContent || el.innerText || '';
-            
+
             console.log('📝 Sincronización manual - Texto:', textContent);
             console.log('📝 Sincronización manual - Clases:', classList);
-            
+
             if (textContent.trim()) {
               component.set('button-text', textContent.trim(), { silent: false });
               console.log('✅ Texto establecido:', textContent.trim());
@@ -2961,15 +2961,15 @@ function initializeEditor() {
               component.set('button-text', '', { silent: false });
               console.log('ℹ️ Sin texto, estableciendo vacío');
             }
-            
+
             const href = el.getAttribute('href') || '#';
             component.set('button-href', href, { silent: false });
             console.log('✅ Href establecido:', href);
-            
+
             const target = el.getAttribute('target') || '_self';
             component.set('button-target', target, { silent: false });
             console.log('✅ Target establecido:', target);
-            
+
             // Detectar estilo - buscar cualquier bg-color y hover:bg-color
             const styleOptions = [
               { value: 'bg-blue-600 hover:bg-blue-700', color: 'blue' },
@@ -2980,7 +2980,7 @@ function initializeEditor() {
               { value: 'bg-purple-600 hover:bg-purple-700', color: 'purple' },
               { value: 'bg-pink-600 hover:bg-pink-700', color: 'pink' }
             ];
-            
+
             // Buscar cualquier clase bg-color-XXX
             const bgClass = classList.find(c => c.match(/^bg-(blue|gray|green|red|yellow|purple|pink)-\d+$/));
             if (bgClass) {
@@ -2994,7 +2994,7 @@ function initializeEditor() {
                 }
               }
             }
-            
+
             // Detectar tamaño
             const sizeOptions = [
               { value: 'px-4 py-2 text-sm', px: 'px-4', py: 'py-2', text: 'text-sm' },
@@ -3002,7 +3002,7 @@ function initializeEditor() {
               { value: 'px-8 py-3 text-lg', px: 'px-8', py: 'py-3', text: 'text-lg' },
               { value: 'px-10 py-4 text-xl', px: 'px-10', py: 'py-4', text: 'text-xl' }
             ];
-            let sizeMatch = sizeOptions.find(opt => 
+            let sizeMatch = sizeOptions.find(opt =>
               classList.includes(opt.px) && classList.includes(opt.py) && classList.includes(opt.text)
             );
             if (!sizeMatch) {
@@ -3015,7 +3015,7 @@ function initializeEditor() {
               component.set('button-size', sizeMatch.value, { silent: false });
               console.log('✅ Tamaño detectado:', sizeMatch.value);
             }
-            
+
             // Detectar ancho
             const widthClasses = ['w-auto', 'w-full', 'w-24', 'w-32', 'w-40', 'w-48', 'w-64', 'w-1/2', 'w-1/3', 'w-2/3', 'w-3/4'];
             const widthMatch = classList.find(c => widthClasses.includes(c));
@@ -3027,7 +3027,7 @@ function initializeEditor() {
               component.set('button-width', '', { silent: false });
               console.log('ℹ️ Sin ancho específico, usando automático');
             }
-            
+
             // Detectar alineación
             if (classList.includes('mx-auto')) {
               component.set('button-align', 'block mx-auto', { silent: false });
@@ -3042,7 +3042,7 @@ function initializeEditor() {
               component.set('button-align', '', { silent: false });
               console.log('ℹ️ Sin alineación específica');
             }
-            
+
             // Detectar bordes redondeados
             const radiusOptions = [
               { value: 'rounded-none', class: 'rounded-none' },
@@ -3060,12 +3060,12 @@ function initializeEditor() {
               component.set('button-radius', 'rounded-md', { silent: false });
               console.log('ℹ️ Sin radio específico, usando rounded-md');
             }
-            
+
             // Forzar actualización del TraitManager después de establecer todos los valores
             setTimeout(() => {
               if (editor.TraitManager) {
                 console.log('🔄 Renderizando TraitManager con valores sincronizados...');
-                
+
                 // Verificar que los valores se establecieron correctamente
                 const buttonTraits = ['button-text', 'button-href', 'button-target', 'button-style', 'button-size', 'button-width', 'button-align', 'button-radius'];
                 console.log('📋 Valores establecidos en el modelo:');
@@ -3073,7 +3073,7 @@ function initializeEditor() {
                   const value = component.get(traitName);
                   console.log(`  - ${traitName}:`, value);
                 });
-                
+
                 // Usar el método correcto para establecer el target
                 if (typeof editor.TraitManager.setTarget === 'function') {
                   editor.TraitManager.setTarget(component);
@@ -3081,11 +3081,11 @@ function initializeEditor() {
                   // Método alternativo: establecer el componente directamente
                   editor.TraitManager.component = component;
                 }
-                
+
                 // Asegurar que los traits estén definidos en el modelo
                 const currentTraits = component.get('traits') || [];
                 console.log('📋 Traits actuales en el modelo:', currentTraits.length);
-                
+
                 // Si no hay 8 traits, forzar la actualización de los traits desde defaults
                 if (currentTraits.length < 8) {
                   console.log('⚠️ Faltan traits, forzando actualización desde defaults...');
@@ -3096,7 +3096,7 @@ function initializeEditor() {
                     console.log('✅ Traits actualizados desde defaults');
                   }
                 }
-                
+
                 // Forzar actualización de los traits antes de renderizar
                 buttonTraits.forEach(traitName => {
                   const value = component.get(traitName);
@@ -3105,10 +3105,10 @@ function initializeEditor() {
                     component.set(traitName, value, { silent: false });
                   }
                 });
-                
+
                 // Renderizar el TraitManager
                 editor.TraitManager.render();
-                
+
                 // Verificar cuántos traits se renderizaron
                 setTimeout(() => {
                   const traitsRendered = document.querySelectorAll('.traits-container .gjs-trt-trait').length;
@@ -3119,7 +3119,7 @@ function initializeEditor() {
           }
         }
       }
-      
+
       // Asegurar que el TraitManager se actualice
       setTimeout(() => {
         if (editor.TraitManager) {
@@ -3127,25 +3127,25 @@ function initializeEditor() {
           if (typeof editor.TraitManager.setTarget === 'function') {
             editor.TraitManager.setTarget(component);
           }
-          
+
           // Forzar renderizado
           editor.TraitManager.render();
-          
+
           // Verificar que se renderizaron los traits
           setTimeout(() => {
             const traitsInContainer = document.querySelectorAll('.traits-container .gjs-trt-trait');
             console.log('📋 Traits renderizados:', traitsInContainer.length);
-            
+
             if (traitsInContainer.length === 0) {
               console.warn('⚠️ No se renderizaron traits, intentando método alternativo...');
-              
+
               // Método alternativo: forzar actualización del componente
               component.trigger('change:traits');
               component.trigger('change:attributes');
-              
+
               // Re-renderizar
               editor.TraitManager.render();
-              
+
               // Si aún no funciona, usar el sistema personalizado
               setTimeout(() => {
                 const traitsStillEmpty = document.querySelectorAll('.traits-container .gjs-trt-trait').length === 0;
@@ -3159,12 +3159,12 @@ function initializeEditor() {
         }
       }, 100);
     }
-    
+
     // Si es el bloque de formulario, cargar formularios disponibles
     const isFormBlock = component.get('type') === 'form-dynamic' || component.get('attributes')?.class === 'gjs-block-form';
     if (isFormBlock) {
       console.log('📋 Bloque de formulario seleccionado, cargando formularios disponibles...');
-      
+
       const websiteId = window.websiteId;
       if (websiteId) {
         // Obtener formularios del website
@@ -3175,41 +3175,41 @@ function initializeEditor() {
             'X-Requested-With': 'XMLHttpRequest'
           }
         })
-        .then(response => response.json())
-        .then(data => {
-          if (data && data.data) {
-            // Encontrar el trait de form-id y actualizar sus opciones
-            const traits = component.get('traits');
-            const formIdTrait = traits.find(t => t.get('name') === 'form-id');
-            
-            if (formIdTrait) {
-              // Crear opciones desde los formularios
-              const options = [
-                { value: '', name: '-- Selecciona un formulario --' }
-              ];
-              
-              data.data.forEach(form => {
-                options.push({
-                  value: form.id.toString(),
-                  name: form.name || form.slug
+          .then(response => response.json())
+          .then(data => {
+            if (data && data.data) {
+              // Encontrar el trait de form-id y actualizar sus opciones
+              const traits = component.get('traits');
+              const formIdTrait = traits.find(t => t.get('name') === 'form-id');
+
+              if (formIdTrait) {
+                // Crear opciones desde los formularios
+                const options = [
+                  { value: '', name: '-- Selecciona un formulario --' }
+                ];
+
+                data.data.forEach(form => {
+                  options.push({
+                    value: form.id.toString(),
+                    name: form.name || form.slug
+                  });
                 });
-              });
-              
-              formIdTrait.set('options', options);
-              
-              // Forzar renderizado del TraitManager
-              if (editor.TraitManager) {
-                editor.TraitManager.render();
+
+                formIdTrait.set('options', options);
+
+                // Forzar renderizado del TraitManager
+                if (editor.TraitManager) {
+                  editor.TraitManager.render();
+                }
               }
             }
-          }
-        })
-        .catch(error => {
-          console.error('❌ Error al cargar formularios:', error);
-        });
+          })
+          .catch(error => {
+            console.error('❌ Error al cargar formularios:', error);
+          });
       }
     }
-    
+
     // Debug específico para carrusel
     if (component.get('type') === 'carousel') {
       // El TraitManager se actualiza automáticamente cuando se selecciona un componente
@@ -3220,12 +3220,12 @@ function initializeEditor() {
         }
       }, 100);
     }
-    
+
     // Asegurarse de que el componente tenga un nombre descriptivo
     if (!component.get('name') || component.get('name') === 'Div' || component.get('name') === 'Default') {
       const type = component.get('type');
       const tagName = component.get('tagName');
-      
+
       const nameMap = {
         'text': 'Texto',
         'image': 'Imagen',
@@ -3250,7 +3250,7 @@ function initializeEditor() {
         'carousel': 'Carrusel',
         'gallery': 'Galería'
       };
-      
+
       const tagNameMap = {
         'h1': 'Título H1',
         'h2': 'Título H2',
@@ -3272,11 +3272,11 @@ function initializeEditor() {
         'label': 'Etiqueta',
         'hr': 'Divisor'
       };
-      
+
       const newName = nameMap[type] || tagNameMap[tagName] || (tagName ? tagName.toUpperCase() : 'Elemento');
       component.set('name', newName);
     }
-    
+
     // Debug para componentes especiales
     // YouTube
     if (componentType === 'youtube-video') {
@@ -3287,7 +3287,7 @@ function initializeEditor() {
         }
       }, 100);
     }
-    
+
     // Imagen
     if (componentType === 'image') {
       // Log deshabilitado para reducir ruido en consola
@@ -3299,7 +3299,7 @@ function initializeEditor() {
       //   traits: component.get('traits'),
       //   cantidadTraits: component.get('traits')?.length || 0
       // });
-      
+
       // Forzar la actualización del TraitManager para Imagen
       setTimeout(() => {
         if (editor.TraitManager) {
@@ -3307,7 +3307,7 @@ function initializeEditor() {
         }
       }, 100);
     }
-    
+
     // Carrusel
     if (componentType === 'carousel') {
       console.log('🎠 Componente de Carrusel seleccionado:', {
@@ -3316,19 +3316,19 @@ function initializeEditor() {
         traits: component.get('traits'),
         cantidadTraits: component.get('traits')?.length || 0
       });
-      
+
       // Para carrusel, NO usar el TraitManager estándar para evitar conflictos
       // El sistema personalizado ya se ejecutó arriba
       console.log('🎠 Carrusel: Saltando TraitManager estándar para evitar conflictos con sistema personalizado');
     }
-    
+
     // Galería
     if (componentType === 'gallery') {
       // Sincronizar URLs si el componente tiene el método
       if (component.syncImageUrls) {
         component.syncImageUrls();
       }
-      
+
       // Forzar la actualización del TraitManager para Galería
       setTimeout(() => {
         if (editor.TraitManager) {
@@ -3336,42 +3336,42 @@ function initializeEditor() {
         }
       }, 100);
     }
-    
+
     // Cambiar automáticamente al panel de Propiedades
     const traitsTab = document.querySelector('[data-panel="traits"]');
     if (traitsTab && !traitsTab.classList.contains('active')) {
       traitsTab.click();
     }
-    
+
     // Ocultar mensaje de "No hay elemento seleccionado"
     const noWidgetMsg = document.getElementById('no-widget-selected');
     if (noWidgetMsg) {
       noWidgetMsg.style.display = 'none';
     }
-    
+
     // Mostrar contenedor de traits
     const traitsContainer = document.querySelector('.traits-container');
     if (traitsContainer) {
       traitsContainer.style.display = 'block';
     }
-    
+
     // Forzar actualización del TraitManager para todos los componentes
     setTimeout(() => {
       if (editor.TraitManager) {
         editor.TraitManager.render();
       }
     }, 50);
-    
+
     // Configurar el selector para usar el ID del componente (estilos únicos)
     const widgetTypes = ['button', 'image', 'heading', 'paragraph', 'text', 'link', 'divider', 'icon', 'icon-box', 'section', 'container', 'column', 'video', 'youtube-video', 'google-maps'];
-    
+
     // Obtener selectores actuales
     const currentSelectors = component.getSelectors ? component.getSelectors() : null;
     const currentSelectorsCount = currentSelectors ? currentSelectors.length : 0;
-    
+
     //Asegurar que el componente tenga un ID único
     let componentId = component.getId();
-    
+
     // Si el componente no tiene ID o es autogenerado, crear uno personalizado
     if (!componentId || componentId.startsWith('i')) {
       const customId = `${componentType || 'element'}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -3379,22 +3379,22 @@ function initializeEditor() {
       componentId = customId;
       console.log('🆔 ID personalizado asignado:', customId);
     }
-    
+
     // Intentar configurar selectores solo si el componente lo soporta
     if (component.setSelectors && typeof component.setSelectors === 'function') {
       if (widgetTypes.includes(componentType) || componentType === 'default') {
         const sm = editor.SelectorManager;
-        
+
         try {
           // Crear un selector de ID
           let idSelector = sm.get(`#${componentId}`);
           if (!idSelector) {
             idSelector = sm.add({ name: componentId, type: 2 }); // type: 2 = ID
           }
-          
+
           // FORZAR el uso SOLO del selector de ID (limpiar todos los demás)
           component.setSelectors([idSelector]);
-          
+
           console.log('✅ Selector de ID configurado:', {
             componentId: componentId,
             selectorName: idSelector.get('name'),
@@ -3409,7 +3409,7 @@ function initializeEditor() {
     } else {
       // Para componentes que no soportan setSelectors (como links/buttons)
       // Forzar que los estilos se apliquen mediante reglas CSS directas con su ID
-      
+
       // Configurar el StyleManager para usar el ID del componente
       const sm = editor.StyleManager;
       const rule = editor.Css.getRule(`#${componentId}`);
@@ -3417,7 +3417,7 @@ function initializeEditor() {
         editor.Css.setRule(`#${componentId}`, {});
       }
     }
-    
+
     // Refrescar el StyleManager para mostrar los estilos actuales del componente
     // Esto SIEMPRE debe ejecutarse para mostrar el panel de estilos
     if (editor.StyleManager) {
@@ -3429,30 +3429,30 @@ function initializeEditor() {
       if (editor.StyleManager) {
         // Forzar renderizado completo del StyleManager
         editor.StyleManager.render();
-        
+
         // Obtener los contenedores
         const stylesContainer = document.querySelector('.styles-container');
         const stylesContainerWidget = document.querySelector('.styles-container-widget');
-        
-        
+
+
         if (stylesContainer && stylesContainerWidget) {
           // Esperar a que el StyleManager se haya renderizado completamente
           setTimeout(() => {
             // Buscar el contenedor completo del StyleManager
-            const smContainer = stylesContainer.querySelector('.gjs-sm-sectors') || 
-                               stylesContainer.querySelector('[data-gjs-type="sectors"]') ||
-                               stylesContainer.firstElementChild;
-            
-            
+            const smContainer = stylesContainer.querySelector('.gjs-sm-sectors') ||
+              stylesContainer.querySelector('[data-gjs-type="sectors"]') ||
+              stylesContainer.firstElementChild;
+
+
             if (smContainer) {
               const sectorsCount = smContainer.querySelectorAll('.gjs-sm-sector').length;
-              
+
               // Limpiar el contenedor de widgets
               stylesContainerWidget.innerHTML = '';
-              
+
               // MOVER (no clonar) el contenedor completo para mantener toda la funcionalidad
               stylesContainerWidget.appendChild(smContainer);
-              
+
             } else {
               // StyleManager no encontrado (log removido)
             }
@@ -3481,9 +3481,9 @@ function initializeEditor() {
       }
     }, 50);
   });
-  
+
   // === EVENTOS PARA RASTREAR CAMBIOS DE ESTILOS ===
-  
+
   // Evento cuando cambia cualquier propiedad de estilo (informativo solamente)
   // Evento cuando se actualiza un componente (incluye cambios de estilo)
   // Log deshabilitado para reducir ruido en consola
@@ -3497,21 +3497,21 @@ function initializeEditor() {
   //     atributos: component.getAttributes()
   //   });
   // });
-  
+
   // Evento cuando cambia el estilo de un componente específico
-  editor.on('component:styleUpdate', function(component) {
+  editor.on('component:styleUpdate', function (component) {
     const componentId = component.getId();
     const styles = component.getStyle();
-    
+
     // CSS se genera automáticamente por GrapesJS
   });
-  
+
   // Evento cuando se añade una regla CSS
   // Log deshabilitado para reducir ruido en consola
   // editor.on('style:custom', function(props) {
   //   console.log('📝 REGLA CSS AÑADIDA:', props);
   // });
-  
+
   // Listener para detectar cambios en el StyleManager
   // Log deshabilitado para reducir ruido en consola
   // editor.on('style:target', function(target) {
@@ -3520,7 +3520,7 @@ function initializeEditor() {
   //     selector: target?.getSelectors?.().map(s => s.get('name'))
   //   });
   // });
-  
+
   // Listener para cambios en las propiedades del StyleManager
   try {
     const sectors = editor.StyleManager.getSectors();
@@ -3528,21 +3528,21 @@ function initializeEditor() {
       const properties = sector.get('properties');
       if (properties) {
         properties.each(property => {
-          property.on('change:value', function() {
+          property.on('change:value', function () {
             const selected = editor.getSelected();
             if (!selected) return;
-            
+
             const selectors = selected.getSelectors ? selected.getSelectors() : null;
             const componentId = selected.getId();
             const propertyName = property.get('property');
             const propertyValue = property.getValue();
-            
+
             const selectorDetails = selectors?.map(s => ({
               name: s.get('name'),
               type: s.get('type'),
               label: s.get('label')
             }));
-            
+
             // Log deshabilitado para reducir ruido en consola
             // console.log('💅 PROPIEDAD DE ESTILO MODIFICADA:', {
             //   propiedad: propertyName,
@@ -3553,7 +3553,7 @@ function initializeEditor() {
             //   selectoresDetallados: selectorDetails,
             //   estilosActuales: selected.getStyle ? selected.getStyle() : {}
             // });
-            
+
             // FORZAR APLICACIÓN DEL ESTILO DIRECTAMENTE AL CSS CON EL ID  
             // Usar !important para sobrescribir estilos de Tailwind
             if (componentId && propertyName && propertyValue) {
@@ -3563,25 +3563,25 @@ function initializeEditor() {
                 if (!cssRule) {
                   cssRule = editor.Css.setRule(`#${componentId}`, {});
                 }
-                
+
                 // Aplicar la propiedad directamente a la regla CSS
                 const currentStyles = cssRule.getStyle() || {};
-                
+
                 // Si es un valor numérico sin unidad y es una propiedad de tamaño, agregar px
                 let finalValue = propertyValue;
-                const sizeProperties = ['margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', 
-                                       'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
-                                       'width', 'height', 'font-size', 'border-width'];
-                
+                const sizeProperties = ['margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+                  'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+                  'width', 'height', 'font-size', 'border-width'];
+
                 if (sizeProperties.includes(propertyName) && !isNaN(propertyValue) && propertyValue !== '') {
                   finalValue = `${propertyValue}px`;
                 }
-                
+
                 // NOTA: NO agregar !important aquí porque GrapeJS lo remueve al hacer getCss()
                 // En su lugar, lo agregaremos al guardar
                 currentStyles[propertyName] = finalValue;
                 cssRule.setStyle(currentStyles);
-                
+
                 // TAMBIÉN aplicar el estilo como inline para asegurar que se vea en el editor
                 // y para aumentar la especificidad en la vista pública
                 try {
@@ -3599,7 +3599,7 @@ function initializeEditor() {
                 } catch (inlineError) {
                   console.warn('⚠️ No se pudo aplicar estilo inline:', inlineError);
                 }
-                
+
                 // Logs deshabilitados para reducir ruido en consola
                 // const cssForComponent = editor.getCss().match(new RegExp(`#${componentId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^{]*\\{[^}]*\\}`, 'g'));
                 // console.log('✅ ESTILO FORZADO AL CSS:', {
@@ -3612,25 +3612,25 @@ function initializeEditor() {
                 // if (cssForComponent) {
                 //   console.log('📋 CSS completo del botón:', cssForComponent[0]);
                 // }
-                
+
                 // Forzar actualización del canvas
                 editor.trigger('change:canvasOffset');
               } catch (error) {
                 console.error('❌ Error al forzar estilo al CSS:', error);
               }
             }
-            
+
             // Si hay múltiples selectores y soporta setSelectors, limpiar
             if (selectors && selectors.length > 1 && selected.setSelectors && typeof selected.setSelectors === 'function') {
               console.warn('⚠️ Componente tiene múltiples selectores, limpiando...');
               const sm = editor.SelectorManager;
-              
+
               try {
                 let idSelector = sm.get(`#${componentId}`);
                 if (!idSelector) {
                   idSelector = sm.add({ name: componentId, type: 2 });
                 }
-                
+
                 selected.setSelectors([idSelector]);
                 console.log('✅ Selectores limpiados');
               } catch (error) {
@@ -3662,7 +3662,7 @@ function initializeEditor() {
   } else if (existingHtml) {
     editor.setComponents(decodeHtml(existingHtml));
   }
-  
+
   // Sincronizar imágenes después de cargar el contenido
   if (typeof ImageSync !== 'undefined' && ImageSync.syncAfterLoad) {
     ImageSync.syncAfterLoad(editor);
@@ -3674,7 +3674,7 @@ function initializeEditor() {
         const tagName = comp.get('tagName');
         return type === 'image' || tagName === 'img';
       });
-      
+
       imageComponents.forEach(imgComp => {
         const currentSrc = imgComp.getAttributes().src;
         if (currentSrc && currentSrc.trim() && currentSrc !== 'undefined') {
@@ -3685,7 +3685,7 @@ function initializeEditor() {
       });
     }, 500);
   }
-  
+
   // ✅ CRÍTICO: Sincronizar Background Image después de cargar contenido
   setTimeout(() => {
     const syncBackgroundImageAfterInit = () => {
@@ -3698,27 +3698,27 @@ function initializeEditor() {
                 const titleEl = component.view.el.querySelector('h2');
                 const textEl = component.view.el.querySelector('p');
                 const buttonEl = component.view.el.querySelector('button, a');
-                
+
                 if (titleEl) {
                   const domTitle = titleEl.textContent || titleEl.innerText || '';
                   if (domTitle.trim()) {
                     component.set('content-title', domTitle.trim(), { silent: false });
                   }
                 }
-                
+
                 if (textEl) {
                   const domText = textEl.textContent || textEl.innerText || '';
                   if (domText.trim()) {
                     component.set('content-text', domText.trim(), { silent: false });
                   }
                 }
-                
+
                 if (buttonEl) {
                   const domButtonText = buttonEl.textContent || buttonEl.innerText || '';
                   if (domButtonText.trim()) {
                     component.set('button-text', domButtonText.trim(), { silent: false });
                   }
-                  
+
                   const href = buttonEl.getAttribute('href');
                   if (href) {
                     component.set('button-link', href, { silent: false });
@@ -3726,7 +3726,7 @@ function initializeEditor() {
                     component.set('button-link', '#', { silent: false });
                   }
                 }
-                
+
                 // Forzar actualización del TraitManager
                 setTimeout(() => {
                   if (editor.TraitManager) {
@@ -3735,7 +3735,7 @@ function initializeEditor() {
                 }, 100);
               }
             }
-            
+
             if (component && component.components) {
               const childComponents = component.components();
               if (childComponents) {
@@ -3747,21 +3747,21 @@ function initializeEditor() {
       };
       findBackgroundImage(allComponents);
     };
-    
+
     syncBackgroundImageAfterInit();
   }, 1000);
-  
+
   // Función para asignar nombres descriptivos a componentes existentes
   function assignDescriptiveNames() {
     try {
       const allComponents = editor.DomComponents.getWrapper().find('*');
-      
+
       allComponents.forEach(component => {
         const currentName = component.get('name');
         if (!currentName || currentName === 'Div' || currentName === 'Default' || currentName === 'Box') {
           const type = component.get('type');
           const tagName = component.get('tagName');
-          
+
           const nameMap = {
             'text': 'Texto',
             'image': 'Imagen',
@@ -3777,7 +3777,7 @@ function initializeEditor() {
             'icon-box': 'Caja de Icono',
             'youtube-video': 'YouTube'
           };
-          
+
           const tagNameMap = {
             'h1': 'Título H1',
             'h2': 'Título H2',
@@ -3800,22 +3800,22 @@ function initializeEditor() {
             'hr': 'Divisor',
             'div': 'Contenedor'
           };
-          
+
           const newName = nameMap[type] || tagNameMap[tagName] || (tagName ? tagName.toUpperCase() : 'Elemento');
           component.set('name', newName);
         }
       });
-      
+
       // Actualizar Layer Manager
       if (editor.LayerManager) {
         editor.LayerManager.render();
       }
-      
+
     } catch (error) {
       console.error('❌ Error asignando nombres descriptivos:', error);
     }
   }
-  
+
   // Ejecutar después de cargar el contenido
   setTimeout(assignDescriptiveNames, 500);
 
@@ -3861,7 +3861,7 @@ function initializeEditor() {
   // });
 
   // Listener para cambios de dispositivo - actualizar etiquetas de traits
-  editor.on('change:device', function() {
+  editor.on('change:device', function () {
     setTimeout(() => {
       if (typeof window.updateTraitLabelsForDevice === 'function') {
         window.updateTraitLabelsForDevice();
@@ -3870,30 +3870,30 @@ function initializeEditor() {
   });
 
   // Listener para cuando se selecciona un componente - actualizar etiquetas
-  editor.on('component:selected', function(component) {
+  editor.on('component:selected', function (component) {
     // ✅ Asegurar que los traits del componente de imagen se apliquen correctamente
     if (component && component.get('type') === 'image') {
       console.log('🖼️ Componente de imagen seleccionado, verificando traits...');
-      
+
       // Obtener los traits del componente registrado
       const imageComponentType = editor.DomComponents.getType('image');
       if (imageComponentType && imageComponentType.model && imageComponentType.model.defaults && imageComponentType.model.defaults.traits) {
         const registeredTraits = imageComponentType.model.defaults.traits;
-        
+
         // Verificar si el componente tiene los traits correctos
         const currentTraits = component.get('traits') || [];
         const hasButtonTrait = currentTraits.some(t => {
           const traitName = typeof t === 'object' && t.name ? t.name : (typeof t === 'string' ? t : null);
           return traitName === 'select-image-gallery';
         });
-        
+
         // Si no tiene el botón, forzar la actualización de los traits
         if (!hasButtonTrait && registeredTraits.length > 0) {
           console.log('⚠️ El componente de imagen no tiene el botón de galería, actualizando traits...');
-          
+
           // Establecer los traits desde el componente registrado
           component.set('traits', registeredTraits, { silent: false });
-          
+
           // Forzar actualización del TraitManager
           setTimeout(() => {
             if (editor.TraitManager) {
@@ -3901,7 +3901,7 @@ function initializeEditor() {
                 editor.TraitManager.setTarget(component);
               }
               editor.TraitManager.render();
-              
+
               // Verificar que se renderizó el botón
               setTimeout(() => {
                 const buttonTrait = document.querySelector('.traits-container [data-trait-name="select-image-gallery"]');
@@ -3920,30 +3920,30 @@ function initializeEditor() {
         }
       }
     }
-    
+
     // ✅ Asegurar que los traits del componente de contenedor se apliquen correctamente
     if (component && component.get('type') === 'container') {
       console.log('📦 Componente de contenedor seleccionado, verificando traits...');
-      
+
       // Obtener los traits del componente registrado
       const containerComponentType = editor.DomComponents.getType('container');
       if (containerComponentType && containerComponentType.model && containerComponentType.model.defaults && containerComponentType.model.defaults.traits) {
         const registeredTraits = containerComponentType.model.defaults.traits;
-        
+
         // Verificar si el componente tiene los traits correctos
         const currentTraits = component.get('traits') || [];
         const hasLayoutModeTrait = currentTraits.some(t => {
           const traitName = typeof t === 'object' && t.name ? t.name : (typeof t === 'string' ? t : null);
           return traitName === 'container-layout-mode';
         });
-        
+
         // Si no tiene el trait de modo de layout, forzar la actualización de los traits
         if (!hasLayoutModeTrait && registeredTraits.length > 0) {
           console.log('⚠️ El componente de contenedor no tiene todos los traits, actualizando...');
-          
+
           // Establecer los traits desde el componente registrado
           component.set('traits', registeredTraits, { silent: false });
-          
+
           // Forzar actualización del TraitManager
           setTimeout(() => {
             if (editor.TraitManager) {
@@ -3951,7 +3951,7 @@ function initializeEditor() {
                 editor.TraitManager.setTarget(component);
               }
               editor.TraitManager.render();
-              
+
               // Verificar que se renderizaron los traits
               setTimeout(() => {
                 const traitsRendered = document.querySelectorAll('.traits-container .gjs-trt-trait').length;
@@ -3970,7 +3970,7 @@ function initializeEditor() {
         }
       }
     }
-    
+
     setTimeout(() => {
       if (typeof window.updateTraitLabelsForDevice === 'function') {
         window.updateTraitLabelsForDevice();
@@ -4010,11 +4010,11 @@ function initializeEditor() {
   function addImportantToCustomIds(css) {
     // Buscar todas las reglas CSS de IDs personalizados (formato: tipo-timestamp-random o element-timestamp-random)
     const regex = /#([a-z\-]+-\d+(?:-\d+)?)\s*\{([^}]+)\}/g;
-    
-    let modifiedCss = css.replace(regex, function(match, id, styles) {
+
+    let modifiedCss = css.replace(regex, function (match, id, styles) {
       // Dividir los estilos en propiedades individuales
       const properties = styles.split(';').map(prop => prop.trim()).filter(prop => prop);
-      
+
       // Agregar !important a cada propiedad que no lo tenga
       const importantProps = properties.map(prop => {
         if (!prop.includes('!important') && prop.includes(':')) {
@@ -4025,20 +4025,20 @@ function initializeEditor() {
         }
         return prop;
       });
-      
+
       const result = `#${id}{${importantProps.join(';')};}`;
       return result;
     });
-    
+
     return modifiedCss;
   }
-  
+
   // Configurar botón de guardar
   document.getElementById('save-btn')?.addEventListener('click', function () {
     // Antes de obtener el HTML, asegurar que todos los componentes con estilos personalizados
     // tengan sus estilos aplicados como inline
     const allComponents = editor.DomComponents.getWrapper().find('*');
-    
+
     allComponents.forEach(comp => {
       const compId = comp.getId();
       // Solo procesar componentes con IDs personalizados (formato: tipo-timestamp-random)
@@ -4053,7 +4053,7 @@ function initializeEditor() {
         }
       }
     });
-    
+
     // SINCRONIZAR IMAGENES: Usar módulo de sincronización
     if (typeof ImageSync !== 'undefined' && ImageSync.syncBeforeSave) {
       ImageSync.syncBeforeSave(editor);
@@ -4065,12 +4065,12 @@ function initializeEditor() {
         const tagName = comp.get('tagName');
         return type === 'image' || tagName === 'img';
       });
-      
+
       imageComponents.forEach(imgComp => {
         const imageSrc = imgComp.get('image-src');
         const currentSrc = imgComp.getAttributes().src;
         const defaultImageSrc = '/images/default-image.jpg';
-        
+
         let finalSrc;
         if (imageSrc && imageSrc.trim() && imageSrc !== 'undefined' && imageSrc !== defaultImageSrc) {
           finalSrc = imageSrc.trim();
@@ -4079,28 +4079,28 @@ function initializeEditor() {
         } else {
           finalSrc = defaultImageSrc;
         }
-        
+
         // ✅ Actualizar atributos del modelo
         imgComp.setAttributes({ src: finalSrc });
-        
+
         // ✅ Actualizar el DOM directamente
         if (imgComp.view && imgComp.view.el) {
           imgComp.view.el.src = finalSrc;
           imgComp.view.el.setAttribute('src', finalSrc);
         }
-        
+
         // ✅ Sincronizar image-src
         if (imgComp.get('image-src') !== finalSrc) {
           imgComp.set('image-src', finalSrc, { silent: true });
         }
-        
+
         // ✅ Forzar renderizado
         if (imgComp.view) {
           imgComp.view.render();
         }
       });
     }
-    
+
     // ✅ Esperar un momento para que ImageSync procese todos los cambios antes de obtener el HTML
     setTimeout(() => {
       // ✅ CRÍTICO: Sincronizar imágenes de Image Box Advanced antes de guardar
@@ -4112,12 +4112,12 @@ function initializeEditor() {
               if (component && component.get && component.get('type') === 'image-box-advanced') {
                 const imageUrl = component.get('image-url');
                 const defaultImageUrl = '/images/default-image.jpg';
-                
+
                 // Forzar actualización del componente img interno
                 if (typeof component.updateImage === 'function') {
                   component.updateImage();
                 }
-                
+
                 // Asegurar que el componente img tenga el src correcto
                 const findImage = (comp) => {
                   if (comp.get('tagName') === 'img') {
@@ -4131,25 +4131,25 @@ function initializeEditor() {
                   });
                   return found;
                 };
-                
+
                 const imgComponent = findImage(component);
                 if (imgComponent) {
                   const finalSrc = (imageUrl && imageUrl !== defaultImageUrl) ? imageUrl : defaultImageUrl;
-                  
+
                   // Actualizar atributos del modelo
                   imgComponent.setAttributes({ src: finalSrc });
-                  
+
                   // Actualizar modelo
                   if (imgComponent.get('src') !== finalSrc) {
                     imgComponent.set('src', finalSrc, { silent: true });
                   }
-                  
+
                   // Actualizar DOM
                   if (imgComponent.view && imgComponent.view.el) {
                     imgComponent.view.el.src = finalSrc;
                     imgComponent.view.el.setAttribute('src', finalSrc);
                   }
-                  
+
                   // Actualizar también el DOM del contenedor
                   if (component.view && component.view.el) {
                     const img = component.view.el.querySelector('img');
@@ -4160,7 +4160,7 @@ function initializeEditor() {
                   }
                 }
               }
-              
+
               if (component && component.components) {
                 const childComponents = component.components();
                 if (childComponents) {
@@ -4170,13 +4170,13 @@ function initializeEditor() {
             });
           }
         };
-        
+
         findImageBoxAdvanced(allComponents);
       };
-      
+
       // Sincronizar antes de obtener el HTML
       syncImageBoxAdvancedBeforeSave();
-      
+
       // ✅ CRÍTICO: Sincronizar Background Image antes de guardar
       const syncBackgroundImageBeforeSave = () => {
         console.log('💾 [Save] syncBackgroundImageBeforeSave() llamado');
@@ -4192,26 +4192,26 @@ function initializeEditor() {
                   const titleEl = component.view.el.querySelector('h2');
                   const textEl = component.view.el.querySelector('p');
                   const buttonEl = component.view.el.querySelector('button, a');
-                  
+
                   console.log('🔍 [Save] Elementos encontrados:', {
                     titleEl: !!titleEl,
                     textEl: !!textEl,
                     buttonEl: !!buttonEl
                   });
-                  
+
                   // ✅ CRÍTICO: Primero obtener el valor del modelo (puede estar más actualizado que el DOM)
                   const modelTitle = component.get('content-title');
                   const modelText = component.get('content-text');
                   const modelButtonText = component.get('button-text');
                   const modelButtonLink = component.get('button-link');
-                  
+
                   console.log('📊 [Save] Valores del modelo:', {
                     title: modelTitle,
                     text: modelText,
                     buttonText: modelButtonText,
                     buttonLink: modelButtonLink
                   });
-                  
+
                   // Sincronizar título - PRIORIDAD AL MODELO
                   const titleText = modelTitle || (titleEl ? (titleEl.textContent || titleEl.innerText || '') : '');
                   console.log('📝 [Save] Título final a usar:', titleText);
@@ -4241,7 +4241,7 @@ function initializeEditor() {
                       titleEl.textContent = titleText.trim();
                     }
                   }
-                  
+
                   // Sincronizar texto - PRIORIDAD AL MODELO
                   const textContent = modelText || (textEl ? (textEl.textContent || textEl.innerText || '') : '');
                   console.log('📝 [Save] Texto final a usar:', textContent);
@@ -4272,13 +4272,13 @@ function initializeEditor() {
                       textEl.textContent = textContent.trim();
                     }
                   }
-                  
+
                   // Sincronizar botón - PRIORIDAD AL MODELO
                   const buttonText = modelButtonText || (buttonEl ? (buttonEl.textContent || buttonEl.innerText || '') : '');
                   const buttonLink = modelButtonLink || (buttonEl ? (buttonEl.getAttribute('href') || '#') : '#');
                   console.log('📝 [Save] Botón texto final a usar:', buttonText);
                   console.log('📝 [Save] Botón href final a usar:', buttonLink);
-                  
+
                   if (buttonText && buttonText.trim()) {
                     component.set('button-text', buttonText.trim(), { silent: true });
                     component.set('button-link', buttonLink, { silent: true });
@@ -4295,7 +4295,7 @@ function initializeEditor() {
                     if (buttonComponent) {
                       buttonComponent.set('content', buttonText.trim());
                       console.log('✅ [Save] Componente button/a actualizado con:', buttonText.trim());
-                      
+
                       // Manejar conversión entre button y a según el enlace
                       if (buttonLink && buttonLink !== '#' && buttonLink.trim() !== '') {
                         if (buttonComponent.get('tagName') === 'button') {
@@ -4321,7 +4321,7 @@ function initializeEditor() {
                           console.log('✅ [Save] Enlace convertido a botón');
                         }
                       }
-                      
+
                       // Actualizar también el DOM directamente
                       if (buttonComponent.view && buttonComponent.view.el) {
                         buttonComponent.view.el.textContent = buttonText.trim();
@@ -4349,7 +4349,7 @@ function initializeEditor() {
                     } else {
                       console.warn('⚠️ [Save] No se encontró componente button/a');
                     }
-                    
+
                     // Actualizar también el DOM del contenedor
                     if (buttonEl) {
                       buttonEl.textContent = buttonText.trim();
@@ -4373,7 +4373,7 @@ function initializeEditor() {
                       }
                     }
                   }
-                  
+
                   // Verificar valores finales antes de guardar
                   console.log('📊 [Save] Valores finales en modelo antes de guardar:', {
                     'content-title': component.get('content-title'),
@@ -4385,7 +4385,7 @@ function initializeEditor() {
                   console.warn('⚠️ [Save] view.el no disponible para Background Image');
                 }
               }
-              
+
               if (component && component.components) {
                 const childComponents = component.components();
                 if (childComponents) {
@@ -4397,12 +4397,12 @@ function initializeEditor() {
         };
         findBackgroundImage(allComponents);
       };
-      
+
       syncBackgroundImageBeforeSave();
-      
+
       const htmlContent = editor.getHtml();
       let cssContent = editor.getCss();
-      
+
       // Agregar !important a los estilos de IDs personalizados
       cssContent = addImportantToCustomIds(cssContent);
 
@@ -4428,6 +4428,11 @@ function initializeEditor() {
         .then(response => response.json())
         .then(data => {
           if (data.success) {
+            // Marcar como guardado - actualizar estado global de cambios sin guardar
+            if (typeof window.markAsSaved === 'function') {
+              window.markAsSaved();
+            }
+
             // Mostrar mensaje de éxito
             const btn = document.getElementById('save-btn');
             const originalText = btn.textContent;
