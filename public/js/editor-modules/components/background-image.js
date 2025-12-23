@@ -324,15 +324,26 @@
             }
           }, 600);
           
+          // ✅ DEBUG: CÓDIGO DE PROTECCIÓN COMENTADO PARA IDENTIFICAR EL PROBLEMA
           // ✅ CRÍTICO: Proteger TODOS los elementos internos - NO edición directa
           // TODO debe modificarse desde las propiedades, NADA directamente en el canvas
+          // ✅ IMPORTANTE: El componente principal (this) NO se protege aquí, solo sus hijos
+          /*
           const protectElements = () => {
             // Evitar ejecución múltiple simultánea
             if (this._isProtectingInit) return;
             this._isProtectingInit = true;
             
+            // ✅ Asegurar que el componente principal mantenga removable: true
+            this.set('removable', true);
+            
             const protectRecursive = (component) => {
-              // Proteger el componente actual completamente
+              // ✅ Verificar que no sea el componente principal
+              if (component === this) {
+                return; // No proteger el componente principal
+              }
+              
+              // Proteger el componente actual completamente (solo elementos hijos)
               component.set({
                 selectable: false,
                 hoverable: false,
@@ -356,6 +367,7 @@
               });
             };
             
+            // ✅ Solo proteger los hijos, no el componente principal
             this.components().each(child => {
               protectRecursive(child);
             });
@@ -370,6 +382,10 @@
           this.on('component:add', () => {
             setTimeout(protectElements, 100);
           });
+          */
+          
+          // ✅ DEBUG: Asegurar que el componente principal mantenga removable: true (sin protección)
+          this.set('removable', true);
         },
         updateBackgroundImage() {
           const imageUrl = this.get('background-image-url') || '/images/default-image.jpg';
@@ -1379,20 +1395,38 @@
           el.setAttribute('data-gjs-badge', 'false');
           
           // Proteger el contenedor principal completamente
+          // ✅ IMPORTANTE: NO establecer data-gjs-removable aquí para permitir eliminación
           el.setAttribute('contenteditable', 'false');
           el.setAttribute('data-gjs-editable', 'false');
           el.setAttribute('data-gjs-selectable', 'true'); // ✅ PERMITIDO: Se puede seleccionar para propiedades
           el.setAttribute('data-gjs-draggable', 'true');
           el.setAttribute('data-gjs-droppable', 'true');
+          el.setAttribute('data-gjs-highlightable', 'true'); // ✅ CRÍTICO: Necesario para mostrar el toolbar
+          el.setAttribute('data-gjs-toolbar', 'true'); // ✅ CRÍTICO: Asegurar que el toolbar se muestre
+          el.setAttribute('data-gjs-layerable', 'true'); // ✅ CRÍTICO: Necesario para mostrar controles en el toolbar
+          el.setAttribute('data-gjs-copyable', 'true'); // ✅ CRÍTICO: Necesario para mostrar controles en el toolbar
+          // ✅ CRÍTICO: Asegurar que el componente principal sea eliminable
+          // No establecer data-gjs-removable para que use el valor del modelo (removable: true)
+          if (el.hasAttribute('data-gjs-removable')) {
+            el.removeAttribute('data-gjs-removable');
+          }
           
+          // ✅ DEBUG: CÓDIGO DE PROTECCIÓN COMENTADO PARA IDENTIFICAR EL PROBLEMA
           // ✅ CRÍTICO: Proteger TODOS los elementos internos recursivamente
           // NO se puede editar nada directamente, TODO desde propiedades
+          // ✅ IMPORTANTE: Solo proteger elementos hijos, NO el contenedor principal
+          /*
           const protectAllElements = (container) => {
             if (!container || this._isProtecting === false) return;
             
-            // Proteger TODOS los elementos recursivamente
+            // ✅ Solo proteger elementos hijos, no el contenedor principal
             const allElements = container.querySelectorAll('*');
             allElements.forEach(element => {
+              // ✅ Verificar que no sea el contenedor principal
+              if (element === container) {
+                return; // No proteger el contenedor principal
+              }
+              
               // Solo modificar si realmente necesita protección
               if (element.getAttribute('contenteditable') !== 'false') {
                 element.setAttribute('contenteditable', 'false');
@@ -1417,19 +1451,24 @@
               }
             });
             
-            // Proteger también el contenedor mismo
-            if (container.getAttribute('contenteditable') !== 'false') {
-              container.setAttribute('contenteditable', 'false');
-            }
-            if (container.getAttribute('data-gjs-editable') !== 'false') {
-              container.setAttribute('data-gjs-editable', 'false');
-            }
-            if (container.getAttribute('data-gjs-badgable') !== 'false') {
-              container.setAttribute('data-gjs-badgable', 'false');
+            // ✅ NO proteger el contenedor mismo con removable
+            // Solo proteger otras propiedades si es necesario
+            if (container !== el) {
+              // Solo si no es el contenedor principal
+              if (container.getAttribute('contenteditable') !== 'false') {
+                container.setAttribute('contenteditable', 'false');
+              }
+              if (container.getAttribute('data-gjs-editable') !== 'false') {
+                container.setAttribute('data-gjs-editable', 'false');
+              }
+              if (container.getAttribute('data-gjs-badgable') !== 'false') {
+                container.setAttribute('data-gjs-badgable', 'false');
+              }
             }
           };
           
           protectAllElements(el);
+          */
           
           // Observar cambios en el DOM SOLO para nuevos elementos (childList)
           // NO observar cambios en atributos para evitar bucles infinitos
@@ -1441,7 +1480,20 @@
             
             if (hasNewChildren && !this._isProtecting) {
               this._isProtecting = true;
-              protectAllElements(el);
+              // ✅ Asegurar que el componente principal mantenga removable: true
+              this.model.set('removable', true);
+              // ✅ Asegurar que el contenedor principal no tenga data-gjs-removable
+              if (el.hasAttribute('data-gjs-removable')) {
+                el.removeAttribute('data-gjs-removable');
+              }
+              // ✅ Asegurar que los atributos del toolbar se mantengan
+              el.setAttribute('data-gjs-selectable', 'true');
+              el.setAttribute('data-gjs-highlightable', 'true');
+              el.setAttribute('data-gjs-toolbar', 'true');
+              el.setAttribute('data-gjs-layerable', 'true');
+              el.setAttribute('data-gjs-copyable', 'true');
+              // ✅ DEBUG: Código de protección comentado
+              // protectAllElements(el);
               el.setAttribute('data-gjs-badgable', 'false');
               el.setAttribute('data-gjs-badge', 'false');
               setTimeout(() => {
