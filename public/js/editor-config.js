@@ -1393,6 +1393,70 @@ function initializeEditor() {
     }
   }
 
+  // ✅ Mejorar detección de zonas de drop para contenedores - agregar listeners del canvas
+  // Este código debe ejecutarse después de que el editor cargue para asegurar que el frame esté disponible
+  setTimeout(() => {
+    const canvasFrame = editor.Canvas.getFrameEl();
+    if (canvasFrame && canvasFrame.contentDocument) {
+      const frameDoc = canvasFrame.contentDocument;
+
+      // Interceptar eventos de mouseover en el canvas cuando se está arrastrando
+      const handleDragOver = (e) => {
+        if (!isDraggingBlock) return;
+
+        const target = e.target;
+        if (!target) return;
+
+        // Buscar el elemento contenedor más cercano
+        const findContainerElement = (el) => {
+          if (!el) return null;
+
+          // Verificar si el elemento actual es un contenedor
+          const isContainer = el.classList && (
+            el.classList.contains('container-flex') ||
+            el.getAttribute('data-gjs-type') === 'container'
+          );
+
+          if (isContainer && el.getAttribute('data-gjs-droppable') === 'true') {
+            return el;
+          }
+
+          // Buscar en el padre
+          return findContainerElement(el.parentElement);
+        };
+
+        const containerEl = findContainerElement(target);
+
+        if (containerEl) {
+          // Limpiar la clase del elemento anterior
+          if (lastHoveredElement && lastHoveredElement !== containerEl) {
+            lastHoveredElement.classList.remove('gjs-droppable-active');
+          }
+
+          // Agregar clase al contenedor actual
+          containerEl.classList.add('gjs-droppable-active');
+          lastHoveredElement = containerEl;
+        }
+      };
+
+      // Agregar listener cuando el frame esté cargado
+      const addDragListeners = () => {
+        if (frameDoc.body) {
+          frameDoc.body.addEventListener('dragover', handleDragOver, true);
+          frameDoc.body.addEventListener('mouseover', handleDragOver, true);
+          console.log('✅ Listeners de drag para contenedores agregados');
+        }
+      };
+
+      // Intentar agregar listeners inmediatamente o cuando el frame esté listo
+      if (frameDoc.readyState === 'complete' || frameDoc.readyState === 'interactive') {
+        addDragListeners();
+      } else {
+        frameDoc.addEventListener('DOMContentLoaded', addDragListeners);
+      }
+    }
+  }, 500);
+
   // También inyectar cuando se actualiza el canvas o se agrega un componente
   editor.on('update', function () {
     setTimeout(() => {
@@ -1476,6 +1540,27 @@ function initializeEditor() {
     }
   });
 
+  // ✅ Mejorar detección de zonas de drop para contenedores
+  // Cuando se arrastra sobre un elemento dentro de un contenedor, asegurar que el contenedor sea reconocido como zona de drop válida
+  // Usar eventos del canvas para interceptar el drag and drop
+  let isDraggingBlock = false;
+  let lastHoveredElement = null;
+
+  // Detectar cuando comienza el drag de un bloque
+  editor.on('block:drag:start', function () {
+    isDraggingBlock = true;
+  });
+
+  // Detectar cuando termina el drag
+  editor.on('block:drag:stop', function () {
+    isDraggingBlock = false;
+    // Limpiar clases temporales
+    if (lastHoveredElement) {
+      lastHoveredElement.classList.remove('gjs-droppable-active');
+      lastHoveredElement = null;
+    }
+  });
+
   // Función para asegurar que los estilos de bloqueo de iframe estén inyectados
   function ensureIframeBlockerStyles() {
     const canvasFrame = editor.Canvas.getFrameEl();
@@ -1547,6 +1632,14 @@ function initializeEditor() {
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
+          }
+          
+          /* ✅ Mejorar visibilidad de zonas de drop activas en contenedores */
+          .container-flex.gjs-droppable-active,
+          [data-gjs-type="container"].gjs-droppable-active {
+            outline: 2px dashed #3b82f6 !important;
+            outline-offset: 2px !important;
+            background-color: rgba(59, 130, 246, 0.05) !important;
           }
         `;
         frameDoc.head.appendChild(styleEl);
