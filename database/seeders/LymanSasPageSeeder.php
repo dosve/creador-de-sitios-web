@@ -9,14 +9,14 @@ use App\Models\Website;
 class LymanSasPageSeeder extends Seeder
 {
     /**
-     * Crear sitio web completo de LYMAN SAS con diseño moderno, minimalista y colores suaves
+     * Crear sitio web completo de LYMAN SAS con diseño moderno, minimalista y colores suaves.
+     * Siempre lista los usuarios disponibles para elegir el propietario (crear o actualizar).
      */
     public function run(): void
     {
         $this->command->info('🚀 Creando sitio web completo de LYMAN SAS');
         $this->command->newLine();
 
-        // Verificar si ya existe el sitio
         $existingWebsite = Website::where('slug', 'lyman-sas')->first();
 
         if ($existingWebsite) {
@@ -25,61 +25,92 @@ class LymanSasPageSeeder extends Seeder
                 $this->command->info('❌ Operación cancelada.');
                 return;
             }
-            $website = $existingWebsite;
+            $userId = $this->chooseOwnerUserId($existingWebsite);
+            if ($userId === null) {
+                $this->command->info('❌ Operación cancelada.');
+                return;
+            }
+            $existingWebsite->update(['user_id' => $userId]);
+            $website = $existingWebsite->fresh();
         } else {
-            // Obtener usuarios disponibles para asignar el sitio
-            $users = \App\Models\User::all();
-
-            if ($users->isEmpty()) {
-                $this->command->error('❌ No hay usuarios disponibles. Crea un usuario primero.');
+            $userId = $this->chooseOwnerUserId(null);
+            if ($userId === null) {
+                $this->command->info('❌ Operación cancelada.');
                 return;
             }
-
-            // Mostrar usuarios disponibles
-            $this->command->info('📋 Usuarios disponibles:');
-            foreach ($users as $index => $user) {
-                $this->command->line(sprintf(
-                    '  %d. %s (ID: %d, Email: %s)',
-                    $index + 1,
-                    $user->name,
-                    $user->id,
-                    $user->email
-                ));
-            }
-
-            $this->command->newLine();
-            $userChoice = $this->command->ask('¿Qué usuario será el propietario del sitio? (número o ID)', '1');
-
-            $userId = null;
-            if (is_numeric($userChoice)) {
-                $index = (int)$userChoice - 1;
-                $selectedUser = $users->get($index);
-                $userId = $selectedUser ? $selectedUser->id : null;
-            } else {
-                $selectedUser = $users->firstWhere('id', $userChoice);
-                $userId = $selectedUser ? $selectedUser->id : null;
-            }
-
-            if (!$userId) {
-                $this->command->error('❌ Usuario no encontrado.');
-                return;
-            }
-
-            // Crear el sitio web
             $website = $this->createLymanWebsite($userId);
         }
 
         $this->command->newLine();
-        $this->command->info('📄 Creando página principal del sitio...');
+        $this->command->info('📄 Creando páginas completas del sitio...');
 
-        // Crear la página principal (home)
-        $this->createLymanHomePage($website);
+        $website->pages()->update(['is_home' => false]);
+
+        $this->createHomePage($website);
+        $this->createServicesPage($website);
+        $this->createAboutPage($website);
+        $this->createContactPage($website);
 
         $this->command->newLine();
         $this->command->info('✅ Sitio web de LYMAN SAS creado exitosamente!');
         $this->command->info("   🌐 Slug: {$website->slug}");
-        $this->command->info("   📝 Página principal: Inicio (home)");
+        $this->command->info("   📝 Páginas: Inicio (home), Servicios, Nosotros, Contacto");
         $this->command->info("   👤 Propietario: {$website->user->name} (ID: {$website->user_id})");
+    }
+
+    /**
+     * Lista usuarios disponibles y devuelve el ID del propietario elegido.
+     * Si $existingWebsite existe, permite Enter para mantener el actual.
+     */
+    private function chooseOwnerUserId(?Website $existingWebsite): ?int
+    {
+        $users = \App\Models\User::where('is_active', true)->orderBy('name')->get();
+
+        if ($users->isEmpty()) {
+            $this->command->error('❌ No hay usuarios disponibles. Crea un usuario primero (UserSeeder o registro).');
+            return null;
+        }
+
+        $this->command->info('📋 Usuarios disponibles:');
+        foreach ($users as $index => $user) {
+            $marker = ($existingWebsite && (int) $existingWebsite->user_id === (int) $user->id) ? ' ← actual' : '';
+            $this->command->line(sprintf(
+                '  %d. %s (ID: %d, Email: %s)%s',
+                $index + 1,
+                $user->name,
+                $user->id,
+                $user->email,
+                $marker
+            ));
+        }
+
+        $this->command->newLine();
+        $default = $existingWebsite ? (string) $existingWebsite->user_id : '1';
+        $prompt = $existingWebsite
+            ? '¿Propietario del sitio? (número, ID, o Enter para mantener actual)'
+            : '¿Qué usuario será el propietario del sitio? (número de lista o ID)';
+        $userChoice = trim((string) $this->command->ask($prompt, $default));
+
+        if ($userChoice === '') {
+            return $existingWebsite ? (int) $existingWebsite->user_id : null;
+        }
+
+        if (!is_numeric($userChoice)) {
+            $this->command->error('❌ Indica un número de lista (1, 2, …) o el ID del usuario.');
+            return null;
+        }
+
+        $num = (int) $userChoice;
+        $byIndex = $num >= 1 && $num <= $users->count() ? $users->get($num - 1)?->id : null;
+        $byId = $users->firstWhere('id', $num)?->id;
+
+        $userId = $byIndex ?? $byId;
+        if (!$userId) {
+            $this->command->error('❌ Usuario no encontrado.');
+            return null;
+        }
+
+        return (int) $userId;
     }
 
     private function createLymanWebsite($userId)
@@ -114,524 +145,490 @@ class LymanSasPageSeeder extends Seeder
         return $website;
     }
 
-    private function createLymanHomePage($website)
+    private function createHomePage($website)
     {
-        // Primero, desmarcar cualquier otra página como home
-        $website->pages()->update(['is_home' => false]);
-
-        // Crear o actualizar la página principal
-        $page = $website->pages()->updateOrCreate(
+        $website->pages()->updateOrCreate(
             ['slug' => 'inicio'],
             [
-                'title' => 'Inicio - LYMAN SAS',
-                'meta_description' => 'LYMAN SAS ofrece servicios logísticos y operativos especializados para la ejecución integral de proyectos. Cumplimiento, control y resultados verificables.',
+                'title' => 'Inicio',
+                'meta_description' => 'LYMAN SAS - Servicios logísticos y operativos especializados',
                 'is_published' => true,
-                'is_home' => true, // Esta es la página principal
+                'is_home' => true,
                 'enable_store' => false,
                 'sort_order' => 1,
-                'html_content' => $this->getLymanPageHTML(),
-                'css_content' => $this->getLymanPageCSS(),
-                'grapesjs_data' => null, // GrapesJS parseará el HTML automáticamente
+                'html_content' => $this->getHomePageHTML(),
+                'css_content' => $this->getCSS(),
+                'grapesjs_data' => null,
             ]
         );
-
-        $this->command->info("✓ Página principal creada: {$page->title} (ID: {$page->id}, slug: {$page->slug})");
+        $this->command->info('  ✓ Página Inicio creada');
     }
 
-    private function getLymanPageHTML()
+    private function createServicesPage($website)
+    {
+        $website->pages()->updateOrCreate(
+            ['slug' => 'servicios'],
+            [
+                'title' => 'Servicios',
+                'meta_description' => 'Servicios logísticos y operativos de LYMAN SAS',
+                'is_published' => true,
+                'is_home' => false,
+                'enable_store' => false,
+                'sort_order' => 2,
+                'html_content' => $this->getServicesPageHTML(),
+                'css_content' => $this->getCSS(),
+                'grapesjs_data' => null,
+            ]
+        );
+        $this->command->info('  ✓ Página Servicios creada');
+    }
+
+    private function createAboutPage($website)
+    {
+        $website->pages()->updateOrCreate(
+            ['slug' => 'nosotros'],
+            [
+                'title' => 'Nosotros',
+                'meta_description' => 'Conoce más sobre LYMAN SAS y nuestro equipo',
+                'is_published' => true,
+                'is_home' => false,
+                'enable_store' => false,
+                'sort_order' => 3,
+                'html_content' => $this->getAboutPageHTML(),
+                'css_content' => $this->getCSS(),
+                'grapesjs_data' => null,
+            ]
+        );
+        $this->command->info('  ✓ Página Nosotros creada');
+    }
+
+    private function createContactPage($website)
+    {
+        $website->pages()->updateOrCreate(
+            ['slug' => 'contacto'],
+            [
+                'title' => 'Contacto',
+                'meta_description' => 'Contáctenos - LYMAN SAS',
+                'is_published' => true,
+                'is_home' => false,
+                'enable_store' => false,
+                'sort_order' => 4,
+                'html_content' => $this->getContactPageHTML(),
+                'css_content' => $this->getCSS(),
+                'grapesjs_data' => null,
+            ]
+        );
+        $this->command->info('  ✓ Página Contacto creada');
+    }
+
+    private function getHomePageHTML()
     {
         return '
-    <!-- Hero Section -->
-    <div class="container-flex flex flex-col gap-8 items-center justify-center text-center p-16 bg-gradient-to-br from-green-50 to-emerald-100 min-h-[500px]">
-        <h1 class="heading-component text-6xl font-extrabold text-gray-900 mb-4">LYMAN SAS</h1>
-        <p class="paragraph-component text-2xl leading-relaxed text-gray-700 max-w-4xl">
-            Servicios logísticos y operativos especializados para la ejecución integral de proyectos. 
-            Nos destacamos por nuestra capacidad de gestión, coordinación y supervisión en cada fase operativa.
+<!-- Hero: background-image + contenedores para título, párrafo y botones -->
+<div class="background-image-section relative min-h-[700px] flex items-center justify-center bg-cover bg-center bg-no-repeat" data-gjs-type="background-image" style="background-image: url(\'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1920&h=1080&fit=crop\');">
+    <div class="absolute inset-0 bg-black" style="opacity: 0.4;"></div>
+    <div class="container-flex relative z-10 flex flex-col gap-8 items-center justify-center text-center p-20 w-full">
+        <div class="container-flex flex flex-col gap-6 items-center w-full">
+            <h2 class="heading-component text-7xl font-extrabold text-white mb-6">LYMAN SAS</h2>
+            <p class="paragraph-component text-2xl leading-relaxed text-white max-w-4xl mb-8">
+                Servicios logísticos y operativos especializados para la ejecución integral de proyectos
+            </p>
+            <div class="container-flex flex flex-row gap-4 items-center justify-center">
+                <a href="/lyman-sas/servicios" class="button-component inline-block px-8 py-4 text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 font-semibold text-lg transition-colors shadow-lg">Ver Servicios</a>
+                <a href="/lyman-sas/contacto" class="button-component inline-block px-8 py-4 text-emerald-600 bg-white border-2 border-emerald-600 rounded-lg hover:bg-emerald-50 font-semibold text-lg transition-colors shadow-lg">Contáctenos</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quiénes Somos: contenedor sección → dos contenedores (texto + imagen) -->
+<div class="container-flex flex flex-col md:flex-row gap-12 p-16 bg-white items-center max-w-7xl mx-auto">
+    <div class="container-flex flex flex-col gap-6 w-full">
+        <h2 class="heading-component text-5xl font-bold text-gray-900">Quiénes Somos</h2>
+        <p class="paragraph-component text-xl leading-relaxed text-gray-700">
+            INVERSIONES LYMAN E.U. es una empresa especializada en servicios logísticos y operativos. Nos dedicamos a la ejecución integral de proyectos con enfoque en cumplimiento, control y resultados verificables.
+        </p>
+        <a href="/lyman-sas/nosotros" class="button-component inline-block px-6 py-3 text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 font-semibold transition-colors w-fit">Conocer Más</a>
+    </div>
+    <div class="container-flex flex flex-col gap-0 w-full">
+        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop" alt="Oficina LYMAN" class="image-component w-full h-[400px] object-cover rounded-2xl shadow-lg">
+    </div>
+</div>
+
+<!-- Nuestros Servicios: contenedor sección → intro (título + párrafo) + contenedor fila de 3 cards -->
+<div class="container-flex flex flex-col gap-12 p-16 bg-gray-50">
+    <div class="container-flex flex flex-col gap-4 items-center w-full">
+        <h2 class="heading-component text-5xl font-bold text-gray-900 text-center">Nuestros Servicios</h2>
+        <p class="paragraph-component text-lg text-gray-600 text-center max-w-2xl">
+            Soluciones integrales diseñadas para satisfacer sus necesidades operativas
         </p>
     </div>
+    <div class="container-flex flex flex-col md:flex-row gap-8 max-w-7xl mx-auto w-full">
+        <div class="container-flex flex flex-col gap-6 p-10 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all text-center w-full">
+            <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&h=300&fit=crop" alt="Organización de Eventos" class="image-component w-full h-48 object-cover rounded-lg mb-4">
+            <h3 class="heading-component text-2xl font-bold text-gray-900">Organización de Eventos</h3>
+            <p class="paragraph-component text-base leading-relaxed text-gray-600 mb-4">Planificación y ejecución completa de eventos y actividades</p>
+            <a href="/lyman-sas/servicios" class="button-component inline-block px-6 py-3 text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 font-semibold transition-colors">Ver Detalles</a>
+        </div>
+        <div class="container-flex flex flex-col gap-6 p-10 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all text-center w-full">
+            <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=300&fit=crop" alt="Servicios Logísticos" class="image-component w-full h-48 object-cover rounded-lg mb-4">
+            <h3 class="heading-component text-2xl font-bold text-gray-900">Servicios Logísticos</h3>
+            <p class="paragraph-component text-base leading-relaxed text-gray-600 mb-4">Gestión integral de recursos, transporte y personal</p>
+            <a href="/lyman-sas/servicios" class="button-component inline-block px-6 py-3 text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 font-semibold transition-colors">Ver Detalles</a>
+        </div>
+        <div class="container-flex flex flex-col gap-6 p-10 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all text-center w-full">
+            <img src="https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=400&h=300&fit=crop" alt="Operaciones de Campo" class="image-component w-full h-48 object-cover rounded-lg mb-4">
+            <h3 class="heading-component text-2xl font-bold text-gray-900">Operaciones de Campo</h3>
+            <p class="paragraph-component text-base leading-relaxed text-gray-600 mb-4">Implementación y supervisión de proyectos</p>
+            <a href="/lyman-sas/servicios" class="button-component inline-block px-6 py-3 text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 font-semibold transition-colors">Ver Detalles</a>
+        </div>
+    </div>
+</div>
 
-    <!-- Quiénes Somos -->
-    <div class="container-flex flex flex-col gap-6 items-center text-center p-16 bg-white">
-        <h2 class="heading-component text-5xl font-bold text-gray-900 mb-4">Quiénes Somos</h2>
-        <p class="paragraph-component text-xl leading-relaxed text-gray-700 max-w-3xl">
+<!-- Por qué elegirnos: contenedor sección → intro + contenedor fila de 3 stats -->
+<div class="container-flex flex flex-col gap-12 p-16 bg-white">
+    <div class="container-flex flex flex-col gap-4 items-center w-full">
+        <h2 class="heading-component text-5xl font-bold text-gray-900 text-center">Por Qué Elegirnos</h2>
+        <p class="paragraph-component text-lg text-gray-600 text-center max-w-3xl mb-8">Nuestros diferenciadores nos convierten en el socio ideal para sus proyectos</p>
+    </div>
+    <div class="container-flex flex flex-col md:flex-row gap-8 max-w-6xl mx-auto w-full">
+        <div class="container-flex flex flex-col gap-4 p-8 bg-emerald-50 rounded-xl text-center w-full">
+            <h3 class="heading-component text-3xl font-bold text-emerald-600 mb-2">100%</h3>
+            <h4 class="heading-component text-xl font-semibold text-gray-900">Cumplimiento</h4>
+            <p class="paragraph-component text-base text-gray-600">Adherencia total a cronogramas</p>
+        </div>
+        <div class="container-flex flex flex-col gap-4 p-8 bg-emerald-50 rounded-xl text-center w-full">
+            <h3 class="heading-component text-3xl font-bold text-emerald-600 mb-2">15+</h3>
+            <h4 class="heading-component text-xl font-semibold text-gray-900">Años</h4>
+            <p class="paragraph-component text-base text-gray-600">De experiencia comprobada</p>
+        </div>
+        <div class="container-flex flex flex-col gap-4 p-8 bg-emerald-50 rounded-xl text-center w-full">
+            <h3 class="heading-component text-3xl font-bold text-emerald-600 mb-2">24/7</h3>
+            <h4 class="heading-component text-xl font-semibold text-gray-900">Disponibilidad</h4>
+            <p class="paragraph-component text-base text-gray-600">Soporte continuo</p>
+        </div>
+    </div>
+</div>
+';
+    }
+
+    private function getServicesPageHTML()
+    {
+        return '
+<!-- Hero Servicios: background-image + contenedores -->
+<div class="background-image-section relative min-h-[400px] flex items-center justify-center bg-cover bg-center bg-no-repeat" data-gjs-type="background-image" style="background-image: url(\'https://images.unsplash.com/photo-1511578314322-379afb476865?w=1920&h=1080&fit=crop\');">
+    <div class="absolute inset-0 bg-black" style="opacity: 0.4;"></div>
+    <div class="container-flex relative z-10 flex flex-col gap-8 items-center text-center p-20 w-full">
+        <h2 class="heading-component text-6xl font-bold text-white mb-6">Nuestros Servicios</h2>
+        <p class="paragraph-component text-xl leading-relaxed text-white max-w-3xl">Soluciones integrales en tres áreas principales diseñadas para satisfacer sus necesidades operativas</p>
+    </div>
+</div>
+
+<!-- Organización de Eventos: contenedor fila → imagen + contenedor (título, párrafo, lista) -->
+<div class="container-flex flex flex-col md:flex-row gap-12 p-16 bg-white items-center max-w-7xl mx-auto">
+    <div class="container-flex flex flex-col gap-0 w-full">
+        <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&h=500&fit=crop" alt="Organización de Eventos" class="image-component w-full h-[500px] object-cover rounded-2xl shadow-xl">
+    </div>
+    <div class="container-flex flex flex-col gap-6 w-full">
+        <h2 class="heading-component text-4xl font-bold text-gray-900">Organización de Eventos</h2>
+        <p class="paragraph-component text-lg text-gray-700 leading-relaxed">Planificación y ejecución completa de eventos, jornadas y actividades con atención a cada detalle.</p>
+        <div class="container-flex flex flex-col gap-4">
+            <div class="container-flex flex flex-row gap-3 items-start">
+                <span class="text-2xl">✓</span>
+                <p class="paragraph-component text-base text-gray-600">Planeación estratégica personalizada</p>
+            </div>
+            <div class="container-flex flex flex-row gap-3 items-start">
+                <span class="text-2xl">✓</span>
+                <p class="paragraph-component text-base text-gray-600">Coordinación logística integral</p>
+            </div>
+            <div class="container-flex flex flex-row gap-3 items-start">
+                <span class="text-2xl">✓</span>
+                <p class="paragraph-component text-base text-gray-600">Supervisión continua en sitio</p>
+            </div>
+            <div class="container-flex flex flex-row gap-3 items-start">
+                <span class="text-2xl">✓</span>
+                <p class="paragraph-component text-base text-gray-600">Documentación audiovisual completa</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Servicios Logísticos -->
+<div class="container-flex flex flex-col md:flex-row gap-12 p-16 bg-gray-50 items-center max-w-7xl mx-auto">
+    <div class="container-flex flex flex-col gap-6 w-full">
+        <h2 class="heading-component text-4xl font-bold text-gray-900">Servicios Logísticos</h2>
+        <p class="paragraph-component text-lg text-gray-700 leading-relaxed">Gestión integral de recursos y operaciones para garantizar eficiencia en cada proyecto.</p>
+        <div class="container-flex flex flex-col gap-4">
+            <div class="container-flex flex flex-row gap-3 items-start">
+                <span class="text-2xl">✓</span>
+                <p class="paragraph-component text-base text-gray-600">Personal especializado</p>
+            </div>
+            <div class="container-flex flex flex-row gap-3 items-start">
+                <span class="text-2xl">✓</span>
+                <p class="paragraph-component text-base text-gray-600">Transporte y movilización</p>
+            </div>
+            <div class="container-flex flex flex-row gap-3 items-start">
+                <span class="text-2xl">✓</span>
+                <p class="paragraph-component text-base text-gray-600">Infraestructura y montajes</p>
+            </div>
+            <div class="container-flex flex flex-row gap-3 items-start">
+                <span class="text-2xl">✓</span>
+                <p class="paragraph-component text-base text-gray-600">Alimentación y catering</p>
+            </div>
+        </div>
+    </div>
+    <div class="container-flex flex flex-col gap-0 w-full">
+        <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&h=500&fit=crop" alt="Servicios Logísticos" class="image-component w-full h-[500px] object-cover rounded-2xl shadow-xl">
+    </div>
+</div>
+
+<!-- Operaciones de Campo -->
+<div class="container-flex flex flex-col md:flex-row gap-12 p-16 bg-white items-center max-w-7xl mx-auto">
+    <div class="container-flex flex flex-col gap-0 w-full">
+        <img src="https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=600&h=500&fit=crop" alt="Operaciones de Campo" class="image-component w-full h-[500px] object-cover rounded-2xl shadow-xl">
+    </div>
+    <div class="container-flex flex flex-col gap-6 w-full">
+        <h2 class="heading-component text-4xl font-bold text-gray-900">Operaciones de Campo</h2>
+        <p class="paragraph-component text-lg text-gray-700 leading-relaxed">Implementación y supervisión de proyectos en terreno con control total y resultados verificables.</p>
+        <div class="container-flex flex flex-col gap-4">
+            <div class="container-flex flex flex-row gap-3 items-start">
+                <span class="text-2xl">✓</span>
+                <p class="paragraph-component text-base text-gray-600">Supervisión continua</p>
+            </div>
+            <div class="container-flex flex flex-row gap-3 items-start">
+                <span class="text-2xl">✓</span>
+                <p class="paragraph-component text-base text-gray-600">Personal calificado</p>
+            </div>
+            <div class="container-flex flex flex-row gap-3 items-start">
+                <span class="text-2xl">✓</span>
+                <p class="paragraph-component text-base text-gray-600">Control de calidad riguroso</p>
+            </div>
+            <div class="container-flex flex flex-row gap-3 items-start">
+                <span class="text-2xl">✓</span>
+                <p class="paragraph-component text-base text-gray-600">Gestión de riesgos</p>
+            </div>
+        </div>
+    </div>
+</div>
+';
+    }
+
+    private function getAboutPageHTML()
+    {
+        return '
+<!-- Hero Nosotros: background-image + contenedores -->
+<div class="background-image-section relative min-h-[400px] flex items-center justify-center bg-cover bg-center bg-no-repeat" data-gjs-type="background-image" style="background-image: url(\'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1920&h=1080&fit=crop\');">
+    <div class="absolute inset-0 bg-black" style="opacity: 0.4;"></div>
+    <div class="container-flex relative z-10 flex flex-col gap-8 items-center text-center p-20 w-full">
+        <h2 class="heading-component text-6xl font-bold text-white mb-6">Quiénes Somos</h2>
+        <p class="paragraph-component text-xl text-white max-w-2xl">Conoce nuestra empresa y lo que nos hace diferentes</p>
+    </div>
+</div>
+
+<!-- Nuestra Historia: contenedor fila → imagen + contenedor (título, párrafos) -->
+<div class="container-flex flex flex-col md:flex-row gap-12 p-16 bg-white items-center max-w-7xl mx-auto">
+    <div class="container-flex flex flex-col gap-0 w-full">
+        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=500&fit=crop" alt="Nuestra Empresa" class="image-component w-full h-[500px] object-cover rounded-2xl shadow-xl">
+    </div>
+    <div class="container-flex flex flex-col gap-6 w-full">
+        <h2 class="heading-component text-4xl font-bold text-gray-900">Nuestra Historia</h2>
+        <p class="paragraph-component text-lg text-gray-700 leading-relaxed">
             INVERSIONES LYMAN E.U. es una empresa especializada en servicios logísticos y operativos. 
             Nos dedicamos a la ejecución integral de proyectos con enfoque en cumplimiento, control y resultados verificables.
         </p>
-    </div>
-
-    <!-- Nuestros Servicios -->
-    <div class="container-flex flex flex-col gap-8 items-center text-center p-16 bg-gray-50">
-        <h2 class="heading-component text-5xl font-bold text-gray-900 mb-4">Nuestros Servicios</h2>
-        <p class="paragraph-component text-lg leading-relaxed text-gray-600 max-w-2xl mb-8">
-            Soluciones integrales en tres áreas principales, diseñadas para satisfacer las necesidades operativas.
+        <p class="paragraph-component text-lg text-gray-700 leading-relaxed">
+            Con años de experiencia en el mercado, hemos consolidado nuestra posición como líderes en la gestión 
+            y coordinación de proyectos complejos que requieren precisión y profesionalismo.
         </p>
+    </div>
+</div>
+
+<!-- Nuestros Valores: contenedor sección → título + contenedor fila de 3 cards -->
+<div class="container-flex flex flex-col gap-12 p-16 bg-gray-50">
+    <div class="container-flex flex flex-col gap-4 items-center w-full">
+        <h2 class="heading-component text-5xl font-bold text-gray-900 text-center">Nuestros Valores</h2>
+    </div>
+    <div class="container-flex flex flex-col md:flex-row gap-8 max-w-7xl mx-auto w-full">
+        <div class="container-flex flex flex-col gap-6 p-10 bg-white rounded-2xl shadow-lg text-center w-full">
+            <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop" alt="Experiencia" class="image-component w-full h-48 object-cover rounded-lg">
+            <h3 class="heading-component text-2xl font-bold text-gray-900">Experiencia Comprobada</h3>
+            <p class="paragraph-component text-base text-gray-600">
+                Años de trayectoria exitosa en servicios logísticos y operativos
+            </p>
+        </div>
         
-        <!-- Grid de Servicios -->
-        <div class="container-flex flex flex-col md:flex-row gap-6 w-full max-w-7xl">
-            <!-- Servicio 1 -->
-            <div class="container-flex flex flex-col gap-4 p-8 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow text-center">
-                <h3 class="heading-component text-2xl font-bold text-gray-900">Organización de Eventos</h3>
-                <p class="paragraph-component text-base leading-relaxed text-gray-600">
-                    Planificación y ejecución completa de eventos y actividades
-                </p>
+        <div class="container-flex flex flex-col gap-6 p-10 bg-white rounded-2xl shadow-lg text-center w-full">
+            <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=300&fit=crop" alt="Cumplimiento" class="image-component w-full h-48 object-cover rounded-lg">
+            <h3 class="heading-component text-2xl font-bold text-gray-900">Cumplimiento Total</h3>
+            <p class="paragraph-component text-base text-gray-600">
+                100% adherencia a cronogramas y especificaciones técnicas
+            </p>
+        </div>
+        
+        <div class="container-flex flex flex-col gap-6 p-10 bg-white rounded-2xl shadow-lg text-center w-full">
+            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop" alt="Control" class="image-component w-full h-48 object-cover rounded-lg">
+            <h3 class="heading-component text-2xl font-bold text-gray-900">Control Riguroso</h3>
+            <p class="paragraph-component text-base text-gray-600">
+                Sistemas de seguimiento y documentación completa
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Cómo Lo Hacemos: contenedor sección → intro (título + párrafo) + contenedor pasos -->
+<div class="container-flex flex flex-col gap-12 p-16 bg-white max-w-6xl mx-auto">
+    <div class="container-flex flex flex-col gap-4 items-center w-full">
+        <h2 class="heading-component text-5xl font-bold text-gray-900 text-center">Cómo Lo Hacemos</h2>
+        <p class="paragraph-component text-lg text-gray-600 text-center max-w-3xl">Nuestra metodología garantiza resultados exitosos en cada proyecto</p>
+    </div>
+    <div class="container-flex flex flex-col gap-6">
+        <div class="container-flex flex flex-row gap-6 items-start p-6 bg-gray-50 rounded-xl">
+            <div class="container-flex flex flex-col gap-0 items-center justify-center bg-emerald-600 text-white rounded-full w-16 h-16 flex-shrink-0">
+                <span class="text-2xl font-bold">1</span>
             </div>
-            
-            <!-- Servicio 2 -->
-            <div class="container-flex flex flex-col gap-4 p-8 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow text-center">
-                <h3 class="heading-component text-2xl font-bold text-gray-900">Servicios Logísticos</h3>
-                <p class="paragraph-component text-base leading-relaxed text-gray-600">
-                    Gestión integral de recursos, transporte, personal e infraestructura
-                </p>
+            <div class="container-flex flex flex-col gap-2">
+                <h3 class="heading-component text-xl font-bold text-gray-900">Planeación</h3>
+                <p class="paragraph-component text-base text-gray-600">Análisis de necesidades y diseño de solución personalizada</p>
             </div>
-            
-            <!-- Servicio 3 -->
-            <div class="container-flex flex flex-col gap-4 p-8 bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow text-center">
-                <h3 class="heading-component text-2xl font-bold text-gray-900">Operaciones de Campo</h3>
-                <p class="paragraph-component text-base leading-relaxed text-gray-600">
-                    Implementación y supervisión de proyectos en terreno
-                </p>
+        </div>
+        
+        <div class="container-flex flex flex-row gap-6 items-start p-6 bg-gray-50 rounded-xl">
+            <div class="container-flex flex flex-col gap-0 items-center justify-center bg-emerald-600 text-white rounded-full w-16 h-16 flex-shrink-0">
+                <span class="text-2xl font-bold">2</span>
+            </div>
+            <div class="container-flex flex flex-col gap-2">
+                <h3 class="heading-component text-xl font-bold text-gray-900">Preparación</h3>
+                <p class="paragraph-component text-base text-gray-600">Coordinación de recursos, personal y logística</p>
+            </div>
+        </div>
+        
+        <div class="container-flex flex flex-row gap-6 items-start p-6 bg-gray-50 rounded-xl">
+            <div class="container-flex flex flex-col gap-0 items-center justify-center bg-emerald-600 text-white rounded-full w-16 h-16 flex-shrink-0">
+                <span class="text-2xl font-bold">3</span>
+            </div>
+            <div class="container-flex flex flex-col gap-2">
+                <h3 class="heading-component text-xl font-bold text-gray-900">Ejecución</h3>
+                <p class="paragraph-component text-base text-gray-600">Implementación en campo con supervisión continua</p>
+            </div>
+        </div>
+        
+        <div class="container-flex flex flex-row gap-6 items-start p-6 bg-gray-50 rounded-xl">
+            <div class="container-flex flex flex-col gap-0 items-center justify-center bg-emerald-600 text-white rounded-full w-16 h-16 flex-shrink-0">
+                <span class="text-2xl font-bold">4</span>
+            </div>
+            <div class="container-flex flex flex-col gap-2">
+                <h3 class="heading-component text-xl font-bold text-gray-900">Control</h3>
+                <p class="paragraph-component text-base text-gray-600">Monitoreo en tiempo real y ajustes inmediatos</p>
+            </div>
+        </div>
+        
+        <div class="container-flex flex flex-row gap-6 items-start p-6 bg-gray-50 rounded-xl">
+            <div class="container-flex flex flex-col gap-0 items-center justify-center bg-emerald-600 text-white rounded-full w-16 h-16 flex-shrink-0">
+                <span class="text-2xl font-bold">5</span>
+            </div>
+            <div class="container-flex flex flex-col gap-2">
+                <h3 class="heading-component text-xl font-bold text-gray-900">Cierre</h3>
+                <p class="paragraph-component text-base text-gray-600">Documentación completa y entrega de resultados</p>
             </div>
         </div>
     </div>
-
-    <!-- Organización de Eventos -->
-    <section class="lyman-section lyman-detail">
-        <div class="lyman-container">
-            <div class="lyman-detail-content">
-                <span class="lyman-section-label">Servicio Especializado</span>
-                <h2 class="lyman-section-title">Organización de Eventos</h2>
-                <p class="paragraph-component lyman-detail-text text-lg" data-gjs-type="paragraph" data-gjs-editable="false">
-                    Planificación y ejecución completa de eventos, jornadas y actividades con atención a cada detalle.
-                </p>
-                <div class="lyman-features-grid">
-                    <div class="lyman-feature-card">
-                        <div class="lyman-feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                                <path d="M2 17l10 5 10-5"/>
-                                <path d="M2 12l10 5 10-5"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-feature-title">Planeación Estratégica</h3>
-                        <p class="paragraph-component lyman-feature-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Diseño personalizado según objetivos del evento</p>
-                    </div>
-                    <div class="lyman-feature-card">
-                        <div class="lyman-feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <circle cx="12" cy="12" r="3"/>
-                                <path d="M12 1v6m0 6v6M23 12h-6M7 12H1"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-feature-title">Coordinación Logística</h3>
-                        <p class="paragraph-component lyman-feature-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Gestión de recursos, personal y proveedores</p>
-                    </div>
-                    <div class="lyman-feature-card">
-                        <div class="lyman-feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                                <line x1="16" y1="13" x2="8" y2="13"/>
-                                <line x1="16" y1="17" x2="8" y2="17"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-feature-title">Ejecución en Sitio</h3>
-                        <p class="paragraph-component lyman-feature-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Supervisión continua y atención a detalles</p>
-                    </div>
-                    <div class="lyman-feature-card">
-                        <div class="lyman-feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                <circle cx="9" cy="7" r="4"/>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-feature-title">Documentación</h3>
-                        <p class="paragraph-component lyman-feature-desc" data-gjs-type="paragraph" data-gjs-editable="false">Registro audiovisual e informes completos</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Servicios Logísticos -->
-    <section class="lyman-section lyman-detail lyman-alt">
-        <div class="lyman-container">
-            <div class="lyman-detail-content">
-                <span class="lyman-section-label">Servicio Especializado</span>
-                <h2 class="lyman-section-title">Servicios Logísticos</h2>
-                <p class="paragraph-component lyman-detail-text text-lg" data-gjs-type="paragraph" data-gjs-editable="false">
-                    Gestión integral de recursos y operaciones para garantizar eficiencia en cada proyecto.
-                </p>
-                <div class="lyman-services-grid-2">
-                    <div class="lyman-service-mini">
-                        <div class="lyman-service-mini-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                <circle cx="9" cy="7" r="4"/>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-service-mini-title">Personal Especializado</h3>
-                        <p class="paragraph-component lyman-service-mini-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Coordinadores, operadores y personal calificado</p>
-                    </div>
-                    <div class="lyman-service-mini">
-                        <div class="lyman-service-mini-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-service-mini-title">Transporte</h3>
-                        <p class="paragraph-component lyman-service-mini-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Soluciones de movilización terrestre con cobertura nacional</p>
-                    </div>
-                    <div class="lyman-service-mini">
-                        <div class="lyman-service-mini-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                <line x1="3" y1="9" x2="21" y2="9"/>
-                                <line x1="9" y1="21" x2="9" y2="9"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-service-mini-title">Infraestructura</h3>
-                        <p class="paragraph-component lyman-service-mini-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Tarimas, carpas, mobiliario y montajes</p>
-                    </div>
-                    <div class="lyman-service-mini">
-                        <div class="lyman-service-mini-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-                                <line x1="3" y1="6" x2="21" y2="6"/>
-                                <path d="M16 10a4 4 0 0 1-8 0"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-service-mini-title">Alimentación</h3>
-                        <p class="paragraph-component lyman-service-mini-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Catering, refrigerios e hidratación</p>
-                    </div>
-                    <div class="lyman-service-mini">
-                        <div class="lyman-service-mini-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M20 6L9 17l-5-5"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-service-mini-title">Dotaciones</h3>
-                        <p class="paragraph-component lyman-service-mini-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Uniformes, identificación y EPP</p>
-                    </div>
-                    <div class="lyman-service-mini">
-                        <div class="lyman-service-mini-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 12 22 12 11 5"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-service-mini-title">Apoyo Técnico</h3>
-                        <p class="paragraph-component lyman-service-mini-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Sonido, iluminación y equipos audiovisuales</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Operaciones de Campo -->
-    <section class="lyman-section lyman-detail">
-        <div class="lyman-container">
-            <div class="lyman-detail-content">
-                <span class="lyman-section-label">Servicio Especializado</span>
-                <h2 class="lyman-section-title">Operaciones de Campo</h2>
-                <p class="paragraph-component lyman-detail-text" data-gjs-type="paragraph" data-gjs-editable="false">
-                    Implementación y supervisión de proyectos en terreno con control total y resultados verificables.
-                </p>
-                <div class="lyman-features-grid">
-                    <div class="lyman-feature-card">
-                        <div class="lyman-feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                                <line x1="8" y1="21" x2="16" y2="21"/>
-                                <line x1="12" y1="17" x2="12" y2="21"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-feature-title">Supervisión Continua</h3>
-                        <p class="paragraph-component lyman-feature-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Monitoreo en tiempo real de todas las actividades</p>
-                    </div>
-                    <div class="lyman-feature-card">
-                        <div class="lyman-feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-feature-title">Personal Calificado</h3>
-                        <p class="paragraph-component lyman-feature-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Equipos especializados para cada tipo de operación</p>
-                    </div>
-                    <div class="lyman-feature-card">
-                        <div class="lyman-feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                <polyline points="22 4 12 14.01 9 11.01"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-feature-title">Control de Calidad</h3>
-                        <p class="paragraph-component lyman-feature-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Verificación constante de estándares y cumplimiento</p>
-                    </div>
-                    <div class="lyman-feature-card">
-                        <div class="lyman-feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M10.29 3.86L1 12l9.29 8.14a1 1 0 0 0 1.42 0l9.29-8.14L12 3.86a1 1 0 0 0-1.42 0z"/>
-                                <line x1="2" y1="12" x2="22" y2="12"/>
-                                <line x1="12" y1="2" x2="12" y2="22"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-feature-title">Gestión de Riesgos</h3>
-                        <p class="paragraph-component lyman-feature-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Protocolos de seguridad y respuesta inmediata</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Importaciones Internacionales -->
-    <section class="lyman-section lyman-detail lyman-alt">
-        <div class="lyman-container">
-            <div class="lyman-detail-content">
-                <span class="lyman-section-label">Servicio Especializado</span>
-                <h2 class="lyman-section-title">Importaciones Internacionales</h2>
-                <p class="paragraph-component lyman-detail-text text-lg" data-gjs-type="paragraph" data-gjs-editable="false">
-                    En LYMAN SAS, ofrecemos un servicio integral de importación desde los mercados globales más importantes, 
-                    como China, Alemania y Estados Unidos. Facilitamos cada etapa del proceso para asegurar que sus productos 
-                    lleguen de manera eficiente y segura.
-                </p>
-                <div class="lyman-imports-grid">
-                    <div class="lyman-import-card">
-                        <div class="lyman-import-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                <line x1="3" y1="9" x2="21" y2="9"/>
-                                <line x1="9" y1="21" x2="9" y2="9"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-import-title">Importación China</h3>
-                        <p class="paragraph-component lyman-import-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Acceso a manufactura avanzada y tecnología de punta.</p>
-                    </div>
-                    <div class="lyman-import-card">
-                        <div class="lyman-import-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <circle cx="12" cy="12" r="3"/>
-                                <path d="M12 1v6m0 6v6M23 12h-6M7 12H1"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-import-title">Importación Alemania</h3>
-                        <p class="paragraph-component lyman-import-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Maquinaria y equipos de precisión con alta ingeniería.</p>
-                    </div>
-                    <div class="lyman-import-card">
-                        <div class="lyman-import-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-import-title">Importación USA</h3>
-                        <p class="paragraph-component lyman-import-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Productos tecnológicos y especializados de vanguardia.</p>
-                    </div>
-                    <div class="lyman-import-card">
-                        <div class="lyman-import-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                <circle cx="9" cy="7" r="4"/>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-import-title">Gestión Aduanera</h3>
-                        <p class="paragraph-component lyman-import-desc" data-gjs-type="paragraph" data-gjs-editable="false">Asesoría y manejo de toda la documentación aduanera.</p>
-                    </div>
-                    <div class="lyman-import-card">
-                        <div class="lyman-import-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-import-title">Control de Calidad</h3>
-                        <p class="paragraph-component lyman-import-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Verificación y supervisión rigurosa de sus productos.</p>
-                    </div>
-                    <div class="lyman-import-card">
-                        <div class="lyman-import-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                                <polyline points="9 22 9 12 15 12 15 22"/>
-                            </svg>
-                        </div>
-                        <h3 class="lyman-import-title">Logística Puerta a Puerta</h3>
-                        <p class="paragraph-component lyman-import-desc text-sm" data-gjs-type="paragraph" data-gjs-editable="false">Soluciones de transporte desde origen hasta su destino final.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Cómo Lo Hacemos -->
-    <section class="lyman-section lyman-process">
-        <div class="lyman-container">
-            <div class="lyman-section-header">
-                <span class="lyman-section-label">Nuestra Metodología</span>
-                <h2 class="lyman-section-title">Cómo Lo Hacemos</h2>
-                <p class="paragraph-component lyman-section-subtitle text-xl" data-gjs-type="paragraph" data-gjs-editable="false">
-                    Nuestra metodología garantiza resultados exitosos en cada proyecto.
-                </p>
-            </div>
-            <div class="lyman-process-steps">
-                <div class="lyman-process-step">
-                    <div class="lyman-step-number">1</div>
-                    <div class="lyman-step-content">
-                        <h3 class="lyman-step-title">Planeación</h3>
-                        <p class="paragraph-component lyman-step-desc text-base" data-gjs-type="paragraph" data-gjs-editable="false">Análisis de necesidades y diseño de solución personalizada</p>
-                    </div>
-                </div>
-                <div class="lyman-process-step">
-                    <div class="lyman-step-number">2</div>
-                    <div class="lyman-step-content">
-                        <h3 class="lyman-step-title">Preparación</h3>
-                        <p class="paragraph-component lyman-step-desc" data-gjs-type="paragraph" data-gjs-editable="false">Coordinación de recursos, personal y logística</p>
-                    </div>
-                </div>
-                <div class="lyman-process-step">
-                    <div class="lyman-step-number">3</div>
-                    <div class="lyman-step-content">
-                        <h3 class="lyman-step-title">Ejecución</h3>
-                        <p class="paragraph-component lyman-step-desc text-base" data-gjs-type="paragraph" data-gjs-editable="false">Implementación en campo con supervisión continua</p>
-                    </div>
-                </div>
-                <div class="lyman-process-step">
-                    <div class="lyman-step-number">4</div>
-                    <div class="lyman-step-content">
-                        <h3 class="lyman-step-title">Control</h3>
-                        <p class="paragraph-component lyman-step-desc text-base" data-gjs-type="paragraph" data-gjs-editable="false">Monitoreo en tiempo real y ajustes inmediatos</p>
-                    </div>
-                </div>
-                <div class="lyman-process-step">
-                    <div class="lyman-step-number">5</div>
-                    <div class="lyman-step-content">
-                        <h3 class="lyman-step-title">Cierre</h3>
-                        <p class="paragraph-component lyman-step-desc text-base" data-gjs-type="paragraph" data-gjs-editable="false">Documentación completa y entrega de resultados</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Por Qué Elegirnos -->
-    <section class="lyman-section lyman-why">
-        <div class="lyman-container">
-            <div class="lyman-section-header">
-                <span class="lyman-section-label">Nuestros Valores</span>
-                <h2 class="lyman-section-title">Por Qué Elegirnos</h2>
-                <p class="paragraph-component lyman-section-subtitle text-xl" data-gjs-type="paragraph" data-gjs-editable="false">
-                    Nuestros diferenciadores nos convierten en el socio ideal para sus proyectos.
-                </p>
-            </div>
-            <div class="lyman-why-grid">
-                <div class="lyman-why-card">
-                    <div class="lyman-why-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                        </svg>
-                    </div>
-                    <h3 class="lyman-why-title">Experiencia Comprobada</h3>
-                    <p class="paragraph-component lyman-why-desc text-base" data-gjs-type="paragraph" data-gjs-editable="false">Años de trayectoria en servicios logísticos</p>
-                </div>
-                <div class="lyman-why-card">
-                    <div class="lyman-why-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                            <polyline points="22 4 12 14.01 9 11.01"/>
-                        </svg>
-                    </div>
-                    <h3 class="lyman-why-title">Cumplimiento Total</h3>
-                    <p class="paragraph-component lyman-why-desc text-base" data-gjs-type="paragraph" data-gjs-editable="false">100% adherencia a cronogramas y especificaciones técnicas</p>
-                </div>
-                <div class="lyman-why-card">
-                    <div class="lyman-why-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                            <line x1="8" y1="21" x2="16" y2="21"/>
-                            <line x1="12" y1="17" x2="12" y2="21"/>
-                        </svg>
-                    </div>
-                    <h3 class="lyman-why-title">Control Riguroso</h3>
-                    <p class="paragraph-component lyman-why-desc text-base" data-gjs-type="paragraph" data-gjs-editable="false">Sistemas de seguimiento y documentación completa</p>
-                </div>
-                <div class="lyman-why-card">
-                    <div class="lyman-why-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                        </svg>
-                    </div>
-                    <h3 class="lyman-why-title">Equipo Especializado</h3>
-                    <p class="paragraph-component lyman-why-desc" data-gjs-type="paragraph" data-gjs-editable="false">Personal calificado y capacitado para cada proyecto</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contáctenos -->
-    <section class="lyman-section lyman-contact">
-        <div class="lyman-container">
-            <div class="lyman-contact-content">
-                <span class="lyman-section-label">Estamos Listos</span>
-                <h2 class="lyman-section-title">Contáctenos</h2>
-                <p class="paragraph-component lyman-contact-text text-xl" data-gjs-type="paragraph" data-gjs-editable="false">
-                    Estamos listos para hacer realidad sus proyectos. Contáctenos hoy mismo para empezar.
-                </p>
-                <div class="lyman-contact-info">
-                    <a href="tel:3204575682" class="lyman-contact-item">
-                        <div class="lyman-contact-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="lyman-contact-label">Teléfono</div>
-                            <div class="lyman-contact-value">320 457 56 82</div>
-                        </div>
-                    </a>
-                    <a href="mailto:info@lyman.com.co" class="lyman-contact-item">
-                        <div class="lyman-contact-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                                <polyline points="22,6 12,13 2,6"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="lyman-contact-label">Email</div>
-                            <div class="lyman-contact-value">info@lyman.com.co</div>
-                        </div>
-                    </a>
-                    <a href="https://www.lyman.com.co" target="_blank" class="lyman-contact-item">
-                        <div class="lyman-contact-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="2" y1="12" x2="22" y2="12"/>
-                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="lyman-contact-label">Sitio Web</div>
-                            <div class="lyman-contact-value">www.lyman.com.co</div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>';
+</div>
+';
     }
 
-    private function getLymanPageCSS()
+    private function getContactPageHTML()
     {
         return '
-/* LYMAN SAS - Diseño Moderno y Minimalista */
+<!-- Hero Contacto: background-image + contenedores -->
+<div class="background-image-section relative min-h-[400px] flex items-center justify-center bg-cover bg-center bg-no-repeat" data-gjs-type="background-image" style="background-image: url(\'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=1080&fit=crop\');">
+    <div class="absolute inset-0 bg-black" style="opacity: 0.4;"></div>
+    <div class="container-flex relative z-10 flex flex-col gap-8 items-center text-center p-20 w-full">
+        <h2 class="heading-component text-6xl font-bold text-white mb-6">Contáctenos</h2>
+        <p class="paragraph-component text-xl text-white max-w-2xl">Estamos listos para hacer realidad sus proyectos. Hablemos hoy.</p>
+    </div>
+</div>
 
+<!-- Información de Contacto: contenedor sección → título + contenedor fila de 3 cards -->
+<div class="container-flex flex flex-col gap-12 p-16 bg-white max-w-7xl mx-auto">
+    <div class="container-flex flex flex-col gap-4 items-center w-full">
+        <h2 class="heading-component text-4xl font-bold text-gray-900 text-center">Información de Contacto</h2>
+    </div>
+    <div class="container-flex flex flex-col md:flex-row gap-8 w-full">
+        <div class="container-flex flex flex-col gap-6 p-10 bg-gradient-to-br from-emerald-50 to-green-100 rounded-2xl shadow-lg text-center w-full">
+            <div class="container-flex flex flex-col gap-0 items-center justify-center bg-emerald-600 text-white rounded-full w-20 h-20 mx-auto">
+                <span class="text-3xl">📞</span>
+            </div>
+            <h3 class="heading-component text-2xl font-bold text-gray-900">Teléfono</h3>
+            <p class="paragraph-component text-xl text-gray-900 font-semibold">
+                320 457 56 82
+            </p>
+            <p class="paragraph-component text-sm text-gray-600">
+                Lunes a Viernes: 8:00 AM - 6:00 PM
+            </p>
+        </div>
+        
+        <div class="container-flex flex flex-col gap-6 p-10 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl shadow-lg text-center w-full">
+            <div class="container-flex flex flex-col gap-0 items-center justify-center bg-blue-600 text-white rounded-full w-20 h-20 mx-auto">
+                <span class="text-3xl">✉️</span>
+            </div>
+            <h3 class="heading-component text-2xl font-bold text-gray-900">Email</h3>
+            <p class="paragraph-component text-xl text-gray-900 font-semibold">
+                info@lyman.com.co
+            </p>
+            <p class="paragraph-component text-sm text-gray-600">
+                Respuesta en 24 horas
+            </p>
+        </div>
+        
+        <div class="container-flex flex flex-col gap-6 p-10 bg-gradient-to-br from-purple-50 to-pink-100 rounded-2xl shadow-lg text-center w-full">
+            <div class="container-flex flex flex-col gap-0 items-center justify-center bg-purple-600 text-white rounded-full w-20 h-20 mx-auto">
+                <span class="text-3xl">🌐</span>
+            </div>
+            <h3 class="heading-component text-2xl font-bold text-gray-900">Sitio Web</h3>
+            <p class="paragraph-component text-xl text-gray-900 font-semibold">
+                www.lyman.com.co
+            </p>
+            <a href="https://www.lyman.com.co" target="_blank" class="button-component inline-block px-6 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700 font-semibold transition-colors">
+                Visitar Sitio
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Mapa de Ubicación: contenedor sección → título + contenedor mapa + párrafo -->
+<div class="container-flex flex flex-col gap-8 p-16 bg-gray-50">
+    <div class="container-flex flex flex-col gap-4 items-center w-full">
+        <h2 class="heading-component text-4xl font-bold text-gray-900 text-center">Nuestra Ubicación</h2>
+    </div>
+    <div class="container-flex flex flex-col gap-0 max-w-7xl mx-auto w-full rounded-2xl overflow-hidden shadow-xl">
+        <iframe 
+            src="https://www.google.com/maps?q=4.592788716801292,-74.09594164946103&output=embed&hl=es" 
+            width="100%" 
+            height="500" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade"
+            class="w-full h-[500px]">
+        </iframe>
+    </div>
+    <p class="paragraph-component text-lg text-gray-600 text-center max-w-2xl mx-auto">
+        Bogotá, Colombia - Cobertura nacional en servicios logísticos y operativos
+    </p>
+</div>
+
+<!-- Call to Action Final: contenedor con título, párrafo y botón -->
+<div class="container-flex flex flex-col gap-8 items-center text-center p-20 bg-emerald-600">
+    <h2 class="heading-component text-5xl font-bold text-white mb-4">¿Listo para Comenzar?</h2>
+    <p class="paragraph-component text-xl text-white max-w-2xl mb-6">Contáctenos hoy y descubra cómo podemos ayudarle a alcanzar sus objetivos</p>
+    <a href="tel:3204575682" class="button-component inline-block px-10 py-4 text-emerald-600 bg-white rounded-lg hover:bg-gray-100 font-bold text-xl transition-colors shadow-xl">Llamar Ahora</a>
+</div>
+';
+    }
+
+    private function getCSS()
+    {
+        return '
 * {
     margin: 0;
     padding: 0;
@@ -639,995 +636,39 @@ class LymanSasPageSeeder extends Seeder
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial, sans-serif;
-    line-height: 1.7;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
     color: #2d3748;
-    background-color: #ffffff;
-    font-size: 16px;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Container */
-.lyman-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
+/* Asegurar que todos los containers ocupen el ancho completo cuando corresponda */
+.container-flex {
+    width: 100%;
 }
 
-/* Sections */
-.lyman-section {
-    padding: 6rem 0;
+/* Mejorar transiciones */
+.transition-all {
+    transition: all 0.3s ease-in-out;
 }
 
-.lyman-section-header {
-    text-align: center;
-    margin-bottom: 4rem;
+.transition-colors {
+    transition: color 0.2s, background-color 0.2s;
 }
 
-.lyman-section-label {
-    display: inline-block;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #4CAF50;
-    margin-bottom: 1rem;
-    padding: 0.5rem 1.25rem;
-    background: rgba(76, 175, 80, 0.1);
-    border-radius: 50px;
+/* Asegurar que las imágenes sean responsive */
+img {
+    max-width: 100%;
+    height: auto;
 }
 
-.lyman-section-title {
-    font-size: 3rem;
-    font-weight: 700;
-    color: #1a202c;
-    margin-bottom: 1rem;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-}
-
-.lyman-section-subtitle {
-    color: #718096;
-    max-width: 700px;
-    margin: 0 auto;
-    line-height: 1.6;
-}
-
-/* Hero Section */
-.lyman-hero {
-    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-    padding: 8rem 0;
-    text-align: center;
-}
-
-.lyman-hero-container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 0 2rem;
-}
-
-.lyman-hero-badge {
-    display: inline-block;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #4CAF50;
-    margin-bottom: 2rem;
-    padding: 0.75rem 1.5rem;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 50px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.lyman-hero-title {
-    font-size: 4.5rem;
-    font-weight: 800;
-    color: #1a202c;
-    margin-bottom: 2rem;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-}
-
-.lyman-hero-description {
-    color: #4a5568;
-    line-height: 1.8;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.lyman-hero-description strong {
-    color: #304739;
-    font-weight: 600;
-}
-
-/* About Section */
-.lyman-about {
-    background: #ffffff;
-}
-
-.lyman-about-text {
-    font-size: 1.25rem;
-    color: #4a5568;
-    line-height: 1.8;
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-/* Services Section */
-.lyman-services {
-    background: #f9fafb;
-}
-
-.lyman-services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-top: 3rem;
-}
-
-.lyman-service-card {
-    background: #ffffff;
-    padding: 2.5rem;
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-    border: 1px solid #e5e7eb;
-}
-
-.lyman-service-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-    border-color: #4CAF50;
-}
-
-.lyman-service-card-icon {
-    width: 56px;
-    height: 56px;
-    margin-bottom: 1.5rem;
-    color: #4CAF50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(76, 175, 80, 0.1);
-    border-radius: 12px;
-}
-
-.lyman-service-card-icon svg {
-    width: 28px;
-    height: 28px;
-}
-
-.lyman-service-card-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1a202c;
-    margin-bottom: 0.75rem;
-    letter-spacing: -0.01em;
-}
-
-.lyman-service-card-desc {
-    color: #718096;
-    line-height: 1.6;
-}
-
-/* Detail Sections */
-.lyman-detail {
-    background: #ffffff;
-}
-
-.lyman-detail.lyman-alt {
-    background: #f9fafb;
-}
-
-.lyman-detail-content {
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-.lyman-detail-text {
-    color: #4a5568;
-    line-height: 1.8;
-    margin-bottom: 3rem;
-    text-align: center;
-}
-
-/* Features Grid */
-.lyman-features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
-}
-
-.lyman-feature-card {
-    background: #ffffff;
-    padding: 2rem;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    transition: all 0.3s ease;
-}
-
-.lyman-feature-card:hover {
-    border-color: #4CAF50;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
-}
-
-.lyman-feature-icon {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 1rem;
-    color: #4CAF50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(76, 175, 80, 0.1);
-    border-radius: 10px;
-}
-
-.lyman-feature-icon svg {
-    width: 24px;
-    height: 24px;
-}
-
-.lyman-feature-title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: #1a202c;
-    margin-bottom: 0.5rem;
-}
-
-.lyman-feature-desc {
-    color: #718096;
-    line-height: 1.6;
-}
-
-/* Services Grid 2 */
-.lyman-services-grid-2 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
-}
-
-.lyman-service-mini {
-    background: #ffffff;
-    padding: 1.75rem;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    transition: all 0.3s ease;
-}
-
-.lyman-service-mini:hover {
-    border-color: #4CAF50;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
-}
-
-.lyman-service-mini-icon {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 1rem;
-    color: #4CAF50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(76, 175, 80, 0.1);
-    border-radius: 8px;
-}
-
-.lyman-service-mini-icon svg {
-    width: 20px;
-    height: 20px;
-}
-
-.lyman-service-mini-title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: #1a202c;
-    margin-bottom: 0.5rem;
-}
-
-.lyman-service-mini-desc {
-    font-size: 0.9375rem;
-    color: #718096;
-    line-height: 1.6;
-}
-
-/* Imports Grid */
-.lyman-imports-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
-}
-
-.lyman-import-card {
-    background: #ffffff;
-    padding: 2rem;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    transition: all 0.3s ease;
-}
-
-.lyman-import-card:hover {
-    border-color: #4CAF50;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
-}
-
-.lyman-import-icon {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 1rem;
-    color: #4CAF50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(76, 175, 80, 0.1);
-    border-radius: 10px;
-}
-
-.lyman-import-icon svg {
-    width: 24px;
-    height: 24px;
-}
-
-.lyman-import-title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: #1a202c;
-    margin-bottom: 0.5rem;
-}
-
-.lyman-import-desc {
-    color: #718096;
-    line-height: 1.6;
-}
-
-/* Process Section */
-.lyman-process {
-    background: #ffffff;
-}
-
-.lyman-process-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.lyman-process-step {
-    display: flex;
-    align-items: flex-start;
-    gap: 2rem;
-    position: relative;
-}
-
-.lyman-process-step:not(:last-child)::after {
-    content: "";
-    position: absolute;
-    left: 28px;
-    top: 64px;
-    width: 2px;
-    height: calc(100% + 1rem);
-    background: linear-gradient(to bottom, #4CAF50, rgba(76, 175, 80, 0.2));
-}
-
-.lyman-step-number {
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #ffffff;
-    flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-    position: relative;
-    z-index: 1;
-}
-
-.lyman-step-content {
-    flex: 1;
-    padding-top: 0.5rem;
-}
-
-.lyman-step-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1a202c;
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.01em;
-}
-
-.lyman-step-desc {
-    color: #718096;
-    line-height: 1.6;
-}
-
-/* Why Section */
-.lyman-why {
-    background: #f9fafb;
-}
-
-.lyman-why-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 2rem;
-    margin-top: 3rem;
-}
-
-.lyman-why-card {
-    background: #ffffff;
-    padding: 2.5rem;
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-    border: 1px solid #e5e7eb;
-    text-align: center;
-}
-
-.lyman-why-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-    border-color: #4CAF50;
-}
-
-.lyman-why-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 1.5rem;
-    color: #4CAF50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(76, 175, 80, 0.1);
-    border-radius: 16px;
-}
-
-.lyman-why-icon svg {
-    width: 32px;
-    height: 32px;
-}
-
-.lyman-why-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #1a202c;
-    margin-bottom: 0.75rem;
-}
-
-.lyman-why-desc {
-    color: #718096;
-    line-height: 1.6;
-}
-
-/* Contact Section */
-.lyman-contact {
-    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-}
-
-.lyman-contact-content {
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.lyman-contact-content .lyman-section-label {
-    margin-bottom: 1.5rem;
-}
-
-.lyman-contact-content .lyman-section-title {
-    margin-bottom: 1.5rem;
-}
-
-.lyman-contact-text {
-    color: #4a5568;
-    line-height: 1.8;
-    margin-bottom: 3rem;
-    margin-top: 1rem;
-}
-
-.lyman-contact-info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
-}
-
-.lyman-contact-item {
-    background: #ffffff;
-    padding: 2rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
+/* Links sin subrayado por defecto */
+a {
     text-decoration: none;
-    transition: all 0.3s ease;
-    border: 1px solid #e5e7eb;
-    min-width: 0;
-    overflow: hidden;
 }
 
-.lyman-contact-item > div:last-child {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
+a:hover {
+    opacity: 0.8;
 }
-
-.lyman-contact-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-    border-color: #4CAF50;
-}
-
-.lyman-contact-icon {
-    width: 56px;
-    height: 56px;
-    color: #4CAF50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(76, 175, 80, 0.1);
-    border-radius: 12px;
-    flex-shrink: 0;
-}
-
-.lyman-contact-icon svg {
-    width: 28px;
-    height: 28px;
-}
-
-.lyman-contact-label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #718096;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.25rem;
-}
-
-.lyman-contact-value {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #1a202c;
-    word-break: keep-all;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Responsive Design */
-@media (max-width: 968px) {
-    .lyman-hero-title {
-        font-size: 3rem;
-    }
-    
-    .lyman-section-title {
-        font-size: 2.25rem;
-    }
-    
-    .lyman-hero {
-        padding: 5rem 0;
-    }
-    
-    .lyman-section {
-        padding: 4rem 0;
-    }
-    
-    .lyman-services-grid,
-    .lyman-why-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .lyman-features-grid,
-    .lyman-services-grid-2,
-    .lyman-imports-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .lyman-contact-info {
-        grid-template-columns: 1fr;
-    }
-    
-    .lyman-process-step {
-        gap: 1.5rem;
-    }
-    
-    .lyman-step-number {
-        width: 48px;
-        height: 48px;
-        font-size: 1.25rem;
-    }
-    
-    .lyman-process-step:not(:last-child)::after {
-        left: 24px;
-        top: 56px;
-    }
-}
-
-@media (max-width: 640px) {
-    .lyman-container {
-        padding: 0 1.5rem;
-    }
-    
-    .lyman-hero-title {
-        font-size: 2.5rem;
-    }
-    
-    .lyman-section-title {
-        font-size: 2rem;
-    }
-    
-    
-    .lyman-service-card,
-    .lyman-why-card {
-        padding: 2rem;
-    }
-}';
-    }
-    
-    private function getGrapesJSData()
-    {
-        // Estructura moderna con todos los componentes del editor
-        $components = [
-            // 1. Hero Section
-            [
-                'type' => 'container',
-                'name' => 'Contenedor',
-                'tagName' => 'div',
-                'attributes' => [
-                    'class' => 'container-flex flex flex-col gap-8 p-12 lyman-hero text-center',
-                    'data-gjs-name' => 'Contenedor',
-                    'data-gjs-editable' => 'false'
-                ],
-                'components' => [
-                    [
-                        'type' => 'heading',
-                        'name' => 'Título',
-                        'tagName' => 'h1',
-                        'attributes' => [
-                            'class' => 'heading-component text-6xl font-extrabold text-gray-900 mb-6',
-                            'data-gjs-name' => 'Título',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'LYMAN SAS'
-                    ],
-                    [
-                        'type' => 'paragraph',
-                        'name' => 'Párrafo',
-                        'tagName' => 'p',
-                        'attributes' => [
-                            'class' => 'paragraph-component text-2xl leading-relaxed text-gray-700 max-w-4xl mx-auto',
-                            'data-gjs-name' => 'Párrafo',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'Servicios logísticos y operativos especializados para la ejecución integral de proyectos. Nos destacamos por nuestra capacidad de gestión, coordinación y supervisión en cada fase operativa.'
-                    ]
-                ]
-            ],
-            
-            // 2. Quiénes Somos
-            [
-                'type' => 'container',
-                'name' => 'Contenedor',
-                'tagName' => 'div',
-                'attributes' => [
-                    'class' => 'container-flex flex flex-col gap-6 p-12 bg-gray-50 text-center',
-                    'data-gjs-name' => 'Contenedor',
-                    'data-gjs-editable' => 'false'
-                ],
-                'components' => [
-                    [
-                        'type' => 'heading',
-                        'name' => 'Título',
-                        'tagName' => 'h2',
-                        'attributes' => [
-                            'class' => 'heading-component text-4xl font-bold text-gray-900 mb-6',
-                            'data-gjs-name' => 'Título',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'Quiénes Somos'
-                    ],
-                    [
-                        'type' => 'paragraph',
-                        'name' => 'Párrafo',
-                        'tagName' => 'p',
-                        'attributes' => [
-                            'class' => 'paragraph-component text-xl leading-relaxed text-gray-700 max-w-3xl mx-auto',
-                            'data-gjs-name' => 'Párrafo',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'INVERSIONES LYMAN E.U. es una empresa especializada en servicios logísticos y operativos. Nos dedicamos a la ejecución integral de proyectos con enfoque en cumplimiento, control y resultados verificables.'
-                    ]
-                ]
-            ],
-            
-            // 3. Nuestros Servicios - Título
-            [
-                'type' => 'container',
-                'name' => 'Contenedor',
-                'tagName' => 'div',
-                'attributes' => [
-                    'class' => 'container-flex flex flex-col gap-6 p-12 text-center',
-                    'data-gjs-name' => 'Contenedor',
-                    'data-gjs-editable' => 'false'
-                ],
-                'components' => [
-                    [
-                        'type' => 'heading',
-                        'name' => 'Título',
-                        'tagName' => 'h2',
-                        'attributes' => [
-                            'class' => 'heading-component text-4xl font-bold text-gray-900 mb-4',
-                            'data-gjs-name' => 'Título',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'Nuestros Servicios'
-                    ],
-                    [
-                        'type' => 'paragraph',
-                        'name' => 'Párrafo',
-                        'tagName' => 'p',
-                        'attributes' => [
-                            'class' => 'paragraph-component text-lg leading-relaxed text-gray-600 max-w-2xl mx-auto mb-8',
-                            'data-gjs-name' => 'Párrafo',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'Soluciones integrales en tres áreas principales, diseñadas para satisfacer las necesidades operativas.'
-                    ]
-                ]
-            ],
-            
-            // 3.1 Grid de Servicios - Fila con 3 contenedores
-            [
-                'type' => 'container',
-                'name' => 'Contenedor',
-                'tagName' => 'div',
-                'attributes' => [
-                    'class' => 'container-flex flex flex-col md:flex-row gap-6 p-6 max-w-7xl mx-auto',
-                    'data-gjs-name' => 'Contenedor',
-                    'data-gjs-editable' => 'false'
-                ],
-                'components' => [
-                    // Servicio 1
-                    [
-                        'type' => 'container',
-                        'name' => 'Contenedor',
-                        'tagName' => 'div',
-                        'attributes' => [
-                            'class' => 'container-flex flex flex-col gap-4 p-8 bg-white rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow',
-                            'data-gjs-name' => 'Contenedor',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'components' => [
-                            [
-                                'type' => 'heading',
-                                'name' => 'Título',
-                                'tagName' => 'h3',
-                                'attributes' => [
-                                    'class' => 'heading-component text-2xl font-bold text-gray-900 mb-3',
-                                    'data-gjs-name' => 'Título',
-                                    'data-gjs-editable' => 'false'
-                                ],
-                                'content' => 'Organización de Eventos'
-                            ],
-                            [
-                                'type' => 'paragraph',
-                                'name' => 'Párrafo',
-                                'tagName' => 'p',
-                                'attributes' => [
-                                    'class' => 'paragraph-component text-base leading-relaxed text-gray-600',
-                                    'data-gjs-name' => 'Párrafo',
-                                    'data-gjs-editable' => 'false'
-                                ],
-                                'content' => 'Planificación y ejecución completa de eventos y actividades'
-                            ]
-                        ]
-                    ],
-                    // Servicio 2
-                    [
-                        'type' => 'container',
-                        'name' => 'Contenedor',
-                        'tagName' => 'div',
-                        'attributes' => [
-                            'class' => 'container-flex flex flex-col gap-4 p-8 bg-white rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow',
-                            'data-gjs-name' => 'Contenedor',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'components' => [
-                            [
-                                'type' => 'heading',
-                                'name' => 'Título',
-                                'tagName' => 'h3',
-                                'attributes' => [
-                                    'class' => 'heading-component text-2xl font-bold text-gray-900 mb-3',
-                                    'data-gjs-name' => 'Título',
-                                    'data-gjs-editable' => 'false'
-                                ],
-                                'content' => 'Servicios Logísticos'
-                            ],
-                            [
-                                'type' => 'paragraph',
-                                'name' => 'Párrafo',
-                                'tagName' => 'p',
-                                'attributes' => [
-                                    'class' => 'paragraph-component text-base leading-relaxed text-gray-600',
-                                    'data-gjs-name' => 'Párrafo',
-                                    'data-gjs-editable' => 'false'
-                                ],
-                                'content' => 'Gestión integral de recursos, transporte, personal e infraestructura'
-                            ]
-                        ]
-                    ],
-                    // Servicio 3
-                    [
-                        'type' => 'container',
-                        'name' => 'Contenedor',
-                        'tagName' => 'div',
-                        'attributes' => [
-                            'class' => 'container-flex flex flex-col gap-4 p-8 bg-white rounded-lg shadow-lg text-center hover:shadow-xl transition-shadow',
-                            'data-gjs-name' => 'Contenedor',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'components' => [
-                            [
-                                'type' => 'heading',
-                                'name' => 'Título',
-                                'tagName' => 'h3',
-                                'attributes' => [
-                                    'class' => 'heading-component text-2xl font-bold text-gray-900 mb-3',
-                                    'data-gjs-name' => 'Título',
-                                    'data-gjs-editable' => 'false'
-                                ],
-                                'content' => 'Operaciones de Campo'
-                            ],
-                            [
-                                'type' => 'paragraph',
-                                'name' => 'Párrafo',
-                                'tagName' => 'p',
-                                'attributes' => [
-                                    'class' => 'paragraph-component text-base leading-relaxed text-gray-600',
-                                    'data-gjs-name' => 'Párrafo',
-                                    'data-gjs-editable' => 'false'
-                                ],
-                                'content' => 'Implementación y supervisión de proyectos en terreno'
-                            ]
-                        ]
-                    ]
-                ]
-            ],
-            
-            // 4. Cómo lo Hacemos
-            [
-                'type' => 'container',
-                'name' => 'Contenedor',
-                'tagName' => 'div',
-                'attributes' => [
-                    'class' => 'container-flex flex flex-col gap-6 p-12 bg-gray-50 text-center',
-                    'data-gjs-name' => 'Contenedor',
-                    'data-gjs-editable' => 'false'
-                ],
-                'components' => [
-                    [
-                        'type' => 'heading',
-                        'name' => 'Título',
-                        'tagName' => 'h2',
-                        'attributes' => [
-                            'class' => 'heading-component text-4xl font-bold text-gray-900 mb-6',
-                            'data-gjs-name' => 'Título',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'Cómo Lo Hacemos'
-                    ],
-                    [
-                        'type' => 'paragraph',
-                        'name' => 'Párrafo',
-                        'tagName' => 'p',
-                        'attributes' => [
-                            'class' => 'paragraph-component text-lg leading-relaxed text-gray-600 max-w-2xl mx-auto',
-                            'data-gjs-name' => 'Párrafo',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'Nuestra metodología garantiza resultados exitosos en cada proyecto.'
-                    ]
-                ]
-            ],
-            
-            // 5. Por Qué Elegirnos
-            [
-                'type' => 'container',
-                'name' => 'Contenedor',
-                'tagName' => 'div',
-                'attributes' => [
-                    'class' => 'container-flex flex flex-col gap-6 p-12 text-center',
-                    'data-gjs-name' => 'Contenedor',
-                    'data-gjs-editable' => 'false'
-                ],
-                'components' => [
-                    [
-                        'type' => 'heading',
-                        'name' => 'Título',
-                        'tagName' => 'h2',
-                        'attributes' => [
-                            'class' => 'heading-component text-4xl font-bold text-gray-900 mb-6',
-                            'data-gjs-name' => 'Título',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'Por Qué Elegirnos'
-                    ],
-                    [
-                        'type' => 'paragraph',
-                        'name' => 'Párrafo',
-                        'tagName' => 'p',
-                        'attributes' => [
-                            'class' => 'paragraph-component text-lg leading-relaxed text-gray-600 max-w-2xl mx-auto',
-                            'data-gjs-name' => 'Párrafo',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'Nuestros diferenciadores nos convierten en el socio ideal para sus proyectos.'
-                    ]
-                ]
-            ],
-            
-            // 6. Contacto
-            [
-                'type' => 'container',
-                'name' => 'Contenedor',
-                'tagName' => 'div',
-                'attributes' => [
-                    'class' => 'container-flex flex flex-col gap-6 p-12 bg-gray-50 text-center',
-                    'data-gjs-name' => 'Contenedor',
-                    'data-gjs-editable' => 'false'
-                ],
-                'components' => [
-                    [
-                        'type' => 'heading',
-                        'name' => 'Título',
-                        'tagName' => 'h2',
-                        'attributes' => [
-                            'class' => 'heading-component text-4xl font-bold text-gray-900 mb-6',
-                            'data-gjs-name' => 'Título',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'Contáctenos'
-                    ],
-                    [
-                        'type' => 'paragraph',
-                        'name' => 'Párrafo',
-                        'tagName' => 'p',
-                        'attributes' => [
-                            'class' => 'paragraph-component text-xl leading-relaxed text-gray-700 max-w-2xl mx-auto',
-                            'data-gjs-name' => 'Párrafo',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'Estamos listos para hacer realidad sus proyectos. Contáctenos hoy mismo para empezar.'
-                    ],
-                    [
-                        'type' => 'paragraph',
-                        'name' => 'Párrafo',
-                        'tagName' => 'p',
-                        'attributes' => [
-                            'class' => 'paragraph-component text-lg leading-relaxed text-gray-600',
-                            'data-gjs-name' => 'Párrafo',
-                            'data-gjs-editable' => 'false'
-                        ],
-                        'content' => 'Teléfono: 320 457 56 82 | Email: info@lyman.com.co'
-                    ]
-                ]
-            ]
-        ];
-        
-        return json_encode([
-            'components' => $components,
-            'styles' => [],
-            'css' => $this->getLymanPageCSS()
-        ]);
+';
     }
 }
