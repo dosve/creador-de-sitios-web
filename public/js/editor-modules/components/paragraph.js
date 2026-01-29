@@ -1,15 +1,15 @@
 // Módulo del Componente Paragraph
 // Componente de párrafo con opciones de estilo
 
-(function() {
+(function () {
   'use strict';
-  
+
   function registerParagraphComponent(editor) {
     if (!editor || !editor.DomComponents) {
       console.warn('⚠️ Editor no disponible para registrar componente Paragraph');
       return;
     }
-    
+
     editor.DomComponents.addType('paragraph', {
       isComponent: (el) => {
         if (el.classList && el.classList.contains('paragraph-component')) {
@@ -112,7 +112,7 @@
                 const el = this.view.el;
                 const textContent = el.textContent || el.innerText || '';
                 const modelText = this.get('paragraph-text') || '';
-                
+
                 // ✅ CRÍTICO: Siempre actualizar el modelo con silent: false para forzar actualización del TraitManager
                 // Esto asegura que los inputs del formulario se actualicen incluso si el contenido ya está sincronizado
                 if (textContent.trim()) {
@@ -124,7 +124,7 @@
                   console.log('ℹ️ [Paragraph] No hay contenido en DOM, forzando actualización del formulario con valor del modelo');
                   this.set('paragraph-text', modelText, { silent: false });
                 }
-                
+
                 const classList = el.className.split(' ');
                 const sizeMatch = classList.find(c => ['text-sm', 'text-base', 'text-lg', 'text-xl'].includes(c));
                 if (sizeMatch) {
@@ -133,7 +133,7 @@
                     this.set('paragraph-size', sizeMatch, { silent: false });
                   }
                 }
-                
+
                 const colorMatch = classList.find(c => c.startsWith('text-') && ['gray', 'blue', 'green'].some(col => c.includes(col)));
                 if (colorMatch) {
                   const currentColor = this.get('paragraph-color');
@@ -141,7 +141,7 @@
                     this.set('paragraph-color', colorMatch, { silent: false });
                   }
                 }
-                
+
                 const alignMatch = classList.find(c => ['text-left', 'text-center', 'text-right', 'text-justify'].includes(c));
                 if (alignMatch) {
                   const currentAlign = this.get('paragraph-align');
@@ -149,7 +149,7 @@
                     this.set('paragraph-align', alignMatch, { silent: false });
                   }
                 }
-                
+
                 const lineHeightMatch = classList.find(c => ['leading-tight', 'leading-normal', 'leading-relaxed', 'leading-loose'].includes(c));
                 if (lineHeightMatch) {
                   const currentLineHeight = this.get('paragraph-line-height');
@@ -157,7 +157,7 @@
                     this.set('paragraph-line-height', lineHeightMatch, { silent: false });
                   }
                 }
-                
+
                 const marginMatch = classList.find(c => ['mb-0', 'mb-2', 'mb-4', 'mb-6'].includes(c));
                 if (marginMatch) {
                   const currentMargin = this.get('paragraph-margin');
@@ -172,7 +172,7 @@
               console.warn('⚠️ [Paragraph] Error al sincronizar contenido desde DOM:', e);
             }
           };
-          
+
           const syncInitialValues = () => {
             if (this.view && this.view.el) {
               const el = this.view.el;
@@ -180,40 +180,40 @@
               if (textContent.trim()) {
                 this.set('paragraph-text', textContent.trim(), { silent: true });
               }
-              
+
               const classList = el.className.split(' ');
               const sizeMatch = classList.find(c => ['text-sm', 'text-base', 'text-lg', 'text-xl'].includes(c));
               if (sizeMatch) this.set('paragraph-size', sizeMatch, { silent: true });
-              
+
               const colorMatch = classList.find(c => c.startsWith('text-') && ['gray', 'blue', 'green'].some(col => c.includes(col)));
               if (colorMatch) this.set('paragraph-color', colorMatch, { silent: true });
-              
+
               const alignMatch = classList.find(c => ['text-left', 'text-center', 'text-right', 'text-justify'].includes(c));
               if (alignMatch) this.set('paragraph-align', alignMatch, { silent: true });
-              
+
               const lineHeightMatch = classList.find(c => ['leading-tight', 'leading-normal', 'leading-relaxed', 'leading-loose'].includes(c));
               if (lineHeightMatch) this.set('paragraph-line-height', lineHeightMatch, { silent: true });
-              
+
               const marginMatch = classList.find(c => ['mb-0', 'mb-2', 'mb-4', 'mb-6'].includes(c));
               if (marginMatch) this.set('paragraph-margin', marginMatch, { silent: true });
             }
           };
-          
+
           setTimeout(syncInitialValues, 100);
           this.on('component:mount', syncInitialValues);
-          
+
           // ✅ CRÍTICO: Sincronizar cuando el componente se selecciona (para actualizar el formulario)
           // ✅ La actualización manual de inputs se maneja en editor-config.js para evitar duplicación
           this.on('component:selected', () => {
             console.log('🎯 [Paragraph] Componente seleccionado, sincronizando contenido desde DOM...');
-            
+
             // Sincronizar desde DOM inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
             // El editor-config.js se encargará de re-renderizar el TraitManager y actualizar los inputs
             if (this.syncContentFromDOM && typeof this.syncContentFromDOM === 'function') {
               this.syncContentFromDOM();
             }
           });
-          
+
           this.on('change:paragraph-text', this.updateText, this);
           this.on('change:paragraph-size', this.updateSize, this);
           this.on('change:paragraph-color', this.updateColor, this);
@@ -223,9 +223,31 @@
         },
         updateText() {
           const text = this.get('paragraph-text') || '';
+          
+          // ✅ CRÍTICO: Si el texto del modelo está vacío pero el DOM tiene contenido,
+          // NO actualizar el DOM para evitar borrar el contenido existente
           if (this.view && this.view.el) {
-            this.view.el.textContent = text;
-            this.components(text);
+            const el = this.view.el;
+            const currentText = el.textContent || el.innerText || '';
+            
+            // Si el modelo tiene texto, actualizar el DOM
+            if (text && text.trim()) {
+              // Solo actualizar si es diferente para evitar bucles
+              if (currentText !== text) {
+                el.textContent = text;
+                if (this.components && typeof this.components === 'function') {
+                  this.components(text);
+                }
+              }
+            } else if (!currentText || !currentText.trim()) {
+              // Si tanto el modelo como el DOM están vacíos, está bien
+              // No hacer nada
+            } else {
+              // Si el modelo está vacío pero el DOM tiene contenido,
+              // sincronizar el modelo con el DOM en lugar de borrar el DOM
+              console.log('⚠️ [Paragraph] Modelo vacío pero DOM tiene contenido, sincronizando modelo...');
+              this.set('paragraph-text', currentText.trim(), { silent: true });
+            }
           }
         },
         updateSize() {
@@ -299,9 +321,9 @@
         }
       }
     });
-    
+
   }
-  
+
   if (typeof window !== 'undefined' && window.editor) {
     registerParagraphComponent(window.editor);
   } else {
@@ -311,12 +333,12 @@
         clearInterval(checkEditor);
       }
     }, 100);
-    
+
     setTimeout(() => {
       clearInterval(checkEditor);
     }, 10000);
   }
-  
+
   if (typeof window !== 'undefined') {
     window.registerParagraphComponent = registerParagraphComponent;
   }

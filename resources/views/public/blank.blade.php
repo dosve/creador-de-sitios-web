@@ -29,6 +29,7 @@
         window.websiteApiUrl = "{{ $website->api_base_url ?? '' }}";
         window.websiteSlug = "{{ $website->slug ?? '' }}";
         window.websiteId = {{ $website->id ?? 0 }};
+        window.appBaseUrl = "{{ rtrim(url('/'), '/') }}";
         window.epaycoPublicKey = "{{ $website->epayco_public_key ?? '' }}";
         window.epaycoPrivateKey = "{{ $website->epayco_private_key ?? '' }}";
         window.epaycoCustomerId = "{{ $website->epayco_customer_id ?? '' }}";
@@ -36,38 +37,39 @@
             apiKey: window.websiteApiKey ? ('Configurada - ' + window.websiteApiKey.length + ' chars') : 'NO',
             apiUrl: window.websiteApiUrl || 'NO',
             websiteSlug: window.websiteSlug || 'NO',
-            websiteId: window.websiteId || 'NO'
+            websiteId: window.websiteId || 'NO',
+            appBaseUrl: window.appBaseUrl || 'NO'
         });
     </script>
 
     <!-- Tailwind CSS -->
     @php
-        $isProduction = app()->environment('production');
-        $hasCompiledCss = file_exists(public_path('build/assets/app.css'));
+    $isProduction = app()->environment('production');
+    $hasCompiledCss = file_exists(public_path('build/assets/app.css'));
     @endphp
     @if($isProduction && $hasCompiledCss)
-        <link href="{{ asset('build/assets/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('build/assets/app.css') }}" rel="stylesheet">
     @else
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script>
-            // Suprimir advertencia de producción en desarrollo
-            (function() {
-                if (typeof tailwind !== 'undefined' && tailwind.config) {
-                    try {
-                        // Intentar suprimir la advertencia
-                        const originalWarn = console.warn;
-                        console.warn = function(...args) {
-                            if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
-                                return; // Suprimir esta advertencia específica
-                            }
-                            originalWarn.apply(console, args);
-                        };
-                    } catch(e) {
-                        // Ignorar errores al suprimir advertencias
-                    }
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Suprimir advertencia de producción en desarrollo
+        (function() {
+            if (typeof tailwind !== 'undefined' && tailwind.config) {
+                try {
+                    // Intentar suprimir la advertencia
+                    const originalWarn = console.warn;
+                    console.warn = function(...args) {
+                        if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+                            return; // Suprimir esta advertencia específica
+                        }
+                        originalWarn.apply(console, args);
+                    };
+                } catch (e) {
+                    // Ignorar errores al suprimir advertencias
                 }
-            })();
-        </script>
+            }
+        })();
+    </script>
     @endif
 
     <!-- Font Awesome -->
@@ -84,9 +86,7 @@
     <!-- Tiene !important: {{ str_contains($currentPage->css_content, '!important') ? 'SÍ' : 'NO' }} -->
     <!-- Tiene background-color: {{ str_contains($currentPage->css_content, 'background-color') ? 'SÍ' : 'NO' }} -->
     <style>
-        {
-            ! ! $currentPage->css_content ! !
-        }
+        {!! $currentPage->css_content !!}
     </style>
     @else
     <!-- ⚠️ NO HAY CSS GUARDADO PARA ESTA PÁGINA -->
@@ -95,9 +95,7 @@
     <!-- Estilos CSS globales del sitio web -->
     @if($website->global_css)
     <style>
-        {
-            ! ! $website->global_css ! !
-        }
+        {!! $website->global_css !!}
     </style>
     @endif
 
@@ -108,23 +106,28 @@
 </head>
 
 <body class="bg-white">
-    <!-- Contenido HTML de la página -->
-    @if($currentPage->html_content)
+    @include('creator.preview.partials.nav-preview')
+    
+    <!-- Contenido HTML de la página (con artículos inyectados en servidor si hay bloque de blog) -->
+    @php
+        $contentToShow = $pageHtmlContent ?? $currentPage->html_content;
+    @endphp
+    @if($contentToShow)
     <div id="page-content">
-        {!! $currentPage->html_content !!}
+        {!! $contentToShow !!}
     </div>
     @else
     <!-- Mensaje si no hay contenido -->
     <div class="flex items-center justify-center min-h-screen bg-gray-50">
-        <div class="text-center p-8">
+        <div class="p-8 text-center">
             <svg class="w-24 h-24 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
-            <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ $currentPage->title }}</h1>
+            <h1 class="mb-2 text-2xl font-bold text-gray-900">{{ $currentPage->title }}</h1>
             <p class="text-gray-600">Esta página aún no tiene contenido. Edítala desde el panel de creación.</p>
             @auth
             @if(auth()->user()->id === $website->user_id || auth()->user()->role === 'admin')
-            <a href="{{ route('creator.pages.editor', [$website->id, $currentPage->id]) }}" class="inline-block mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <a href="{{ route('creator.pages.editor', [$website->id, $currentPage->id]) }}" class="inline-block px-6 py-3 mt-4 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">
                 Editar Página
             </a>
             @endif
@@ -133,94 +136,136 @@
     </div>
     @endif
 
+    {{-- Footer predefinido con información del sitio --}}
+    @include('creator.preview.partials.footer-preview')
+
     <!-- JavaScript global del sitio web -->
     @if($website->global_js)
     <script>
-        {
-            !!$website - > global_js!!
-        }
+        {!! $website->global_js !!}
     </script>
     @endif
 
     <!-- JavaScript adicional de la página -->
     @if($currentPage->js_content ?? false)
     <script>
-        {
-            !!$currentPage - > js_content!!
-        }
+        {!! $currentPage->js_content !!}
     </script>
     @endif
 
     <!-- Scripts Globales -->
     @php
-        $currentPage = $page ?? $homePage;
-        $isHomePage = $currentPage && $currentPage->is_home;
-        $isStorePage = $currentPage && $currentPage->enable_store && !$currentPage->is_home;
-        
-        // Verificar si el contenido tiene un bloque de blog
-        $hasBlogBlock = false;
-        if ($currentPage && $currentPage->html_content) {
-            $hasBlogBlock = strpos($currentPage->html_content, 'id="blog-posts-container"') !== false
-                || strpos($currentPage->html_content, 'data-dynamic-blog="true"') !== false;
+    $currentPage = $page ?? $homePage;
+    $isHomePage = $currentPage && $currentPage->is_home;
+    $isStorePage = $currentPage && $currentPage->enable_store && !$currentPage->is_home;
+
+    // Verificar si la tienda virtual está habilitada a nivel de página o website
+    $enableStorePage = $currentPage && ($currentPage->enable_store ?? false);
+    $enableStoreWebsite = isset($website->settings['enable_store']) ? $website->settings['enable_store'] : true;
+    $shouldShowCart = $enableStorePage || $isStorePage || ($enableStoreWebsite && !$currentPage);
+
+    // Verificar si el contenido tiene un bloque de blog (origen: html_content)
+    $hasBlogBlock = false;
+    $blogBlockMatch = '';
+    $sourceForBlockCheck = $currentPage->html_content ?? '';
+    if ($sourceForBlockCheck) {
+        if (strpos($sourceForBlockCheck, 'id="blog-posts-container"') !== false) {
+            $hasBlogBlock = true;
+            $blogBlockMatch = 'id="blog-posts-container"';
+        } elseif (strpos($sourceForBlockCheck, 'data-dynamic-blog="true"') !== false) {
+            $hasBlogBlock = true;
+            $blogBlockMatch = 'data-dynamic-blog="true"';
         }
-        
-        // Verificar si el contenido tiene un bloque de productos
-        $hasProductsBlock = false;
-        if ($currentPage && $currentPage->html_content) {
-            $hasProductsBlock = strpos($currentPage->html_content, 'id="products-container"') !== false
-                || strpos($currentPage->html_content, 'data-dynamic-products="true"') !== false
-                || strpos($currentPage->html_content, 'data-products-source="api"') !== false;
-        }
+    }
+    $blogPostsServerRendered = $blogPostsServerRendered ?? false;
+
+    // Verificar si el contenido tiene un bloque de productos
+    $hasProductsBlock = false;
+    if ($currentPage && $currentPage->html_content) {
+    $hasProductsBlock = strpos($currentPage->html_content, 'id="products-container"') !== false
+    || strpos($currentPage->html_content, 'data-dynamic-products="true"') !== false
+    || strpos($currentPage->html_content, 'data-products-source="api"') !== false;
+    }
     @endphp
-    
+
+    <script>
+        console.log('[BLOG DEBUG] Diagnóstico de página', {
+            hasBlogBlock: {{ $hasBlogBlock ? 'true' : 'false' }},
+            blogBlockMatch: {!! json_encode($blogBlockMatch) !!},
+            blogPostsServerRendered: {{ $blogPostsServerRendered ? 'true' : 'false' }},
+            pageTitle: {!! json_encode($currentPage->title ?? '') !!},
+            websiteId: {{ $website->id ?? 0 }},
+            websiteSlug: {!! json_encode($website->slug ?? '') !!}
+        });
+    </script>
+
     @if($isStorePage)
-        {{-- Página de Tienda: Usar componentes completos de Laravel --}}
-        <x-global-scripts :website="$website" />
+    {{-- Página de Tienda: Usar componentes completos de Laravel --}}
+    <x-global-scripts :website="$website" />
     @elseif(!$isHomePage)
-        {{-- Otras páginas: Solo carrito y auth --}}
-        <script type="text/javascript" src="https://checkout.epayco.co/checkout.js"></script>
-        <x-cart.script :websiteSlug="$website->slug" />
-        <x-auth.user-auth-script :website="$website" />
-        
-        {{-- Script de productos si tiene bloque de productos --}}
-        @if($hasProductsBlock)
-            <x-products-script :apiKey="$website->api_key" :apiBaseUrl="$website->api_base_url" />
-        @endif
-        
-        {{-- Script de blog si tiene bloque de blog (solo si no se cargó antes) --}}
-        @if($hasBlogBlock && !isset($blogScriptIncluded))
-            @php $blogScriptIncluded = true; @endphp
-            @include('components.blog-script', ['websiteId' => $website->id])
-        @endif
+    {{-- Otras páginas: Solo carrito y auth si está habilitado --}}
+    @if($shouldShowCart)
+    <script type="text/javascript" src="https://checkout.epayco.co/checkout.js"></script>
+    <x-cart.script :websiteSlug="$website->slug" />
+    @endif
+    <x-auth.user-auth-script :website="$website" />
+
+    {{-- Script de productos si tiene bloque de productos --}}
+    @if($hasProductsBlock)
+    <x-products-script :apiKey="$website->api_key" :apiBaseUrl="$website->api_base_url" />
+    @endif
+
+    {{-- Script de blog solo si hay bloque y NO se renderizaron ya en servidor --}}
+    @if($hasBlogBlock && !isset($blogScriptIncluded) && !$blogPostsServerRendered)
+    @php $blogScriptIncluded = true; @endphp
+    <script>console.log('[BLOG DEBUG] Incluyendo blog-script (rama no-home).');</script>
+    @include('components.blog-script', ['websiteId' => $website->id])
+    @endif
     @else
-        {{-- Página de inicio: Solo carrito y auth (productos se cargan con script inline) --}}
-        <script type="text/javascript" src="https://checkout.epayco.co/checkout.js"></script>
-        <x-cart.script :websiteSlug="$website->slug" />
-        <x-auth.user-auth-script :website="$website" />
-        
-        {{-- Script de productos si tiene bloque de productos --}}
-        @if($hasProductsBlock)
-            <x-products-script :apiKey="$website->api_key" :apiBaseUrl="$website->api_base_url" />
-        @endif
-        
-        {{-- Script de blog si tiene bloque de blog (solo si no se cargó antes) --}}
-        @if($hasBlogBlock && !isset($blogScriptIncluded))
-            @php $blogScriptIncluded = true; @endphp
-            @include('components.blog-script', ['websiteId' => $website->id])
-        @endif
-        
-        @if($website->epayco_public_key && $website->epayco_private_key)
-            <x-payments.epayco.handler 
-                :publicKey="$website->epayco_public_key"
-                :privateKey="$website->epayco_private_key"
-                :customerId="$website->epayco_customer_id"
-            />
-        @endif
+    {{-- Página de inicio: Solo carrito y auth si está habilitado (productos se cargan con script inline) --}}
+    @if($shouldShowCart)
+    <script type="text/javascript" src="https://checkout.epayco.co/checkout.js"></script>
+    <x-cart.script :websiteSlug="$website->slug" />
+    @endif
+    <x-auth.user-auth-script :website="$website" />
+
+    {{-- Script de productos si tiene bloque de productos --}}
+    @if($hasProductsBlock)
+    <x-products-script :apiKey="$website->api_key" :apiBaseUrl="$website->api_base_url" />
+    @endif
+
+    {{-- Script de blog solo si hay bloque y NO se renderizaron ya en servidor --}}
+    @if($hasBlogBlock && !isset($blogScriptIncluded) && !$blogPostsServerRendered)
+    @php $blogScriptIncluded = true; @endphp
+    <script>console.log('[BLOG DEBUG] Incluyendo blog-script (rama home).');</script>
+    @include('components.blog-script', ['websiteId' => $website->id])
+    @endif
+
+    @if($website->epayco_public_key && $website->epayco_private_key)
+    <x-payments.epayco.handler
+        :publicKey="$website->epayco_public_key"
+        :privateKey="$website->epayco_private_key"
+        :customerId="$website->epayco_customer_id" />
+    @endif
     @endif
 
     <!-- Alpine.js para interactividad -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
+    <!-- Script para menú móvil -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+        });
+    </script>
+
     {{-- Script para eliminar placeholders eliminado: Ya no es necesario porque los placeholders solo aparecen en páginas nuevas sin contenido --}}
 </body>
 
