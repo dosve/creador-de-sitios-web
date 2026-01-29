@@ -7,10 +7,19 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @php
-    // Usar la página de inicio o la página específica si se proporciona
-    $currentPage = $page ?? $homePage;
-    // Variable para evitar cargar el script de blog múltiples veces
+    $currentPage = $page ?? $homePage ?? null;
     $blogScriptIncluded = false;
+    $currentHost = request()->getHost();
+    $isCustomDomain = false;
+    if (isset($website) && !in_array($currentHost, ['creadorweb.eme10.com', 'localhost', '127.0.0.1'], true)) {
+    $customDomain = $website->domains()
+    ->where('domain', $currentHost)
+    ->where('is_verified', true)
+    ->where('status', 'active')
+    ->first();
+    $isCustomDomain = $customDomain !== null;
+    }
+    $websiteBase = $isCustomDomain ? '' : ($website->slug ?? '');
     @endphp
 
     <title>{{ $currentPage->meta_title ?? $currentPage->title ?? $website->name }}</title>
@@ -28,7 +37,11 @@
         window.websiteApiKey = "{{ $website->api_key ?? '' }}";
         window.websiteApiUrl = "{{ $website->api_base_url ?? '' }}";
         window.websiteSlug = "{{ $website->slug ?? '' }}";
-        window.websiteId = {{ $website->id ?? 0 }};
+        window.websiteId = {
+            {
+                $website - > id ?? 0
+            }
+        };
         window.appBaseUrl = "{{ rtrim(url('/'), '/') }}";
         window.epaycoPublicKey = "{{ $website->epayco_public_key ?? '' }}";
         window.epaycoPrivateKey = "{{ $website->epayco_private_key ?? '' }}";
@@ -86,7 +99,9 @@
     <!-- Tiene !important: {{ str_contains($currentPage->css_content, '!important') ? 'SÍ' : 'NO' }} -->
     <!-- Tiene background-color: {{ str_contains($currentPage->css_content, 'background-color') ? 'SÍ' : 'NO' }} -->
     <style>
-        {!! $currentPage->css_content !!}
+        {
+            ! ! $currentPage->css_content ! !
+        }
     </style>
     @else
     <!-- ⚠️ NO HAY CSS GUARDADO PARA ESTA PÁGINA -->
@@ -95,7 +110,9 @@
     <!-- Estilos CSS globales del sitio web -->
     @if($website->global_css)
     <style>
-        {!! $website->global_css !!}
+        {
+            ! ! $website->global_css ! !
+        }
     </style>
     @endif
 
@@ -105,12 +122,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body class="bg-white">
+<body class="bg-white" data-page-id="{{ $currentPage && $currentPage->id ? $currentPage->id : '' }}">
+    @auth
+    @if(auth()->user()->role === 'admin' || (isset($website->user_id) && (int) auth()->user()->id === (int) $website->user_id))
+    <x-admin-bar :website="$website" :page="$currentPage" />
+    @endif
+    @endauth
     @include('creator.preview.partials.nav-preview')
-    
+
     <!-- Contenido HTML de la página (con artículos inyectados en servidor si hay bloque de blog) -->
     @php
-        $contentToShow = $pageHtmlContent ?? $currentPage->html_content;
+    $contentToShow = $pageHtmlContent ?? $currentPage->html_content;
+    if ($isCustomDomain && $contentToShow && ($website->slug ?? null)) {
+    $slug = $website->slug;
+    $contentToShow = str_replace('href="/' . $slug . '/', 'href="/', $contentToShow);
+    $contentToShow = str_replace('href="/' . $slug . '"', 'href="/"', $contentToShow);
+    }
     @endphp
     @if($contentToShow)
     <div id="page-content">
@@ -142,14 +169,18 @@
     <!-- JavaScript global del sitio web -->
     @if($website->global_js)
     <script>
-        {!! $website->global_js !!}
+        {
+            !!$website - > global_js!!
+        }
     </script>
     @endif
 
     <!-- JavaScript adicional de la página -->
     @if($currentPage->js_content ?? false)
     <script>
-        {!! $currentPage->js_content !!}
+        {
+            !!$currentPage - > js_content!!
+        }
     </script>
     @endif
 
@@ -169,13 +200,13 @@
     $blogBlockMatch = '';
     $sourceForBlockCheck = $currentPage->html_content ?? '';
     if ($sourceForBlockCheck) {
-        if (strpos($sourceForBlockCheck, 'id="blog-posts-container"') !== false) {
-            $hasBlogBlock = true;
-            $blogBlockMatch = 'id="blog-posts-container"';
-        } elseif (strpos($sourceForBlockCheck, 'data-dynamic-blog="true"') !== false) {
-            $hasBlogBlock = true;
-            $blogBlockMatch = 'data-dynamic-blog="true"';
-        }
+    if (strpos($sourceForBlockCheck, 'id="blog-posts-container"') !== false) {
+    $hasBlogBlock = true;
+    $blogBlockMatch = 'id="blog-posts-container"';
+    } elseif (strpos($sourceForBlockCheck, 'data-dynamic-blog="true"') !== false) {
+    $hasBlogBlock = true;
+    $blogBlockMatch = 'data-dynamic-blog="true"';
+    }
     }
     $blogPostsServerRendered = $blogPostsServerRendered ?? false;
 
@@ -190,12 +221,30 @@
 
     <script>
         console.log('[BLOG DEBUG] Diagnóstico de página', {
-            hasBlogBlock: {{ $hasBlogBlock ? 'true' : 'false' }},
-            blogBlockMatch: {!! json_encode($blogBlockMatch) !!},
-            blogPostsServerRendered: {{ $blogPostsServerRendered ? 'true' : 'false' }},
-            pageTitle: {!! json_encode($currentPage->title ?? '') !!},
-            websiteId: {{ $website->id ?? 0 }},
-            websiteSlug: {!! json_encode($website->slug ?? '') !!}
+            hasBlogBlock: {
+                {
+                    $hasBlogBlock ? 'true' : 'false'
+                }
+            },
+            blogBlockMatch: {
+                !!json_encode($blogBlockMatch) !!
+            },
+            blogPostsServerRendered: {
+                {
+                    $blogPostsServerRendered ? 'true' : 'false'
+                }
+            },
+            pageTitle: {
+                !!json_encode($currentPage - > title ?? '') !!
+            },
+            websiteId: {
+                {
+                    $website - > id ?? 0
+                }
+            },
+            websiteSlug: {
+                !!json_encode($website - > slug ?? '') !!
+            }
         });
     </script>
 
@@ -218,7 +267,9 @@
     {{-- Script de blog solo si hay bloque y NO se renderizaron ya en servidor --}}
     @if($hasBlogBlock && !isset($blogScriptIncluded) && !$blogPostsServerRendered)
     @php $blogScriptIncluded = true; @endphp
-    <script>console.log('[BLOG DEBUG] Incluyendo blog-script (rama no-home).');</script>
+    <script>
+        console.log('[BLOG DEBUG] Incluyendo blog-script (rama no-home).');
+    </script>
     @include('components.blog-script', ['websiteId' => $website->id])
     @endif
     @else
@@ -237,7 +288,9 @@
     {{-- Script de blog solo si hay bloque y NO se renderizaron ya en servidor --}}
     @if($hasBlogBlock && !isset($blogScriptIncluded) && !$blogPostsServerRendered)
     @php $blogScriptIncluded = true; @endphp
-    <script>console.log('[BLOG DEBUG] Incluyendo blog-script (rama home).');</script>
+    <script>
+        console.log('[BLOG DEBUG] Incluyendo blog-script (rama home).');
+    </script>
     @include('components.blog-script', ['websiteId' => $website->id])
     @endif
 
@@ -251,13 +304,13 @@
 
     <!-- Alpine.js para interactividad -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <!-- Script para menú móvil -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
-            
+
             if (mobileMenuButton && mobileMenu) {
                 mobileMenuButton.addEventListener('click', function() {
                     mobileMenu.classList.toggle('hidden');
