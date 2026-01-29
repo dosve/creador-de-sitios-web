@@ -2,11 +2,11 @@
 <nav class="bg-white shadow-md sticky top-0 z-50">
     <div class="container mx-auto px-6 py-4">
         <div class="flex items-center justify-between">
-            <a href="{{ ($isCustomDomain ?? false) ? url('/') : url($website->slug) }}" class="flex items-center gap-2 text-2xl font-bold text-gray-900 hover:text-emerald-600 transition-colors">
+            <a href="{{ $website->publicBaseUrl() }}" class="flex items-center gap-2 text-2xl font-bold text-gray-900 hover:text-emerald-600 transition-colors">
                 @if(!empty($website->logo))
-                <img src="{{ asset('storage/' . $website->logo) }}" alt="{{ $website->name }}" class="h-10 object-contain">
+                    <img src="{{ asset('storage/' . $website->logo) }}" alt="{{ $website->name }}" class="h-10 object-contain">
                 @else
-                {{ $website->name }}
+                    {{ $website->name }}
                 @endif
             </a>
             <div class="hidden md:flex items-center space-x-8">

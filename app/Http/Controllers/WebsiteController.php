@@ -42,12 +42,10 @@ class WebsiteController extends Controller
         file_put_contents(storage_path('logs/debug.log'), "Request URL: " . request()->fullUrl() . "\n", FILE_APPEND);
 
         // 1. PRIORIDAD: Buscar por dominio personalizado verificado
-        // EXCLUIR: creadorweb.eme10.com debe mostrar la aplicación del creador
-        if ($host !== 'creadorweb.eme10.com') {
-            $domain = \App\Models\Domain::where('domain', $host)
-                ->where('is_verified', true)
-                ->where('status', 'active')
-                ->first();
+        // EXCLUIR: creadorweb.eme10.com (y www.) debe mostrar la aplicación del creador
+        $isCreatorHost = in_array($host, ['creadorweb.eme10.com', 'www.creadorweb.eme10.com'], true);
+        if (!$isCreatorHost) {
+            $domain = \App\Models\Domain::findByHost($host);
         } else {
             $domain = null;
         }
@@ -80,8 +78,8 @@ class WebsiteController extends Controller
         }
 
         // 3. Si el usuario está logueado Y tiene un sitio seleccionado
-        // EXCLUIR: creadorweb.eme10.com debe mostrar la aplicación del creador
-        if (Auth::check() && session('selected_website_id') && $host !== 'creadorweb.eme10.com') {
+        // EXCLUIR: creadorweb.eme10.com (y www.) debe mostrar la aplicación del creador
+        if (Auth::check() && session('selected_website_id') && !$isCreatorHost) {
             \Log::info("Usuario logueado con sitio seleccionado: " . session('selected_website_id'));
             $website = Website::find(session('selected_website_id'));
 
@@ -293,7 +291,8 @@ class WebsiteController extends Controller
                     \Log::error("Stack trace: " . $e->getTraceAsString());
                     // Fallback a vista en blanco si hay error
                     if ($homePage && $homePage->html_content) {
-                        return view('public.blank', compact('website', 'homePage', 'menus'));
+                        $pageHtmlContent = $this->rewriteContentLinksForDomain($homePage->html_content, $website);
+                        return view('public.blank', compact('website', 'homePage', 'menus', 'pageHtmlContent'));
                     }
                     throw $e;
                 }
@@ -302,7 +301,8 @@ class WebsiteController extends Controller
 
         // Si no tiene plantilla pero tiene contenido personalizado, usar vista en blanco
         if (!$website->template_id && $homePage && $homePage->html_content) {
-            return view('public.blank', compact('website', 'homePage', 'menus'));
+            $pageHtmlContent = $this->rewriteContentLinksForDomain($homePage->html_content, $website);
+            return view('public.blank', compact('website', 'homePage', 'menus', 'pageHtmlContent'));
         }
 
         // Si no tiene plantilla, mostrar página de bienvenida
@@ -683,7 +683,7 @@ class WebsiteController extends Controller
         }
 
         // Si no tiene plantilla, usar vista en blanco
-        $pageHtmlContent = $page->html_content;
+        $pageHtmlContent = $this->rewriteContentLinksForDomain($page->html_content ?? '', $website);
         $blogPostsServerRendered = false;
 
         $hasBlogBlock = $page->html_content && (
@@ -708,7 +708,7 @@ class WebsiteController extends Controller
             $pattern = '/<section[^>]*data-dynamic-blog="true"[^>]*>[\s\S]*?<\/section>/u';
             $replaced = preg_replace($pattern, $blocksHtml, $page->html_content, 1);
             if ($replaced !== $page->html_content) {
-                $pageHtmlContent = $replaced;
+                $pageHtmlContent = $this->rewriteContentLinksForDomain($replaced, $website);
                 $blogPostsServerRendered = true;
             }
         }
@@ -751,8 +751,9 @@ class WebsiteController extends Controller
         \Log::info("Slug de página: " . $slug);
         \Log::info("Usuario autenticado: " . (Auth::check() ? 'SÍ' : 'NO'));
 
-        // Si es creadorweb.eme10.com, intentar con el sitio en sesión (si está autenticado)
-        if ($host === 'creadorweb.eme10.com' || $host === 'localhost' || $host === '127.0.0.1') {
+        // Si es creadorweb.eme10.com (o www.), intentar con el sitio en sesión (si está autenticado)
+        $isCreatorHost = in_array($host, ['creadorweb.eme10.com', 'www.creadorweb.eme10.com'], true);
+        if ($isCreatorHost || $host === 'localhost' || $host === '127.0.0.1') {
             \Log::info("⚠️ Host es creadorweb.eme10.com");
 
             if (!Auth::check()) {
@@ -773,11 +774,8 @@ class WebsiteController extends Controller
 
             \Log::info("✅ Usando sitio de sesión: " . $website->name);
         } else {
-            // Es un dominio personalizado - buscar en la tabla de dominios
-            $domain = \App\Models\Domain::where('domain', $host)
-                ->where('is_verified', true)
-                ->where('status', 'active')
-                ->first();
+            // Es un dominio personalizado - buscar en la tabla de dominios (acepta www y sin www)
+            $domain = \App\Models\Domain::findByHost($host);
 
             \Log::info("Dominio encontrado: " . ($domain ? 'SÍ (ID: ' . $domain->id . ')' : 'NO'));
 
@@ -854,8 +852,9 @@ class WebsiteController extends Controller
             }
         }
 
-        // Si no tiene plantilla, usar vista en blanco
-        return view('public.blank', compact('website', 'page', 'pages'));
+        // Si no tiene plantilla, usar vista en blanco (enlaces ya reescritos para dominio propio)
+        $pageHtmlContent = $this->rewriteContentLinksForDomain($page->html_content ?? '', $website);
+        return view('public.blank', compact('website', 'page', 'pages', 'pageHtmlContent'));
     }
 
     /**
@@ -927,5 +926,30 @@ class WebsiteController extends Controller
 
         // Sin plantilla - usar vista pública en blanco
         return view('public.blank', compact('website', 'page', 'pages', 'menus'));
+    }
+
+    /**
+     * Reescribe enlaces del contenido HTML: en dominio propio quita el slug del sitio.
+     * Ej: /lyman-sas/nosotros → /nosotros en lyman.com.co; se mantiene en creador.
+     */
+    private function rewriteContentLinksForDomain(?string $html, Website $website): string
+    {
+        if ($html === null || $html === '') {
+            return '';
+        }
+        $host = request()->getHost();
+        if (in_array($host, ['creadorweb.eme10.com', 'www.creadorweb.eme10.com', 'localhost', '127.0.0.1'], true)) {
+            return $html;
+        }
+        $domain = \App\Models\Domain::findByHost($host);
+        if (!$domain || $domain->website_id != $website->id) {
+            return $html;
+        }
+        $slug = preg_quote($website->slug, '/');
+        // /slug/página → /página
+        $html = preg_replace('/"\/' . $slug . '\//', '"/', $html);
+        // "/slug" (solo home) → "/"
+        $html = preg_replace('/"\/' . $slug . '"/', '"/"', $html);
+        return $html;
     }
 }

@@ -380,11 +380,8 @@ class BlogPostController extends Controller
     {
         $host = request()->getHost();
         
-        // Buscar el sitio por dominio personalizado
-        $domain = \App\Models\Domain::where('domain', $host)
-            ->where('is_verified', true)
-            ->where('status', 'active')
-            ->first();
+        // Buscar el sitio por dominio personalizado (acepta www y sin www)
+        $domain = \App\Models\Domain::findByHost($host);
         
         if (!$domain || !$domain->website) {
             abort(404);
@@ -444,11 +441,8 @@ class BlogPostController extends Controller
     {
         $host = request()->getHost();
         
-        // Buscar el sitio por dominio personalizado
-        $domain = \App\Models\Domain::where('domain', $host)
-            ->where('is_verified', true)
-            ->where('status', 'active')
-            ->first();
+        // Buscar el sitio por dominio personalizado (acepta www y sin www)
+        $domain = \App\Models\Domain::findByHost($host);
         
         if (!$domain || !$domain->website) {
             abort(404);

@@ -168,6 +168,23 @@ class Website extends Model
         return url('/');
     }
 
+    /**
+     * Base path para enlaces según contexto: en dominio propio es "/", en el creador es "/{slug}".
+     * Así en lyman.com.co los enlaces son /nosotros; en creadorweb.eme10.com son /lyman-sas/nosotros.
+     */
+    public function publicBaseUrl(): string
+    {
+        $host = request()->getHost();
+        if (in_array($host, ['creadorweb.eme10.com', 'www.creadorweb.eme10.com', 'localhost', '127.0.0.1'], true)) {
+            return '/' . $this->slug;
+        }
+        $domain = Domain::findByHost($host);
+        if ($domain && $domain->website_id === $this->id) {
+            return '/';
+        }
+        return '/' . $this->slug;
+    }
+
     public function getSitemapUrl()
     {
         return $this->getUrl() . '/sitemap.xml';

@@ -9,9 +9,9 @@ $finalUrl = $item->final_url;
 $isExternal = \Illuminate\Support\Str::startsWith($finalUrl ?? '', ['http://', 'https://', '//']);
 
 if (!$isExternal) {
-// El método final_url ya retorna la URL correcta con el slug del website incluido
-// Solo necesitamos convertirlo a URL completa si no es externo
-$finalUrl = url($finalUrl);
+    // El método final_url ya retorna la URL correcta con el slug del website incluido
+    // Solo necesitamos convertirlo a URL completa si no es externo
+    $finalUrl = url($finalUrl);
 }
 @endphp
 <a href="{{ $finalUrl }}"
@@ -22,15 +22,12 @@ $finalUrl = url($finalUrl);
 </a>
 @endforeach
 @else
-{{-- Menú por defecto si no hay menú configurado --}}
-@php
-$base = ($isCustomDomain ?? false) ? '' : $website->slug;
-$basePath = $base ? '/' . $base : '';
-@endphp
-<a href="{{ url($basePath ?: '/') }}" class="text-gray-600 transition-colors hover:text-gray-900">Inicio</a>
+{{-- Menú por defecto si no hay menú configurado (usa publicBaseUrl para dominio propio) --}}
+@php $base = $website->publicBaseUrl(); @endphp
+<a href="{{ url($base) }}" class="text-gray-600 transition-colors hover:text-gray-900">Inicio</a>
 @if($website->pages()->where('slug', 'productos')->where('is_published', true)->exists())
-<a href="{{ url($basePath . '/productos') }}" class="text-gray-600 transition-colors hover:text-gray-900">Productos</a>
+<a href="{{ url(rtrim($base, '/') . '/productos') }}" class="text-gray-600 transition-colors hover:text-gray-900">Productos</a>
 @endif
-<a href="{{ url($basePath . '/blog') }}" class="text-gray-600 transition-colors hover:text-gray-900">Blog</a>
-<a href="{{ url($basePath . '#contacto') }}" class="text-gray-600 transition-colors hover:text-gray-900">Contacto</a>
+<a href="{{ url(rtrim($base, '/') . '/blog') }}" class="text-gray-600 transition-colors hover:text-gray-900">Blog</a>
+<a href="{{ url(rtrim($base, '/') . '#contacto') }}" class="text-gray-600 transition-colors hover:text-gray-900">Contacto</a>
 @endif
