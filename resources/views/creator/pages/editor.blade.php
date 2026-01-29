@@ -643,6 +643,24 @@
       text-align: center;
     }
 
+    /* Asegurar que las categorías ocupen el 100% del ancho del panel */
+    .gjs-block-category {
+      width: 100% !important;
+      display: block !important;
+    }
+
+    /* Asegurar que el título de la categoría ocupe el 100% del ancho */
+    .gjs-block-category .gjs-title {
+      width: 100% !important;
+      display: block !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Cuando una categoría está cerrada, ocultar el contenido de bloques */
+    .gjs-block-category:not(.gjs-open) .gjs-blocks-cs {
+      display: none !important;
+    }
+
     /* Ocultar campo de búsqueda y elementos adicionales al final del panel de bloques */
     .gjs-blocks-c input[type="text"],
     .gjs-blocks-c input[type="search"],

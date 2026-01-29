@@ -8,6 +8,8 @@ use App\Models\TemplateConfiguration;
 use App\Services\TemplateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -500,11 +502,15 @@ class WebsiteController extends Controller
 
         $newSlug = Str::slug($request->name);
 
-        $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'is_published' => 'nullable|boolean',
-        ]);
+        ];
+        if ($request->hasFile('logo')) {
+            $rules['logo'] = 'image|mimes:jpeg,png,jpg,svg|max:2048';
+        }
+        $request->validate($rules);
 
         // Verificar si el slug ya existe para otro sitio web
         if ($newSlug !== $website->slug) {
@@ -513,7 +519,6 @@ class WebsiteController extends Controller
                 ->first();
 
             if ($existingWebsite) {
-                // Si el slug ya existe, agregar un número al final
                 $counter = 1;
                 $originalSlug = $newSlug;
                 do {
@@ -526,12 +531,45 @@ class WebsiteController extends Controller
             }
         }
 
-        $website->update([
+        $data = [
             'name' => $request->name,
             'description' => $request->description,
             'slug' => $newSlug,
             'is_published' => $request->boolean('is_published'),
+        ];
+
+        // Logo: subir nuevo (prioritario) o eliminar
+        $hasFile = $request->hasFile('logo');
+        $removeLogo = $request->boolean('remove_logo');
+        \Log::info('Logo update check', [
+            'hasFile' => $hasFile,
+            'remove_logo' => $removeLogo,
+            'current_logo' => $website->logo,
         ]);
+
+        if ($hasFile) {
+            $file = $request->file('logo');
+            if ($website->logo && Storage::disk('public')->exists($website->logo)) {
+                Storage::disk('public')->delete($website->logo);
+            }
+            $data['logo'] = $file->store('logos', 'public');
+            \Log::info('Logo saved', ['path' => $data['logo']]);
+        } elseif ($removeLogo && $website->logo) {
+            if (Storage::disk('public')->exists($website->logo)) {
+                Storage::disk('public')->delete($website->logo);
+            }
+            $data['logo'] = null;
+            \Log::info('Logo removed');
+        }
+
+        // Footer (solo vista previa): guardar en settings
+        $settings = $website->settings ?? [];
+        $settings['contact_email'] = $request->input('footer_contact_email');
+        $settings['contact_phone'] = $request->input('footer_contact_phone');
+        $settings['contact_address'] = $request->input('footer_contact_address');
+        $data['settings'] = $settings;
+
+        $website->update($data);
 
         return redirect()->route('creator.config.general')
             ->with('success', 'Sitio web actualizado exitosamente');
@@ -645,7 +683,37 @@ class WebsiteController extends Controller
         }
 
         // Si no tiene plantilla, usar vista en blanco
-        return view('public.blank', compact('website', 'page', 'pages'));
+        $pageHtmlContent = $page->html_content;
+        $blogPostsServerRendered = false;
+
+        $hasBlogBlock = $page->html_content && (
+            str_contains($page->html_content, 'id="blog-posts-container"') ||
+            str_contains($page->html_content, 'data-dynamic-blog="true"')
+        );
+
+        if ($hasBlogBlock) {
+            $blogPosts = $website->blogPosts()
+                ->where('is_published', true)
+                ->with(['category', 'tags'])
+                ->orderByDesc('published_at')
+                ->orderByDesc('created_at')
+                ->take(6)
+                ->get();
+
+            $blocksHtml = View::make('creator.preview.partials.blog-posts-cards', [
+                'blogPosts' => $blogPosts,
+                'website' => $website,
+            ])->render();
+
+            $pattern = '/<section[^>]*data-dynamic-blog="true"[^>]*>[\s\S]*?<\/section>/u';
+            $replaced = preg_replace($pattern, $blocksHtml, $page->html_content, 1);
+            if ($replaced !== $page->html_content) {
+                $pageHtmlContent = $replaced;
+                $blogPostsServerRendered = true;
+            }
+        }
+
+        return view('public.blank', compact('website', 'page', 'pages', 'pageHtmlContent', 'blogPostsServerRendered'));
     }
 
     /**

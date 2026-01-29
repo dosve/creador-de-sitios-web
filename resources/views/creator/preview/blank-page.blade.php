@@ -32,6 +32,12 @@
         }
     </style>
 
+    @if($page && $page->css_content)
+    <style>
+        {!! $page->css_content !!}
+    </style>
+    @endif
+
     @yield('styles')
 </head>
 
@@ -91,13 +97,6 @@
         <div class="page-content">
             {!! $page->html_content !!}
         </div>
-        @if($page->css_content)
-        <style>
-            {
-                ! ! $page->css_content ! !
-            }
-        </style>
-        @endif
         @else
         <div class="flex items-center justify-center min-h-screen bg-gray-50">
             <div class="text-center">
@@ -113,6 +112,9 @@
         @endif
     </main>
 
+    {{-- Footer predefinido (solo vista previa). Info desde Información General. --}}
+    @include('creator.preview.partials.footer-preview')
+
     @yield('scripts')
 
     <!-- Scripts Globales -->
@@ -127,8 +129,15 @@
     <!-- Componente para cargar formularios dinámicamente -->
     @include('components.form-script', ['websiteId' => $website->id])
 
-    <!-- Script del Carrito de Compras -->
+    <!-- Script del Carrito de Compras (solo si está habilitado) -->
+    @php
+    $enableStorePage = $page && ($page->enable_store ?? false);
+    $enableStoreWebsite = isset($website->settings['enable_store']) ? $website->settings['enable_store'] : true;
+    $shouldShowCart = $enableStorePage || $enableStoreWebsite;
+    @endphp
+    @if($shouldShowCart)
     <x-cart.script :websiteSlug="$website->slug" />
+    @endif
 
     <!-- Script de Autenticación de Usuario -->
     <x-auth.user-auth-script :website="$website" />

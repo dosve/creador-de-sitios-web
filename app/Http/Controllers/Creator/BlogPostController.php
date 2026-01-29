@@ -187,20 +187,23 @@ class BlogPostController extends Controller
      */
     public function apiIndex(Request $request, Website $website)
     {
-        // Solo verificar autorización básica, no restringir por usuario en API
-        // $this->authorize('view', $website);
-        
+        \Log::info('[BLOG API] apiIndex called', [
+            'website_id' => $website->id,
+            'website_slug' => $website->slug,
+            'page' => $request->get('page', 1),
+            'per_page' => $request->get('per_page', 6),
+        ]);
+
         $perPage = $request->get('per_page', 6);
         $page = $request->get('page', 1);
         $search = $request->get('search', '');
         $sort = $request->get('sort', 'created_at');
         $order = $request->get('order', 'desc');
-        
+
         $query = $website->blogPosts()
             ->where('is_published', true)
             ->with(['category', 'tags']);
-        
-        // Aplicar búsqueda si existe
+
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
@@ -208,14 +211,21 @@ class BlogPostController extends Controller
                   ->orWhere('content', 'like', "%{$search}%");
             });
         }
-        
-        // Aplicar ordenamiento
+
         $query->orderBy($sort, $order);
-        
+
         $blogPosts = $query->paginate($perPage, ['*'], 'page', $page);
-        
+        $items = $blogPosts->items();
+
+        \Log::info('[BLOG API] apiIndex response', [
+            'website_id' => $website->id,
+            'total_posts' => $blogPosts->total(),
+            'returned_count' => count($items),
+            'current_page' => $blogPosts->currentPage(),
+        ]);
+
         return response()->json([
-            'data' => $blogPosts->items(),
+            'data' => $items,
             'current_page' => $blogPosts->currentPage(),
             'last_page' => $blogPosts->lastPage(),
             'per_page' => $blogPosts->perPage(),
@@ -269,6 +279,19 @@ class BlogPostController extends Controller
                     ]);
                 }
             }
+        }
+
+        // Sin plantilla: si existe la página "Blog", mostrarla con layout blank (incluye bloque Listado de Posts)
+        $blogPage = $website->pages()->where('slug', 'blog')->first();
+        if ($blogPage) {
+            $pages = $website->pages()->orderBy('sort_order')->get();
+            $homePage = $website->pages()->where('is_home', true)->first();
+            return view('public.blank', [
+                'website' => $website,
+                'page' => $blogPage,
+                'pages' => $pages,
+                'homePage' => $homePage,
+            ]);
         }
 
         return view('public.blog.index', compact('website', 'blogPosts'));
@@ -347,7 +370,7 @@ class BlogPostController extends Controller
             }
         }
 
-        return view('public.blog.show', compact('website', 'blogPost', 'relatedPosts'));
+        return view('public.blog.show-blank', compact('website', 'blogPost', 'relatedPosts'));
     }
 
     /**

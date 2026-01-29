@@ -67,9 +67,7 @@
         </div>
         @if($homePage->css_content)
         <style>
-            {
-                ! ! $homePage->css_content ! !
-            }
+            {!! $homePage->css_content !!}
         </style>
         @endif
         @else
@@ -86,6 +84,9 @@
         </div>
         @endif
     </main>
+
+    {{-- Footer predefinido (solo vista previa). Info desde Información General. --}}
+    @include('creator.preview.partials.footer-preview')
 
     @yield('scripts')
 

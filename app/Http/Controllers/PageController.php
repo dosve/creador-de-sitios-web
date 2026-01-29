@@ -79,19 +79,32 @@ class PageController extends Controller
             'meta_description' => 'nullable|string|max:160',
             'html_content' => 'nullable|string',
             'is_published' => 'boolean',
+            'enable_store' => 'nullable|boolean',
             'change_description' => 'nullable|string|max:255',
         ]);
 
         // Crear versión antes de actualizar
         $page->createVersion($request->change_description ?: 'Página actualizada');
 
-        $page->update([
+        // Solo actualizar campos que vienen en la solicitud
+        $updateData = [
             'title' => $request->title,
             'slug' => $request->slug,
-            'meta_description' => $request->meta_description,
-            'html_content' => $request->html_content,
             'is_published' => $request->boolean('is_published'),
-        ]);
+            'enable_store' => $request->boolean('enable_store', false),
+        ];
+
+        // Solo actualizar meta_description si viene en la solicitud
+        if ($request->has('meta_description')) {
+            $updateData['meta_description'] = $request->meta_description;
+        }
+
+        // Solo actualizar html_content si viene en la solicitud y no está vacío
+        if ($request->has('html_content') && !empty($request->html_content)) {
+            $updateData['html_content'] = $request->html_content;
+        }
+
+        $page->update($updateData);
 
         return redirect()->route('creator.pages.show', [$website, $page])
             ->with('success', 'Página actualizada exitosamente');

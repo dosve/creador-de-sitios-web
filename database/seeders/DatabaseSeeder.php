@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         // Ejecutar seeders en orden
     $this->call([
         PlanSeeder::class,
+        // LymanSasPageSeeder::class, // Descomentar para crear página de LYMAN SAS
     ]);
     }
 }

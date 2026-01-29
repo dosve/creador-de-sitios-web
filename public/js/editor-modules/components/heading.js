@@ -272,8 +272,23 @@
               return;
             }
 
-            // Solo actualizar si el contenido es diferente para evitar bucles
+            // Obtener el texto actual del DOM
             const currentText = el.textContent || el.innerText || '';
+            
+            // ✅ CRÍTICO: Si el modelo está vacío pero el DOM tiene contenido,
+            // sincronizar el modelo con el DOM en lugar de borrar el DOM
+            if (!text || !text.trim()) {
+              if (currentText && currentText.trim()) {
+                console.log('⚠️ [Heading] Modelo vacío pero DOM tiene contenido, sincronizando modelo...');
+                this.set('heading-text', currentText.trim(), { silent: true });
+                return; // No actualizar el DOM, ya tiene el contenido correcto
+              } else {
+                // Ambos están vacíos, no hacer nada
+                return;
+              }
+            }
+
+            // Solo actualizar si el contenido es diferente para evitar bucles
             if (currentText === text) {
               return; // Ya está actualizado, no hacer nada
             }

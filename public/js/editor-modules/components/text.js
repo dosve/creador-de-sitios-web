@@ -166,9 +166,31 @@
         },
         updateContent() {
           const content = this.get('text-content') || '';
+          
+          // ✅ CRÍTICO: Si el contenido del modelo está vacío pero el DOM tiene contenido,
+          // NO actualizar el DOM para evitar borrar el contenido existente
           if (this.view && this.view.el) {
-            this.view.el.textContent = content;
-            this.components(content);
+            const el = this.view.el;
+            const currentContent = el.textContent || el.innerText || '';
+            
+            // Si el modelo tiene contenido, actualizar el DOM
+            if (content && content.trim()) {
+              // Solo actualizar si es diferente para evitar bucles
+              if (currentContent !== content) {
+                el.textContent = content;
+                if (this.components && typeof this.components === 'function') {
+                  this.components(content);
+                }
+              }
+            } else if (!currentContent || !currentContent.trim()) {
+              // Si tanto el modelo como el DOM están vacíos, está bien
+              // No hacer nada
+            } else {
+              // Si el modelo está vacío pero el DOM tiene contenido,
+              // sincronizar el modelo con el DOM en lugar de borrar el DOM
+              console.log('⚠️ [Text] Modelo vacío pero DOM tiene contenido, sincronizando modelo...');
+              this.set('text-content', currentContent.trim(), { silent: true });
+            }
           }
         },
         updateSize() {

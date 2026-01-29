@@ -938,6 +938,20 @@ function initializeEditor() {
   // Hacer el editor disponible globalmente
   window.editor = editor;
 
+  // ✅ Limpiar bloques vacíos del panel después de cargar
+  setTimeout(() => {
+    const blocks = document.querySelectorAll('.gjs-block');
+    blocks.forEach(block => {
+      const label = block.querySelector('.gjs-block-label');
+      const hasVisibleContent = label && label.textContent.trim().length > 0;
+      const hasIcon = block.querySelector('svg, img, .gjs-block-svg');
+      
+      if (!hasVisibleContent && !hasIcon) {
+        block.style.display = 'none';
+      }
+    });
+  }, 1000);
+
   // ✅ Registrar trait personalizado para textarea
   if (editor.TraitManager) {
     editor.TraitManager.addType('textarea', {
@@ -1281,18 +1295,27 @@ function initializeEditor() {
       }
       console.log('📝 Bloque de blog detectado, inyectando script...');
 
-      // Obtener el website ID de la variable global o del atributo data
-      const websiteId = window.websiteId ||
+      // Obtener el website ID: priorizar variable global del editor, luego data-website-id del bloque
+      let websiteId = window.websiteId ||
         window.currentWebsiteId ||
         (frameDoc.querySelector('#blog-posts-container')?.dataset?.websiteId) ||
         (frameDoc.querySelector('[data-dynamic-blog="true"]')?.querySelector('[data-website-id]')?.dataset?.websiteId) ||
         null;
+      if (websiteId !== null && websiteId !== undefined) websiteId = String(websiteId).trim();
+      if (!websiteId || websiteId === "" || websiteId === "0") websiteId = null;
 
       console.log('🌐 Website ID para blog:', websiteId);
 
-      if (!websiteId || websiteId === "" || websiteId === null) {
-        console.log("⚠️ Website ID no válido o no encontrado");
+      if (!websiteId) {
+        console.log("⚠️ No se inyecta script de blog: falta websiteId (revisa window.websiteId en el editor).");
         return;
+      }
+
+      // Rellenar data-website-id vacío en el bloque para que la vista previa y el guardado lo tengan
+      const containerEl = frameDoc.querySelector('#blog-posts-container') ||
+        frameDoc.querySelector('[data-dynamic-blog="true"] .grid');
+      if (containerEl && (!containerEl.dataset.websiteId || containerEl.dataset.websiteId === '')) {
+        containerEl.setAttribute('data-website-id', String(websiteId));
       }
 
       // Crear el script
@@ -1318,9 +1341,10 @@ function initializeEditor() {
               return;
             }
             
-            console.log("📝 Cargando posts del blog para website ID:", websiteId);
+            const apiUrl = '/api/websites/' + websiteId + '/blog-posts?page=1&per_page=6';
+            console.log("📝 [BLOG EDITOR] Fetch:", apiUrl);
             
-            fetch('/api/websites/' + websiteId + '/blog-posts?page=1&per_page=6', {
+            fetch(apiUrl, {
               method: 'GET',
               headers: {
                 'Accept': 'application/json',
@@ -1328,26 +1352,28 @@ function initializeEditor() {
                 'X-Requested-With': 'XMLHttpRequest'
               }
             })
-            .then(response => response.json())
+            .then(response => {
+              console.log("📝 [BLOG EDITOR] Response status:", response.status, response.statusText);
+              if (!response.ok) throw new Error('API ' + response.status);
+              return response.json();
+            })
             .then(data => {
-              console.log("📝 Posts recibidos:", data);
-              
+              const posts = (data && data.data) ? data.data : [];
+              console.log("📝 [BLOG EDITOR] Posts recibidos:", posts.length, data);
+              if (posts.length > 0) {
+                console.log("📋 [BLOG EDITOR] Artículos:", posts.map(function(p) { return p.title || '(sin título)'; }));
+              }
               if (data && data.data && data.data.length > 0) {
-                // Limpiar contenido de ejemplo
                 container.innerHTML = '';
-                
-                // Renderizar posts reales
                 data.data.forEach(post => {
                   const postEl = document.createElement('article');
                   postEl.className = 'overflow-hidden transition-shadow bg-white rounded-lg shadow-lg hover:shadow-xl';
-                  
                   const excerpt = post.excerpt || (post.content || '').substring(0, 150) + '...';
                   const publishDate = new Date(post.created_at || post.published_at).toLocaleDateString('es-ES', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                   });
-                  
                   postEl.innerHTML = \`
                     <div class="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
                       \${post.category ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-2">' + post.category.name + '</span>' : ''}
@@ -1369,17 +1395,38 @@ function initializeEditor() {
                       </div>
                     </div>
                   \`;
-                  
                   container.appendChild(postEl);
                 });
-                
-                console.log("✅ Posts del blog renderizados correctamente");
+                console.log("✅ [BLOG EDITOR] Posts renderizados");
               } else {
+                console.log("⚠️ [BLOG EDITOR] No hay posts; mostrando «No hay artículos»");
+                container.innerHTML = \`
+                  <div class="col-span-full text-center py-12">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                    </div>
+                    <h3 class="text-xl font-medium text-gray-900 mb-2">No hay artículos disponibles</h3>
+                    <p class="text-gray-500">Aún no se han publicado artículos en este blog.</p>
+                  </div>
+                \`;
                 console.log("⚠️ No se encontraron posts del blog");
               }
             })
             .catch(error => {
-              console.error("❌ Error al cargar posts del blog:", error);
+              console.error("❌ [BLOG EDITOR] Error al cargar posts:", error.message || error);
+              container.innerHTML = \`
+                <div class="col-span-full text-center py-12">
+                  <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-12 h-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                  <h3 class="text-xl font-medium text-gray-900 mb-2">Error al cargar artículos</h3>
+                  <p class="text-gray-500">No se pudieron cargar los artículos. Comprueba la consola y recarga la página.</p>
+                </div>
+              \`;
             });
           }
           
