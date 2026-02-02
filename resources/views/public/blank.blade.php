@@ -88,6 +88,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- ✅ Estilos globales para overlays de fondos con color -->
+    <link rel="stylesheet" href="{{ asset('css/overlay-backgrounds.css') }}">
+
     <!-- Favicon -->
     @if($website->favicon)
     <link rel="icon" type="image/x-icon" href="{{ Storage::url($website->favicon) }}">
@@ -302,6 +305,20 @@
     @endif
     @endif
 
+    <!-- Script de diagnóstico de página -->
+    <script src="/js/debug-page.js"></script>
+
+    <!-- TEST: Script de prueba simple -->
+    <script src="/js/test-responsive.js"></script>
+
+    @if(!request()->routeIs('creator.editor'))
+    <!-- Scripts para diagnóstico y reparación de responsive (SOLO EN PÁGINAS PÚBLICAS) -->
+    <script src="/js/fix-responsive-classes.js"></script>
+    <script src="/js/debug-responsive.js"></script>
+    <script src="/js/investigate-responsive.js"></script>
+    <script src="/js/responsive-dashboard.js"></script>
+    @endif
+    
     <!-- Alpine.js para interactividad -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 

@@ -26,7 +26,7 @@
 
         <!-- Main Content -->
         <main class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-            <form method="POST" action="{{ route('creator.seo.update') }}" class="space-y-8">
+            <form method="POST" action="{{ route('creator.seo.update', $website) }}" class="space-y-8">
                 @csrf
                 @method('PUT')
 
@@ -138,6 +138,22 @@
                                    placeholder="https://ejemplo.com/imagen.jpg">
                             <p class="mt-1 text-xs text-gray-500">URL de la imagen que aparecerá al compartir (recomendado: 1200x630px)</p>
                             @error('og_image')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="default_og_image" class="block text-sm font-medium text-gray-700 mb-2">
+                                Imagen OG por Defecto
+                            </label>
+                            <input type="url" 
+                                   id="default_og_image" 
+                                   name="default_og_image" 
+                                   value="{{ old('default_og_image', $seoSettings->default_og_image ?? '') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('default_og_image') border-red-500 @enderror"
+                                   placeholder="https://ejemplo.com/imagen-default.jpg">
+                            <p class="mt-1 text-xs text-gray-500">Imagen por defecto si no hay imagen específica</p>
+                            @error('default_og_image')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -338,9 +354,119 @@
                     </div>
                 </div>
 
+                <!-- Verificación en Buscadores -->
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Verificación en Buscadores</h3>
+                        <p class="text-sm text-gray-500">Códigos de verificación de Google Search Console y Bing Webmaster Tools</p>
+                    </div>
+                    <div class="px-6 py-6 space-y-6">
+                        <div>
+                            <label for="google_site_verification" class="block text-sm font-medium text-gray-700 mb-2">
+                                Google Site Verification
+                            </label>
+                            <textarea id="google_site_verification" 
+                                      name="google_site_verification" 
+                                      rows="2"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('google_site_verification') border-red-500 @enderror"
+                                      placeholder="google-site-verification: googleXXXXXXXX">{{ old('google_site_verification', $seoSettings->google_site_verification ?? '') }}</textarea>
+                            <p class="mt-1 text-xs text-gray-500">Código de verificación de Google Search Console</p>
+                            @error('google_site_verification')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="microsoft_site_verification" class="block text-sm font-medium text-gray-700 mb-2">
+                                Microsoft Site Verification
+                            </label>
+                            <textarea id="microsoft_site_verification" 
+                                      name="microsoft_site_verification" 
+                                      rows="2"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('microsoft_site_verification') border-red-500 @enderror"
+                                      placeholder="msvalidate.01: XXXXXXX">{{ old('microsoft_site_verification', $seoSettings->microsoft_site_verification ?? '') }}</textarea>
+                            <p class="mt-1 text-xs text-gray-500">Código de verificación de Bing Webmaster Tools</p>
+                            @error('microsoft_site_verification')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opciones Avanzadas SEO -->
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Opciones Avanzadas</h3>
+                        <p class="text-sm text-gray-500">Configuración avanzada de SEO y accesibilidad</p>
+                    </div>
+                    <div class="px-6 py-6 space-y-6">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Índice en Buscadores</label>
+                                <div class="flex items-center">
+                                    <input type="checkbox" 
+                                           id="allow_google_index" 
+                                           name="allow_google_index" 
+                                           value="1"
+                                           {{ old('allow_google_index', $seoSettings->allow_google_index ?? true) ? 'checked' : '' }}
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="allow_google_index" class="ml-2 block text-sm text-gray-900">
+                                        Permitir indexación en Google
+                                    </label>
+                                </div>
+                                <div class="flex items-center mt-2">
+                                    <input type="checkbox" 
+                                           id="allow_bing_index" 
+                                           name="allow_bing_index" 
+                                           value="1"
+                                           {{ old('allow_bing_index', $seoSettings->allow_bing_index ?? true) ? 'checked' : '' }}
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="allow_bing_index" class="ml-2 block text-sm text-gray-900">
+                                        Permitir indexación en Bing
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="sitemap_url" class="block text-sm font-medium text-gray-700 mb-2">
+                                URL del Sitemap
+                            </label>
+                            <input type="url" 
+                                   id="sitemap_url" 
+                                   name="sitemap_url" 
+                                   value="{{ old('sitemap_url', $seoSettings->sitemap_url ?? '') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('sitemap_url') border-red-500 @enderror"
+                                   placeholder="https://tu-sitio.com/sitemap.xml">
+                            <p class="mt-1 text-xs text-gray-500">URL personalizada del sitemap (opcional)</p>
+                            @error('sitemap_url')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="mobile_friendly" class="block text-sm font-medium text-gray-700 mb-2">
+                                Preferencia de Dispositivo
+                            </label>
+                            <select id="mobile_friendly" 
+                                    name="mobile_friendly" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('mobile_friendly') border-red-500 @enderror">
+                                <option value="auto" {{ old('mobile_friendly', $seoSettings->mobile_friendly ?? 'auto') == 'auto' ? 'selected' : '' }}>Auto (Recomendado)</option>
+                                <option value="mobile" {{ old('mobile_friendly', $seoSettings->mobile_friendly ?? '') == 'mobile' ? 'selected' : '' }}>Optimizado para móvil</option>
+                                <option value="desktop" {{ old('mobile_friendly', $seoSettings->mobile_friendly ?? '') == 'desktop' ? 'selected' : '' }}>Optimizado para escritorio</option>
+                                <option value="not-set" {{ old('mobile_friendly', $seoSettings->mobile_friendly ?? '') == 'not-set' ? 'selected' : '' }}>Sin preferencia</option>
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500">Indica a los buscadores el tipo de dispositivo preferido</p>
+                            @error('mobile_friendly')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Botones de Acción -->
                 <div class="flex justify-end space-x-3 pt-6">
-                    <a href="{{ route('creator.seo.index') }}" 
+                    <a href="{{ route('creator.seo.index', $website) }}" 
                        class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         Cancelar
                     </a>

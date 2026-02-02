@@ -11,11 +11,20 @@
     
     editor.DomComponents.addType('background-image', {
       isComponent: (el) => {
-        if (el.tagName === 'DIV' && (
-          el.classList.contains('background-image-section') ||
-          el.getAttribute('data-gjs-type') === 'background-image'
-        )) {
-          return { type: 'background-image' };
+        // Verificar múltiples condiciones para identificar el componente
+        if (el.tagName === 'DIV') {
+          // Verificar si tiene la clase background-image-section
+          if (el.classList && el.classList.contains('background-image-section')) {
+            return { type: 'background-image' };
+          }
+          // Verificar si tiene el atributo data-gjs-type
+          if (el.getAttribute('data-gjs-type') === 'background-image') {
+            return { type: 'background-image' };
+          }
+          // Verificar si tiene el atributo data-gjs-name
+          if (el.getAttribute('data-gjs-name') === 'Imagen de Fondo') {
+            return { type: 'background-image' };
+          }
         }
         return false;
       },
@@ -39,7 +48,8 @@
             'data-gjs-name': 'Imagen de Fondo',
             'data-gjs-editable': 'false',
             'data-gjs-removable': 'true',  // ✅ HABILITADO: Permitir eliminación
-            'data-gjs-badgable': 'true'  // ✅ HABILITADO: Mostrar badge con nombre personalizado
+            'data-gjs-badgable': 'true',  // ✅ HABILITADO: Mostrar badge con nombre personalizado
+            'data-height': '384'  // ✅ Guardar altura para persistencia
           },
           'background-image-url': '/images/default-image.jpg',
           'overlay-opacity': '50',
@@ -60,28 +70,96 @@
               text: 'Abrir Galería de Imágenes',
               full: true,
               command: (editor) => {
-                const component = editor.getSelected();
-                if (component && component.get('type') === 'background-image') {
+                // LOG INICIAL - VERIFICAR SI SE EJECUTA EL COMANDO
+                console.log('%c🟥 BOTÓN PRESIONADO - COMMAND EJECUTADO', 'color: #ff0000; font-weight: bold; font-size: 14px; background: #ffff00');
+                console.log('%c=== BACKGROUND-IMAGE MODAL START ===', 'color: #ff0000; font-weight: bold; font-size: 14px');
+                
+                try {
+                  const component = editor.getSelected();
+                  console.log('1️⃣ Componente seleccionado:', component?.get('type'));
+                  console.log('   → Component object:', component);
+                  
+                  if (!component || component.get('type') !== 'background-image') {
+                    console.warn('❌ Componente inválido - Esperado: background-image, Recibido:', component?.get('type'));
+                    return;
+                  }
+                  
                   const am = editor.AssetManager;
                   const modal = editor.Modal;
                   
+                  console.log('2️⃣ AssetManager existe:', !!am);
+                  if (!am) console.error('❌ AssetManager NO existe');
+                  
+                  console.log('3️⃣ Modal existe:', !!modal);
+                  if (!modal) console.error('❌ Modal NO existe');
+                  
+                  console.log('4️⃣ am.open función:', typeof am.open);
+                  if (typeof am.open !== 'function') {
+                    console.error('❌ am.open NO es una función');
+                  }
+                  
+                  console.log('5️⃣ Iniciando fetch...');
+                  
                   fetch('/creator/media/api/list')
-                    .then(response => response.json())
+                    .then(response => {
+                      console.log('6️⃣ Fetch respuesta recibida - Status:', response.status);
+                      if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                      }
+                      return response.json();
+                    })
                     .then(data => {
+                      console.log('7️⃣ JSON procesado correctamente');
+                      console.log('   → Archivos en respuesta:', data?.files?.length);
+                      console.log('   → Success:', data?.success);
+                      
                       if (data.success && data.files && data.files.length > 0) {
-                        am.getAll().reset();
-                        data.files.forEach(file => {
-                          am.add({
-                            type: 'image',
-                            src: file.url,
-                            name: file.filename,
-                            alt: file.alt_text || file.filename
-                          });
+                        console.log('8️⃣ Datos válidos - Limpiando AssetManager...');
+                        try {
+                          am.getAll().reset();
+                          console.log('   ✅ AssetManager limpiado');
+                        } catch(e) {
+                          console.error('   ❌ Error al limpiar:', e.message);
+                        }
+                        
+                        console.log('9️⃣ Agregando imágenes...');
+                        data.files.forEach((file, idx) => {
+                          try {
+                            am.add({
+                              type: 'image',
+                              src: file.url,
+                              name: file.filename,
+                              alt: file.alt_text || file.filename
+                            });
+                            console.log(`   ✅ ${idx + 1}. ${file.filename}`);
+                          } catch(e) {
+                            console.error(`   ❌ Error agregando imagen ${idx + 1}:`, e.message);
+                          }
                         });
+                        console.log('🔟 Todas las imágenes agregadas');
                       } else {
+                        console.warn('⚠️ Datos inválidos o sin archivos');
                       }
                       
+                      const extractSrcFromAssetElement = (assetEl) => {
+                        if (!assetEl) return null;
+                        const imgEl = assetEl.querySelector('img');
+                        if (imgEl && (imgEl.getAttribute('src') || imgEl.src)) {
+                          return imgEl.getAttribute('src') || imgEl.src;
+                        }
+                        const dataSrc = assetEl.getAttribute('data-src') || assetEl.getAttribute('data-url') || assetEl.dataset?.src || assetEl.dataset?.url;
+                        if (dataSrc) return dataSrc;
+                        const previewEl = assetEl.querySelector('.gjs-am-preview') || assetEl.querySelector('.gjs-am-asset-image');
+                        const bg = (previewEl && previewEl.style && previewEl.style.backgroundImage) || (assetEl.style && assetEl.style.backgroundImage);
+                        if (bg && bg.includes('url(')) {
+                          const match = bg.match(/url\(["']?(.*?)["']?\)/);
+                          if (match && match[1]) return match[1];
+                        }
+                        return null;
+                      };
+
                       const onClickHandler = (asset) => {
+                        console.log('🔸 onClick Handler ejecutado');
                         let newSrc = null;
                         if (typeof asset.get === 'function') {
                           newSrc = asset.get('src') || asset.get('url');
@@ -93,42 +171,97 @@
                           newSrc = asset.attributes.src || asset.attributes.url;
                         }
                         
-                        if (newSrc && component) {
-                          component.set('background-image-url', newSrc, { silent: false });
-                          component.updateBackgroundImage();
-                          modal.close();
-                          setTimeout(() => {
-                            if (editor.TraitManager) {
-                              editor.TraitManager.render();
-                            }
-                          }, 150);
+                        if (!newSrc || typeof newSrc !== 'string' || newSrc.trim() === '') {
+                          console.warn('❌ URL inválida:', newSrc);
+                          return;
                         }
+                        
+                        console.log('🔸 URL válida:', newSrc);
+                        component.set('background-image-url', newSrc, { silent: false });
+                        
+                        if (typeof component.updateBackgroundImage === 'function') {
+                          component.updateBackgroundImage();
+                        }
+                        
+                        component.trigger('change:background-image-url');
+                        component.trigger('change:attributes');
+                        
+                        if (editor.TraitManager) {
+                          editor.TraitManager.render();
+                        }
+                        
+                        modal.close();
+                        console.log('🔸 Modal cerrado');
                       };
                       
-                      am.onClick(onClickHandler);
-                      modal.setTitle('Seleccionar Imagen desde Galería')
-                        .setContent(am.render())
-                        .open();
+                      console.log('1️⃣1️⃣ Registrando handler...');
+                      const registerSelectHandler = () => {
+                        if (am && typeof am.on === 'function') {
+                          if (typeof am.off === 'function') {
+                            console.log('   → am.off(select)');
+                            am.off('select', onClickHandler);
+                          }
+                          console.log('   → am.on(select)');
+                          am.on('select', onClickHandler);
+                          return true;
+                        }
+                        if (editor && typeof editor.on === 'function') {
+                          if (typeof editor.off === 'function') {
+                            console.log('   → editor.off(asset:select)');
+                            editor.off('asset:select', onClickHandler);
+                          }
+                          console.log('   → editor.on(asset:select)');
+                          editor.on('asset:select', onClickHandler);
+                          return true;
+                        }
+                        return false;
+                      };
+                      const handlerRegistered = registerSelectHandler();
+                      console.log(handlerRegistered ? '   ✅ Handler registrado' : '   ❌ No se pudo registrar handler');
                       
+                      console.log('%c1️⃣2️⃣ LLAMANDO am.open({ types: ["image"] })', 'color: #ff9900; font-weight: bold; font-size: 12px');
+                      try {
+                        const openResult = am.open({ types: ['image'] });
+                        console.log('%c1️⃣3️⃣ am.open() COMPLETADO', 'color: #00ff00; font-weight: bold; font-size: 12px');
+                        console.log('   → Resultado:', openResult);
+                        // Fallback: click directo en el DOM de la galería
+                        setTimeout(() => {
+                          const assetsContainer = document.querySelector('.gjs-am-assets') || document.querySelector('.gjs-am-body') || document.querySelector('.gjs-am-assets-cont');
+                          if (assetsContainer && !assetsContainer.__bgImageClickBound) {
+                            assetsContainer.__bgImageClickBound = true;
+                            assetsContainer.addEventListener('click', (e) => {
+                              const assetEl = e.target.closest('.gjs-am-asset');
+                              if (!assetEl) return;
+                              const domSrc = extractSrcFromAssetElement(assetEl);
+                              if (domSrc && domSrc.trim()) {
+                                console.log('🔸 URL detectada desde DOM:', domSrc);
+                                onClickHandler({ src: domSrc });
+                              } else {
+                                console.warn('❌ No se pudo leer src desde el DOM del asset');
+                              }
+                            }, true);
+                          }
+                        }, 50);
+                      } catch(e) {
+                        console.error('   ❌ Error en am.open():', e.message);
+                        console.error(e);
+                      }
+                      
+                      console.log('%c=== BACKGROUND-IMAGE MODAL END (SUCCESS) ===', 'color: #00ff00; font-weight: bold; font-size: 14px');
                     })
                     .catch(error => {
-                      am.onClick((asset) => {
-                        let newSrc = asset.get('src') || asset.get('url') || asset.src || asset.url;
-                        if (newSrc && component) {
-                          component.set('background-image-url', newSrc, { silent: false });
-                          component.updateBackgroundImage();
-                          modal.close();
-                          setTimeout(() => {
-                            if (editor.TraitManager) {
-                              editor.TraitManager.render();
-                            }
-                          }, 150);
-                        }
-                      });
-                      modal.setTitle('Seleccionar Imagen desde Galería')
-                        .setContent(am.render())
-                        .open();
+                      console.error('%c❌ ERROR EN FETCH:', 'color: #ff6b6b; font-weight: bold; font-size: 12px', error);
+                      try {
+                        modal.close();
+                      } catch(e) {
+                        console.error('Error cerrando modal:', e);
+                      }
+                      console.log('%c=== BACKGROUND-IMAGE MODAL END (FETCH ERROR) ===', 'color: #ff6b6b; font-weight: bold; font-size: 14px');
                     });
+                } catch(err) {
+                  console.error('%c❌ EXCEPCIÓN GENERAL EN COMMAND:', 'color: #ff6b6b; font-weight: bold; font-size: 12px', err);
+                  console.error(err.stack);
+                  console.log('%c=== BACKGROUND-IMAGE MODAL END (EXCEPTION) ===', 'color: #ff6b6b; font-weight: bold; font-size: 14px');
                 }
               }
             },
@@ -284,6 +417,12 @@
           this.on('change:background-image-url', this.updateBackgroundImage, this);
           this.on('change:overlay-opacity', this.updateOverlay, this);
           this.on('change:height', this.updateHeight, this);
+          
+          // ✅ CRÍTICO: Restaurar height desde data-height al inicializar
+          const savedHeight = this.getAttributes()['data-height'];
+          if (savedHeight && savedHeight !== this.get('height')) {
+            this.set('height', savedHeight, { silent: true });
+          }
           this.on('change:content-title', this.updateTitle, this);
           this.on('change:content-text', this.updateText, this);
           this.on('change:button-text', this.updateButtonText, this);
@@ -623,10 +762,18 @@
           const heightPx = `${height}px`;
           console.log('📏 Actualizando altura:', heightPx);
           
+          // ✅ CRÍTICO: Guardar en data-height para persistencia
+          const currentAttrs = this.getAttributes();
+          this.setAttributes({
+            ...currentAttrs,
+            'data-height': height
+          });
+          
           if (!this.view || !this.view.el) return;
           
           const el = this.view.el;
           el.style.height = heightPx;
+          el.setAttribute('data-height', height);
           
           // Actualizar también usando setStyle de GrapesJS
           const currentStyle = this.getStyle() || {};
@@ -1343,6 +1490,18 @@
           const tagName = this.get('tagName') || 'div';
           const attrs = this.getAttributes();
           
+          // ✅ CRÍTICO: Obtener altura del trait y aplicarla
+          const height = this.get('height') || '384';
+          const heightPx = `${height}px`;
+          
+          console.log('📏 [toHTML] Altura a guardar:', height, 'px →', heightPx);
+          console.log('📋 [toHTML] Atributos actuales:', attrs);
+          
+          // ✅ CRÍTICO: Asegurar que data-height esté en los atributos
+          attrs['data-height'] = height;
+          
+          console.log('✅ [toHTML] data-height agregado:', attrs['data-height']);
+          
           // Construir atributos como string
           let attrsArray = [];
           for (let key in attrs) {
@@ -1351,6 +1510,26 @@
               attrsArray.push(`${key}="${value}"`);
             }
           }
+          
+          // ✅ CRÍTICO: Agregar estilo de altura al atributo style
+          const currentStyles = this.getStyle() || {};
+          const styleObj = {
+            ...currentStyles,
+            height: heightPx
+          };
+          
+          // Construir string de estilos
+          let styleArray = [];
+          for (let key in styleObj) {
+            if (styleObj.hasOwnProperty(key) && styleObj[key]) {
+              styleArray.push(`${key}: ${styleObj[key]}`);
+            }
+          }
+          
+          if (styleArray.length > 0) {
+            attrsArray.push(`style="${styleArray.join('; ')}"`);
+          }
+          
           const attrsStr = attrsArray.join(' ');
           
           // Construir innerHTML manualmente - RECURSIVO para manejar estructura anidada
@@ -1525,6 +1704,14 @@
             component.set('removable', true, { silent: true });
             el.setAttribute('data-gjs-removable', 'true');
           }, 50);
+          
+          // ✅ CRÍTICO: Aplicar altura desde data-height o del trait
+          const savedHeight = el.getAttribute('data-height') || component.get('height') || '384';
+          const heightPx = `${savedHeight}px`;
+          el.style.height = heightPx;
+          component.set('height', savedHeight, { silent: true });
+          
+          console.log('🎨 [onRender] Altura aplicada:', heightPx, 'desde:', el.getAttribute('data-height') ? 'data-height' : 'trait');
           
           // ✅ CRÍTICO: Sincronizar valores desde el DOM cuando se renderiza
           // Esto asegura que los valores guardados se carguen correctamente

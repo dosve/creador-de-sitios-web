@@ -63,9 +63,24 @@
                             }
                         }
                     }
+                    
+                    // Determinar la URL del sub-item
+                    $subItemUrl = '#';
+                    if (isset($subItem['route'])) {
+                        if (isset($subItem['params_website']) && $subItem['params_website'] && $selectedWebsite) {
+                            // Ruta que necesita el parámetro website
+                            $subItemUrl = route($subItem['route'], ['website' => $selectedWebsite->id]);
+                        } elseif (isset($subItem['params_session']) && $subItem['params_session']) {
+                            // Ruta que usa sesión internamente
+                            $subItemUrl = route($subItem['route']);
+                        } else {
+                            // Ruta normal
+                            $subItemUrl = route($subItem['route']);
+                        }
+                    }
                 @endphp
                 
-                <a href="{{ route($subItem['route']) }}" 
+                <a href="{{ $subItemUrl }}" 
                    class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ $isSubActive ? 'bg-green-100 text-green-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
                     {{-- Sub-item Icon --}}
                     @if(isset($subItem['icon_custom']))

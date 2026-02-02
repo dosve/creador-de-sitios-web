@@ -54,17 +54,10 @@
               ]
             },
             {
-              type: 'select',
+              type: 'color',
               name: 'paragraph-color',
               label: 'Color del Texto',
-              changeProp: 1,
-              options: [
-                { value: 'text-gray-700', name: 'Gris Oscuro' },
-                { value: 'text-gray-600', name: 'Gris Medio' },
-                { value: 'text-gray-900', name: 'Negro' },
-                { value: 'text-blue-600', name: 'Azul' },
-                { value: 'text-green-600', name: 'Verde' }
-              ]
+              changeProp: 1
             },
             {
               type: 'select',
@@ -134,11 +127,51 @@
                   }
                 }
 
-                const colorMatch = classList.find(c => c.startsWith('text-') && ['gray', 'blue', 'green'].some(col => c.includes(col)));
-                if (colorMatch) {
+                // ✅ CRÍTICO: Sincronizar color desde MÚLTIPLES FUENTES
+                // Prioridad: 1) atributo data- 2) estilo inline 3) atributo style HTML
+                let finalColor = null;
+                
+                // 1. Intentar obtener del atributo data-
+                const dataColor = el.getAttribute('data-paragraph-color');
+                if (dataColor && dataColor.startsWith('#')) {
+                  finalColor = dataColor;
+                  console.log('📥 [Paragraph] Color recuperado del atributo data-:', dataColor);
+                }
+                
+                // 2. Si no hay atributo data-, intentar del estilo inline
+                if (!finalColor) {
+                  const inlineColor = el.style.color;
+                  if (inlineColor) {
+                    const hexColor = this.rgbToHex(inlineColor);
+                    if (hexColor) {
+                      finalColor = hexColor;
+                      console.log('📥 [Paragraph] Color recuperado del estilo inline:', hexColor);
+                    }
+                  }
+                }
+                
+                // 3. Si aún no hay color, intentar del atributo style HTML
+                if (!finalColor) {
+                  const styleAttr = el.getAttribute('style');
+                  if (styleAttr && styleAttr.includes('color')) {
+                    const colorMatch = styleAttr.match(/color:\s*([#\w(),-.\s]+)/i);
+                    if (colorMatch) {
+                      const colorValue = colorMatch[1].trim();
+                      const hexColor = this.rgbToHex(colorValue);
+                      if (hexColor) {
+                        finalColor = hexColor;
+                        console.log('📥 [Paragraph] Color recuperado del atributo style HTML:', hexColor);
+                      }
+                    }
+                  }
+                }
+                
+                // Aplicar el color encontrado
+                if (finalColor) {
                   const currentColor = this.get('paragraph-color');
-                  if (colorMatch !== currentColor) {
-                    this.set('paragraph-color', colorMatch, { silent: false });
+                  if (finalColor !== currentColor) {
+                    this.set('paragraph-color', finalColor, { silent: false });
+                    console.log('✅ [Paragraph] Color actualizado:', finalColor);
                   }
                 }
 
@@ -185,8 +218,52 @@
               const sizeMatch = classList.find(c => ['text-sm', 'text-base', 'text-lg', 'text-xl'].includes(c));
               if (sizeMatch) this.set('paragraph-size', sizeMatch, { silent: true });
 
-              const colorMatch = classList.find(c => c.startsWith('text-') && ['gray', 'blue', 'green'].some(col => c.includes(col)));
-              if (colorMatch) this.set('paragraph-color', colorMatch, { silent: true });
+              // ✅ CRÍTICO: Sincronizar color desde MÚLTIPLES FUENTES
+              // Prioridad: 1) atributo data- 2) estilo inline 3) estilos computados
+              let finalColor = null;
+              
+              // 1. Intentar obtener del atributo data-
+              const dataColor = el.getAttribute('data-paragraph-color');
+              if (dataColor && dataColor.startsWith('#')) {
+                finalColor = dataColor;
+                console.log('📥 [Paragraph] Color recuperado del atributo data-:', dataColor);
+              }
+              
+              // 2. Si no hay atributo data-, intentar del estilo inline
+              if (!finalColor) {
+                const inlineColor = el.style.color;
+                if (inlineColor) {
+                  const hexColor = this.rgbToHex(inlineColor);
+                  if (hexColor) {
+                    finalColor = hexColor;
+                    console.log('📥 [Paragraph] Color recuperado del estilo inline:', hexColor);
+                  }
+                }
+              }
+              
+              // 3. Si aún no hay color, intentar del estilo computado
+              if (!finalColor) {
+                const computedColor = window.getComputedStyle(el).color;
+                if (computedColor) {
+                  const hexColor = this.rgbToHex(computedColor);
+                  if (hexColor) {
+                    finalColor = hexColor;
+                    console.log('📥 [Paragraph] Color recuperado del estilo computado:', hexColor);
+                  }
+                }
+              }
+              
+              // Aplicar el color encontrado
+              if (finalColor) {
+                this.set('paragraph-color', finalColor, { silent: true });
+                // ✅ CRÍTICO: Llamar updateColor() directamente ya que usamos silent: true
+                this.updateColor();
+              } else {
+                // Usar color por defecto si no se encuentra nada
+                this.set('paragraph-color', '#374151', { silent: true });
+                // ✅ CRÍTICO: Llamar updateColor() directamente ya que usamos silent: true
+                this.updateColor();
+              }
 
               const alignMatch = classList.find(c => ['text-left', 'text-center', 'text-right', 'text-justify'].includes(c));
               if (alignMatch) this.set('paragraph-align', alignMatch, { silent: true });
@@ -220,6 +297,20 @@
           this.on('change:paragraph-align', this.updateAlign, this);
           this.on('change:paragraph-line-height', this.updateLineHeight, this);
           this.on('change:paragraph-margin', this.updateMargin, this);
+        },
+        // Método auxiliar para convertir RGB a Hex
+        rgbToHex(rgb) {
+          if (!rgb) return null;
+          if (rgb.startsWith('#')) return rgb;
+          
+          const result = rgb.match(/\d+/g);
+          if (!result || result.length < 3) return null;
+          
+          const r = parseInt(result[0]);
+          const g = parseInt(result[1]);
+          const b = parseInt(result[2]);
+          
+          return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
         },
         updateText() {
           const text = this.get('paragraph-text') || '';
@@ -263,16 +354,21 @@
           }
         },
         updateColor() {
-          const color = this.get('paragraph-color') || 'text-gray-700';
+          const color = this.get('paragraph-color') || '#374151';
           if (this.view && this.view.el) {
             const el = this.view.el;
-            const currentAttrs = this.getAttributes();
-            let currentClass = currentAttrs.class || el.className || '';
-            currentClass = currentClass.replace(/text-(gray|blue|green)-\d+/g, '').trim();
-            currentClass = currentClass.replace(/text-(gray|blue|green)/g, '').trim();
-            currentClass = (currentClass + ' ' + color).trim().replace(/\s+/g, ' ');
-            el.className = currentClass;
-            this.setAttributes({ class: currentClass });
+            if (color && color.startsWith('#')) {
+              // Aplicar color como estilo inline (persistente)
+              el.style.setProperty('color', color, 'important');
+              
+              // ✅ CRÍTICO: También guardar en atributo data- para persistencia
+              el.setAttribute('data-paragraph-color', color);
+              
+              console.log('🎨 [Paragraph] Color aplicado:', color);
+              
+              // ✅ Forzar guardado en modelo para que persista
+              this.addStyle({ color: color });
+            }
           }
         },
         updateAlign() {

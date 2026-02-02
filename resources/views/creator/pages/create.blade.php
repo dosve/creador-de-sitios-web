@@ -133,18 +133,41 @@
 
                             <!-- Campo de Prompt para IA (se muestra solo si se selecciona "Generar con IA") -->
                             <div id="ai_prompt_section" class="hidden">
-                                <label for="ai_prompt" class="block text-sm font-medium text-gray-700">Describe el contenido de la página</label>
+                                <label for="ai_prompt" class="block text-sm font-medium text-gray-700">Describe la idea de la página</label>
                                 <div class="mt-1">
                                     <textarea name="ai_prompt" id="ai_prompt" rows="4" 
                                               class="px-4 py-4 bg-gray-50 border focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:bg-white block w-full sm:text-sm border-gray-700 rounded-md transition-all @error('ai_prompt') border-red-500 @enderror" 
-                                              placeholder="Ejemplo: Crea una página de servicios para una agencia de marketing digital. Incluye una sección hero, lista de servicios (SEO, publicidad en redes sociales, diseño web), testimonios y formulario de contacto."></textarea>
+                                              placeholder="Ejemplo: Página de servicios para una agencia de marketing. Hero atractivo, servicios (SEO, redes sociales, diseño web), testimonios y formulario de contacto."></textarea>
                                 </div>
                                 <p class="mt-2 text-sm text-gray-500">
-                                    Describe detalladamente qué contenido quieres en la página. La IA generará el HTML considerando la plantilla y estilos de tu sitio.
+                                    Escribe tu idea en una frase o párrafo. Luego usa <strong>Planear con IA</strong> para que te sugiera contenedores y widgets según el catálogo del sistema.
                                 </p>
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    <button type="button" id="btn_plan_ai" 
+                                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                        <span id="btn_plan_text">Planear con IA</span>
+                                        <span id="btn_plan_loading" class="hidden ml-2">
+                                            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
                                 @error('ai_prompt')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
+                            </div>
+
+                            <!-- Plan generado por IA: contenedores y prompt refinado (editable antes de crear) -->
+                            <div id="ai_plan_section" class="hidden mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                                <h4 class="text-sm font-semibold text-purple-900 mb-2">Plan de la página (contenedores y widgets)</h4>
+                                <div id="ai_plan_containers_list" class="mb-4 space-y-2 text-sm text-gray-700"></div>
+                                <label for="ai_refined_prompt" class="block text-sm font-medium text-gray-700 mb-1">Consulta para generar el HTML (puedes editarla)</label>
+                                <textarea id="ai_refined_prompt" rows="4" 
+                                          class="px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm"
+                                          placeholder="La IA rellenará aquí un texto detallado para la generación. Puedes ajustarlo antes de crear."></textarea>
+                                <p class="mt-1 text-xs text-gray-500">Este texto se usará al hacer clic en Crear página. Ajusta secciones o detalles si quieres.</p>
                             </div>
 
                             <!-- Selector de Plantilla (se muestra solo si se selecciona "Usar Plantilla") -->
@@ -251,6 +274,7 @@
                     
                     function toggleSections() {
                         const selectedType = document.querySelector('input[name="page_type"]:checked');
+                        const planSection = document.getElementById('ai_plan_section');
                         
                         // Ocultar todas las secciones primero
                         templateSelector.classList.add('hidden');
@@ -259,6 +283,9 @@
                         aiPromptSection.classList.add('hidden');
                         aiPrompt.required = false;
                         aiPrompt.value = '';
+                        const planContainersList = document.getElementById('ai_plan_containers_list');
+                        if (planSection) planSection.classList.add('hidden');
+                        if (planContainersList) planContainersList.innerHTML = '';
                         
                         // Mostrar sección según el tipo seleccionado
                         if (selectedType) {
@@ -295,16 +322,21 @@
                             const title = document.getElementById('title').value;
                             const slug = document.getElementById('slug').value;
                             const prompt = aiPrompt.value.trim();
+                            // Usar prompt refinado si existe (después de planear), sino la idea original
+                            const refinedPromptEl = document.getElementById('ai_refined_prompt');
+                            const promptToSend = (refinedPromptEl && refinedPromptEl.value.trim().length >= 10)
+                                ? refinedPromptEl.value.trim()
+                                : prompt;
                             
-                            console.log('Datos del formulario:', { title, slug, prompt_length: prompt.length });
+                            console.log('Datos del formulario:', { title, slug, prompt_length: promptToSend.length });
                             
                             if (!title || !slug || !prompt) {
                                 alert('Por favor completa todos los campos requeridos');
                                 return false;
                             }
                             
-                            if (prompt.length < 10) {
-                                alert('El prompt debe tener al menos 10 caracteres');
+                            if (promptToSend.length < 10) {
+                                alert('La consulta debe tener al menos 10 caracteres. Escribe tu idea o usa Planear con IA.');
                                 return false;
                             }
                             
@@ -322,7 +354,7 @@
                             const requestData = {
                                 title: title,
                                 slug: slug,
-                                prompt: prompt,
+                                prompt: promptToSend,
                                 is_published: document.getElementById('is_published').checked
                             };
                             
@@ -376,6 +408,73 @@
                             return false; // Prevenir cualquier otro comportamiento
                         }
                     }, true); // Usar capture phase para capturar antes que otros listeners
+                    
+                    // Botón Planear con IA
+                    const btnPlanAi = document.getElementById('btn_plan_ai');
+                    const btnPlanText = document.getElementById('btn_plan_text');
+                    const btnPlanLoading = document.getElementById('btn_plan_loading');
+                    const aiPlanSection = document.getElementById('ai_plan_section');
+                    const aiPlanContainersList = document.getElementById('ai_plan_containers_list');
+                    const aiRefinedPrompt = document.getElementById('ai_refined_prompt');
+                    if (btnPlanAi && aiPrompt) {
+                        btnPlanAi.addEventListener('click', function() {
+                            const idea = aiPrompt.value.trim();
+                            if (idea.length < 10) {
+                                alert('Escribe al menos 10 caracteres describiendo tu idea antes de planear.');
+                                return;
+                            }
+                            btnPlanText.classList.add('hidden');
+                            btnPlanLoading.classList.remove('hidden');
+                            btnPlanAi.disabled = true;
+                            fetch('{{ route("creator.pages.plan-with-ai") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                body: JSON.stringify({ prompt: idea })
+                            })
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data.success) {
+                                    const list = document.getElementById('ai_plan_containers_list');
+                                    const items = (data.containers || data.sections || []).map((c, i) => {
+                                        let html = '<div class="border-l-2 border-purple-200 pl-2 mb-2">';
+                                        html += '<div class="flex gap-2"><span class="font-medium text-purple-700">' + (i + 1) + '. ' + (c.title || 'Contenedor') + '</span>';
+                                        html += '<span class="text-gray-600">— ' + (c.description || '') + '</span>';
+                                        if (c.suggested_components && c.suggested_components.length) html += '<span class="text-xs text-gray-500">[' + c.suggested_components.join(', ') + ']</span>';
+                                        html += '</div>';
+                                        if (c.widgets && c.widgets.length) {
+                                            html += '<div class="mt-1 ml-2 text-xs text-gray-600 space-y-0.5">';
+                                            c.widgets.forEach(function(w) {
+                                                const content = (w.content || '').substring(0, 60) + ((w.content || '').length > 60 ? '…' : '');
+                                                html += '<div><span class="text-purple-600">' + (w.id || '') + '</span>: ' + content + '</div>';
+                                            });
+                                            html += '</div>';
+                                        }
+                                        html += '</div>';
+                                        return html;
+                                    }).join('');
+                                    if (list) list.innerHTML = items;
+                                    if (aiRefinedPrompt) aiRefinedPrompt.value = data.refined_prompt || '';
+                                    aiPlanSection.classList.remove('hidden');
+                                } else {
+                                    alert(data.message || 'No se pudo generar el plan.');
+                                }
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                alert('Error al planear: ' + (err.message || 'Intenta de nuevo.'));
+                            })
+                            .finally(function() {
+                                btnPlanText.classList.remove('hidden');
+                                btnPlanLoading.classList.add('hidden');
+                                btnPlanAi.disabled = false;
+                            });
+                        });
+                    }
                     
                     // Ejecutar al cargar la página
                     toggleSections();

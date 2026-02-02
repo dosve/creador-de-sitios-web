@@ -18,7 +18,7 @@ class AuthEME10OAuthService
         $this->baseUrl = config('services.auth_eme10.base_url', 'https://auth.eme10.com');
         $this->apiBaseUrl = $this->baseUrl . '/api';
         $this->clientId = config('services.auth_eme10.client_id', '1');
-        $this->redirectUri = config('services.auth_eme10.redirect_uri', url('/auth/oauth/callback'));
+        $this->redirectUri = config('services.auth_eme10.redirect_uri', url('/oauth/eme10/callback'));
     }
 
     /**

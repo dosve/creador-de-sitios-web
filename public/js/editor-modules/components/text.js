@@ -64,16 +64,17 @@
             {
               type: 'select',
               name: 'text-color',
-              label: 'Color del Texto',
+              label: '🎨 Color del Texto',
               changeProp: 1,
               options: [
-                { value: 'text-gray-700', name: 'Gris Oscuro' },
-                { value: 'text-gray-900', name: 'Negro' },
-                { value: 'text-blue-600', name: 'Azul' },
-                { value: 'text-green-600', name: 'Verde' },
-                { value: 'text-red-600', name: 'Rojo' },
-                { value: 'text-purple-600', name: 'Morado' },
-                { value: 'text-white', name: 'Blanco' }
+                { value: '#1f2937', name: 'Gris Oscuro' },
+                { value: '#374151', name: 'Gris Medio' },
+                { value: '#000000', name: 'Negro' },
+                { value: '#2563eb', name: 'Azul' },
+                { value: '#16a34a', name: 'Verde' },
+                { value: '#dc2626', name: 'Rojo' },
+                { value: '#7c3aed', name: 'Púrpura' },
+                { value: '#ffffff', name: 'Blanco' }
               ]
             },
             {
@@ -132,9 +133,10 @@
                 this.set('text-size', sizeMatch, { silent: true });
               }
               
-              const colorMatch = classList.find(c => c.startsWith('text-') && ['gray', 'blue', 'green', 'red', 'purple', 'white'].some(col => c.includes(col)));
-              if (colorMatch) {
-                this.set('text-color', colorMatch, { silent: true });
+              // Sincronizar color desde estilo inline en lugar de clases
+              const computedColor = window.getComputedStyle(el).color;
+              if (computedColor) {
+                this.set('text-color', computedColor, { silent: true });
               }
               
               const alignMatch = classList.find(c => ['text-left', 'text-center', 'text-right', 'text-justify'].includes(c));
@@ -206,16 +208,14 @@
           }
         },
         updateColor() {
-          const color = this.get('text-color') || 'text-gray-700';
+          const color = this.get('text-color') || '#1f2937';
           if (this.view && this.view.el) {
             const el = this.view.el;
-            const currentAttrs = this.getAttributes();
-            let currentClass = currentAttrs.class || el.className || '';
-            currentClass = currentClass.replace(/text-(gray|blue|green|red|purple|white)-\d+/g, '').trim();
-            currentClass = currentClass.replace(/text-(gray|blue|green|red|purple|white)/g, '').trim();
-            currentClass = (currentClass + ' ' + color).trim().replace(/\s+/g, ' ');
-            el.className = currentClass;
-            this.setAttributes({ class: currentClass });
+            if (color && color.startsWith('#')) {
+              // Aplicar color como estilo inline
+              el.style.setProperty('color', color, 'important');
+              console.log('🎨 [Text] Color aplicado:', color);
+            }
           }
         },
         updateAlign() {

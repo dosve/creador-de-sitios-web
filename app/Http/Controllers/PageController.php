@@ -142,7 +142,7 @@ class PageController extends Controller
             'website' => $website,
             'editable' => $page,
             'editableType' => 'page',
-            'saveRoute' => route('creator.pages.save', $page)
+            'saveRoute' => route('creator.pages.update', $page)
         ]);
     }
 

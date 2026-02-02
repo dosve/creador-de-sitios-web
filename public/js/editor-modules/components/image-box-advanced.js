@@ -488,6 +488,7 @@
           // ✅ CRÍTICO: Seguir el mismo patrón que image.js - interceptar y corregir HTML generado
           const imageUrl = this.get('image-url');
           const defaultImageUrl = '/images/default-image.jpg';
+          const linkUrl = this.get('link-url') || '';
           
           // Determinar el src final: priorizar image-url, luego DOM, luego default (igual que image.js)
           let finalSrc = null;
@@ -561,8 +562,13 @@
           
           // ✅ CRÍTICO: Usar getInnerHTML() para evitar recursión infinita
           // En lugar de llamar a __super__.toHTML(), construimos el HTML manualmente
-          const tagName = this.get('tagName') || 'div';
+          const tagName = linkUrl && linkUrl.trim() ? 'a' : (this.get('tagName') || 'div');
           const attrs = this.getAttributes();
+          
+          // Agregar href si hay enlace
+          if (linkUrl && linkUrl.trim()) {
+            attrs.href = linkUrl;
+          }
           
           // Construir atributos como string
           let attrsArray = [];
@@ -793,35 +799,34 @@
           
           const el = this.view.el;
           
+          // ✅ En lugar de reemplazar el elemento, solo actualizar atributos
+          // Si hay enlace, cambiar tagName a 'a' en el modelo de GrapesJS
           if (linkUrl && linkUrl.trim()) {
-            // Si no tiene enlace, crear uno
-            if (el.tagName !== 'A') {
-              const wrapper = document.createElement('a');
-              wrapper.href = linkUrl;
-              wrapper.className = el.className;
-              wrapper.setAttribute('data-gjs-type', 'image-box-advanced');
-              
-              while (el.firstChild) {
-                wrapper.appendChild(el.firstChild);
-              }
-              
-              el.parentNode?.replaceChild(wrapper, el);
-            } else {
+            // Si no es un enlace aún, actualizar el atributo href
+            if (el.tagName === 'A') {
               el.href = linkUrl;
+              el.setAttribute('href', linkUrl);
+            } else {
+              // Si es div, actualizar el modelo de GrapesJS para que sea 'a'
+              const currentAttrs = this.getAttributes();
+              currentAttrs.href = linkUrl;
+              this.setAttributes(currentAttrs);
+              
+              // Actualizar tagName en el modelo
+              this.set('tagName', 'a', { silent: false });
+              
+              console.log('✅ Elemento convertido a enlace');
             }
           } else {
-            // Si no hay enlace, convertir de <a> a <div>
-            if (el.tagName === 'A') {
-              const div = document.createElement('div');
-              div.className = el.className;
-              div.setAttribute('data-gjs-type', 'image-box-advanced');
-              
-              while (el.firstChild) {
-                div.appendChild(el.firstChild);
-              }
-              
-              el.parentNode?.replaceChild(div, el);
-            }
+            // Si no hay enlace, asegurar que sea div
+            const currentAttrs = this.getAttributes();
+            delete currentAttrs.href;
+            this.setAttributes(currentAttrs);
+            
+            // Actualizar tagName en el modelo
+            this.set('tagName', 'div', { silent: false });
+            
+            console.log('✅ Elemento convertido a div');
           }
         }
       },
@@ -842,6 +847,23 @@
             overlay.classList.remove('opacity-0');
             // Aplicar opacidad directamente en el editor con !important
             overlay.style.setProperty('opacity', '1', 'important');
+          }
+          
+          // ✅ Asegurar que el contenedor principal tenga w-full
+          if (!el.classList.contains('w-full')) {
+            el.classList.add('w-full');
+          }
+          
+          // ✅ Agregar cursor pointer si hay enlace
+          const linkUrl = this.model.get('link-url') || '';
+          if (linkUrl && linkUrl.trim()) {
+            if (!el.classList.contains('cursor-pointer')) {
+              el.classList.add('cursor-pointer');
+            }
+            el.style.cursor = 'pointer';
+          } else {
+            el.classList.remove('cursor-pointer');
+            el.style.cursor = 'default';
           }
           
           // ✅ Asegurar que la imagen tenga las clases correctas para mantener aspect ratio
@@ -889,6 +911,10 @@
           // Observar cambios en el DOM
           const observer = new MutationObserver(() => {
             protectElements(el);
+            // Re-aplicar w-full al contenedor
+            if (!el.classList.contains('w-full')) {
+              el.classList.add('w-full');
+            }
             // Re-aplicar clases de imagen si se agregan nuevos elementos
             const img = el.querySelector('img');
             if (img) {
@@ -898,6 +924,9 @@
               }
               if (!img.classList.contains('max-h-96')) {
                 img.classList.add('max-h-96');
+              }
+              if (!img.classList.contains('w-full')) {
+                img.classList.add('w-full');
               }
             }
             // Re-aplicar opacidad del overlay si se pierde

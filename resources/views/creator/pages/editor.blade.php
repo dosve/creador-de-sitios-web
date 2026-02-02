@@ -20,7 +20,18 @@
     })();
   </script>
   <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
+  <link rel="stylesheet" href="{{ asset('css/canvas-responsive.css') }}">
+  <!-- Scripts para normalizar clases responsive y diagnosticar problemas -->
+  <script src="{{ asset('js/fix-responsive-classes.js') }}"></script>
+  <script src="{{ asset('js/debug-responsive.js') }}"></script>
+  <script src="{{ asset('js/investigate-responsive.js') }}"></script>
+  <script src="{{ asset('js/responsive-dashboard.js') }}"></script>
   <style>
+    /* Asegurar box-sizing correcto para todo el documento */
+    * {
+      box-sizing: border-box;
+    }
+
     :root {
       --gjs-primary: #2563eb;
       /* botones/acentos */
@@ -340,6 +351,7 @@
       overflow-y: auto !important;
       overflow-x: hidden !important;
       background: #ffffff !important;
+      padding: 8px !important;
     }
 
     /* Scrollbar personalizado estilo moderno */
@@ -368,6 +380,313 @@
       scrollbar-color: #cbd5e1 #f1f5f9 !important;
     }
 
+    /* === MEJORAS DE DISEÑO PARA SECTORES === */
+    
+    /* Sector */
+    .styles-container-widget .gjs-sm-sector {
+      margin-bottom: 8px !important;
+      border: 1px solid #e5e7eb !important;
+      border-radius: 6px !important;
+      overflow: hidden !important;
+      background: #ffffff !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    /* Título del sector */
+    .styles-container-widget .gjs-sm-sector-title {
+      padding: 10px 12px !important;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+      border-bottom: 1px solid #e5e7eb !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      color: #1e293b !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+    
+    .styles-container-widget .gjs-sm-sector-title:hover {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+    }
+    
+    /* Caret del sector */
+    .styles-container-widget .gjs-sm-sector-caret {
+      transition: transform 0.2s ease !important;
+      color: #64748b !important;
+      font-size: 12px !important;
+    }
+    
+    /* Propiedades del sector */
+    .styles-container-widget .gjs-sm-properties {
+      padding: 12px !important;
+      background: #fafbfc !important;
+    }
+    
+    /* Propiedad individual */
+    .styles-container-widget .gjs-sm-property {
+      margin-bottom: 16px !important;
+      padding: 10px !important;
+      background: #ffffff !important;
+      border-radius: 6px !important;
+      border: 1px solid #e5e7eb !important;
+      transition: all 0.2s ease !important;
+    }
+    
+    .styles-container-widget .gjs-sm-property:hover {
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    .styles-container-widget .gjs-sm-property:last-child {
+      margin-bottom: 0 !important;
+    }
+    
+    /* Label de propiedad */
+    .styles-container-widget .gjs-sm-label {
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      color: #334155 !important;
+      margin-bottom: 8px !important;
+      display: block !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+    }
+    
+    /* Contenedor de campos (field wrapper) */
+    .styles-container-widget .gjs-field {
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+    }
+    
+    /* Inputs generales */
+    .styles-container-widget input[type="text"],
+    .styles-container-widget input[type="number"],
+    .styles-container-widget select,
+    .styles-container-widget .gjs-field-integer input,
+    .styles-container-widget .gjs-field-select select {
+      width: 100% !important;
+      padding: 8px 12px !important;
+      border: 1.5px solid #e2e8f0 !important;
+      border-radius: 6px !important;
+      font-size: 13px !important;
+      color: #1e293b !important;
+      background: #ffffff !important;
+      transition: all 0.2s ease !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    }
+    
+    .styles-container-widget input[type="text"]:hover,
+    .styles-container-widget input[type="number"]:hover,
+    .styles-container-widget select:hover {
+      border-color: #cbd5e1 !important;
+    }
+    
+    .styles-container-widget input[type="text"]:focus,
+    .styles-container-widget input[type="number"]:focus,
+    .styles-container-widget select:focus {
+      outline: none !important;
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+      background: #ffffff !important;
+    }
+    
+    /* Inputs con unidades (ej: px, %, em) */
+    .styles-container-widget .gjs-field-units {
+      display: flex !important;
+      gap: 4px !important;
+    }
+    
+    .styles-container-widget .gjs-field-unit {
+      flex: 1 !important;
+    }
+    
+    .styles-container-widget .gjs-input-unit {
+      flex: 0 0 auto !important;
+      min-width: 60px !important;
+      padding: 8px 10px !important;
+      background: #f8fafc !important;
+      border: 1.5px solid #e2e8f0 !important;
+      border-radius: 6px !important;
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      color: #475569 !important;
+    }
+    
+    /* Selectores de color mejorados */
+    .styles-container-widget .gjs-field-color {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+    }
+    
+    .styles-container-widget .gjs-field-color-picker {
+      width: 40px !important;
+      height: 40px !important;
+      border: 2px solid #e5e7eb !important;
+      border-radius: 8px !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    .styles-container-widget .gjs-field-color-picker:hover {
+      border-color: #3b82f6 !important;
+      transform: scale(1.05) !important;
+    }
+    
+    .styles-container-widget .gjs-field-colorp-c {
+      flex: 1 !important;
+    }
+    
+    /* Radio buttons mejorados */
+    .styles-container-widget .gjs-sm-radio {
+      display: flex !important;
+      gap: 4px !important;
+      padding: 4px !important;
+      background: #f1f5f9 !important;
+      border-radius: 8px !important;
+    }
+    
+    .styles-container-widget .gjs-sm-radio-item {
+      flex: 1 !important;
+      text-align: center !important;
+      padding: 8px 12px !important;
+      border: none !important;
+      border-radius: 6px !important;
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      color: #64748b !important;
+      background: transparent !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+    }
+    
+    .styles-container-widget .gjs-sm-radio-item:hover {
+      background: #ffffff !important;
+      color: #334155 !important;
+    }
+    
+    .styles-container-widget .gjs-sm-radio-item.gjs-sm-active {
+      background: #3b82f6 !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3) !important;
+      transform: translateY(-1px) !important;
+    }
+    
+    /* Sliders */
+    .styles-container-widget .gjs-field-range {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+    }
+    
+    .styles-container-widget input[type="range"] {
+      flex: 1 !important;
+      height: 6px !important;
+      border-radius: 3px !important;
+      background: #e2e8f0 !important;
+      outline: none !important;
+      -webkit-appearance: none !important;
+    }
+    
+    .styles-container-widget input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none !important;
+      width: 16px !important;
+      height: 16px !important;
+      border-radius: 50% !important;
+      background: #3b82f6 !important;
+      cursor: pointer !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+      transition: all 0.2s ease !important;
+    }
+    
+    .styles-container-widget input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2) !important;
+      background: #2563eb !important;
+    }
+    
+    /* Checkboxes personalizados */
+    .styles-container-widget input[type="checkbox"] {
+      width: 18px !important;
+      height: 18px !important;
+      border: 2px solid #cbd5e1 !important;
+      border-radius: 4px !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+    }
+    
+    .styles-container-widget input[type="checkbox"]:checked {
+      background: #3b82f6 !important;
+      border-color: #3b82f6 !important;
+    }
+    
+    /* Botones de unidades y opciones */
+    .styles-container-widget .gjs-sm-btn,
+    .styles-container-widget button {
+      padding: 6px 12px !important;
+      border: 1.5px solid #e2e8f0 !important;
+      border-radius: 6px !important;
+      background: #ffffff !important;
+      color: #475569 !important;
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+    }
+    
+    .styles-container-widget .gjs-sm-btn:hover,
+    .styles-container-widget button:hover {
+      background: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+      color: #1e293b !important;
+    }
+    
+    .styles-container-widget .gjs-sm-btn.gjs-sm-active,
+    .styles-container-widget button.active {
+      background: #3b82f6 !important;
+      border-color: #3b82f6 !important;
+      color: #ffffff !important;
+    }
+    
+    /* Stack de propiedades (margin, padding con 4 valores) */
+    .styles-container-widget .gjs-sm-stack {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 6px !important;
+    }
+    
+    .styles-container-widget .gjs-sm-stack .gjs-sm-property {
+      margin-bottom: 0 !important;
+      padding: 8px !important;
+    }
+    
+    .styles-container-widget .gjs-sm-stack .gjs-sm-label {
+      font-size: 10px !important;
+      margin-bottom: 4px !important;
+      text-align: center !important;
+    }
+    
+    .styles-container-widget .gjs-sm-stack input {
+      text-align: center !important;
+      padding: 6px 4px !important;
+      font-size: 12px !important;
+    }
+    
+    /* Composite fields (propiedades compuestas) */
+    .styles-container-widget .gjs-sm-composite {
+      display: flex !important;
+      gap: 8px !important;
+      flex-wrap: wrap !important;
+    }
+    
+    .styles-container-widget .gjs-sm-composite > * {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+
     /* Contenedor principal del StyleManager */
     .gjs-sm-sectors {
       background: #ffffff !important;
@@ -378,6 +697,12 @@
     .gjs-editor-cont,
     .gjs-cv-canvas {
       background: #f3f4f6;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+
+    .gjs-cv-canvas iframe {
+      display: block !important;
     }
 
     /* ===== Estilos para Layer Manager (Capas) ===== */
@@ -647,18 +972,50 @@
     .gjs-block-category {
       width: 100% !important;
       display: block !important;
+      margin-bottom: 8px !important;
+      border: 1px solid #e5e7eb !important;
+      border-radius: 6px !important;
+      overflow: hidden !important;
+      background: #ffffff !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
     }
 
     /* Asegurar que el título de la categoría ocupe el 100% del ancho */
     .gjs-block-category .gjs-title {
       width: 100% !important;
-      display: block !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
       box-sizing: border-box !important;
+      padding: 10px 12px !important;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+      border-bottom: 1px solid #e5e7eb !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      color: #1e293b !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .gjs-block-category .gjs-title:hover {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+    }
+
+    .gjs-block-category .gjs-caret-icon {
+      color: #64748b !important;
+      font-size: 12px !important;
+      transition: transform 0.2s ease !important;
     }
 
     /* Cuando una categoría está cerrada, ocultar el contenido de bloques */
     .gjs-block-category:not(.gjs-open) .gjs-blocks-cs {
       display: none !important;
+    }
+
+    /* Contenedor de bloques dentro de categoría */
+    .gjs-block-category .gjs-blocks-cs {
+      padding: 8px !important;
+      background: #ffffff !important;
     }
 
     /* Ocultar campo de búsqueda y elementos adicionales al final del panel de bloques */
@@ -788,11 +1145,38 @@
               </svg>
             </button>
 
-            <button id="ai-generate-btn" class="flex items-center gap-2 px-3 py-2 text-sm text-white bg-purple-600 rounded-md hover:bg-purple-700" title="Generar contenido con IA">
+            <!-- Desplegable Crear con IA (página + contenedor) -->
+            <div class="relative" id="ai-create-dropdown-wrap">
+              <button type="button" id="ai-create-dropdown-btn" class="flex items-center gap-2 px-3 py-2 text-sm text-white bg-purple-600 rounded-md hover:bg-purple-700" title="Generar con IA" aria-expanded="false" aria-haspopup="true">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                </svg>
+                Generar con IA
+                <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              <div id="ai-create-dropdown-menu" class="absolute left-0 z-50 hidden min-w-[220px] py-1 mt-1 bg-white border border-gray-200 rounded-md shadow-lg top-full">
+                <button type="button" id="ai-generate-btn" class="flex items-center w-full gap-2 px-4 py-2 text-sm text-left text-gray-700 hover:bg-purple-50 hover:text-purple-700">
+                  <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  Página
+                </button>
+                <button type="button" id="ai-add-container-btn" class="flex items-center w-full gap-2 px-4 py-2 text-sm text-left text-gray-700 hover:bg-green-50 hover:text-green-700">
+                  <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                  Contenedor
+                </button>
+              </div>
+            </div>
+
+            <button id="ai-container-btn" class="flex items-center gap-2 px-3 py-2 text-sm transition-colors rounded-md text-gray-400 bg-gray-100 hover:bg-gray-200" title="Editar con IA" data-ai-container-active="0">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
               </svg>
-              Generar con IA
+              Editar con IA
             </button>
 
             <button id="config-btn" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" title="Configuración de la Página">
@@ -803,7 +1187,14 @@
               Configuración
             </button>
 
-            <button id="save-btn" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
+            <button id="toggle-panel-btn" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" title="Ocultar/Mostrar Panel">
+              <svg id="toggle-panel-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+              </svg>
+              <span id="toggle-panel-text">Ocultar Panel</span>
+            </button>
+
+            <button id="save-btn" type="button" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
               Guardar
             </button>
             @if($editableType === 'page')
@@ -816,20 +1207,11 @@
             $previewUrl = route('website.page.show', [$website->slug, $editable->slug]);
             }
             @endphp
-            <a href="{{ $previewUrl }}" target="_blank" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors bg-green-600 rounded-md hover:bg-green-700" title="Ver esta página en el sitio web público">
+            <a href="{{ $previewUrl }}" target="_blank" class="flex items-center justify-center p-2 text-white transition-colors bg-green-600 rounded-md hover:bg-green-700" title="Vista Previa">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
               </svg>
-              Vista Previa
-            </a>
-
-            {{-- Botón Ver Sitio Completo --}}
-            <a href="{{ route('website.show', [$website->slug]) }}" target="_blank" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-md hover:bg-gray-50" title="Ver el sitio web completo">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
-              </svg>
-              Ver Sitio
             </a>
             @endif
           </div>
@@ -840,7 +1222,7 @@
     <!-- Editor -->
     <div class="flex flex-1">
       <!-- Sidebar con paneles -->
-      <div class="flex flex-col border-r border-gray-200 w-80 bg-gray-50">
+      <div id="editor-sidebar" class="flex flex-col border-r border-gray-200 w-80 bg-gray-50">
         <!-- Panel Tabs -->
         <div class="border-b border-gray-200">
           <nav class="flex items-center gap-4 px-3 overflow-x-auto whitespace-nowrap" aria-label="Tabs">
@@ -960,7 +1342,7 @@
           </div>
           <div class="px-6 py-4 max-h-[70vh] overflow-y-auto">
             <p class="mb-4 text-sm text-gray-600">
-              Describe cómo quieres actualizar el contenido de esta página. La IA mejorará el contenido existente considerando la plantilla y estilos de tu sitio.
+              <strong>Primero</strong> describe cómo quieres que sea la página (secciones, estilo). Usa <strong>Planear con IA</strong> para alinear con el catálogo de widgets; cuando tengas claro el plan, pulsa <strong>Actualizar con IA</strong>.
             </p>
 
             <!-- Contenido Actual -->
@@ -972,14 +1354,33 @@
               <p class="mt-1 text-xs text-gray-500">Este es el contenido HTML actual que se actualizará</p>
             </div>
 
-            <!-- Prompt para actualizar -->
-            <div>
-              <label class="block mb-2 text-sm font-medium text-gray-700">Instrucciones para Actualizar</label>
-              <textarea id="ai-prompt-input" rows="6" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Ejemplo: Mejora el título de la sección hero para que sea más llamativo, agrega más detalles a los servicios y actualiza los testimonios con información más específica."></textarea>
-              <p class="mt-2 text-xs text-gray-500">
-                Describe cómo quieres mejorar o actualizar el contenido. El contenido completo de la página será reemplazado con la versión actualizada.
-              </p>
+            <!-- Idea / Instrucciones -->
+            <div class="mb-3">
+              <label class="block mb-2 text-sm font-medium text-gray-700">Cómo quieres la página (secciones, detalles)</label>
+              <textarea id="ai-prompt-input" rows="4" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Ejemplo: Página de servicios con hero, grid de servicios (iconos + texto), testimonios y formulario de contacto. Estilo moderno con Tailwind."></textarea>
+              <div class="mt-2 flex items-center gap-2">
+                <button type="button" id="ai-plan-btn" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700">
+                  <span id="ai-plan-btn-text">Planear con IA</span>
+                  <span id="ai-plan-btn-loading" class="hidden">
+                    <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  </span>
+                </button>
+                <span class="text-xs text-gray-500">Sugiere contenedores y widgets del catálogo</span>
+              </div>
             </div>
+
+            <!-- Plan generado (contenedores + widgets + consulta refinada) -->
+            <div id="ai-plan-section" class="hidden mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+              <h4 class="text-sm font-semibold text-purple-900 mb-2">Plan (contenedores y widgets)</h4>
+              <div id="ai-plan-containers-list" class="mb-3 space-y-1.5 text-sm text-gray-700"></div>
+              <p class="text-xs text-gray-500 mb-1">Consulta que se enviará a la IA (puedes editarla arriba antes de Actualizar con IA):</p>
+              <pre id="ai-plan-refined-preview" class="p-2 text-xs bg-white border border-purple-100 rounded max-h-24 overflow-y-auto whitespace-pre-wrap text-gray-600"></pre>
+            </div>
+
+            <!-- Nota final -->
+            <p class="text-xs text-gray-500">
+              Con el plan claro, edita el texto de arriba si quieres y pulsa <strong>Actualizar con IA</strong>. El contenido completo se reemplazará por la versión generada.
+            </p>
           </div>
           <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
             <button id="ai-modal-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
@@ -993,6 +1394,88 @@
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 Actualizando...
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Editar contenedor con IA (solo el contenedor seleccionado) -->
+    <div id="ai-container-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black bg-opacity-50">
+      <div class="flex items-center justify-center min-h-screen px-4 py-8">
+        <div class="relative w-full max-w-2xl bg-white rounded-lg shadow-xl">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h2 class="flex items-center gap-2 text-xl font-semibold text-gray-900">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"></path>
+              </svg>
+              Editar con IA
+            </h2>
+            <button id="close-ai-container-modal" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+          <div class="px-6 py-4 max-h-[70vh] overflow-y-auto">
+            <p class="mb-4 text-sm text-gray-600">
+              Describe cómo quieres que sea <strong>solo este contenedor</strong>. La IA actualizará únicamente el contenedor seleccionado; el resto de la página no cambia.
+            </p>
+            <div class="mb-4">
+              <label class="block mb-2 text-sm font-medium text-gray-700">Contenido actual del contenedor</label>
+              <div class="p-3 overflow-y-auto border border-gray-200 rounded-md bg-gray-50 max-h-32">
+                <pre id="ai-container-current-preview" class="font-mono text-xs text-gray-600 whitespace-pre-wrap"></pre>
+              </div>
+            </div>
+            <div>
+              <label class="block mb-2 text-sm font-medium text-gray-700">Instrucciones para este contenedor</label>
+              <textarea id="ai-container-prompt" rows="4" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Ejemplo: Mejora el título, añade un párrafo más corto y un botón de contacto."></textarea>
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <button id="ai-container-modal-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancelar</button>
+            <button id="ai-container-submit" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700">
+              <span id="ai-container-submit-text">Actualizar contenedor con IA</span>
+              <span id="ai-container-submit-loading" class="hidden">
+                <svg class="inline-block w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Actualizando...
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Generar contenedor con IA (se agrega al final de la página) -->
+    <div id="ai-add-container-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black bg-opacity-50">
+      <div class="flex items-center justify-center min-h-screen px-4 py-8">
+        <div class="relative w-full max-w-2xl bg-white rounded-lg shadow-xl">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h2 class="flex items-center gap-2 text-xl font-semibold text-gray-900">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Generar contenedor con IA
+            </h2>
+            <button id="close-ai-add-container-modal" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+          <div class="px-6 py-4 max-h-[70vh] overflow-y-auto">
+            <p class="mb-4 text-sm text-gray-600">
+              Describe el contenido del <strong>nuevo contenedor</strong>. La IA lo generará y se agregará <strong>al final de la página</strong>, debajo de los demás contenedores.
+            </p>
+            <div>
+              <label class="block mb-2 text-sm font-medium text-gray-700">Qué debe llevar el nuevo contenedor</label>
+              <textarea id="ai-add-container-prompt" rows="4" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ejemplo: Una sección de contacto con título, párrafo breve, formulario de contacto y botón de envío."></textarea>
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <button id="ai-add-container-modal-cancel" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancelar</button>
+            <button id="ai-add-container-submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">
+              <span id="ai-add-container-submit-text">Generar</span>
+              <span id="ai-add-container-submit-loading" class="hidden">
+                <svg class="inline-block w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Agregando...
               </span>
             </button>
           </div>
@@ -1136,6 +1619,16 @@
   @if($editable->css_content)
   <input type="hidden" id="page-css-content" value="{{ htmlspecialchars($editable->css_content, ENT_QUOTES) }}">
   @endif
+  @if($editable->blocks)
+  <input type="hidden" id="page-blocks-data" value="{{ htmlspecialchars(json_encode($editable->blocks), ENT_QUOTES) }}">
+  @endif
+  @if($editable->grapesjs_data)
+  <script>
+    // Cargar datos de GrapesJS (estructura completa con componentes)
+    // Esto preserva exactamente cómo se dejó estructurado
+    window.pageGrapesData = {!! $editable->grapesjs_data !!};
+  </script>
+  @endif
 
   <script>
     // Suprimir advertencias de source maps
@@ -1199,6 +1692,12 @@
   <script src="{{ asset('js/editor-modules/components/column.js') }}"></script>
   <script src="{{ asset('js/editor-modules/carousel-utils.js') }}"></script>
 
+  <!-- Debug script para galería de imágenes -->
+  <script src="{{ asset('js/debug-gallery.js') }}"></script>
+
+  <!-- ✅ Script para forzar estilos inline de fondo (ANTES de editor-config.js) -->
+  <script src="{{ asset('js/force-background-inline.js') }}"></script>
+
   <script src="{{ asset('js/editor-config.js') }}"></script>
   <script>
     // Configurar variables globales para el editor
@@ -1261,6 +1760,28 @@
         });
       });
 
+      // Toggle Panel de Edición
+      const togglePanelBtn = document.getElementById('toggle-panel-btn');
+      const togglePanelText = document.getElementById('toggle-panel-text');
+      const togglePanelIcon = document.getElementById('toggle-panel-icon');
+      const editorSidebar = document.getElementById('editor-sidebar');
+      let panelVisible = true;
+      
+      if (togglePanelBtn && editorSidebar) {
+        togglePanelBtn.addEventListener('click', function() {
+          panelVisible = !panelVisible;
+          if (panelVisible) {
+            editorSidebar.classList.remove('hidden');
+            togglePanelText.textContent = 'Ocultar Panel';
+            togglePanelIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>';
+          } else {
+            editorSidebar.classList.add('hidden');
+            togglePanelText.textContent = 'Mostrar Panel';
+            togglePanelIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+          }
+        });
+      }
+
       // Funcionalidad de las pestañas de widgets (Contenido | Estilo | Avanzado)
       document.querySelectorAll('.widget-tab-button').forEach(tab => {
         tab.addEventListener('click', function() {
@@ -1290,10 +1811,38 @@
       const aiGenerateSubmit = document.getElementById('ai-generate-submit');
       const aiGenerateText = document.getElementById('ai-generate-text');
       const aiGenerateLoading = document.getElementById('ai-generate-loading');
+      const aiPlanSection = document.getElementById('ai-plan-section');
+      const aiPlanContainersList = document.getElementById('ai-plan-containers-list');
+      const aiPlanRefinedPreview = document.getElementById('ai-plan-refined-preview');
+
+      // Desplegable "Crear con IA": abrir/cerrar
+      const aiCreateDropdownBtn = document.getElementById('ai-create-dropdown-btn');
+      const aiCreateDropdownMenu = document.getElementById('ai-create-dropdown-menu');
+      const aiCreateDropdownWrap = document.getElementById('ai-create-dropdown-wrap');
+      function closeAiCreateDropdown() {
+        if (aiCreateDropdownMenu) aiCreateDropdownMenu.classList.add('hidden');
+        if (aiCreateDropdownBtn) aiCreateDropdownBtn.setAttribute('aria-expanded', 'false');
+      }
+      if (aiCreateDropdownBtn && aiCreateDropdownMenu) {
+        aiCreateDropdownBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var isHidden = aiCreateDropdownMenu.classList.contains('hidden');
+          if (isHidden) {
+            aiCreateDropdownMenu.classList.remove('hidden');
+            aiCreateDropdownBtn.setAttribute('aria-expanded', 'true');
+          } else {
+            closeAiCreateDropdown();
+          }
+        });
+      }
+      document.addEventListener('click', function(e) {
+        if (aiCreateDropdownWrap && !aiCreateDropdownWrap.contains(e.target)) closeAiCreateDropdown();
+      });
 
       // Abrir modal de IA
       if (aiGenerateBtn) {
         aiGenerateBtn.addEventListener('click', function() {
+          closeAiCreateDropdown();
           // Obtener el contenido actual del editor
           let currentContent = '';
           if (window.editor) {
@@ -1310,6 +1859,8 @@
             document.getElementById('ai-current-content').textContent = 'Editor no inicializado';
           }
 
+          if (aiPlanSection) aiPlanSection.classList.add('hidden');
+          if (aiPlanContainersList) aiPlanContainersList.innerHTML = '';
           aiModal.classList.remove('hidden');
           aiPromptInput.focus();
         });
@@ -1319,6 +1870,8 @@
       function closeAiModalFunc() {
         aiModal.classList.add('hidden');
         aiPromptInput.value = '';
+        if (aiPlanSection) aiPlanSection.classList.add('hidden');
+        if (aiPlanContainersList) aiPlanContainersList.innerHTML = '';
       }
 
       if (closeAiModal) {
@@ -1335,6 +1888,73 @@
           if (e.target === aiModal) {
             closeAiModalFunc();
           }
+        });
+      }
+
+      // Planear con IA (secciones + catálogo de widgets)
+      const aiPlanBtn = document.getElementById('ai-plan-btn');
+      const aiPlanBtnText = document.getElementById('ai-plan-btn-text');
+      const aiPlanBtnLoading = document.getElementById('ai-plan-btn-loading');
+      if (aiPlanBtn && aiPromptInput) {
+        aiPlanBtn.addEventListener('click', function() {
+          const idea = aiPromptInput.value.trim();
+          if (idea.length < 10) {
+            alert('Escribe al menos 10 caracteres describiendo cómo quieres la página.');
+            return;
+          }
+          aiPlanBtnText.classList.add('hidden');
+          aiPlanBtnLoading.classList.remove('hidden');
+          aiPlanBtn.disabled = true;
+          fetch('{{ route("creator.pages.plan-with-ai") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ prompt: idea })
+          })
+          .then(r => r.json())
+          .then(data => {
+            if (data.success) {
+              const containers = data.containers || data.sections || [];
+              if (aiPlanContainersList) {
+                aiPlanContainersList.innerHTML = containers.map(function(c, i) {
+                  let html = '<div class="border-l-2 border-purple-200 pl-2 mb-2">';
+                  html += '<div class="flex gap-2"><span class="font-medium text-purple-700">' + (i + 1) + '. ' + (c.title || 'Contenedor') + '</span><span class="text-gray-600">— ' + (c.description || '') + '</span>';
+                  if (c.suggested_components && c.suggested_components.length) html += '<span class="text-xs text-gray-500">[' + c.suggested_components.join(', ') + ']</span>';
+                  html += '</div>';
+                  if (c.widgets && c.widgets.length) {
+                    html += '<div class="mt-1 ml-2 text-xs text-gray-600 space-y-0.5">';
+                    c.widgets.forEach(function(w) {
+                      var content = (w.content || '').substring(0, 60) + ((w.content || '').length > 60 ? '…' : '');
+                      html += '<div><span class="text-purple-600">' + (w.id || '') + '</span>: ' + content + '</div>';
+                    });
+                    html += '</div>';
+                  }
+                  html += '</div>';
+                  return html;
+                }).join('');
+              }
+              if (data.refined_prompt) {
+                aiPromptInput.value = data.refined_prompt;
+                if (aiPlanRefinedPreview) aiPlanRefinedPreview.textContent = data.refined_prompt || '';
+              }
+              if (aiPlanSection) aiPlanSection.classList.remove('hidden');
+            } else {
+              alert(data.message || 'No se pudo generar el plan.');
+            }
+          })
+          .catch(function(err) {
+            console.error(err);
+            alert('Error al planear: ' + (err.message || 'Intenta de nuevo.'));
+          })
+          .finally(function() {
+            aiPlanBtnText.classList.remove('hidden');
+            aiPlanBtnLoading.classList.add('hidden');
+            aiPlanBtn.disabled = false;
+          });
         });
       }
 
@@ -1380,24 +2000,14 @@
                 // Reemplazar TODO el contenido en GrapesJS
                 if (window.editor) {
                   try {
-                    // Método 1: Intentar usar setComponents si existe
+                    // ✅ Usar SOLO UN método: setComponents (más confiable)
                     if (typeof window.editor.setComponents === 'function') {
                       window.editor.setComponents(data.html_content);
-                    }
-                    // Método 2: Limpiar y agregar nuevo contenido
-                    else if (typeof window.editor.getWrapper === 'function') {
-                      const wrapper = window.editor.getWrapper();
-                      if (wrapper && wrapper.components) {
-                        wrapper.components().reset();
-                        window.editor.addComponents(data.html_content);
-                      } else {
-                        // Método 3: Usar el método directo de reset
-                        window.editor.set('components', data.html_content);
-                      }
-                    }
-                    // Método 4: Usar el método directo
-                    else {
+                      console.log('✅ Contenido insertado con setComponents');
+                    } else {
+                      // Fallback ÚNICO: usar set('components')
                       window.editor.set('components', data.html_content);
+                      console.log('✅ Contenido insertado con set(components)');
                     }
 
                     closeAiModalFunc();
@@ -1423,6 +2033,554 @@
               aiGenerateLoading.classList.add('hidden');
               aiGenerateSubmit.disabled = false;
             });
+        });
+      }
+
+      // Editar solo el contenedor seleccionado con IA
+      const aiContainerBtn = document.getElementById('ai-container-btn');
+      const aiContainerModal = document.getElementById('ai-container-modal');
+      const closeAiContainerModalBtn = document.getElementById('close-ai-container-modal');
+      const aiContainerModalCancel = document.getElementById('ai-container-modal-cancel');
+      const aiContainerPrompt = document.getElementById('ai-container-prompt');
+      const aiContainerCurrentPreview = document.getElementById('ai-container-current-preview');
+      const aiContainerSubmit = document.getElementById('ai-container-submit');
+      const aiContainerSubmitText = document.getElementById('ai-container-submit-text');
+      const aiContainerSubmitLoading = document.getElementById('ai-container-submit-loading');
+
+      function isContainerComponent(component) {
+        if (!component || typeof component.get !== 'function') return false;
+        if (component.get('type') === 'container') return true;
+        const attrs = component.get('attributes') || {};
+        const name = attrs['data-gjs-name'] || component.get('name') || '';
+        if (name === 'Contenedor') return true;
+        const cls = (typeof attrs.class === 'string' ? attrs.class : '') || '';
+        if (cls.indexOf('container-flex') !== -1) return true;
+        try {
+          const el = component.getEl && component.getEl();
+          if (el && (el.getAttribute('data-gjs-name') === 'Contenedor' || (el.className && String(el.className).indexOf('container-flex') !== -1))) return true;
+        } catch (e) {}
+        return false;
+      }
+
+      function isHtmlCodeComponent(component) {
+        if (!component || typeof component.get !== 'function') return false;
+        return component.get('type') === 'html-code';
+      }
+
+      function canEditWithAi(component) {
+        return isContainerComponent(component) || isHtmlCodeComponent(component);
+      }
+
+      function closeAiContainerModalFunc() {
+        if (aiContainerModal) aiContainerModal.classList.add('hidden');
+        if (aiContainerPrompt) aiContainerPrompt.value = '';
+        window._aiContainerTarget = null;
+      }
+
+      if (aiContainerBtn) {
+        aiContainerBtn.addEventListener('click', function() {
+          if (!window.editor) { alert('Editor no listo.'); return; }
+          const selected = window.editor.getSelected();
+          if (!selected) {
+            alert('Selecciona un contenedor o un bloque de Código HTML en el canvas y luego pulsa "Editar con IA".');
+            return;
+          }
+          if (!canEditWithAi(selected)) {
+            alert('Solo puedes editar con IA un Contenedor o un bloque de Código HTML. Selecciona uno de ellos.');
+            return;
+          }
+          window._aiContainerTarget = selected;
+          window._aiEditMode = isHtmlCodeComponent(selected) ? 'html_code' : 'container';
+          if (window._aiEditMode === 'html_code') {
+            const html = (selected.get('html-content') || '').substring(0, 200);
+            const css = (selected.get('css-content') || '').substring(0, 100);
+            if (aiContainerCurrentPreview) aiContainerCurrentPreview.textContent = 'HTML: ' + (html || '(vacío)') + (css ? '\nCSS: ' + css + '...' : '');
+          } else {
+            const html = selected.toHTML ? selected.toHTML() : (selected.getEl() ? selected.getEl().outerHTML : '');
+            if (aiContainerCurrentPreview) aiContainerCurrentPreview.textContent = html.length > 400 ? html.substring(0, 400) + '\n\n[Truncado...]' : html;
+          }
+          if (aiContainerPrompt) aiContainerPrompt.value = '';
+          if (aiContainerModal) aiContainerModal.classList.remove('hidden');
+          if (aiContainerPrompt) aiContainerPrompt.focus();
+        });
+      }
+
+      if (closeAiContainerModalBtn) closeAiContainerModalBtn.addEventListener('click', closeAiContainerModalFunc);
+      if (aiContainerModalCancel) aiContainerModalCancel.addEventListener('click', closeAiContainerModalFunc);
+      if (aiContainerModal) {
+        aiContainerModal.addEventListener('click', function(e) {
+          if (e.target === aiContainerModal) closeAiContainerModalFunc();
+        });
+      }
+
+      if (aiContainerSubmit) {
+        aiContainerSubmit.addEventListener('click', function() {
+          const prompt = aiContainerPrompt ? aiContainerPrompt.value.trim() : '';
+          if (!prompt || prompt.length < 10) {
+            alert('Escribe qué quieres que haga la IA (mínimo 10 caracteres).');
+            return;
+          }
+          const target = window._aiContainerTarget;
+          const mode = window._aiEditMode || 'container';
+          if (!target) {
+            alert('El elemento ya no está seleccionado. Selecciónalo de nuevo y abre el modal otra vez.');
+            return;
+          }
+          var body = {
+            prompt: prompt,
+            page_id: {{ $editable->id ?? 'null' }},
+            website_id: {{ $website->id }},
+            scope: mode === 'html_code' ? 'html_code' : 'single_container'
+          };
+          if (mode === 'html_code') {
+            body.html_content = target.get('html-content') || '';
+            body.css_content = target.get('css-content') || '';
+            body.js_content = target.get('js-content') || '';
+          } else {
+            body.current_content = target.toHTML ? target.toHTML() : (target.getEl() ? target.getEl().outerHTML : '');
+            if (!body.current_content) {
+              alert('No se pudo obtener el contenido del contenedor.');
+              return;
+            }
+          }
+          aiContainerSubmitText.classList.add('hidden');
+          aiContainerSubmitLoading.classList.remove('hidden');
+          aiContainerSubmit.disabled = true;
+
+          fetch('{{ route("creator.pages.generate-ai-content") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(body)
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (!data.success || !target) {
+              alert(data.message || 'No se pudo actualizar.');
+              return;
+            }
+            if (mode === 'html_code') {
+              try {
+                var htmlVal = (data.html_content != null && data.html_content !== undefined) ? String(data.html_content) : '';
+                var cssVal = (data.css_content != null && data.css_content !== undefined) ? String(data.css_content) : '';
+                var jsVal = (data.js_content != null && data.js_content !== undefined) ? String(data.js_content) : '';
+                
+                console.log('📝 Actualizando HTML Code desde IA:', {html: htmlVal.substring(0, 50), css: cssVal.substring(0, 50), js: jsVal.substring(0, 50)});
+                
+                // ✅ SANITIZAR HTML - Remover etiquetas globales (html, body, head, doctype)
+                if (htmlVal.trim()) {
+                  // ✅ EXTRAER <script> del HTML y moverlo a jsVal para evitar duplicación
+                  const scriptMatches = htmlVal.match(/<script[^>]*>([\s\S]*?)<\/script>/gi);
+                  if (scriptMatches && scriptMatches.length > 0) {
+                    console.log('🔍 Encontrados', scriptMatches.length, 'scripts en HTML, extrayendo...');
+                    scriptMatches.forEach(scriptTag => {
+                      // Extraer contenido del script
+                      const scriptContent = scriptTag.replace(/<script[^>]*>/gi, '').replace(/<\/script>/gi, '');
+                      // Agregar al jsVal (si no está vacío, agregar nueva línea)
+                      if (scriptContent.trim()) {
+                        jsVal = jsVal ? jsVal + '\n' + scriptContent : scriptContent;
+                      }
+                      // Remover del HTML
+                      htmlVal = htmlVal.replace(scriptTag, '');
+                    });
+                    console.log('✅ Scripts extraídos del HTML y movidos a JavaScript');
+                  }
+                  
+                  // Remover DOCTYPE
+                  htmlVal = htmlVal.replace(/<!DOCTYPE[^>]*>/gi, '');
+                  
+                  // Remover etiquetas <html>
+                  htmlVal = htmlVal.replace(/<html[^>]*>/gi, '');
+                  htmlVal = htmlVal.replace(/<\/html>/gi, '');
+                  
+                  // Remover etiquetas <head> completas con todo su contenido
+                  htmlVal = htmlVal.replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '');
+                  
+                  // Remover etiquetas <body> pero mantener su contenido
+                  htmlVal = htmlVal.replace(/<body[^>]*>/gi, '');
+                  htmlVal = htmlVal.replace(/<\/body>/gi, '');
+                  
+                  // ✅ NUEVO: Remover atributos style que contengan "border: ... dashed"
+                  htmlVal = htmlVal.replace(/style="[^"]*border[^"]*dashed[^"]*"/gi, '');
+                  htmlVal = htmlVal.replace(/style='[^']*border[^']*dashed[^']*'/gi, '');
+                  
+                  // ✅ NUEVO: Remover atributos class que contengan "border-dashed"
+                  htmlVal = htmlVal.replace(/(\s*class="[^"]*)\bborder-dashed\b([^"]*")/gi, '$1$2');
+                  htmlVal = htmlVal.replace(/(\s*class='[^']*)\bborder-dashed\b([^']*')/gi, '$1$2');
+                  
+                  console.log('✅ HTML sanitizado - Etiquetas globales, scripts extraídos y bordes dashed removidos');
+                }
+                
+                // ✅ SANITIZAR CSS - Remover etiquetas <style> globales pero mantener el contenido CSS
+                if (cssVal.trim()) {
+                  // Si el CSS viene envuelto en etiquetas <style>, extraer el contenido
+                  const styleMatch = cssVal.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
+                  if (styleMatch) {
+                    cssVal = styleMatch.map(s => s.replace(/<style[^>]*>/gi, '').replace(/<\/style>/gi, '')).join('\n');
+                  }
+                  
+                  // ✅ NUEVO: Remover todas las reglas CSS que contengan "border" con "dashed"
+                  cssVal = cssVal.replace(/\s*[^{]*border[^}]*dashed[^}]*}/gi, (match) => {
+                    // Si la regla contiene dashed, removerla completamente
+                    return '';
+                  });
+                  
+                  // ✅ NUEVO: Remover border-style: dashed específicamente
+                  cssVal = cssVal.replace(/border-style\s*:\s*dashed\s*;?/gi, '');
+                  cssVal = cssVal.replace(/border-style\s*:\s*dashed\s*!important\s*;?/gi, '');
+                  
+                  console.log('✅ CSS sanitizado - Etiquetas <style> y bordes dashed removidos');
+                }
+                
+                // ✅ ACTUALIZAR VALORES EN EL MODELO - Usar silent para evitar múltiples renders
+                console.log('📝 Asignando contenido al HTML Code widget...');
+                console.log('Contenido a asignar:', {
+                  html: htmlVal.substring(0, 100),
+                  css: cssVal.substring(0, 100),
+                  js: jsVal.substring(0, 100)
+                });
+                
+                // ✅ Usar silent: true para no disparar listeners en cada set()
+                // Esto previene que se renderice el preview 3 veces
+                target.set({
+                  'html-content': htmlVal,
+                  'css-content': cssVal,
+                  'js-content': jsVal
+                }, { silent: true });
+                
+                // ✅ Ahora disparar UNA SOLA actualización manual
+                if (typeof target.updateContent === 'function') {
+                  target.updateContent();
+                  console.log('✅ updateContent() ejecutado una sola vez');
+                } else {
+                  // Disparar el evento manualmente una sola vez
+                  target.trigger('change:html-content');
+                  console.log('✅ change:html-content disparado una sola vez');
+                }
+                
+                console.log('✅ Contenido asignado - Modelo actualizado:', {
+                  html: target.get('html-content') ? target.get('html-content').substring(0, 50) : 'VACÍO',
+                  css: target.get('css-content') ? target.get('css-content').substring(0, 50) : 'VACÍO',
+                  js: target.get('js-content') ? target.get('js-content').substring(0, 50) : 'VACÍO'
+                });
+                
+                closeAiContainerModalFunc();
+                alert('Código HTML/CSS/JS actualizado con IA.');
+              } catch (err) {
+                console.error('❌ Error al actualizar HTML Code:', err);
+                alert('Error al actualizar el bloque de código. Prueba guardar la página.');
+              }
+            } else {
+              try {
+                if (typeof target.replaceWith === 'function') {
+                  target.replaceWith(data.html_content);
+                } else {
+                  var parent = target.parent();
+                  if (parent && parent.components) {
+                    var idx = target.index();
+                    target.remove();
+                    parent.components().add(data.html_content, { at: idx });
+                  }
+                }
+                closeAiContainerModalFunc();
+                alert('Contenedor actualizado con IA. Solo este contenedor ha cambiado.');
+              } catch (err) {
+                console.error(err);
+                alert('Error al reemplazar el contenedor. Prueba guardar la página.');
+              }
+            }
+          })
+          .catch(function(err) {
+            console.error(err);
+            alert('Error al actualizar. Intenta de nuevo.');
+          })
+          .finally(function() {
+            aiContainerSubmitText.classList.remove('hidden');
+            aiContainerSubmitLoading.classList.add('hidden');
+            aiContainerSubmit.disabled = false;
+          });
+        });
+      }
+
+      // Enter en el textarea del modal "Editar contenedor con IA" envía el formulario (actualizar contenedor)
+      if (aiContainerPrompt) {
+        aiContainerPrompt.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (aiContainerSubmit && !aiContainerSubmit.disabled) aiContainerSubmit.click();
+          }
+        });
+      }
+
+      // Actualizar estilo del botón "Editar con IA" (gris cuando no hay contenedor, color cuando sí)
+      function updateAiContainerBtnState(isActive) {
+        if (!aiContainerBtn) return;
+        if (isActive) {
+          aiContainerBtn.classList.remove('text-gray-400', 'bg-gray-100', 'hover:bg-gray-200');
+          aiContainerBtn.classList.add('text-purple-700', 'bg-purple-100', 'hover:bg-purple-200');
+          aiContainerBtn.setAttribute('data-ai-container-active', '1');
+        } else {
+          aiContainerBtn.classList.remove('text-purple-700', 'bg-purple-100', 'hover:bg-purple-200');
+          aiContainerBtn.classList.add('text-gray-400', 'bg-gray-100', 'hover:bg-gray-200');
+          aiContainerBtn.setAttribute('data-ai-container-active', '0');
+        }
+      }
+
+      // Inyectar botón "Editar contenedor con IA" en el toolbar contextual cuando se selecciona un contenedor
+      function injectAiContainerToolbarButton() {
+        if (!window.editor) return;
+        
+        // Variables para controlar cuándo cambiar automáticamente las pestañas
+        let isDragging = false;
+        let lastSelectedTime = 0;
+        
+        // Detectar inicio de arrastre
+        window.editor.on('component:drag:start', function() {
+          isDragging = true;
+          console.log('🔄 Arrastre iniciado');
+        });
+        
+        // Detectar fin de arrastre
+        window.editor.on('component:drag:end', function() {
+          setTimeout(() => {
+            isDragging = false;
+            console.log('✅ Arrastre finalizado');
+          }, 100);
+        });
+        
+        window.editor.on('component:selected', function(component) {
+          console.log('🎯 [Editor] Componente seleccionado:', component.get('type'), component.get('name'));
+          
+          const now = Date.now();
+          const timeSinceLastSelection = now - lastSelectedTime;
+          lastSelectedTime = now;
+          
+          // 🔄 Cambiar automáticamente SOLO si:
+          // - No se está arrastrando
+          // - Han pasado más de 200ms desde la última selección (evita cambios rápidos)
+          const shouldAutoSwitch = !isDragging && timeSinceLastSelection > 200;
+          
+          if (shouldAutoSwitch) {
+            setTimeout(() => {
+              // 1. Activar pestaña principal "Propiedades"
+              const traitsTabBtn = document.querySelector('.tab-button[data-panel="traits"]');
+              if (traitsTabBtn && !traitsTabBtn.classList.contains('active')) {
+              // Remover active de todas las pestañas principales
+              document.querySelectorAll('.tab-button').forEach(t => {
+                t.classList.remove('active', 'text-blue-600', 'border-blue-500');
+                t.classList.add('text-gray-500', 'border-transparent');
+              });
+              // Ocultar todos los paneles
+              document.querySelectorAll('.panel-content').forEach(p => p.classList.add('hidden'));
+              
+              // Activar pestaña Propiedades
+              traitsTabBtn.classList.add('active', 'text-blue-600', 'border-blue-500');
+              traitsTabBtn.classList.remove('text-gray-500', 'border-transparent');
+              
+              // Mostrar panel de Propiedades
+              const traitsPanel = document.getElementById('traits-panel');
+              if (traitsPanel) {
+                traitsPanel.classList.remove('hidden');
+              }
+              
+              console.log('✅ Cambió a pestaña Propiedades');
+            }
+            
+            // 2. Activar sub-pestaña "Contenido"
+            const contentTabBtn = document.querySelector('.widget-tab-button[data-widget-tab="content"]');
+            if (contentTabBtn && !contentTabBtn.classList.contains('active')) {
+              // Remover active de todas las sub-pestañas
+              document.querySelectorAll('.widget-tab-button').forEach(t => {
+                t.classList.remove('active', 'text-blue-600', 'border-blue-500');
+                t.classList.add('text-gray-500', 'border-transparent');
+              });
+              // Ocultar todos los contenidos de sub-pestañas
+              document.querySelectorAll('.widget-tab-content').forEach(p => p.classList.add('hidden'));
+              
+              // Activar sub-pestaña Contenido
+              contentTabBtn.classList.add('active', 'text-blue-600', 'border-blue-500');
+              contentTabBtn.classList.remove('text-gray-500', 'border-transparent');
+              
+              // Mostrar contenido de Contenido
+              const contentTab = document.getElementById('widget-content-tab');
+              if (contentTab) {
+                contentTab.classList.remove('hidden');
+              }
+              
+              console.log('✅ Cambió a sub-pestaña Contenido');
+            }
+            }, 10);
+          } else {
+            console.log('⏸️ No se cambia pestaña (arrastre o selección rápida)');
+          }
+          
+          // ✅ Renderizar directamente los traits sin deseleccionar/reseleccionar
+          if (window.editor.TraitManager) {
+            try {
+              setTimeout(() => {
+                console.log('🔍 [TraitManager] Componente:', component.get('type'));
+                console.log('🔍 [TraitManager] Traits del componente:', component.get('traits'));
+                console.log('🔍 [TraitManager] TraitManager disponible:', !!window.editor.TraitManager);
+                
+                // GrapesJS selecciona automáticamente el componente, no necesitamos setTarget
+                // porque ya fue disparado por el evento component:selected
+                
+                // Verificar el contenedor
+                const traitsContainer = document.querySelector('.traits-container');
+                console.log('🔍 [TraitManager] Contenedor existe:', !!traitsContainer);
+                console.log('🔍 [TraitManager] Contenedor HTML antes:', traitsContainer?.innerHTML.length || 0);
+                
+                // Ahora renderizar los traits
+                if (window.editor.TraitManager.render && typeof window.editor.TraitManager.render === 'function') {
+                  window.editor.TraitManager.render();
+                  console.log('✅ Panel de traits actualizado');
+                  
+                  // Verificar después del render
+                  setTimeout(() => {
+                    console.log('🔍 [TraitManager] Contenedor HTML después:', traitsContainer?.innerHTML.length || 0);
+                    console.log('🔍 [TraitManager] Contenedor HTML real:', traitsContainer?.innerHTML.substring(0, 500));
+                    const renderedTraits = document.querySelectorAll('.traits-container .gjs-trt-trait');
+                    console.log('🔍 [TraitManager] Traits renderizados:', renderedTraits.length);
+                    
+                    // Buscar con selectores alternativos
+                    const allInputs = document.querySelectorAll('.traits-container textarea, .traits-container input');
+                    console.log('🔍 [TraitManager] Inputs/textareas encontrados:', allInputs.length);
+                  }, 50);
+                }
+              }, 5);
+            } catch (e) {
+              console.error('❌ Error actualizando TraitManager:', e);
+            }
+          }
+          
+          // Actualizar color del botón "Editar con IA" si el seleccionado es contenedor o widget Código HTML
+          var canEdit = canEditWithAi(component);
+          updateAiContainerBtnState(canEdit);
+          setTimeout(function() {
+            var sel = window.editor.getSelected();
+            updateAiContainerBtnState(canEditWithAi(sel));
+          }, 80);
+        });
+        window.editor.on('component:deselected', function() {
+          console.log('🔲 [Editor] Componente deseleccionado');
+          updateAiContainerBtnState(false);
+          
+          // NO limpiar el panel - GrapesJS lo maneja automáticamente
+        });
+      }
+      if (window.editor) injectAiContainerToolbarButton();
+      else {
+        var _iv = setInterval(function() {
+          if (window.editor) { clearInterval(_iv); injectAiContainerToolbarButton(); }
+        }, 100);
+        setTimeout(function() { clearInterval(_iv); }, 15000);
+      }
+
+      // Agregar nuevo contenedor con IA (al final de la página)
+      const aiAddContainerBtn = document.getElementById('ai-add-container-btn');
+      const aiAddContainerModal = document.getElementById('ai-add-container-modal');
+      const closeAiAddContainerModalBtn = document.getElementById('close-ai-add-container-modal');
+      const aiAddContainerModalCancel = document.getElementById('ai-add-container-modal-cancel');
+      const aiAddContainerPrompt = document.getElementById('ai-add-container-prompt');
+      const aiAddContainerSubmit = document.getElementById('ai-add-container-submit');
+      const aiAddContainerSubmitText = document.getElementById('ai-add-container-submit-text');
+      const aiAddContainerSubmitLoading = document.getElementById('ai-add-container-submit-loading');
+
+      var emptyContainerHtml = '<div class="container-flex flex flex-col gap-4 p-[10px] rounded-lg bg-gray-50" data-gjs-name="Contenedor"></div>';
+
+      function closeAiAddContainerModalFunc() {
+        if (aiAddContainerModal) aiAddContainerModal.classList.add('hidden');
+        if (aiAddContainerPrompt) aiAddContainerPrompt.value = '';
+      }
+
+      if (aiAddContainerBtn) {
+        aiAddContainerBtn.addEventListener('click', function() {
+          closeAiCreateDropdown();
+          if (aiAddContainerPrompt) aiAddContainerPrompt.value = '';
+          if (aiAddContainerModal) aiAddContainerModal.classList.remove('hidden');
+          if (aiAddContainerPrompt) aiAddContainerPrompt.focus();
+        });
+      }
+
+      if (closeAiAddContainerModalBtn) closeAiAddContainerModalBtn.addEventListener('click', closeAiAddContainerModalFunc);
+      if (aiAddContainerModalCancel) aiAddContainerModalCancel.addEventListener('click', closeAiAddContainerModalFunc);
+      if (aiAddContainerModal) {
+        aiAddContainerModal.addEventListener('click', function(e) {
+          if (e.target === aiAddContainerModal) closeAiAddContainerModalFunc();
+        });
+      }
+
+      if (aiAddContainerSubmit) {
+        aiAddContainerSubmit.addEventListener('click', function() {
+          var promptText = aiAddContainerPrompt ? aiAddContainerPrompt.value.trim() : '';
+          if (!promptText || promptText.length < 10) {
+            alert('Describe qué debe llevar el nuevo contenedor (mínimo 10 caracteres).');
+            return;
+          }
+          var prompt = 'Genera UN SOLO contenedor (un div con class container-flex y data-gjs-name="Contenedor") con el siguiente contenido: ' + promptText;
+          aiAddContainerSubmitText.classList.add('hidden');
+          aiAddContainerSubmitLoading.classList.remove('hidden');
+          aiAddContainerSubmit.disabled = true;
+
+          fetch('{{ route("creator.pages.generate-ai-content") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              prompt: prompt,
+              current_content: emptyContainerHtml,
+              page_id: {{ $editable->id ?? 'null' }},
+              website_id: {{ $website->id }},
+              scope: 'single_container'
+            })
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success && data.html_content && window.editor) {
+              try {
+                var wrapper = window.editor.getWrapper();
+                if (wrapper && wrapper.components) {
+                  wrapper.components().add(data.html_content);
+                  closeAiAddContainerModalFunc();
+                  alert('Contenedor agregado al final de la página.');
+                } else {
+                  window.editor.addComponents(data.html_content);
+                  closeAiAddContainerModalFunc();
+                  alert('Contenedor agregado al final de la página.');
+                }
+              } catch (err) {
+                console.error(err);
+                alert('Error al agregar el contenedor. Prueba de nuevo.');
+              }
+            } else {
+              alert(data.message || 'No se pudo generar el contenedor.');
+            }
+          })
+          .catch(function(err) {
+            console.error(err);
+            alert('Error al agregar. Intenta de nuevo.');
+          })
+          .finally(function() {
+            aiAddContainerSubmitText.classList.remove('hidden');
+            aiAddContainerSubmitLoading.classList.add('hidden');
+            aiAddContainerSubmit.disabled = false;
+          });
+        });
+      }
+
+      // Enter en el textarea del modal "Generar contenedor con IA" envía el formulario
+      if (aiAddContainerPrompt) {
+        aiAddContainerPrompt.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (aiAddContainerSubmit && !aiAddContainerSubmit.disabled) aiAddContainerSubmit.click();
+          }
         });
       }
 
@@ -1677,19 +2835,8 @@
             activeBtn.classList.add('text-blue-600', 'bg-blue-50');
           }
 
-          // Actualizar el TraitManager para mostrar propiedades relevantes al dispositivo
-          setTimeout(() => {
-            const selectedComponent = window.editor.getSelected();
-            if (selectedComponent && window.editor.TraitManager) {
-              // Re-renderizar el TraitManager para actualizar las propiedades visibles
-              window.editor.TraitManager.render();
-
-              // Si hay una función personalizada de actualización, llamarla
-              if (typeof window.forceTraitManagerUpdate === 'function') {
-                window.forceTraitManagerUpdate(selectedComponent);
-              }
-            }
-          }, 100);
+          // ✅ GrapesJS actualiza automáticamente el TraitManager cuando cambia el dispositivo
+          // No necesitamos forzar renders manuales - eso causa loops infinitos
         }
       }
 
@@ -1893,6 +3040,12 @@
                     <span class="text-sm text-gray-600">CSS: ${css.length} caracteres</span>
                   </div>
                   <div class="flex space-x-2">
+                    <button type="button" id="code-modal-clear-all-btn" class="px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 rounded hover:bg-red-700" title="Vacía la página por completo">
+                      <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                      Eliminar todo el contenido
+                    </button>
                     <button class="px-4 py-2 text-sm text-gray-700 transition-colors bg-white border border-gray-300 rounded hover:bg-gray-50" onclick="this.closest('.fixed').remove()">
                       Cerrar
                     </button>
@@ -1966,6 +3119,45 @@ ${formatHtml(html)}
             }
 
             document.body.appendChild(modal);
+
+            // Botón Eliminar todo el contenido: vacía la página y cierra el modal
+            const clearAllBtn = modal.querySelector('#code-modal-clear-all-btn');
+            if (clearAllBtn) {
+              clearAllBtn.addEventListener('click', function() {
+                if (!confirm('¿Eliminar todo el contenido y CSS de la página? Esta acción no se puede deshacer.')) return;
+                if (window.editor) {
+                  try {
+                    // 1️⃣ Eliminar todos los componentes
+                    if (typeof window.editor.getWrapper === 'function') {
+                      const wrapper = window.editor.getWrapper();
+                      if (wrapper && wrapper.components) wrapper.components().reset();
+                    } else if (typeof window.editor.setComponents === 'function') {
+                      window.editor.setComponents('');
+                    }
+                    
+                    // 2️⃣ Limpiar estilos CSS (reglas personalizadas)
+                    try {
+                      const styleManager = window.editor.StyleManager;
+                      if (styleManager && styleManager.getAll) {
+                        const rules = styleManager.getAll();
+                        if (rules && typeof rules.reset === 'function') {
+                          rules.reset();
+                        }
+                      }
+                    } catch (e) {
+                      console.log('Nota: No se pudieron limpiar estilos CSS adicionales');
+                    }
+                    
+                    // 3️⃣ Confirmar eliminación
+                    showNotification('✅ Contenido y CSS eliminados. Recuerda guardar la página.', 'success');
+                  } catch (e) {
+                    console.error('Error al eliminar:', e);
+                    showNotification('Error al eliminar el contenido: ' + e.message, 'error');
+                  }
+                }
+                modal.remove();
+              });
+            }
           }
         });
       }
@@ -2000,19 +3192,8 @@ ${formatHtml(html)}
               activeBtn.classList.add('text-blue-600', 'bg-blue-50');
             }
 
-            // Actualizar el TraitManager cuando cambia el dispositivo
-            setTimeout(() => {
-              const selectedComponent = window.editor.getSelected();
-              if (selectedComponent && window.editor.TraitManager) {
-                // Re-renderizar el TraitManager para actualizar las propiedades visibles
-                window.editor.TraitManager.render();
-
-                // Si hay una función personalizada de actualización, llamarla
-                if (typeof window.forceTraitManagerUpdate === 'function') {
-                  window.forceTraitManagerUpdate(selectedComponent);
-                }
-              }
-            }, 100);
+            // ✅ GrapesJS actualiza automáticamente el TraitManager cuando cambia el dispositivo
+            // No necesitamos forzar renders manuales - eso causa loops infinitos
           });
 
           // Inicializar con vista desktop

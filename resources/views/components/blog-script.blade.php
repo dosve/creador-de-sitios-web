@@ -25,6 +25,19 @@
 
 document.addEventListener("DOMContentLoaded", function() {
     console.log('📝 [BLOG SCRIPT] DOMContentLoaded – buscando contenedores de blog…');
+    
+    // Buscar contenedores rápidamente para verificar si esta página tiene blog
+    const hasAnyBlogContainer = document.querySelector("#blog-posts-container") || 
+                                document.querySelector("[data-dynamic-blog=\"true\"]") ||
+                                document.querySelector(".blog-list") ||
+                                document.querySelector(".blog-grid");
+    
+    if (!hasAnyBlogContainer) {
+        console.debug('ℹ️ [BLOG SCRIPT] Esta página no tiene bloque de blog, desactivando carga de posts');
+        return; // Salir silenciosamente si no hay blog en esta página
+    }
+    
+    console.log('📝 [BLOG SCRIPT] ✅ Blog detectado, inicializando carga de posts…');
 
     // Variables globales para el scroll infinito
     let currentPage = 1;
@@ -80,7 +93,12 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         if (blogContainers.length === 0) {
-            console.warn('⚠️ [BLOG SCRIPT] No se encontró #blog-posts-container ni [data-dynamic-blog] .grid');
+            // Silenciosamente salir si no hay contenedores de blog en esta página
+            // Esto es normal si la página no tiene bloque de blog
+            if (append) {
+                // Solo mostrar warning si estamos intentando agregar más posts (scroll infinito)
+                console.debug('ℹ️ [BLOG SCRIPT] No hay contenedores de blog para cargar más posts');
+            }
             isLoading = false;
             return;
         }

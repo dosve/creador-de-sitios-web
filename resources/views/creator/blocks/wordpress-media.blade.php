@@ -137,11 +137,16 @@
     droppable: true,  // ✅ PERMITIDO: Acepta contenido hijo
     removable: true,  // ✅ PERMITIDO: Se puede eliminar
     selectable: true, // ✅ PERMITIDO: Se puede seleccionar
+    badgable: true,   // ✅ PERMITIDO: Mostrar badge con nombre
+    highlightable: true,
+    hoverable: true,
     attributes: {
       'data-gjs-type': 'background-image',
       'data-gjs-name': 'Imagen de Fondo',
       'data-gjs-editable': 'false',
-      class: 'background-image-section relative h-96 bg-cover bg-center bg-no-repeat rounded-lg overflow-hidden mb-8',
+      'data-gjs-badgable': 'true',
+      'data-gjs-selectable': 'true',
+      class: 'background-image-section relative h-96 bg-cover bg-center bg-no-repeat overflow-hidden',
       style: 'background-image: url(\'/images/default-image.jpg\');'
     },
     components: [

@@ -6,6 +6,7 @@ use App\Models\Website;
 use App\Models\Page;
 use App\Models\TemplateConfiguration;
 use App\Services\TemplateService;
+use App\Services\DuplicateWebsiteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -18,10 +19,12 @@ class WebsiteController extends Controller
     use AuthorizesRequests;
 
     protected $templateService;
+    protected $duplicateWebsiteService;
 
-    public function __construct(TemplateService $templateService)
+    public function __construct(TemplateService $templateService, DuplicateWebsiteService $duplicateWebsiteService)
     {
         $this->templateService = $templateService;
+        $this->duplicateWebsiteService = $duplicateWebsiteService;
     }
 
     /**
@@ -926,6 +929,48 @@ class WebsiteController extends Controller
 
         // Sin plantilla - usar vista pública en blanco
         return view('public.blank', compact('website', 'page', 'pages', 'menus'));
+    }
+
+    /**
+     * Mostrar formulario para duplicar un sitio web
+     */
+    public function showDuplicate(Website $website)
+    {
+        $this->authorize('view', $website);
+        return view('creator.websites.duplicate', compact('website'));
+    }
+
+    /**
+     * Procesar la duplicación de un sitio web
+     */
+    public function duplicate(Request $request, Website $website)
+    {
+        $this->authorize('view', $website);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:websites,slug',
+        ], [
+            'name.required' => 'El nombre del sitio es requerido.',
+            'name.max' => 'El nombre no puede tener más de 255 caracteres.',
+            'slug.unique' => 'El slug ya está en uso.',
+            'slug.max' => 'El slug no puede tener más de 255 caracteres.',
+        ]);
+
+        try {
+            $newWebsite = $this->duplicateWebsiteService->duplicate(
+                $website,
+                $validated['name'],
+                $validated['slug'] ?? null
+            );
+
+            return redirect()->route('creator.websites.show')
+                ->with('success', "Sitio '{$newWebsite->name}' duplicado correctamente. Puedes editarlo ahora.");
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Error al duplicar el sitio: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**

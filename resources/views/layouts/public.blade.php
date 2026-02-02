@@ -5,23 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Sitio Web')</title>
+    @php
+        // Generar meta tags dinámicos
+        $metaTags = \App\Helpers\SeoHelper::generateMetaTags(
+            $website ?? null,
+            $page ?? null,
+            [
+                'title' => $__env->getSection('title'),
+                'description' => $__env->getSection('description'),
+                'keywords' => $__env->getSection('keywords'),
+                'og_title' => $__env->getSection('og_title'),
+                'og_description' => $__env->getSection('og_description'),
+                'og_type' => $__env->getSection('og_type') ?? 'website',
+            ]
+        );
+    @endphp
+
+    <title>{{ $metaTags['title'] ?? 'Sitio Web' }}</title>
     
     <!-- Meta tags SEO -->
-    <meta name="description" content="@yield('description', 'Descripción del sitio web')">
-    <meta name="keywords" content="@yield('keywords', '')">
+    <meta name="description" content="{{ $metaTags['description'] ?? 'Descripción del sitio web' }}">
+    <meta name="keywords" content="{{ $metaTags['keywords'] ?? '' }}">
     <meta name="author" content="{{ $website->name ?? 'Sitio Web' }}">
+    <meta name="robots" content="{{ $metaTags['robots'] ?? 'index, follow' }}">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ $metaTags['canonical_url'] ?? url()->current() }}">
     
     <!-- Open Graph -->
-    <meta property="og:title" content="@yield('title', 'Sitio Web')">
-    <meta property="og:description" content="@yield('description', 'Descripción del sitio web')">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="{{ $metaTags['og']['title'] ?? 'Sitio Web' }}">
+    <meta property="og:description" content="{{ $metaTags['og']['description'] ?? 'Descripción del sitio web' }}">
+    <meta property="og:type" content="{{ $metaTags['og']['type'] ?? 'website' }}">
+    <meta property="og:url" content="{{ $metaTags['og']['url'] ?? url()->current() }}">
+    @if($metaTags['og']['image'] ?? false)
+        <meta property="og:image" content="{{ $metaTags['og']['image'] }}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+    @endif
+    <meta property="og:site_name" content="{{ $website->name ?? 'Sitio Web' }}">
     
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="@yield('title', 'Sitio Web')">
-    <meta name="twitter:description" content="@yield('description', 'Descripción del sitio web')">
+    <meta name="twitter:card" content="{{ $metaTags['twitter']['card'] ?? 'summary_large_image' }}">
+    @if($metaTags['twitter']['site'] ?? false)
+        <meta name="twitter:site" content="{{ $metaTags['twitter']['site'] }}">
+    @endif
+    @if($metaTags['twitter']['creator'] ?? false)
+        <meta name="twitter:creator" content="{{ $metaTags['twitter']['creator'] }}">
+    @endif
+    <meta name="twitter:title" content="{{ $metaTags['twitter']['title'] ?? 'Sitio Web' }}">
+    <meta name="twitter:description" content="{{ $metaTags['twitter']['description'] ?? 'Descripción del sitio web' }}">
+    
+    <!-- Verificación en buscadores -->
+    @if($metaTags['verification']['google'] ?? false)
+        <meta name="google-site-verification" content="{{ $metaTags['verification']['google'] }}">
+    @endif
+    @if($metaTags['verification']['microsoft'] ?? false)
+        <meta name="msvalidate.01" content="{{ $metaTags['verification']['microsoft'] }}">
+    @endif
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">

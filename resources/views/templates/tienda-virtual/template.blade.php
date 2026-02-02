@@ -139,5 +139,13 @@
         :websiteSlug="$website->slug"
     />
   @endif
+
+  @if(!request()->routeIs('creator.editor'))
+  <!-- Scripts para diagnóstico y reparación de responsive (SOLO EN PÁGINAS PÚBLICAS) -->
+  <script src="/js/fix-responsive-classes.js"></script>
+  <script src="/js/debug-responsive.js"></script>
+  <script src="/js/investigate-responsive.js"></script>
+  <script src="/js/responsive-dashboard.js"></script>
+  @endif
 </body>
 </html>

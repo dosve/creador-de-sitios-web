@@ -69,19 +69,10 @@
               ]
             },
             {
-              type: 'select',
+              type: 'color',
               name: 'heading-color',
-              label: 'Color del Título',
-              changeProp: 1,
-              options: [
-                { value: 'text-gray-900', name: 'Negro' },
-                { value: 'text-gray-700', name: 'Gris Oscuro' },
-                { value: 'text-blue-600', name: 'Azul' },
-                { value: 'text-green-600', name: 'Verde' },
-                { value: 'text-red-600', name: 'Rojo' },
-                { value: 'text-purple-600', name: 'Morado' },
-                { value: 'text-white', name: 'Blanco' }
-              ]
+              label: '🎨 Color del Título',
+              changeProp: 1
             },
             {
               type: 'select',
@@ -158,11 +149,51 @@
                   }
                 }
 
-                const colorMatch = classList.find(c => c.startsWith('text-') && ['gray', 'blue', 'green', 'red', 'purple', 'white'].some(col => c.includes(col)));
-                if (colorMatch) {
+                // ✅ CRÍTICO: Sincronizar color desde MÚLTIPLES FUENTES
+                // Prioridad: 1) atributo data- 2) estilo inline 3) atributo style HTML
+                let finalColor = null;
+                
+                // 1. Intentar obtener del atributo data-
+                const dataColor = el.getAttribute('data-heading-color');
+                if (dataColor && dataColor.startsWith('#')) {
+                  finalColor = dataColor;
+                  console.log('📥 [Heading] Color recuperado del atributo data-:', dataColor);
+                }
+                
+                // 2. Si no hay atributo data-, intentar del estilo inline
+                if (!finalColor) {
+                  const inlineColor = el.style.color;
+                  if (inlineColor) {
+                    const hexColor = this.rgbToHex(inlineColor);
+                    if (hexColor) {
+                      finalColor = hexColor;
+                      console.log('📥 [Heading] Color recuperado del estilo inline:', hexColor);
+                    }
+                  }
+                }
+                
+                // 3. Si aún no hay color, intentar del atributo style HTML
+                if (!finalColor) {
+                  const styleAttr = el.getAttribute('style');
+                  if (styleAttr && styleAttr.includes('color')) {
+                    const colorMatch = styleAttr.match(/color:\s*([#\w(),-.\s]+)/i);
+                    if (colorMatch) {
+                      const colorValue = colorMatch[1].trim();
+                      const hexColor = this.rgbToHex(colorValue);
+                      if (hexColor) {
+                        finalColor = hexColor;
+                        console.log('📥 [Heading] Color recuperado del atributo style HTML:', hexColor);
+                      }
+                    }
+                  }
+                }
+                
+                // Aplicar el color encontrado
+                if (finalColor) {
                   const currentColor = this.get('heading-color');
-                  if (colorMatch !== currentColor) {
-                    this.set('heading-color', colorMatch, { silent: false });
+                  if (finalColor !== currentColor) {
+                    this.set('heading-color', finalColor, { silent: false });
+                    console.log('✅ [Heading] Color actualizado:', finalColor);
                   }
                 }
 
@@ -211,8 +242,52 @@
               const sizeMatch = classList.find(c => c.startsWith('text-') && ['xl', '2xl', '3xl', '4xl', '5xl', '6xl'].some(s => c.includes(s)));
               if (sizeMatch) this.set('heading-size', sizeMatch, { silent: true });
 
-              const colorMatch = classList.find(c => c.startsWith('text-') && ['gray', 'blue', 'green', 'red', 'purple', 'white'].some(col => c.includes(col)));
-              if (colorMatch) this.set('heading-color', colorMatch, { silent: true });
+              // ✅ CRÍTICO: Sincronizar color desde MÚLTIPLES FUENTES
+              // Prioridad: 1) atributo data- 2) estilo inline 3) estilos computados
+              let finalColor = null;
+              
+              // 1. Intentar obtener del atributo data-
+              const dataColor = el.getAttribute('data-heading-color');
+              if (dataColor && dataColor.startsWith('#')) {
+                finalColor = dataColor;
+                console.log('📥 [Heading] Color recuperado del atributo data-:', dataColor);
+              }
+              
+              // 2. Si no hay atributo data-, intentar del estilo inline
+              if (!finalColor) {
+                const inlineColor = el.style.color;
+                if (inlineColor) {
+                  const hexColor = this.rgbToHex(inlineColor);
+                  if (hexColor) {
+                    finalColor = hexColor;
+                    console.log('📥 [Heading] Color recuperado del estilo inline:', hexColor);
+                  }
+                }
+              }
+              
+              // 3. Si aún no hay color, intentar del estilo computado
+              if (!finalColor) {
+                const computedColor = window.getComputedStyle(el).color;
+                if (computedColor) {
+                  const hexColor = this.rgbToHex(computedColor);
+                  if (hexColor) {
+                    finalColor = hexColor;
+                    console.log('📥 [Heading] Color recuperado del estilo computado:', hexColor);
+                  }
+                }
+              }
+              
+              // Aplicar el color encontrado
+              if (finalColor) {
+                this.set('heading-color', finalColor, { silent: true });
+                // ✅ CRÍTICO: Llamar updateColor() directamente ya que usamos silent: true
+                this.updateColor();
+              } else {
+                // Usar color por defecto si no se encuentra nada
+                this.set('heading-color', '#000000', { silent: true });
+                // ✅ CRÍTICO: Llamar updateColor() directamente ya que usamos silent: true
+                this.updateColor();
+              }
 
               const alignMatch = classList.find(c => ['text-left', 'text-center', 'text-right'].includes(c));
               if (alignMatch) this.set('heading-align', alignMatch, { silent: true });
@@ -252,6 +327,20 @@
           this.on('change:heading-align', this.updateAlign, this);
           this.on('change:heading-weight', this.updateWeight, this);
           this.on('change:heading-margin', this.updateMargin, this);
+        },
+        // Método auxiliar para convertir RGB a Hex
+        rgbToHex(rgb) {
+          if (!rgb) return null;
+          if (rgb.startsWith('#')) return rgb;
+          
+          const result = rgb.match(/\d+/g);
+          if (!result || result.length < 3) return null;
+          
+          const r = parseInt(result[0]);
+          const g = parseInt(result[1]);
+          const b = parseInt(result[2]);
+          
+          return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
         },
         updateText() {
           const text = this.get('heading-text') || '';
@@ -339,16 +428,21 @@
           }
         },
         updateColor() {
-          const color = this.get('heading-color') || 'text-gray-900';
+          const color = this.get('heading-color') || '#000000';
           if (this.view && this.view.el) {
             const el = this.view.el;
-            const currentAttrs = this.getAttributes();
-            let currentClass = currentAttrs.class || el.className || '';
-            currentClass = currentClass.replace(/text-(gray|blue|green|red|purple|white)-\d+/g, '').trim();
-            currentClass = currentClass.replace(/text-(gray|blue|green|red|purple|white)/g, '').trim();
-            currentClass = (currentClass + ' ' + color).trim().replace(/\s+/g, ' ');
-            el.className = currentClass;
-            this.setAttributes({ class: currentClass });
+            if (color && color.startsWith('#')) {
+              // Aplicar color como estilo inline (persistente)
+              el.style.setProperty('color', color, 'important');
+              
+              // ✅ CRÍTICO: También guardar en atributo data- para persistencia
+              el.setAttribute('data-heading-color', color);
+              
+              console.log('🎨 [Heading] Color aplicado:', color);
+              
+              // ✅ Forzar guardado en modelo para que persista
+              this.addStyle({ color: color });
+            }
           }
         },
         updateAlign() {

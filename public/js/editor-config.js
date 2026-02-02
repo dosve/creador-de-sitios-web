@@ -1,9 +1,5 @@
-// Configuración del Editor GrapeJS
-// Este archivo contiene toda la configuración y funcionalidades del editor
-// NOTA: Algunos módulos se han movido a editor-modules/ para mejor organización
 
-// Configuración principal de GrapeJS
-// Si existe el módulo EditorConfig, usarlo; si no, usar configuración inline
+
 const editorConfig = (typeof EditorConfig !== 'undefined' && EditorConfig.getConfig)
   ? EditorConfig.getConfig()
   : {
@@ -53,22 +49,22 @@ const editorConfig = (typeof EditorConfig !== 'undefined' && EditorConfig.getCon
       sectors: [
         {
           name: 'General',
-          open: false,
+          open: true,
           buildProps: ['float', 'display', 'position', 'top', 'right', 'left', 'bottom', 'z-index']
         },
         {
-          name: 'Dimension',
-          open: false,
+          name: 'Dimensiones',
+          open: true,
           buildProps: ['width', 'height', 'max-width', 'min-width', 'max-height', 'min-height', 'margin', 'padding']
         },
         {
-          name: 'Typography',
-          open: false,
+          name: 'Tipografía',
+          open: true,
           buildProps: ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'color', 'line-height', 'text-align', 'text-decoration']
         },
         {
-          name: 'Decorations',
-          open: false,
+          name: 'Decoración',
+          open: true,
           buildProps: ['opacity', 'background-color', 'border-radius', 'border', 'box-shadow', 'background', 'border-width', 'border-style', 'border-color']
         },
         {
@@ -82,7 +78,7 @@ const editorConfig = (typeof EditorConfig !== 'undefined' && EditorConfig.getCon
           buildProps: ['grid-template-columns', 'grid-template-rows', 'grid-gap', 'grid-column', 'grid-row', 'justify-self', 'align-self']
         },
         {
-          name: 'Extra',
+          name: 'Avanzado',
           open: false,
           buildProps: ['transition', 'perspective', 'transform', 'filter', 'backdrop-filter']
         }
@@ -158,12 +154,12 @@ const editorConfig = (typeof EditorConfig !== 'undefined' && EditorConfig.getCon
       devices: [
         {
           name: 'Desktop',
-          width: '',
+          width: '1200px',
         },
         {
           name: 'Tablet',
           width: '768px',
-          widthMedia: '992px',
+          widthMedia: '1024px',
         },
         {
           name: 'Mobile',
@@ -488,52 +484,37 @@ function initializeManagers() {
     console.warn('⚠️ TraitManager no disponible');
   }
 
-  // Función global para forzar la actualización del TraitManager
+  // Función global para forzar la actualización del TraitManager (sin crear loops)
   window.forceTraitManagerUpdate = function (component) {
-    if (editor.TraitManager) {
-      // Obtener el componente seleccionado si no se proporciona uno
-      const targetComponent = component || editor.getSelected();
+    console.log('🔄 [TraitManager] Actualizando traits manualmente...');
+    
+    if (!editor.TraitManager) {
+      console.warn('⚠️ TraitManager no disponible');
+      return;
+    }
 
-      if (targetComponent) {
-        // Si es un carrusel, usar solo el sistema personalizado
-        if (targetComponent.get('type') === 'carousel') {
-          window.renderCustomTraits(targetComponent);
-          return;
-        }
+    const targetComponent = component || editor.getSelected();
 
-        // Limpiar el contenedor de traits primero
+    if (targetComponent) {
+      try {
+        // Limpiar el contenedor
         const traitsContainer = document.querySelector('.traits-container');
         if (traitsContainer) {
           traitsContainer.innerHTML = '';
         }
 
-        // Limpiar completamente el TraitManager
+        // Limpiar la colección de traits
         if (editor.TraitManager.collection) {
           editor.TraitManager.collection.reset();
         }
 
-        // Re-renderizar desde cero
-        editor.TraitManager.render();
-
-        // Actualizar etiquetas de propiedades según el dispositivo activo
-        if (typeof window.updateTraitLabelsForDevice === 'function') {
-          window.updateTraitLabelsForDevice();
+        // Renderizar sin hacer select/deselect (evita loops)
+        if (typeof editor.TraitManager.render === 'function') {
+          editor.TraitManager.render();
+          console.log('✅ Traits actualizados (sin deseleccionar)');
         }
-
-        // Verificar si se renderizaron todos los traits
-        setTimeout(() => {
-          const traitsInContainer = document.querySelectorAll('.traits-container .gjs-trt-trait');
-
-          if (traitsInContainer.length === 0) {
-            // Usar el sistema de traits personalizado
-            window.renderCustomTraits(targetComponent);
-          } else {
-            // Actualizar etiquetas después del renderizado
-            if (typeof window.updateTraitLabelsForDevice === 'function') {
-              window.updateTraitLabelsForDevice();
-            }
-          }
-        }, 200);
+      } catch (error) {
+        console.error('❌ Error actualizando traits:', error);
       }
     }
   };
@@ -831,6 +812,18 @@ function initializeManagers() {
     }
 
     if (input && trait.type !== 'button') {
+      // ✅ CRÍTICO: Listener BIDIRECCIONAL - cuando el modelo cambia, actualizar el input
+      if (trait.name) {
+        component.on(`change:${trait.name}`, (model, value) => {
+          if (input.type === 'checkbox') {
+            input.checked = value || false;
+          } else {
+            input.value = value || '';
+          }
+          console.log(`🔄 Input actualizado desde modelo: ${trait.name} = ${value}`);
+        });
+      }
+      
       // ✅ CRÍTICO: Para traits de texto, usar { silent: true } durante la edición
       // y solo disparar el evento completo cuando se pierde el foco o se presiona Enter
       if (trait.type === 'text' && trait.name === 'heading-text') {
@@ -927,18 +920,124 @@ function initializeManagers() {
 
 }
 
-// Inicialización del editor
+
 function initializeEditor() {
-  // Configurar bloques directamente desde los archivos Blade
+  // Evitar inicialización doble que borra el canvas
+  if (window.__editorInitialized) {
+    console.warn('⚠️ [Editor] initializeEditor ya se ejecutó, evitando reinicio');
+    return;
+  }
+  window.__editorInitialized = true;
   editorConfig.blockManager.blocks = window.editorBlocks || [];
 
-  // Inicializar el editor
   const editor = grapesjs.init(editorConfig);
-
-  // Hacer el editor disponible globalmente
   window.editor = editor;
+  window.__hasUserEdits = false;
+  window.__isEditorLoading = true;
 
-  // ✅ Limpiar bloques vacíos del panel después de cargar
+  // ✅ REGISTRAR COMPONENTES PERSONALIZADOS
+  console.log('%c[EDITOR-INIT] Registrando componentes personalizados...', 'color: #4dabf7; font-weight: bold');
+  
+  // Registrar componente de imagen de fondo
+  if (typeof registerBackgroundImageComponent === 'function') {
+    console.log('%c[EDITOR-INIT] ✅ Registrando background-image', 'color: #51cf66');
+    registerBackgroundImageComponent(editor);
+  } else {
+    console.error('%c[EDITOR-INIT] ❌ registerBackgroundImageComponent no está disponible', 'color: #ff6b6b; font-weight: bold');
+  }
+
+  // ⚠️ LOG GLOBAL: Deshabilitado para reducir ruido en consola
+  // const originalExecuteCommand = editor.runCommand.bind(editor);
+  // editor.runCommand = function(id, opts) {
+  //   console.log(`%c[TRAIT-COMMAND] Ejecutando comando: "${id}"`, 'color: #ff9900; font-weight: bold');
+  //   console.log(`%c  → Componente actual: ${editor.getSelected()?.get('type')}`, 'color: #ff9900; font-size: 11px');
+  //   return originalExecuteCommand(id, opts);
+  // };
+
+  // ✅ LOG GLOBAL: Capturar clicks en elementos con clase gjs-am-asset
+  setTimeout(() => {
+    document.addEventListener('click', function(e) {
+      const target = e.target;
+      // Buscar si el click fue en un asset del modal
+      const assetEl = target.closest('.gjs-am-asset');
+      if (assetEl) {
+        console.log('%c[ASSET-CLICK] Click detectado en elemento de galería', 'color: #ff00ff; font-weight: bold; font-size: 12px');
+        console.log('   → Elemento:', assetEl);
+        console.log('   → src:', assetEl.getAttribute('src') || assetEl.style.backgroundImage);
+      }
+    }, true);
+  }, 100);
+
+  // Exportar función para corregir responsive desde consola
+  window.fixContainerResponsive = function() {
+    if (window.editor) {
+      console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #4dabf7;');
+      console.log('%c🔧 CORRECTOR DE CONTENEDORES RESPONSIVE', 'color: #4dabf7; font-size: 16px; font-weight: bold;');
+      console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #4dabf7;');
+      const result = fixContainerResponsiveClasses(window.editor, { showAlert: true });
+      console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #4dabf7;');
+      return result;
+    } else {
+      console.error('❌ Editor no disponible');
+      return 0;
+    }
+  };
+  
+  // Mensaje inicial
+  console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #51cf66; font-weight: bold;');
+  console.log('%c✨ SISTEMA RESPONSIVE ACTIVADO', 'color: #51cf66; font-size: 16px; font-weight: bold;');
+  console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #51cf66; font-weight: bold;');
+  console.log('%cPara corregir contenedores existentes, ejecuta:', 'color: #4dabf7; font-size: 14px;');
+  console.log('%cwindow.fixContainerResponsive()', 'color: #ffd43b; font-size: 14px; font-weight: bold; background: #1e1e1e; padding: 5px 10px; border-radius: 3px;');
+  console.log('%cPara ver la configuración de un contenedor, selecciónalo y ejecuta:', 'color: #4dabf7; font-size: 14px;');
+  console.log('%cwindow.showContainerResponsiveConfig()', 'color: #ffd43b; font-size: 14px; font-weight: bold; background: #1e1e1e; padding: 5px 10px; border-radius: 3px;');
+  console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #51cf66; font-weight: bold;');
+
+  // Marcar que ya hay cambios del usuario
+  const markUserEdits = () => {
+    if (window.__isEditorLoading) return;
+    window.__hasUserEdits = true;
+  };
+
+  editor.on('component:add', markUserEdits);
+  editor.on('component:update', markUserEdits);
+  editor.on('component:styleUpdate', markUserEdits);
+  editor.on('component:change:attributes', markUserEdits);
+
+  // Marcar fin de carga inicial del editor
+  editor.on('load', () => {
+    setTimeout(() => {
+      window.__isEditorLoading = false;
+    }, 300);
+  });
+
+  // Evitar recargas accidentales que limpian el canvas
+  if (!window.__editorLoadGuards) {
+    window.__editorLoadGuards = true;
+    const originalLoadProjectData = editor.loadProjectData.bind(editor);
+    const originalSetComponents = editor.setComponents.bind(editor);
+
+    editor.loadProjectData = function (data) {
+      const hasComps = editor.getComponents && editor.getComponents().length > 0;
+      if (window.__hasUserEdits || (window.__grapesDataLoaded && hasComps)) {
+        console.warn('⚠️ [Editor] loadProjectData bloqueado para evitar limpiar el canvas');
+        return;
+      }
+      const result = originalLoadProjectData(data);
+      window.__grapesDataLoaded = true;
+      return result;
+    };
+
+    editor.setComponents = function (components) {
+      const hasComps = editor.getComponents && editor.getComponents().length > 0;
+      if (window.__hasUserEdits || (window.__grapesDataLoaded && hasComps)) {
+        console.warn('⚠️ [Editor] setComponents bloqueado para evitar limpiar el canvas');
+        return;
+      }
+      return originalSetComponents(components);
+    };
+  }
+
   setTimeout(() => {
     const blocks = document.querySelectorAll('.gjs-block');
     blocks.forEach(block => {
@@ -958,18 +1057,24 @@ function initializeEditor() {
       events: {
         'keyup': 'onChange',
       },
-      onUpdate: function ({ elInput, component }) {
-        elInput.value = component.get(this.attributes.name);
+      onUpdate: function ({ elInput, component, trait }) {
+        const propName = trait.get('name');
+        const value = component.get(propName);
+        console.log(`🔄 [Textarea Trait] Actualizando ${propName}:`, value);
+        elInput.value = value || '';
       },
-      onEvent: function ({ elInput, component, event }) {
+      onEvent: function ({ elInput, component, trait }) {
+        const propName = trait.get('name');
         const value = elInput.value;
-        component.set(this.attributes.name, value);
+        console.log(`✏️ [Textarea Trait] Guardando ${propName}:`, value);
+        component.set(propName, value);
       },
       createInput: function ({ trait }) {
         const el = document.createElement('textarea');
         el.className = 'gjs-trt-textarea';
-        el.placeholder = trait.placeholder || '';
-        el.rows = trait.rows || 4;
+        el.placeholder = trait.get('placeholder') || '';
+        el.rows = trait.get('rows') || 4;
+        console.log(`📝 [Textarea Trait] Creando input para ${trait.get('name')}`);
         return el;
       }
     });
@@ -1007,7 +1112,171 @@ function initializeEditor() {
     }
   });
 
+  // ✅ FORZAR: Canvas y contenedores deben aceptar drag & drop siempre
+  setTimeout(() => {
+    try {
+      // Wrapper principal debe aceptar todos los elementos
+      editor.DomComponents.getWrapper().set('droppable', '*');
+      
+      // Todos los contenedores deben aceptar elementos
+      editor.Canvas.getBody().querySelectorAll('.container-flex').forEach(el => {
+        const comp = editor.DomComponents.getWrapper().find('#' + el.id)[0];
+        if (comp) {
+          comp.set('droppable', '*');
+          comp.set('draggable', true);
+        }
+      });
+      
+      console.log('✅ [Editor] Canvas y contenedores configurados para drag & drop');
+    } catch (error) {
+      console.error('❌ [Editor] Error configurando drag & drop:', error);
+    }
+  }, 1000);
+
   // ✅ Todos los componentes duplicados eliminados - ahora están en módulos separados
+
+  // ✅ Listener para componentes seleccionados - actualizar paneles
+  editor.on('component:selected', (component) => {
+    if (!component || typeof component.get !== 'function') {
+      return;
+    }
+
+    const componentType = component.get('type');
+    console.log('🎯 [Panel Update] Componente seleccionado:', componentType);
+    
+    // ✅ LOGGING ESPECIAL PARA CONTAINERS
+    if (componentType === 'container') {
+      console.log('🔍 [CONTAINER-SELECT] Container seleccionado');
+      console.log('📦 [CONTAINER-SELECT] container-direction:', component.get('container-direction'));
+      console.log('📦 [CONTAINER-SELECT] container-direction-tablet:', component.get('container-direction-tablet'));
+      console.log('📦 [CONTAINER-SELECT] container-direction-mobile:', component.get('container-direction-mobile'));
+      console.log('📦 [CONTAINER-SELECT] container-direction-responsive:', component.get('container-direction-responsive'));
+      
+      // Verificar si el método updateVisibleTraitsForDevice existe
+      if (typeof component.updateVisibleTraitsForDevice === 'function') {
+        console.log('✅ [CONTAINER-SELECT] Método updateVisibleTraitsForDevice existe');
+        console.log('🔄 [CONTAINER-SELECT] Ejecutando updateVisibleTraitsForDevice()...');
+        component.updateVisibleTraitsForDevice();
+      } else {
+        console.warn('⚠️ [CONTAINER-SELECT] Método updateVisibleTraitsForDevice NO existe');
+      }
+    }
+    
+    // Forzar actualización de StyleManager y TraitManager para todos los componentes
+    setTimeout(() => {
+      // Actualizar StyleManager para mostrar estilos del componente
+      if (editor.StyleManager) {
+        try {
+          editor.StyleManager.render();
+          console.log('✅ [StyleManager] Estilos actualizados para', componentType);
+          
+          // Copiar el contenido del StyleManager al contenedor visible
+          const stylesContainer = document.querySelector('.styles-container');
+          const stylesContainerWidget = document.querySelector('.styles-container-widget');
+          
+          if (stylesContainer && stylesContainerWidget) {
+            // Clonar el contenido del StyleManager original al contenedor visible
+            stylesContainerWidget.innerHTML = stylesContainer.innerHTML;
+            
+            console.log('📦 [StyleManager] Buscando sectores...');
+            
+            // Agregar event listeners para los sectores (expandir/colapsar)
+            const sectors = stylesContainerWidget.querySelectorAll('.gjs-sm-sector');
+            console.log(`📦 [StyleManager] Sectores encontrados: ${sectors.length}`);
+            
+            sectors.forEach((sector, index) => {
+              // Buscar el header del sector (puede tener diferentes clases)
+              const header = sector.querySelector('.gjs-sm-sector-title, .gjs-sm-title');
+              console.log(`📦 [StyleManager] Sector ${index}:`, {
+                hasHeader: !!header,
+                sectorHTML: sector.className
+              });
+              
+              if (header) {
+                header.style.cursor = 'pointer';
+                
+                // Agregar listener con prevención de propagación
+                header.addEventListener('click', function(e) {
+                  e.stopPropagation();
+                  
+                  // Buscar el contenedor de propiedades
+                  const properties = sector.querySelector('.gjs-sm-properties');
+                  const caret = header.querySelector('.gjs-sm-sector-caret, .fa-caret-right, .fa-caret-down');
+                  
+                  console.log(`🔄 [StyleManager] Click en sector ${index}:`, {
+                    hasProperties: !!properties,
+                    hasCaret: !!caret,
+                    currentDisplay: properties ? properties.style.display : 'N/A'
+                  });
+                  
+                  if (properties) {
+                    // Toggle visibility
+                    const isCurrentlyHidden = properties.style.display === 'none' || 
+                                              window.getComputedStyle(properties).display === 'none';
+                    
+                    // Forzar el display con !important
+                    if (isCurrentlyHidden) {
+                      properties.style.setProperty('display', 'block', 'important');
+                    } else {
+                      properties.style.setProperty('display', 'none', 'important');
+                    }
+                    
+                    // Actualizar icono de caret si existe
+                    if (caret) {
+                      if (isCurrentlyHidden) {
+                        caret.classList.remove('fa-caret-right');
+                        caret.classList.add('fa-caret-down');
+                      } else {
+                        caret.classList.remove('fa-caret-down');
+                        caret.classList.add('fa-caret-right');
+                      }
+                    }
+                    
+                    console.log(`✅ [StyleManager] Sector ${index} ${isCurrentlyHidden ? 'expandido' : 'colapsado'}`);
+                  }
+                });
+              }
+            });
+            
+            // Agregar event listeners para todos los inputs (sincronizar cambios)
+            const inputs = stylesContainerWidget.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+              ['input', 'change'].forEach(eventType => {
+                input.addEventListener(eventType, function() {
+                  // Encontrar el input correspondiente en el StyleManager original
+                  const propertyName = this.getAttribute('data-property') || this.name;
+                  if (propertyName) {
+                    // Buscar en el contenedor original
+                    const originalInput = stylesContainer.querySelector(`[data-property="${propertyName}"], [name="${propertyName}"]`);
+                    if (originalInput) {
+                      // Copiar el valor
+                      originalInput.value = this.value;
+                      
+                      // Disparar eventos en el input original para que GrapesJS detecte el cambio
+                      const changeEvent = new Event('change', { bubbles: true });
+                      const inputEvent = new Event('input', { bubbles: true });
+                      originalInput.dispatchEvent(inputEvent);
+                      originalInput.dispatchEvent(changeEvent);
+                      
+                      console.log(`🔄 [StyleManager] Sincronizado: ${propertyName} = ${this.value}`);
+                    }
+                  }
+                });
+              });
+            });
+            
+            console.log('✅ [StyleManager] Contenido copiado a panel visible con listeners');
+          }
+        } catch (error) {
+          console.error('❌ [StyleManager] Error:', error);
+        }
+      }
+      
+      // ✅ TraitManager se actualiza automáticamente en GrapesJS
+      // No necesitamos llamar a render() manualmente - eso causa loops infinitos
+      // El TraitManager ya observa los cambios de selección y se actualiza
+    }, 50);
+  });
 
   // Configuración de comandos del editor
 
@@ -1023,7 +1292,62 @@ function initializeEditor() {
   }
 
   // Inyectar estilos y scripts en el canvas
+  const applyOverlayStylesToCanvas = () => {
+    const frameEl = editor.Canvas.getFrameEl();
+    const doc = frameEl && frameEl.contentDocument;
+    if (!doc) return;
+
+    // Forzar updateBackground para asegurar data-bg-overlay en el DOM
+    const wrapper = editor.DomComponents.getWrapper();
+    if (wrapper) {
+      const containers = wrapper.find('*').filter(c => c.get('type') === 'container');
+      containers.forEach(c => {
+        if (typeof c.updateBackground === 'function') {
+          c.updateBackground();
+        }
+      });
+    }
+
+    const css = window.collectOverlayCSS ? window.collectOverlayCSS(editor) : '';
+    if (!css) return;
+
+    let styleTag = doc.getElementById('overlay-styles');
+    if (!styleTag) {
+      styleTag = doc.createElement('style');
+      styleTag.id = 'overlay-styles';
+      doc.head.appendChild(styleTag);
+    }
+    styleTag.textContent = css;
+  };
+
+  editor.on('canvas:frame:load', () => {
+    setTimeout(() => applyOverlayStylesToCanvas(), 150);
+  });
+
   editor.on('load', function () {
+    // ✅ Asegurar que el wrapper principal permita soltar bloques
+    const wrapper = editor.DomComponents.getWrapper();
+    if (wrapper) {
+      wrapper.set({ droppable: true, selectable: true, hoverable: true }, { silent: false });
+      wrapper.addAttributes({ 'data-gjs-droppable': 'true' });
+      if (wrapper.view && wrapper.view.el) {
+        wrapper.view.el.setAttribute('data-gjs-droppable', 'true');
+      }
+    }
+
+    // ✅ Asegurar que el canvas permita drop (dragover requiere preventDefault)
+    const frameEl = editor.Canvas.getFrameEl();
+    if (frameEl && frameEl.contentDocument && frameEl.contentDocument.body) {
+      frameEl.contentDocument.body.addEventListener('dragover', (e) => {
+        if (e && typeof e.preventDefault === 'function') {
+          e.preventDefault();
+        }
+      }, true);
+    }
+
+    // ✅ Reinyectar overlays después de cargar el editor
+    setTimeout(() => applyOverlayStylesToCanvas(), 300);
+
     // ✅ CRÍTICO: Sincronizar Background Image después de cargar
     setTimeout(() => {
       const syncBackgroundImageAfterLoad = () => {
@@ -1149,12 +1473,15 @@ function initializeEditor() {
                 // Forzar actualización visual
                 if (component.view && component.view.el) {
                   const el = component.view.el;
-                  // Asegurar que tenga las clases básicas
+                  // Asegurar que tenga las clases básicas (uno debajo del otro por defecto)
                   if (!el.className.includes('container-flex')) {
                     el.classList.add('container-flex');
                   }
                   if (!el.className.includes('flex')) {
                     el.classList.add('flex');
+                  }
+                  if (!el.className.includes('flex-col') && !el.className.includes('flex-row')) {
+                    el.classList.add('flex-col');
                   }
                   component.view.render();
                 }
@@ -1176,6 +1503,9 @@ function initializeEditor() {
                   }
                   if (!el.className.includes('flex')) {
                     el.classList.add('flex');
+                  }
+                  if (!el.className.includes('flex-col') && !el.className.includes('flex-row')) {
+                    el.classList.add('flex-col');
                   }
                   component.view.render();
                 }
@@ -1227,15 +1557,126 @@ function initializeEditor() {
           body {
             margin: 0 !important;
             padding: 0 !important;
-            padding-bottom: 0 !important;
-            margin-bottom: 0 !important;
-            min-height: auto !important;
+            margin-bottom: 50px !important;
+            min-height: 100vh !important;
           }
           html {
             margin: 0 !important;
             padding: 0 !important;
-            padding-bottom: 0 !important;
-            margin-bottom: 0 !important;
+            overflow: visible !important;
+          }
+          
+          /* ✅ Padding 10px para contenedores: Tailwind 2 CDN no incluye p-[10px], lo aplicamos aquí */
+          .p-\\[10px\\] {
+            padding: 10px !important;
+          }
+          
+          /* ✅ RESPONSIVE: Asegurar que los contenedores se apilen en móviles y tablets */
+          /* Mobile-first: columnas por defecto */
+          .container-flex {
+            display: flex;
+            box-sizing: border-box;
+            width: 100%;
+          }
+          
+          .container-flex.flex-col {
+            flex-direction: column;
+          }
+          
+          /* Tablet y Desktop: filas horizontales con md:flex-row */
+          @media (min-width: 768px) {
+            .container-flex.md\\:flex-row {
+              flex-direction: row;
+            }
+            .container-flex.md\\:flex-col {
+              flex-direction: column;
+            }
+          }
+          
+          /* Prevenir overflow en hijos */
+          .container-flex > * {
+            box-sizing: border-box;
+            min-width: 0;
+          }
+          
+          /* Forzar apilamiento en móviles */
+          @media (max-width: 767px) {
+            .container-flex:not(.grid) {
+              flex-direction: column !important;
+            }
+            .container-flex > * {
+              width: 100% !important;
+              max-width: 100% !important;
+            }
+          }
+          
+          /* Grid responsive */
+          .container-flex.grid {
+            display: grid;
+            gap: 1rem;
+          }
+          
+          .container-flex.grid.grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+          }
+          
+          @media (min-width: 768px) {
+            .container-flex.grid.md\\:grid-cols-2 {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .container-flex.grid.md\\:grid-cols-3 {
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .container-flex.grid.md\\:grid-cols-4 {
+              grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+          }
+          
+          @media (min-width: 1024px) {
+            .container-flex.grid.lg\\:grid-cols-3 {
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .container-flex.grid.lg\\:grid-cols-4 {
+              grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+          }
+          
+          /* Prevenir que imágenes se salgan */
+          .container-flex img,
+          .container-flex video {
+            max-width: 100%;
+            height: auto;
+          }
+          
+          /* ✅ Cuadro de selección ajustado al contenido: evitar altura mínima extra en wrappers y elementos de texto */
+          .gjs-wrapper {
+            min-height: 0 !important;
+          }
+          /* ✅ Wrapper que solo contiene una imagen: caja ajustada y sin espacio en blanco alrededor */
+          .gjs-wrapper:has(> img) {
+            display: inline-block !important;
+            width: fit-content !important;
+            max-width: 100% !important;
+            height: fit-content !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          /* ✅ Imagen sin espacio en blanco alrededor (padding/margin 0, sin hueco por inline) */
+          img.image-component,
+          img[data-gjs-name="Imagen"],
+          .gjs-wrapper:has(> img) img {
+            padding: 0 !important;
+            margin: 0 !important;
+            display: block !important;
+            vertical-align: top !important;
+          }
+          [data-gjs-type="heading"],
+          [data-gjs-type="paragraph"],
+          [data-gjs-type="text"],
+          .heading-component,
+          .paragraph-component,
+          .text-component {
+            min-height: 0 !important;
           }
           
           /* ✅ OCULTAR badge "DIV" para componentes background-image */
@@ -1276,10 +1717,300 @@ function initializeEditor() {
         frameDoc.head.appendChild(styleEl);
       }
 
+      // ✅ Crear y agregar un espaciador en la parte inferior del body para arrastrar elementos
+      let spacer = frameDoc.getElementById('gjs-bottom-spacer');
+      if (!spacer) {
+        spacer = frameDoc.createElement('div');
+        spacer.id = 'gjs-bottom-spacer';
+        spacer.style.height = '300px';
+        spacer.style.width = '100%';
+        spacer.style.pointerEvents = 'none';
+        frameDoc.body.appendChild(spacer);
+      }
+
+      // ✅ Permitir scroll en el canvas frame
+      if (canvasFrame) {
+        canvasFrame.style.overflow = 'auto';
+        canvasFrame.style.overflowY = 'auto';
+      }
+
       // Inyectar script de blog si hay un bloque de blog
       injectBlogScriptInCanvas(frameDoc);
     }
+
+    // ✅ CRÍTICO: Cargar contenido existente AQUÍ dentro del evento 'load'
+    // Esto asegura que el canvas esté completamente listo antes de cargar datos
+    loadExistingContent();
   });
+
+  // Normalizar clases mal formadas dentro del canvas
+  function normalizeResponsiveClasses(editor) {
+    const classFixMap = {
+      'p--10px-': 'p-[10px]',
+      'min-h--360px-': 'min-h-[360px]',
+      'min-h--200px-': 'min-h-[200px]',
+      'w--full-': 'w-full',
+      'h--auto-': 'h-auto',
+      'md-flex-row': 'md:flex-row',
+      'p--4-': 'p-4',
+      'py--16-': 'py-16'
+    };
+
+    const wrapper = editor.DomComponents.getWrapper();
+    if (!wrapper) return 0;
+
+    let fixed = 0;
+    const allComponents = wrapper.find('*');
+    allComponents.forEach(comp => {
+      const attrs = comp.getAttributes ? comp.getAttributes() : {};
+      const currentClass = (comp.view && comp.view.el && comp.view.el.className) ? comp.view.el.className : (attrs.class || '');
+      if (!currentClass) return;
+
+      let newClass = String(currentClass);
+      Object.keys(classFixMap).forEach((wrongClass) => {
+        if (newClass.includes(wrongClass)) {
+          newClass = newClass.split(wrongClass).join(classFixMap[wrongClass]);
+        }
+      });
+
+      if (newClass !== currentClass) {
+        comp.addAttributes({ class: newClass });
+        if (comp.view && comp.view.el) {
+          comp.view.el.className = newClass;
+        }
+        fixed++;
+      }
+    });
+
+    return fixed;
+  }
+
+  // Función para corregir clases responsive de contenedores
+  function fixContainerResponsiveClasses(editor, options = {}) {
+    const showAlert = options.showAlert === true;
+    let fixedCount = 0;
+    
+    const containers = editor.DomComponents.getWrapper().find('.container-flex');
+    console.log(`🔧 [RESPONSIVE] Verificando ${containers.length} contenedores...`);
+    
+    containers.forEach(container => {
+      if (container.view && container.view.el) {
+        const el = container.view.el;
+        const classList = Array.from(el.classList);
+        let changed = false;
+        
+        // Verificar si tiene flex-row sin md: (no responsive)
+        if (classList.includes('flex-row') && !classList.includes('md:flex-row')) {
+          console.log('%c⚠️ Contenedor encontrado con flex-row sin responsive:', 'color: #ff6b6b; font-weight: bold;', el.className);
+          
+          // Remover flex-row directo
+          el.classList.remove('flex-row');
+          
+          // Agregar flex-col para móvil
+          if (!el.classList.contains('flex-col')) {
+            el.classList.add('flex-col');
+          }
+          
+          // Agregar md:flex-row para tablet/desktop
+          if (!el.classList.contains('md:flex-row')) {
+            el.classList.add('md:flex-row');
+          }
+          
+          // Asegurar que tenga w-full
+          if (!el.classList.contains('w-full')) {
+            el.classList.add('w-full');
+          }
+          
+          // Actualizar el componente con las nuevas clases
+          container.setAttributes({ class: el.className });
+          
+          changed = true;
+          fixedCount++;
+          console.log('%c✅ Contenedor corregido a:', 'color: #51cf66; font-weight: bold;', el.className);
+        }
+        
+        // Verificar si tiene flex pero no tiene dirección definida
+        if (classList.includes('flex') && 
+            !classList.some(c => c.match(/^(flex-row|flex-col|md:flex-row|md:flex-col)/))) {
+          console.log('%c⚠️ Contenedor encontrado sin dirección:', 'color: #ff6b6b; font-weight: bold;', el.className);
+          
+          // Agregar flex-col para móvil
+          if (!el.classList.contains('flex-col')) {
+            el.classList.add('flex-col');
+          }
+          
+          // Agregar md:flex-row para tablet/desktop
+          if (!el.classList.contains('md:flex-row')) {
+            el.classList.add('md:flex-row');
+          }
+          
+          // Asegurar que tenga w-full
+          if (!el.classList.contains('w-full')) {
+            el.classList.add('w-full');
+          }
+          
+          // Actualizar el componente con las nuevas clases
+          container.setAttributes({ class: el.className });
+          
+          changed = true;
+          fixedCount++;
+          console.log('%c✅ Contenedor corregido a:', 'color: #51cf66; font-weight: bold;', el.className);
+        }
+      }
+    });
+    
+    if (fixedCount > 0) {
+      console.log(`%c✅ [RESPONSIVE] ${fixedCount} contenedores corregidos - GUARDA LA PÁGINA para mantener los cambios`, 'color: #51cf66; font-weight: bold; font-size: 14px;');
+      if (showAlert) {
+        alert(`✅ ${fixedCount} contenedores corregidos para ser responsive.\n\n⚠️ IMPORTANTE: Haz clic en "Guardar" para mantener los cambios.`);
+      }
+    } else {
+      console.log(`%c✅ [RESPONSIVE] Todos los contenedores ya están configurados correctamente`, 'color: #51cf66; font-weight: bold;');
+    }
+    
+    return fixedCount;
+  }
+
+  // Función para cargar contenido existente
+  function loadExistingContent() {
+    const existingHtml = document.getElementById('page-html-content')?.value;
+    const existingCss = document.getElementById('page-css-content')?.value;
+    const existingBlocks = document.getElementById('page-blocks-data')?.value;
+    const existingGrapesData = window.pageGrapesData || null;
+    const hasComponents = editor.getComponents && editor.getComponents().length > 0;
+
+    // Función para decodificar entidades HTML
+    function decodeHtml(html) {
+      const txt = document.createElement('textarea');
+      txt.innerHTML = html;
+      return txt.value;
+    }
+
+    // ✅ PRIORIDAD: Usar grapesjs_data si está disponible (preserva estructura exacta)
+    if (existingGrapesData && !window.__grapesDataLoaded && !hasComponents) {
+      try {
+        console.log('📦 [Editor] Cargando proyecto GrapesJS desde datos guardados...');
+        editor.loadProjectData(existingGrapesData);
+        window.__grapesDataLoaded = true;
+        console.log('✅ [Editor] Proyecto GrapesJS cargado correctamente');
+        
+        // 🔄 Corregir clases responsive de contenedores después de cargar
+        setTimeout(() => {
+          fixContainerResponsiveClasses(editor, { showAlert: false });
+          normalizeResponsiveClasses(editor);
+        }, 100);
+        
+        // 🔄 Forzar renderizado del canvas inmediatamente
+        setTimeout(() => {
+          if (editor.refresh && typeof editor.refresh === 'function') {
+            editor.refresh();
+            console.log('🔄 [Editor] Canvas refrescado después de cargar datos');
+          }
+        }, 50);
+      } catch (error) {
+        console.warn('⚠️ [Editor] Error al cargar datos de GrapesJS, usando HTML/CSS simple:', error);
+        if (existingHtml && existingCss) {
+          editor.setComponents(decodeHtml(existingHtml));
+          editor.setStyle(decodeHtml(existingCss));
+          // 🔄 Forzar renderizado del canvas
+          setTimeout(() => {
+            if (editor.refresh && typeof editor.refresh === 'function') {
+              editor.refresh();
+              console.log('🔄 [Editor] Canvas refrescado después de cargar HTML/CSS');
+            }
+          }, 50);
+        } else if (existingHtml) {
+          editor.setComponents(decodeHtml(existingHtml));
+          // 🔄 Forzar renderizado del canvas
+          setTimeout(() => {
+            if (editor.refresh && typeof editor.refresh === 'function') {
+              editor.refresh();
+              console.log('🔄 [Editor] Canvas refrescado después de cargar HTML');
+            }
+          }, 50);
+        }
+      }
+    }
+    // Si existe datos de bloques guardados, usarlos en lugar de HTML/CSS simple
+    else if (existingBlocks && !window.__grapesDataLoaded && !hasComponents) {
+      try {
+        const blocksData = JSON.parse(decodeHtml(existingBlocks));
+        console.log('📦 [Editor] Cargando proyecto GrapesJS desde bloques guardados...');
+        editor.loadProjectData(blocksData);
+        window.__grapesDataLoaded = true;
+        console.log('✅ [Editor] Proyecto GrapesJS cargado correctamente');
+        
+        // 🔄 Corregir clases responsive de contenedores después de cargar
+        setTimeout(() => {
+          fixContainerResponsiveClasses(editor, { showAlert: false });
+          normalizeResponsiveClasses(editor);
+        }, 100);
+        
+        // 🔄 Forzar renderizado del canvas inmediatamente
+        setTimeout(() => {
+          if (editor.refresh && typeof editor.refresh === 'function') {
+            editor.refresh();
+            console.log('🔄 [Editor] Canvas refrescado después de cargar bloques');
+          }
+        }, 50);
+      } catch (error) {
+        console.warn('⚠️ [Editor] Error al parsear bloques, usando HTML simple:', error);
+        if (existingHtml && existingCss) {
+          editor.setComponents(decodeHtml(existingHtml));
+          editor.setStyle(decodeHtml(existingCss));
+          // 🔄 Forzar renderizado del canvas
+          setTimeout(() => {
+            if (editor.refresh && typeof editor.refresh === 'function') {
+              editor.refresh();
+              console.log('🔄 [Editor] Canvas refrescado después de cargar HTML/CSS');
+            }
+          }, 50);
+        } else if (existingHtml) {
+          editor.setComponents(decodeHtml(existingHtml));
+          // 🔄 Forzar renderizado del canvas
+          setTimeout(() => {
+            if (editor.refresh && typeof editor.refresh === 'function') {
+              editor.refresh();
+              console.log('🔄 [Editor] Canvas refrescado después de cargar HTML');
+            }
+          }, 50);
+        }
+      }
+    } else if (existingHtml && existingCss) {
+      editor.setComponents(decodeHtml(existingHtml));
+      editor.setStyle(decodeHtml(existingCss));
+      
+      // 🔄 Corregir clases responsive de contenedores
+      setTimeout(() => {
+        fixContainerResponsiveClasses(editor, { showAlert: false });
+        normalizeResponsiveClasses(editor);
+      }, 100);
+      
+      // 🔄 Forzar renderizado del canvas
+      setTimeout(() => {
+        if (editor.refresh && typeof editor.refresh === 'function') {
+          editor.refresh();
+          console.log('🔄 [Editor] Canvas refrescado después de cargar HTML/CSS');
+        }
+      }, 50);
+    } else if (existingHtml) {
+      editor.setComponents(decodeHtml(existingHtml));
+      
+      // 🔄 Corregir clases responsive de contenedores
+      setTimeout(() => {
+        fixContainerResponsiveClasses(editor, { showAlert: false });
+        normalizeResponsiveClasses(editor);
+      }, 100);
+      
+      // 🔄 Forzar renderizado del canvas
+      setTimeout(() => {
+        if (editor.refresh && typeof editor.refresh === 'function') {
+          editor.refresh();
+          console.log('🔄 [Editor] Canvas refrescado después de cargar HTML');
+        }
+      }, 50);
+    }
+  }
 
   // Función para inyectar script de blog en el canvas
   function injectBlogScriptInCanvas(frameDoc) {
@@ -1587,6 +2318,71 @@ function initializeEditor() {
     }
   });
 
+  // ✅ Si un contenedor queda vacío, volver a mostrar el placeholder
+  editor.on('component:remove', function (component) {
+    if (isLoadingContent) return;
+    if (!component || typeof component.parent !== 'function') return;
+
+    const parent = component.parent();
+    if (!parent || typeof parent.get !== 'function' || typeof parent.components !== 'function') return;
+
+    const parentType = parent.get('type');
+    const parentClasses = parent.getClasses ? (parent.getClasses() || []) : [];
+    const isContainer = parentType === 'container' || parentClasses.includes('container-simple') || parentClasses.includes('container-flex');
+    const isColumn = parentClasses.includes('column');
+
+    if (!isContainer && !isColumn) return;
+
+    const components = parent.components();
+    if (!components) return;
+
+    let hasRealContent = false;
+    let hasPlaceholder = false;
+
+    const checkComponent = (c) => {
+      const content = (c.get && c.get('content')) ? c.get('content') : '';
+      const name = (c.get && c.get('name')) ? c.get('name') : '';
+      const type = (c.get && c.get('type')) ? c.get('type') : '';
+      const isPlaceholder = name === 'Placeholder' ||
+        (typeof content === 'string' && content.includes('Arrastra elementos aquí')) ||
+        (type === 'text' && typeof content === 'string' && content.includes('↓'));
+
+      if (isPlaceholder) {
+        hasPlaceholder = true;
+      } else {
+        hasRealContent = true;
+      }
+    };
+
+    if (components.models) {
+      components.models.forEach(checkComponent);
+    } else if (typeof components.each === 'function') {
+      components.each(checkComponent);
+    } else if (Array.isArray(components)) {
+      components.forEach(checkComponent);
+    }
+
+    if (!hasRealContent && !hasPlaceholder) {
+      parent.append({
+        type: 'text',
+        tagName: 'div',
+        name: 'Placeholder',
+        content: '↓ Arrastra elementos aquí ↓',
+        attributes: {
+          class: 'text-gray-400 text-sm pointer-events-none',
+          'data-gjs-type': 'text',
+          'data-gjs-editable': 'false',
+          'data-gjs-name': 'Placeholder'
+        },
+        selectable: false,
+        editable: false,
+        removable: false,
+        droppable: false
+      });
+      console.log('✅ Placeholder restaurado en contenedor vacío');
+    }
+  });
+
   // ✅ Mejorar detección de zonas de drop para contenedores
   // Cuando se arrastra sobre un elemento dentro de un contenedor, asegurar que el contenedor sea reconocido como zona de drop válida
   // Usar eventos del canvas para interceptar el drag and drop
@@ -1635,15 +2431,126 @@ function initializeEditor() {
           body {
             margin: 0 !important;
             padding: 0 !important;
-            padding-bottom: 0 !important;
-            margin-bottom: 0 !important;
-            min-height: auto !important;
+            margin-bottom: 50px !important;
+            min-height: 100vh !important;
           }
           html {
             margin: 0 !important;
             padding: 0 !important;
-            padding-bottom: 0 !important;
-            margin-bottom: 0 !important;
+            overflow: visible !important;
+          }
+          
+          /* ✅ Padding 10px para contenedores: Tailwind 2 CDN no incluye p-[10px], lo aplicamos aquí */
+          .p-\\[10px\\] {
+            padding: 10px !important;
+          }
+          
+          /* ✅ RESPONSIVE: Asegurar que los contenedores se apilen en móviles y tablets */
+          /* Mobile-first: columnas por defecto */
+          .container-flex {
+            display: flex;
+            box-sizing: border-box;
+            width: 100%;
+          }
+          
+          .container-flex.flex-col {
+            flex-direction: column;
+          }
+          
+          /* Tablet y Desktop: filas horizontales con md:flex-row */
+          @media (min-width: 768px) {
+            .container-flex.md\\:flex-row {
+              flex-direction: row;
+            }
+            .container-flex.md\\:flex-col {
+              flex-direction: column;
+            }
+          }
+          
+          /* Prevenir overflow en hijos */
+          .container-flex > * {
+            box-sizing: border-box;
+            min-width: 0;
+          }
+          
+          /* Forzar apilamiento en móviles */
+          @media (max-width: 767px) {
+            .container-flex:not(.grid) {
+              flex-direction: column !important;
+            }
+            .container-flex > * {
+              width: 100% !important;
+              max-width: 100% !important;
+            }
+          }
+          
+          /* Grid responsive */
+          .container-flex.grid {
+            display: grid;
+            gap: 1rem;
+          }
+          
+          .container-flex.grid.grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+          }
+          
+          @media (min-width: 768px) {
+            .container-flex.grid.md\\:grid-cols-2 {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .container-flex.grid.md\\:grid-cols-3 {
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .container-flex.grid.md\\:grid-cols-4 {
+              grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+          }
+          
+          @media (min-width: 1024px) {
+            .container-flex.grid.lg\\:grid-cols-3 {
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .container-flex.grid.lg\\:grid-cols-4 {
+              grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+          }
+          
+          /* Prevenir que imágenes se salgan */
+          .container-flex img,
+          .container-flex video {
+            max-width: 100%;
+            height: auto;
+          }
+          
+          /* ✅ Cuadro de selección ajustado al contenido: evitar altura mínima extra en wrappers y elementos de texto */
+          .gjs-wrapper {
+            min-height: 0 !important;
+          }
+          /* ✅ Wrapper que solo contiene una imagen: caja ajustada y sin espacio en blanco alrededor */
+          .gjs-wrapper:has(> img) {
+            display: inline-block !important;
+            width: fit-content !important;
+            max-width: 100% !important;
+            height: fit-content !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          /* ✅ Imagen sin espacio en blanco alrededor (padding/margin 0, sin hueco por inline) */
+          img.image-component,
+          img[data-gjs-name="Imagen"],
+          .gjs-wrapper:has(> img) img {
+            padding: 0 !important;
+            margin: 0 !important;
+            display: block !important;
+            vertical-align: top !important;
+          }
+          [data-gjs-type="heading"],
+          [data-gjs-type="paragraph"],
+          [data-gjs-type="text"],
+          .heading-component,
+          .paragraph-component,
+          .text-component {
+            min-height: 0 !important;
           }
           
           /* ✅ OCULTAR badge "DIV" para componentes background-image */
@@ -1692,11 +2599,33 @@ function initializeEditor() {
         frameDoc.head.appendChild(styleEl);
         console.log('✅ Estilos de bloqueo de iframe re-inyectados');
       }
+
+      // ✅ Crear y agregar un espaciador en la parte inferior del body para arrastrar elementos
+      let spacer = frameDoc.getElementById('gjs-bottom-spacer');
+      if (!spacer) {
+        spacer = frameDoc.createElement('div');
+        spacer.id = 'gjs-bottom-spacer';
+        spacer.style.height = '300px';
+        spacer.style.width = '100%';
+        spacer.style.pointerEvents = 'none';
+        frameDoc.body.appendChild(spacer);
+      }
+
+      // ✅ Permitir scroll en el canvas frame
+      if (canvasFrame) {
+        canvasFrame.style.overflow = 'auto';
+        canvasFrame.style.overflowY = 'auto';
+      }
     }
   }
 
   // Configurar eventos del editor
   editor.on('component:add', function (component) {
+    // ✅ Validar que component existe y tiene los métodos necesarios ANTES de hacer nada
+    if (!component || typeof component.get !== 'function') {
+      console.warn('⚠️ [ComponentAddHandler] Component inválido o sin método get()');
+      return;
+    }
 
     // Sincronizar botones cuando se agregan (SOLO para componentes tipo 'button', NO para toggles o botones dentro de toggles)
     if (component.get('type') === 'button') {
@@ -1740,6 +2669,9 @@ function initializeEditor() {
           if (!el.className.includes('flex')) {
             el.classList.add('flex');
           }
+          if (!el.className.includes('flex-col') && !el.className.includes('flex-row')) {
+            el.classList.add('flex-col');
+          }
           // Actualizar atributos en el modelo
           const currentClass = el.className;
           component.setAttributes({ class: currentClass });
@@ -1762,7 +2694,7 @@ function initializeEditor() {
     }
 
     // Generar ID único para widgets que necesitan estilos independientes
-    const widgetTypes = ['button', 'image', 'heading', 'paragraph', 'text', 'link', 'divider', 'icon', 'icon-box', 'video', 'youtube-video', 'google-maps', 'image-box-advanced', 'background-image', 'file', 'audio', 'carousel'];
+    const widgetTypes = ['button', 'image', 'heading', 'paragraph', 'text', 'link', 'divider', 'icon', 'icon-box', 'video', 'youtube-video', 'google-maps', 'image-box-advanced', 'background-image', 'file', 'audio', 'carousel', 'container'];
     const componentType = component.get('type');
 
     if (widgetTypes.includes(componentType) || componentType === 'default') {
@@ -1993,6 +2925,12 @@ function initializeEditor() {
 
   // ✅ Listener adicional para eliminar placeholder cuando se agregan componentes
   editor.on('component:add', function (component) {
+    // ✅ Validar que component existe y tiene los métodos necesarios ANTES de hacer nada
+    if (!component || typeof component.get !== 'function' || typeof component.parent !== 'function') {
+      console.warn('⚠️ [AddComponentHandler1] Component inválido o sin métodos requeridos');
+      return;
+    }
+    
     // Esperar un momento para que el componente se agregue completamente
     setTimeout(() => {
       const parent = component.parent();
@@ -2045,6 +2983,12 @@ function initializeEditor() {
 
   // ✅ Listener adicional para eliminar placeholder cuando se agregan componentes a contenedores
   editor.on('component:add', function (component) {
+    // ✅ Validar que component existe y tiene los métodos necesarios ANTES de hacer nada
+    if (!component || typeof component.get !== 'function' || typeof component.parent !== 'function') {
+      console.warn('⚠️ [AddComponentHandler2] Component inválido o sin métodos requeridos');
+      return;
+    }
+    
     // Esperar un momento para que el componente se agregue completamente
     setTimeout(() => {
       try {
@@ -2120,6 +3064,12 @@ function initializeEditor() {
   // Evento cuando cambia un trait (propiedad) de un componente
   // Cambiado a 'component:trait:change' para evitar ejecuciones innecesarias
   editor.on('component:trait:change', function (component) {
+    // ✅ Validar que component existe y tiene los métodos necesarios ANTES de hacer nada
+    if (!component || typeof component.get !== 'function') {
+      console.warn('⚠️ [TraitChangeHandler] Component inválido o sin método get()');
+      return;
+    }
+    
     // Si es el bloque de formulario y cambió el form-id, actualizar el atributo
     const componentType = component.get('type');
     if (componentType === 'form-dynamic' || component.get('attributes')?.class === 'gjs-block-form') {
@@ -2386,6 +3336,12 @@ function initializeEditor() {
 
   // Evento cuando se hace hover sobre un componente
   editor.on('component:hover', function (component) {
+    // ✅ Validar que component existe y tiene los métodos necesarios ANTES de hacer nada
+    if (!component || typeof component.get !== 'function') {
+      console.warn('⚠️ [HoverHandler] Component inválido o sin método get()');
+      return;
+    }
+    
     // Asegurarse de que el componente tenga un nombre descriptivo
     if (!component.get('name') || component.get('name') === 'Div' || component.get('name') === 'Default') {
       const type = component.get('type');
@@ -2468,6 +3424,12 @@ function initializeEditor() {
 
   // Evento para forzar selección de carrusel, galería y toggle cuando se detecte
   editor.on('component:add', function (component) {
+    // ✅ Validar que component existe y tiene los métodos necesarios ANTES de hacer nada
+    if (!component || typeof component.get !== 'function') {
+      console.warn('⚠️ [AddComponentHandler3] Component inválido o sin método get()');
+      return;
+    }
+    
     const componentType = component.get('type');
     console.log('📦 [Editor] Componente agregado:', componentType);
 
@@ -2591,55 +3553,117 @@ function initializeEditor() {
     }
   });
 
+  // ✅ Variable para evitar múltiples ejecuciones simultáneas del handler
+  let isHandlingComponentSelect = false;
+  let componentSelectTimeout;
+
   // ✅ Asegurar que los componentes toggle muestren el toolbar cuando se seleccionan
+  // OPTIMIZACIÓN: Debounce para evitar ejecuciones constantes
   editor.on('component:selected', function (component) {
-    if (!component) return;
-
-    const componentType = component.get('type');
-    console.log('🎯 [Editor] Componente seleccionado:', componentType);
-
-    // ✅ CRÍTICO: Si es background-image, asegurar que tenga todas las propiedades necesarias
-    if (componentType === 'background-image') {
-      console.log('🔄 [Editor] Background Image seleccionado, asegurando propiedades...');
-
-      // Forzar propiedades para asegurar que el toolbar aparezca
-      component.set({
-        draggable: true,
-        selectable: true,
-        removable: true,
-        toolbar: true,
-        highlightable: true,
-        hoverable: true,
-        badgable: true,
-        layerable: true,
-        copyable: true
-      }, { silent: false });
+    // Evitar ejecuciones simultáneas
+    if (isHandlingComponentSelect) return;
+    
+    // Cancelar timeout anterior si existe
+    if (componentSelectTimeout) {
+      clearTimeout(componentSelectTimeout);
     }
+    
+    isHandlingComponentSelect = true;
+    
+    componentSelectTimeout = setTimeout(() => {
+      try {
+        // Validar que component existe y tiene los métodos necesarios
+        if (!component || typeof component.get !== 'function') {
+          console.warn('⚠️ [Editor] Component inválido o sin método get()');
+          isHandlingComponentSelect = false;
+          return;
+        }
 
-    // ✅ CRÍTICO: Si es background-color, asegurar que tenga todas las propiedades necesarias
-    if (componentType === 'background-color') {
-      console.log('🔄 [Editor] Background Color seleccionado, asegurando propiedades...');
+        const componentType = component.get('type');
+        console.log('🎯 [Editor] Componente seleccionado:', componentType);
 
-      // Forzar propiedades para asegurar que el toolbar aparezca INMEDIATAMENTE
-      component.set({
-        draggable: true,
-        selectable: true,
-        removable: true,
-        toolbar: true,
-        highlightable: true,
-        hoverable: true,
-        badgable: true,
-        layerable: true,
-        copyable: true
-      }, { silent: false });
+      // ✅ CRÍTICO: Si es background-image, asegurar que tenga todas las propiedades necesarias
+      if (componentType === 'background-image') {
+        console.log('🔄 [Editor] Background Image seleccionado, asegurando propiedades...');
 
-      console.log('✅ [Editor] Propiedades del background-color actualizadas:', {
-        selectable: component.get('selectable'),
-        removable: component.get('removable'),
-        draggable: component.get('draggable'),
-        toolbar: component.get('toolbar'),
-        badgable: component.get('badgable'),
-        layerable: component.get('layerable')
+        // Forzar propiedades para asegurar que el toolbar aparezca
+        component.set({
+          draggable: true,
+          selectable: true,
+          removable: true,
+          toolbar: true,
+          highlightable: true,
+          hoverable: true,
+          badgable: true,
+          layerable: true,
+          copyable: true
+        }, { silent: false });
+
+        // ✅ Forzar renderizado de traits
+        setTimeout(() => {
+          if (editor.TraitManager) {
+            if (typeof editor.TraitManager.setTarget === 'function') {
+              editor.TraitManager.setTarget(component);
+            }
+            editor.TraitManager.render();
+            console.log('✅ [Editor] Traits de Background Image renderizados');
+          }
+        }, 100);
+      }
+
+      // ✅ CRÍTICO: Si es image-box-advanced, asegurar que tenga todas las propiedades necesarias
+      if (componentType === 'image-box-advanced') {
+        console.log('🔄 [Editor] Caja de Imagen Avanzada seleccionada, asegurando propiedades...');
+
+        // Forzar propiedades para asegurar que el toolbar aparezca
+        component.set({
+          draggable: true,
+          selectable: true,
+          removable: true,
+          toolbar: true,
+          highlightable: true,
+          hoverable: true,
+          badgable: true,
+          layerable: true,
+          copyable: true
+        }, { silent: false });
+
+        // ✅ Forzar renderizado de traits
+        setTimeout(() => {
+          if (editor.TraitManager) {
+            if (typeof editor.TraitManager.setTarget === 'function') {
+              editor.TraitManager.setTarget(component);
+            }
+            editor.TraitManager.render();
+            console.log('✅ [Editor] Traits de Caja de Imagen Avanzada renderizados');
+          }
+        }, 100);
+      }
+
+      // ✅ CRÍTICO: Si es background-color, asegurar que tenga todas las propiedades necesarias
+      if (componentType === 'background-color') {
+        console.log('🔄 [Editor] Background Color seleccionado, asegurando propiedades...');
+
+        // Forzar propiedades para asegurar que el toolbar aparezca INMEDIATAMENTE
+        component.set({
+          draggable: true,
+          selectable: true,
+          removable: true,
+          toolbar: true,
+          highlightable: true,
+          hoverable: true,
+          badgable: true,
+          layerable: true,
+          copyable: true
+        }, { silent: false });
+
+        console.log('✅ [Editor] Propiedades del background-color actualizadas:', {
+          selectable: component.get('selectable'),
+          removable: component.get('removable'),
+          draggable: component.get('draggable'),
+          toolbar: component.get('toolbar'),
+          badgable: component.get('badgable'),
+          layerable: component.get('layerable')
       });
 
       // Asegurar atributos en el DOM INMEDIATAMENTE
@@ -3223,873 +4247,256 @@ function initializeEditor() {
         }, 600);
       }
     }
+
+    // ✅ NUEVO: Handler específico para HTML Code widget
+    if (componentType === 'html-code' && component && typeof component.get === 'function') {
+      console.log('🎯 [HTMLCode] Widget seleccionado, renderizando traits personalizados...');
+      
+      // Usar el sistema de traits personalizado
+      setTimeout(() => {
+        if (window.renderCustomTraits && typeof window.renderCustomTraits === 'function') {
+          console.log('🔧 [HTMLCode] Llamando a renderCustomTraits...');
+          window.renderCustomTraits(component);
+          console.log('✅ [HTMLCode] Traits personalizados renderizados');
+        }
+      }, 50);
+    } else {
+      // ✅ CRÍTICO: Si NO es html-code, limpiar traits personalizados y usar sistema normal
+      console.log('🧹 [Editor] Componente NO es html-code, limpiando traits personalizados...');
+      setTimeout(() => {
+        const traitsContainer = document.querySelector('.traits-container');
+        if (traitsContainer) {
+          // Remover solo los traits personalizados del html-code
+          const customTraits = traitsContainer.querySelectorAll('.custom-trait');
+          customTraits.forEach(trait => trait.remove());
+          console.log(`🧹 Removidos ${customTraits.length} traits personalizados`);
+        }
+        
+        // Renderizar traits normales del componente actual
+        if (window.editor && window.editor.TraitManager && component) {
+          const traitManager = window.editor.TraitManager;
+          // Seleccionar el componente primero
+          window.editor.select(component);
+          // Renderizar traits
+          if (typeof traitManager.render === 'function') {
+            traitManager.render();
+          }
+          console.log('✅ Traits normales renderizados para:', componentType);
+        }
+      }, 50);
+    }
+
+    } catch (error) {
+      console.error('❌ [Editor] Error en component:selected handler:', error);
+      console.error('   Stack:', error.stack);
+    }
   });
 
-  // Cargar formularios cuando se selecciona el bloque de formulario
-  editor.on('component:selected', function (component) {
-    // ✅ Actualizar formulario para componentes Verse, Code, Paragraph y Heading cuando se seleccionan
-    let componentType = component.get('type');
+  // También intentar inicializar cuando se selecciona un componente
+  // (Comentado para evitar deselección automática)
+  // editor.on('component:selected', function (component) {
+  //   setTimeout(initializeManagers, 100);
+  // });
 
-    if (componentType === 'verse') {
-      console.log('🎯 [Editor] Componente Verse seleccionado');
-
-      // ✅ CRÍTICO: Sincronizar el modelo ANTES de que se renderice el TraitManager
-      // Esto es lo que hace BackgroundImage - sincroniza primero, luego GrapesJS renderiza con los valores correctos
-      if (component.syncContentFromDOM && typeof component.syncContentFromDOM === 'function') {
-        // Sincronizar inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
-        component.syncContentFromDOM();
-
-        // Forzar re-render del TraitManager después de sincronizar
+  // Listener para cambios de dispositivo - actualizar etiquetas de traits
+  editor.on('change:device', function () {
+    console.log('📱 [DEVICE-CHANGE] Dispositivo cambiado a:', editor.getDevice());
+    
+    // Si hay un componente seleccionado, actualizar sus traits
+    const selected = editor.getSelected();
+    if (selected && selected.get('type') === 'container') {
+      console.log('🔄 [DEVICE-CHANGE] Container seleccionado, actualizando traits...');
+      if (typeof selected.updateVisibleTraitsForDevice === 'function') {
+        // Dejar un pequeño delay para que GrapesJS actualice el device internamente
         setTimeout(() => {
-          if (editor.TraitManager && editor.TraitManager.render) {
+          selected.updateVisibleTraitsForDevice();
+          // Forzar render del TraitManager solo en cambio de dispositivo
+          if (editor.TraitManager && typeof editor.TraitManager.render === 'function') {
             editor.TraitManager.render();
-            console.log('✅ [Editor] TraitManager re-renderizado para Verse');
-
-            // ✅ CRÍTICO: Forzar actualización de los inputs después del render
-            // Usar múltiples intentos porque el render puede tardar
-            const updateVerseInputs = (attempt = 1) => {
-              const modelContent = component.get('verse-content') || '';
-              const modelAuthor = component.get('verse-author') || '';
-
-              // Buscar inputs con múltiples selectores
-              const contentInput = document.querySelector('textarea[name="verse-content"]') ||
-                document.querySelector('.traits-container textarea[data-name="verse-content"]') ||
-                document.querySelector('.gjs-trt-trait[data-trait-name="verse-content"] textarea') ||
-                document.querySelector('.gjs-trt-trait textarea');
-              const authorInput = document.querySelector('input[name="verse-author"]') ||
-                document.querySelector('.traits-container input[data-name="verse-author"]') ||
-                document.querySelector('.gjs-trt-trait[data-trait-name="verse-author"] input') ||
-                document.querySelector('.gjs-trt-trait input[type="text"]');
-
-              console.log(`🔍 [Editor] Intento ${attempt} - Inputs encontrados:`, {
-                content: !!contentInput,
-                author: !!authorInput,
-                contentValue: contentInput ? contentInput.value.substring(0, 30) : 'N/A',
-                modelContent: modelContent.substring(0, 30)
-              });
-
-              if (contentInput) {
-                if (contentInput.value !== modelContent) {
-                  contentInput.value = modelContent;
-                  // Disparar eventos para que GrapesJS lo detecte
-                  contentInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  contentInput.dispatchEvent(new Event('change', { bubbles: true }));
-                  console.log('✅ [Editor] Input de contenido Verse actualizado manualmente');
-                } else {
-                  console.log('ℹ️ [Editor] Input de contenido Verse ya tiene el valor correcto');
-                }
-              } else if (attempt < 5) {
-                console.warn(`⚠️ [Editor] No se encontró input de contenido Verse, reintentando...`);
-                setTimeout(() => updateVerseInputs(attempt + 1), 100);
-                return;
-              } else {
-                console.warn('⚠️ [Editor] No se encontró input de contenido Verse después de 5 intentos');
-              }
-
-              if (authorInput) {
-                if (authorInput.value !== modelAuthor) {
-                  authorInput.value = modelAuthor;
-                  // Disparar eventos para que GrapesJS lo detecte
-                  authorInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  authorInput.dispatchEvent(new Event('change', { bubbles: true }));
-                  console.log('✅ [Editor] Input de autor Verse actualizado manualmente');
-                } else {
-                  console.log('ℹ️ [Editor] Input de autor Verse ya tiene el valor correcto');
-                }
-              } else if (attempt < 5) {
-                console.warn(`⚠️ [Editor] No se encontró input de autor Verse, reintentando...`);
-                setTimeout(() => updateVerseInputs(attempt + 1), 100);
-                return;
-              } else {
-                console.warn('⚠️ [Editor] No se encontró input de autor Verse después de 5 intentos');
-              }
-            };
-
-            setTimeout(() => updateVerseInputs(1), 200);
           }
         }, 50);
       }
     }
-
-    if (componentType === 'code') {
-      console.log('🎯 [Editor] Componente Code seleccionado');
-
-      // ✅ CRÍTICO: Sincronizar el modelo ANTES de que se renderice el TraitManager
-      // Esto es lo que hace BackgroundImage - sincroniza primero, luego GrapesJS renderiza con los valores correctos
-      if (component.syncContentFromDOM && typeof component.syncContentFromDOM === 'function') {
-        // Sincronizar inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
-        component.syncContentFromDOM();
-
-        // Forzar re-render del TraitManager después de sincronizar
-        setTimeout(() => {
-          if (editor.TraitManager && editor.TraitManager.render) {
-            editor.TraitManager.render();
-            console.log('✅ [Editor] TraitManager re-renderizado para Code');
-
-            // ✅ CRÍTICO: Forzar actualización de los inputs después del render
-            const updateCodeInputs = (attempt = 1) => {
-              const modelContent = component.get('code-content') || '';
-
-              const contentInput = document.querySelector('textarea[name="code-content"]') ||
-                document.querySelector('.traits-container textarea[data-name="code-content"]') ||
-                document.querySelector('.gjs-trt-trait[data-trait-name="code-content"] textarea') ||
-                document.querySelector('.gjs-trt-trait textarea');
-
-              console.log(`🔍 [Editor] Intento ${attempt} - Input Code encontrado:`, {
-                found: !!contentInput,
-                currentValue: contentInput ? contentInput.value.substring(0, 30) : 'N/A',
-                modelContent: modelContent.substring(0, 30)
-              });
-
-              if (contentInput) {
-                if (contentInput.value !== modelContent) {
-                  contentInput.value = modelContent;
-                  // Disparar eventos para que GrapesJS lo detecte
-                  contentInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  contentInput.dispatchEvent(new Event('change', { bubbles: true }));
-                  console.log('✅ [Editor] Input de contenido Code actualizado manualmente');
-                } else {
-                  console.log('ℹ️ [Editor] Input de contenido Code ya tiene el valor correcto');
-                }
-              } else if (attempt < 5) {
-                console.warn(`⚠️ [Editor] No se encontró input de contenido Code, reintentando...`);
-                setTimeout(() => updateCodeInputs(attempt + 1), 100);
-              } else {
-                console.warn('⚠️ [Editor] No se encontró input de contenido Code después de 5 intentos');
-              }
-            };
-
-            setTimeout(() => updateCodeInputs(1), 200);
-          }
-        }, 50);
-      }
-    }
-
-    if (componentType === 'paragraph') {
-      console.log('🎯 [Editor] Componente Paragraph seleccionado');
-
-      // ✅ CRÍTICO: Sincronizar el modelo ANTES de que se renderice el TraitManager
-      if (component.syncContentFromDOM && typeof component.syncContentFromDOM === 'function') {
-        // Sincronizar inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
-        component.syncContentFromDOM();
-
-        // Forzar re-render del TraitManager después de sincronizar
-        setTimeout(() => {
-          if (editor.TraitManager && editor.TraitManager.render) {
-            editor.TraitManager.render();
-            console.log('✅ [Editor] TraitManager re-renderizado para Paragraph');
-
-            // ✅ CRÍTICO: Forzar actualización de los inputs después del render
-            const updateParagraphInputs = (attempt = 1) => {
-              const modelText = component.get('paragraph-text') || '';
-
-              const textInput = document.querySelector('input[name="paragraph-text"]') ||
-                document.querySelector('.traits-container input[data-name="paragraph-text"]') ||
-                document.querySelector('.gjs-trt-trait[data-trait-name="paragraph-text"] input') ||
-                document.querySelector('.gjs-trt-trait input[type="text"]');
-
-              console.log(`🔍 [Editor] Intento ${attempt} - Input Paragraph encontrado:`, {
-                found: !!textInput,
-                currentValue: textInput ? textInput.value.substring(0, 30) : 'N/A',
-                modelText: modelText.substring(0, 30)
-              });
-
-              if (textInput) {
-                if (textInput.value !== modelText) {
-                  textInput.value = modelText;
-                  // Disparar eventos para que GrapesJS lo detecte
-                  textInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  textInput.dispatchEvent(new Event('change', { bubbles: true }));
-                  console.log('✅ [Editor] Input de texto Paragraph actualizado manualmente');
-                } else {
-                  console.log('ℹ️ [Editor] Input de texto Paragraph ya tiene el valor correcto');
-                }
-              } else if (attempt < 5) {
-                console.warn(`⚠️ [Editor] No se encontró input de texto Paragraph, reintentando...`);
-                setTimeout(() => updateParagraphInputs(attempt + 1), 100);
-              } else {
-                console.warn('⚠️ [Editor] No se encontró input de texto Paragraph después de 5 intentos');
-              }
-            };
-
-            setTimeout(() => updateParagraphInputs(1), 200);
-          }
-        }, 50);
-      }
-    }
-
-    if (componentType === 'heading') {
-      console.log('🎯 [Editor] Componente Heading seleccionado');
-
-      // ✅ CRÍTICO: Sincronizar el modelo ANTES de que se renderice el TraitManager
-      if (component.syncContentFromDOM && typeof component.syncContentFromDOM === 'function') {
-        // Sincronizar inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
-        component.syncContentFromDOM();
-
-        // Forzar re-render del TraitManager después de sincronizar
-        setTimeout(() => {
-          if (editor.TraitManager && editor.TraitManager.render) {
-            editor.TraitManager.render();
-            console.log('✅ [Editor] TraitManager re-renderizado para Heading');
-
-            // ✅ CRÍTICO: Forzar actualización de los inputs después del render
-            const updateHeadingInputs = (attempt = 1) => {
-              const modelText = component.get('heading-text') || '';
-
-              const textInput = document.querySelector('input[name="heading-text"]') ||
-                document.querySelector('.traits-container input[data-name="heading-text"]') ||
-                document.querySelector('.gjs-trt-trait[data-trait-name="heading-text"] input') ||
-                document.querySelector('.gjs-trt-trait input[type="text"]');
-
-              console.log(`🔍 [Editor] Intento ${attempt} - Input Heading encontrado:`, {
-                found: !!textInput,
-                currentValue: textInput ? textInput.value.substring(0, 30) : 'N/A',
-                modelText: modelText.substring(0, 30)
-              });
-
-              if (textInput) {
-                if (textInput.value !== modelText) {
-                  textInput.value = modelText;
-                  // Disparar eventos para que GrapesJS lo detecte
-                  textInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  textInput.dispatchEvent(new Event('change', { bubbles: true }));
-                  console.log('✅ [Editor] Input de texto Heading actualizado manualmente');
-                } else {
-                  console.log('ℹ️ [Editor] Input de texto Heading ya tiene el valor correcto');
-                }
-              } else if (attempt < 5) {
-                console.warn(`⚠️ [Editor] No se encontró input de texto Heading, reintentando...`);
-                setTimeout(() => updateHeadingInputs(attempt + 1), 100);
-              } else {
-                console.warn('⚠️ [Editor] No se encontró input de texto Heading después de 5 intentos');
-              }
-            };
-
-            setTimeout(() => updateHeadingInputs(1), 200);
-          }
-        }, 50);
-      }
-    }
-
-    // Continuar con el código original...
-    // Forzar actualización del TraitManager para componentes refactorizados
-    componentType = component.get('type'); // Reutilizar la variable ya declarada
-    const refactoredComponents = ['text', 'heading', 'paragraph', 'button', 'container', 'image'];
-
-    if (refactoredComponents.includes(componentType)) {
-      console.log('🔄 Componente refactorizado seleccionado:', componentType);
-
-      // Sincronizar contenedores cuando se seleccionan
-      if (componentType === 'container') {
-        setTimeout(() => {
-          if (component.view && component.view.el) {
-            const el = component.view.el;
-            // Asegurar que tenga las clases básicas
-            if (!el.className.includes('container-flex')) {
-              el.classList.add('container-flex');
-            }
-            if (!el.className.includes('flex')) {
-              el.classList.add('flex');
-            }
-            // Actualizar atributos en el modelo
-            const currentClass = el.className;
-            component.setAttributes({ class: currentClass });
-            console.log('✅ Contenedor sincronizado:', currentClass);
-          }
-        }, 50);
-      }
-
-      // ✅ El manejo de imágenes se hace completamente en el componente image.js
-      // No es necesario duplicar código aquí - el componente image.js maneja:
-      // - Inicialización con imagen por defecto
-      // - Doble clic para abrir galería
-      // - Actualización de imagen desde galería
-      // - Sincronización de src
-
-      // Si el componente tiene un método de sincronización, ejecutarlo
-      if (componentType === 'button') {
-        console.log('🔍 Verificando método syncInitialValues en botón...');
-        console.log('🔍 syncInitialValues existe?', typeof component.syncInitialValues);
-        console.log('🔍 Componente completo:', component);
-
-        if (typeof component.syncInitialValues === 'function') {
-          console.log('🔄 Sincronizando botón desde component:selected...');
-          try {
-            // Ejecutar sincronización inmediatamente
-            component.syncInitialValues();
-            console.log('✅ syncInitialValues ejecutado');
-          } catch (error) {
-            console.error('❌ Error ejecutando syncInitialValues:', error);
-          }
-
-          // Forzar actualización del TraitManager después de sincronizar
-          setTimeout(() => {
-            if (editor.TraitManager) {
-              // Establecer el componente como target (método compatible)
-              if (typeof editor.TraitManager.setTarget === 'function') {
-                editor.TraitManager.setTarget(component);
-              } else {
-                editor.TraitManager.component = component;
-              }
-
-              // Forzar actualización de todos los traits del botón
-              const buttonTraits = ['button-text', 'button-href', 'button-target', 'button-style', 'button-size', 'button-width', 'button-align', 'button-radius'];
-              console.log('🔄 Actualizando traits del botón...');
-              buttonTraits.forEach(traitName => {
-                const value = component.get(traitName);
-                console.log(`  - ${traitName}:`, value);
-                if (value !== undefined && value !== null && value !== '') {
-                  // Establecer el valor en el modelo
-                  component.set(traitName, value, { silent: false });
-                  // Forzar actualización del trait
-                  component.trigger(`change:${traitName}`, component, value);
-                  console.log(`✅ Trait ${traitName} establecido:`, value);
-                }
-              });
-
-              // Renderizar el TraitManager
-              editor.TraitManager.render();
-              console.log('✅ TraitManager actualizado');
-            }
-          }, 200);
-        } else {
-          console.warn('⚠️ syncInitialValues no es una función, intentando sincronización manual...');
-          // Sincronización manual si el método no está disponible
-          if (component.view && component.view.el) {
-            const el = component.view.el;
-            const classList = (el.className || '').split(' ').filter(c => c.trim());
-            const textContent = el.textContent || el.innerText || '';
-
-            console.log('📝 Sincronización manual - Texto:', textContent);
-            console.log('📝 Sincronización manual - Clases:', classList);
-
-            if (textContent.trim()) {
-              component.set('button-text', textContent.trim(), { silent: false });
-              console.log('✅ Texto establecido:', textContent.trim());
-            } else {
-              component.set('button-text', '', { silent: false });
-              console.log('ℹ️ Sin texto, estableciendo vacío');
-            }
-
-            const href = el.getAttribute('href') || '#';
-            component.set('button-href', href, { silent: false });
-            console.log('✅ Href establecido:', href);
-
-            const target = el.getAttribute('target') || '_self';
-            component.set('button-target', target, { silent: false });
-            console.log('✅ Target establecido:', target);
-
-            // Detectar estilo - buscar cualquier bg-color y hover:bg-color
-            const styleOptions = [
-              { value: 'bg-blue-600 hover:bg-blue-700', color: 'blue' },
-              { value: 'bg-gray-600 hover:bg-gray-700', color: 'gray' },
-              { value: 'bg-green-600 hover:bg-green-700', color: 'green' },
-              { value: 'bg-red-600 hover:bg-red-700', color: 'red' },
-              { value: 'bg-yellow-600 hover:bg-yellow-700', color: 'yellow' },
-              { value: 'bg-purple-600 hover:bg-purple-700', color: 'purple' },
-              { value: 'bg-pink-600 hover:bg-pink-700', color: 'pink' }
-            ];
-
-            // Buscar cualquier clase bg-color-XXX
-            const bgClass = classList.find(c => c.match(/^bg-(blue|gray|green|red|yellow|purple|pink)-\d+$/));
-            if (bgClass) {
-              const colorMatch = bgClass.match(/^bg-(\w+)-\d+$/);
-              if (colorMatch) {
-                const color = colorMatch[1];
-                const styleMatch = styleOptions.find(opt => opt.color === color);
-                if (styleMatch) {
-                  component.set('button-style', styleMatch.value, { silent: false });
-                  console.log('✅ Estilo detectado:', styleMatch.value, '(basado en:', bgClass, ')');
-                }
-              }
-            }
-
-            // Detectar tamaño
-            const sizeOptions = [
-              { value: 'px-4 py-2 text-sm', px: 'px-4', py: 'py-2', text: 'text-sm' },
-              { value: 'px-6 py-2 text-base', px: 'px-6', py: 'py-2', text: 'text-base' },
-              { value: 'px-8 py-3 text-lg', px: 'px-8', py: 'py-3', text: 'text-lg' },
-              { value: 'px-10 py-4 text-xl', px: 'px-10', py: 'py-4', text: 'text-xl' }
-            ];
-            let sizeMatch = sizeOptions.find(opt =>
-              classList.includes(opt.px) && classList.includes(opt.py) && classList.includes(opt.text)
-            );
-            if (!sizeMatch) {
-              const textSizeClass = classList.find(c => ['text-sm', 'text-base', 'text-lg', 'text-xl'].includes(c));
-              if (textSizeClass) {
-                sizeMatch = sizeOptions.find(opt => opt.text === textSizeClass);
-              }
-            }
-            if (sizeMatch) {
-              component.set('button-size', sizeMatch.value, { silent: false });
-              console.log('✅ Tamaño detectado:', sizeMatch.value);
-            }
-
-            // Detectar ancho
-            const widthClasses = ['w-auto', 'w-full', 'w-24', 'w-32', 'w-40', 'w-48', 'w-64', 'w-1/2', 'w-1/3', 'w-2/3', 'w-3/4'];
-            const widthMatch = classList.find(c => widthClasses.includes(c));
-            if (widthMatch) {
-              component.set('button-width', widthMatch, { silent: false });
-              console.log('✅ Ancho detectado:', widthMatch);
-            } else {
-              // Si no hay ancho específico, dejar vacío
-              component.set('button-width', '', { silent: false });
-              console.log('ℹ️ Sin ancho específico, usando automático');
-            }
-
-            // Detectar alineación
-            if (classList.includes('mx-auto')) {
-              component.set('button-align', 'block mx-auto', { silent: false });
-              console.log('✅ Alineación detectada: Centrado');
-            } else if (classList.includes('ml-auto')) {
-              component.set('button-align', 'block ml-auto', { silent: false });
-              console.log('✅ Alineación detectada: Derecha');
-            } else if (classList.includes('mr-auto')) {
-              component.set('button-align', 'block mr-auto', { silent: false });
-              console.log('✅ Alineación detectada: Izquierda');
-            } else {
-              component.set('button-align', '', { silent: false });
-              console.log('ℹ️ Sin alineación específica');
-            }
-
-            // Detectar bordes redondeados
-            const radiusOptions = [
-              { value: 'rounded-none', class: 'rounded-none' },
-              { value: 'rounded', class: 'rounded' },
-              { value: 'rounded-md', class: 'rounded-md' },
-              { value: 'rounded-lg', class: 'rounded-lg' },
-              { value: 'rounded-full', class: 'rounded-full' }
-            ];
-            const radiusMatch = radiusOptions.find(opt => classList.includes(opt.class));
-            if (radiusMatch) {
-              component.set('button-radius', radiusMatch.value, { silent: false });
-              console.log('✅ Radio detectado:', radiusMatch.value);
-            } else {
-              // Si no hay radio específico, usar rounded-md por defecto
-              component.set('button-radius', 'rounded-md', { silent: false });
-              console.log('ℹ️ Sin radio específico, usando rounded-md');
-            }
-
-            // Forzar actualización del TraitManager después de establecer todos los valores
-            setTimeout(() => {
-              if (editor.TraitManager) {
-                console.log('🔄 Renderizando TraitManager con valores sincronizados...');
-
-                // Verificar que los valores se establecieron correctamente
-                const buttonTraits = ['button-text', 'button-href', 'button-target', 'button-style', 'button-size', 'button-width', 'button-align', 'button-radius'];
-                console.log('📋 Valores establecidos en el modelo:');
-                buttonTraits.forEach(traitName => {
-                  const value = component.get(traitName);
-                  console.log(`  - ${traitName}:`, value);
-                });
-
-                // Usar el método correcto para establecer el target
-                if (typeof editor.TraitManager.setTarget === 'function') {
-                  editor.TraitManager.setTarget(component);
-                } else {
-                  // Método alternativo: establecer el componente directamente
-                  editor.TraitManager.component = component;
-                }
-
-                // Asegurar que los traits estén definidos en el modelo
-                const currentTraits = component.get('traits') || [];
-                console.log('📋 Traits actuales en el modelo:', currentTraits.length);
-
-                // Si no hay 8 traits, forzar la actualización de los traits desde defaults
-                if (currentTraits.length < 8) {
-                  console.log('⚠️ Faltan traits, forzando actualización desde defaults...');
-                  // Obtener los traits desde el tipo de componente
-                  const componentType = editor.DomComponents.getType('button');
-                  if (componentType && componentType.model && componentType.model.defaults && componentType.model.defaults.traits) {
-                    component.set('traits', componentType.model.defaults.traits, { silent: false });
-                    console.log('✅ Traits actualizados desde defaults');
-                  }
-                }
-
-                // Forzar actualización de los traits antes de renderizar
-                buttonTraits.forEach(traitName => {
-                  const value = component.get(traitName);
-                  if (value !== undefined) {
-                    // Asegurar que el valor esté en el modelo
-                    component.set(traitName, value, { silent: false });
-                  }
-                });
-
-                // Renderizar el TraitManager
-                editor.TraitManager.render();
-
-                // Verificar cuántos traits se renderizaron
-                setTimeout(() => {
-                  const traitsRendered = document.querySelectorAll('.traits-container .gjs-trt-trait').length;
-                  console.log(`✅ TraitManager actualizado (sincronización manual) - Traits renderizados: ${traitsRendered}`);
-                }, 100);
-              }
-            }, 200);
-          }
-        }
-      }
-
-      // Asegurar que el TraitManager se actualice
-      setTimeout(() => {
-        if (editor.TraitManager) {
-          // Intentar usar setTarget si está disponible
-          if (typeof editor.TraitManager.setTarget === 'function') {
-            editor.TraitManager.setTarget(component);
-          }
-
-          // Forzar renderizado
-          editor.TraitManager.render();
-
-          // Verificar que se renderizaron los traits
-          setTimeout(() => {
-            const traitsInContainer = document.querySelectorAll('.traits-container .gjs-trt-trait');
-            console.log('📋 Traits renderizados:', traitsInContainer.length);
-
-            if (traitsInContainer.length === 0) {
-              console.warn('⚠️ No se renderizaron traits, intentando método alternativo...');
-
-              // Método alternativo: forzar actualización del componente
-              component.trigger('change:traits');
-              component.trigger('change:attributes');
-
-              // Re-renderizar
-              editor.TraitManager.render();
-
-              // Si aún no funciona, usar el sistema personalizado
-              setTimeout(() => {
-                const traitsStillEmpty = document.querySelectorAll('.traits-container .gjs-trt-trait').length === 0;
-                if (traitsStillEmpty && window.renderCustomTraits) {
-                  console.log('🔄 Usando sistema de traits personalizado...');
-                  window.renderCustomTraits(component);
-                }
-              }, 300);
-            }
-          }, 200);
-        }
-      }, 100);
-    }
-
-    // Si es el bloque de formulario, cargar formularios disponibles
-    const isFormBlock = component.get('type') === 'form-dynamic' || component.get('attributes')?.class === 'gjs-block-form';
-    if (isFormBlock) {
-      console.log('📋 Bloque de formulario seleccionado, cargando formularios disponibles...');
-
-      const websiteId = window.websiteId;
-      if (websiteId) {
-        // Obtener formularios del website
-        fetch(`/creator/api/websites/${websiteId}/forms`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data && data.data) {
-              // Encontrar el trait de form-id y actualizar sus opciones
-              const traits = component.get('traits');
-              const formIdTrait = traits.find(t => t.get('name') === 'form-id');
-
-              if (formIdTrait) {
-                // Crear opciones desde los formularios
-                const options = [
-                  { value: '', name: '-- Selecciona un formulario --' }
-                ];
-
-                data.data.forEach(form => {
-                  options.push({
-                    value: form.id.toString(),
-                    name: form.name || form.slug
-                  });
-                });
-
-                formIdTrait.set('options', options);
-
-                // Forzar renderizado del TraitManager
-                if (editor.TraitManager) {
-                  editor.TraitManager.render();
-                }
-              }
-            }
-          })
-          .catch(error => {
-            console.error('❌ Error al cargar formularios:', error);
-          });
-      }
-    }
-
-    // Debug específico para carrusel
-    if (component.get('type') === 'carousel') {
-      // El TraitManager se actualiza automáticamente cuando se selecciona un componente
-      // No es necesario llamar a setTarget manualmente
-      setTimeout(() => {
-        if (editor.TraitManager) {
-          editor.TraitManager.render();
-        }
-      }, 100);
-    }
-
-    // Asegurarse de que el componente tenga un nombre descriptivo
-    if (!component.get('name') || component.get('name') === 'Div' || component.get('name') === 'Default') {
-      const type = component.get('type');
-      const tagName = component.get('tagName');
-
-      const nameMap = {
-        'text': 'Texto',
-        'image': 'Imagen',
-        'button': 'Botón',
-        'link': 'Enlace',
-        'heading': 'Título',
-        'paragraph': 'Párrafo',
-        'divider': 'Divisor',
-        'section': 'Sección',
-        'container': 'Contenedor',
-        'column': 'Columna',
-        'icon': 'Icono',
-        'icon-box': 'Caja de Icono',
-        'video': 'Video',
-        'youtube-video': 'YouTube',
-        'google-maps': 'Google Maps',
-        'image-box-advanced': 'Caja de Imagen Avanzada',
-        'background-image': 'Imagen de Fondo',
-        'file': 'Archivo',
-        'audio': 'Reproductor de Audio',
-        'carousel': 'Carrusel',
-        'carousel': 'Carrusel',
-        'gallery': 'Galería'
-      };
-
-      const tagNameMap = {
-        'h1': 'Título H1',
-        'h2': 'Título H2',
-        'h3': 'Título H3',
-        'h4': 'Título H4',
-        'h5': 'Título H5',
-        'h6': 'Título H6',
-        'p': 'Párrafo',
-        'a': 'Enlace',
-        'img': 'Imagen',
-        'button': 'Botón',
-        'section': 'Sección',
-        'nav': 'Navegación',
-        'footer': 'Footer',
-        'header': 'Header',
-        'form': 'Formulario',
-        'input': 'Campo de Entrada',
-        'textarea': 'Área de Texto',
-        'label': 'Etiqueta',
-        'hr': 'Divisor'
-      };
-
-      const newName = nameMap[type] || tagNameMap[tagName] || (tagName ? tagName.toUpperCase() : 'Elemento');
-      component.set('name', newName);
-    }
-
-    // Debug para componentes especiales
-    // YouTube
-    if (componentType === 'youtube-video') {
-      // Forzar la actualización del TraitManager para YouTube
-      setTimeout(() => {
-        if (editor.TraitManager) {
-          editor.TraitManager.render();
-        }
-      }, 100);
-    }
-
-    // Imagen
-    if (componentType === 'image') {
-      // Log deshabilitado para reducir ruido en consola
-      // console.log('🖼️ Componente de Imagen seleccionado:', {
-      //   tipo: componentType,
-      //   nombre: component.get('name'),
-      //   src: component.get('src'),
-      //   alt: component.get('alt'),
-      //   traits: component.get('traits'),
-      //   cantidadTraits: component.get('traits')?.length || 0
-      // });
-
-      // Forzar la actualización del TraitManager para Imagen
-      setTimeout(() => {
-        if (editor.TraitManager) {
-          editor.TraitManager.render();
-        }
-      }, 100);
-    }
-
-    // Carrusel
-    if (componentType === 'carousel') {
-      console.log('🎠 Componente de Carrusel seleccionado:', {
-        tipo: componentType,
-        nombre: component.get('name'),
-        traits: component.get('traits'),
-        cantidadTraits: component.get('traits')?.length || 0
-      });
-
-      // Para carrusel, NO usar el TraitManager estándar para evitar conflictos
-      // El sistema personalizado ya se ejecutó arriba
-      console.log('🎠 Carrusel: Saltando TraitManager estándar para evitar conflictos con sistema personalizado');
-    }
-
-    // Galería
-    if (componentType === 'gallery') {
-      // Sincronizar URLs si el componente tiene el método
-      if (component.syncImageUrls) {
-        component.syncImageUrls();
-      }
-
-      // Forzar la actualización del TraitManager para Galería
-      setTimeout(() => {
-        if (editor.TraitManager) {
-          editor.TraitManager.render();
-        }
-      }, 100);
-    }
-
-    // Cambiar automáticamente al panel de Propiedades
-    const traitsTab = document.querySelector('[data-panel="traits"]');
-    if (traitsTab && !traitsTab.classList.contains('active')) {
-      traitsTab.click();
-    }
-
-    // Ocultar mensaje de "No hay elemento seleccionado"
-    const noWidgetMsg = document.getElementById('no-widget-selected');
-    if (noWidgetMsg) {
-      noWidgetMsg.style.display = 'none';
-    }
-
-    // Mostrar contenedor de traits
-    const traitsContainer = document.querySelector('.traits-container');
-    if (traitsContainer) {
-      traitsContainer.style.display = 'block';
-    }
-
-    // Forzar actualización del TraitManager para todos los componentes
+    
     setTimeout(() => {
-      if (editor.TraitManager) {
-        editor.TraitManager.render();
-      }
-    }, 50);
-
-    // Configurar el selector para usar el ID del componente (estilos únicos)
-    const widgetTypes = ['button', 'image', 'heading', 'paragraph', 'text', 'link', 'divider', 'icon', 'icon-box', 'section', 'container', 'column', 'video', 'youtube-video', 'google-maps'];
-
-    // Obtener selectores actuales
-    const currentSelectors = component.getSelectors ? component.getSelectors() : null;
-    const currentSelectorsCount = currentSelectors ? currentSelectors.length : 0;
-
-    //Asegurar que el componente tenga un ID único
-    let componentId = component.getId();
-
-    // Si el componente no tiene ID o es autogenerado, crear uno personalizado
-    if (!componentId || componentId.startsWith('i')) {
-      const customId = `${componentType || 'element'}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      component.addAttributes({ id: customId });
-      componentId = customId;
-      console.log('🆔 ID personalizado asignado:', customId);
-    }
-
-    // Intentar configurar selectores solo si el componente lo soporta
-    if (component.setSelectors && typeof component.setSelectors === 'function') {
-      if (widgetTypes.includes(componentType) || componentType === 'default') {
-        const sm = editor.SelectorManager;
-
-        try {
-          // Crear un selector de ID
-          let idSelector = sm.get(`#${componentId}`);
-          if (!idSelector) {
-            idSelector = sm.add({ name: componentId, type: 2 }); // type: 2 = ID
-          }
-
-          // FORZAR el uso SOLO del selector de ID (limpiar todos los demás)
-          component.setSelectors([idSelector]);
-
-          console.log('✅ Selector de ID configurado:', {
-            componentId: componentId,
-            selectorName: idSelector.get('name'),
-            selectorType: idSelector.get('type'),
-            selectoresAnteriores: currentSelectorsCount,
-            selectoresNuevos: component.getSelectors().length
-          });
-        } catch (error) {
-          console.error('❌ Error al configurar selectores:', error);
-        }
-      }
-    } else {
-      // Para componentes que no soportan setSelectors (como links/buttons)
-      // Forzar que los estilos se apliquen mediante reglas CSS directas con su ID
-
-      // Configurar el StyleManager para usar el ID del componente
-      const sm = editor.StyleManager;
-      const rule = editor.Css.getRule(`#${componentId}`);
-      if (!rule) {
-        editor.Css.setRule(`#${componentId}`, {});
-      }
-    }
-
-    // Refrescar el StyleManager para mostrar los estilos actuales del componente
-    // Esto SIEMPRE debe ejecutarse para mostrar el panel de estilos
-    if (editor.StyleManager) {
-      editor.StyleManager.render();
-    }
-
-    // Forzar actualización del StyleManager cuando se selecciona un componente
-    setTimeout(() => {
-      if (editor.StyleManager) {
-        // Forzar renderizado completo del StyleManager
-        editor.StyleManager.render();
-
-        // Obtener los contenedores
-        const stylesContainer = document.querySelector('.styles-container');
-        const stylesContainerWidget = document.querySelector('.styles-container-widget');
-
-
-        if (stylesContainer && stylesContainerWidget) {
-          // Esperar a que el StyleManager se haya renderizado completamente
-          setTimeout(() => {
-            // Buscar el contenedor completo del StyleManager
-            const smContainer = stylesContainer.querySelector('.gjs-sm-sectors') ||
-              stylesContainer.querySelector('[data-gjs-type="sectors"]') ||
-              stylesContainer.firstElementChild;
-
-
-            if (smContainer) {
-              const sectorsCount = smContainer.querySelectorAll('.gjs-sm-sector').length;
-
-              // Limpiar el contenedor de widgets
-              stylesContainerWidget.innerHTML = '';
-
-              // MOVER (no clonar) el contenedor completo para mantener toda la funcionalidad
-              stylesContainerWidget.appendChild(smContainer);
-
-            } else {
-              // StyleManager no encontrado (log removido)
-            }
-          }, 200);
-        } else {
-          console.error('❌ No se encontraron los contenedores necesarios');
-        }
+      if (typeof window.updateTraitLabelsForDevice === 'function') {
+        window.updateTraitLabelsForDevice();
       }
     }, 150);
   });
 
-  // Evento cuando se deselecciona un componente
-  editor.on('component:deselected', function (component) {
-    // Mostrar mensaje de "No hay elemento seleccionado" solo si no hay nada seleccionado
-    setTimeout(() => {
-      const selected = editor.getSelected();
-      if (!selected) {
-        const noWidgetMsg = document.getElementById('no-widget-selected');
-        const traitsContainer = document.querySelector('.traits-container');
-        if (noWidgetMsg) {
-          noWidgetMsg.style.display = 'flex';
-        }
-        if (traitsContainer) {
-          traitsContainer.style.display = 'none';
+  // ⚠️ ELIMINADO: Los listeners duplicados fueron consolidados en el handler anterior
+
+  // Listener para cambios de dispositivo - actualizar etiquetas de traits
+  editor.on('component:selected', function (component) {
+    // ✅ Validar que component existe y tiene los métodos necesarios ANTES de hacer nada
+    if (!component || typeof component.get !== 'function') {
+      console.warn('⚠️ [ImageComponentHandler] Component inválido o sin método get()');
+      return;
+    }
+    
+    // ✅ Asegurar que los traits del componente de imagen se apliquen correctamente
+    if (component.get('type') === 'image') {
+      console.log('🖼️ Componente de imagen seleccionado, verificando traits...');
+
+      // Obtener los traits del componente registrado
+      const imageComponentType = editor.DomComponents.getType('image');
+      if (imageComponentType && imageComponentType.model && imageComponentType.model.defaults && imageComponentType.model.defaults.traits) {
+        const registeredTraits = imageComponentType.model.defaults.traits;
+
+        // Verificar si el componente tiene los traits correctos
+        const currentTraits = component.get('traits') || [];
+        const hasButtonTrait = currentTraits.some(t => {
+          const traitName = typeof t === 'object' && t.name ? t.name : (typeof t === 'string' ? t : null);
+          return traitName === 'select-image-gallery';
+        });
+
+        // Si no tiene el trait del botón, actualizar los traits del componente
+        if (!hasButtonTrait) {
+          console.log('⚠️ El componente de imagen no tiene el botón de galería, actualizando traits...');
+
+          // Establecer los traits desde el componente registrado
+          component.set('traits', registeredTraits, { silent: false });
+
+          // Forzar actualización del TraitManager
+          setTimeout(() => {
+            if (editor.TraitManager) {
+              if (typeof editor.TraitManager.setTarget === 'function') {
+                editor.TraitManager.setTarget(component);
+              }
+              editor.TraitManager.render();
+
+              // Verificar que se renderizó el botón
+              setTimeout(() => {
+                const buttonTrait = document.querySelector('.traits-container [data-trait-name="select-image-gallery"]');
+                if (buttonTrait) {
+                  console.log('✅ Botón de galería renderizado correctamente');
+                } else {
+                  console.warn('⚠️ El botón de galería no se renderizó, intentando método alternativo...');
+                  // Intentar renderizar nuevamente
+                  editor.TraitManager.render();
+                }
+              }, 100);
+            }
+          }, 150);
+        } else {
+          console.log('✅ El componente de imagen ya tiene los traits correctos');
         }
       }
-    }, 50);
+    }
+
+    // ✅ Asegurar que los traits del componente de contenedor se apliquen correctamente
+    if (component && component.get('type') === 'container') {
+      console.log('📦 Componente de contenedor seleccionado, verificando traits...');
+
+      // Obtener los traits del componente registrado
+      const containerComponentType = editor.DomComponents.getType('container');
+      if (containerComponentType && containerComponentType.model && containerComponentType.model.defaults && containerComponentType.model.defaults.traits) {
+        const registeredTraits = containerComponentType.model.defaults.traits;
+
+        // Verificar si el componente tiene los traits correctos
+        const currentTraits = component.get('traits') || [];
+        const hasLayoutModeTrait = currentTraits.some(t => {
+          const traitName = typeof t === 'object' && t.name ? t.name : (typeof t === 'string' ? t : null);
+          return traitName === 'container-layout-mode';
+        });
+
+        // Si no tiene el trait de modo de layout, forzar la actualización de los traits
+        if (!hasLayoutModeTrait && registeredTraits.length > 0) {
+          console.log('⚠️ El componente de contenedor no tiene todos los traits, actualizando...');
+
+          // Establecer los traits desde el componente registrado
+          component.set('traits', registeredTraits, { silent: false });
+
+          // Forzar actualización del TraitManager
+          setTimeout(() => {
+            if (editor.TraitManager) {
+              if (typeof editor.TraitManager.setTarget === 'function') {
+                editor.TraitManager.setTarget(component);
+              }
+              editor.TraitManager.render();
+
+              // Verificar que se renderizaron los traits
+              setTimeout(() => {
+                const traitsRendered = document.querySelectorAll('.traits-container .gjs-trt-trait').length;
+                if (traitsRendered >= 10) {
+                  console.log('✅ Traits del contenedor renderizados correctamente:', traitsRendered);
+                } else {
+                  console.warn('⚠️ No se renderizaron todos los traits, intentando método alternativo...');
+                  // Intentar renderizar nuevamente
+                  editor.TraitManager.render();
+                }
+              }, 100);
+            }
+          }, 150);
+        } else {
+          console.log('✅ El componente de contenedor ya tiene los traits correctos');
+        }
+      }
+    }
+
+    setTimeout(() => {
+      if (typeof window.updateTraitLabelsForDevice === 'function') {
+        window.updateTraitLabelsForDevice();
+      }
+    }, 200);
   });
+
+  // Función para forzar actualización de managers
+  window.updateManagers = function () {
+    if (window.editor) {
+      const editor = window.editor;
+
+      // Verificar si los contenedores tienen contenido
+      const stylesContainer = document.querySelector('.styles-container');
+      const traitsContainer = document.querySelector('.traits-container');
+      const layersContainer = document.querySelector('.layers-container');
+
+
+      // Forzar renderizado de todos los managers
+      if (editor.StyleManager) {
+        editor.StyleManager.render();
+      }
+      if (editor.TraitManager) {
+        editor.TraitManager.render();
+      }
+      if (editor.LayerManager) {
+        editor.LayerManager.render();
+      }
+
+      // Verificar nuevamente después del renderizado
+      setTimeout(() => {
+      }, 500);
+    }
+  };
+
+  // Función para agregar !important a los estilos de IDs personalizados
+  function addImportantToCustomIds(css) {
+    // Buscar todas las reglas CSS de IDs personalizados (formato: tipo-timestamp-random o element-timestamp-random)
+    const regex = /#([a-z\-]+-\d+(?:-\d+)?)\s*\{([^}]+)\}/g;
+
+    let modifiedCss = css.replace(regex, function (match, id, styles) {
+      // Dividir los estilos en propiedades individuales
+      const properties = styles.split(';').map(prop => prop.trim()).filter(prop => prop);
+
+      // Agregar !important a cada propiedad que no lo tenga
+      const importantProps = properties.map(prop => {
+        if (!prop.includes('!important') && prop.includes(':')) {
+          const [property, ...valueParts] = prop.split(':');
+          const value = valueParts.join(':').trim(); // Por si el valor tiene ':'
+          const newProp = `${property.trim()}:${value} !important`;
+          return newProp;
+        }
+        return prop;
+      });
+
+      const result = `#${id}{${importantProps.join(';')};}`;
+      return result;
+    });
+
+    return modifiedCss;
+  }
+
 
   // === EVENTOS PARA RASTREAR CAMBIOS DE ESTILOS ===
 
@@ -4109,28 +4516,18 @@ function initializeEditor() {
 
   // Evento cuando cambia el estilo de un componente específico
   editor.on('component:styleUpdate', function (component) {
+    // ✅ Validar que component existe y tiene los métodos necesarios ANTES de hacer nada
+    if (!component || typeof component.getId !== 'function') {
+      console.warn('⚠️ [StyleUpdateHandler] Component inválido o sin método getId()');
+      return;
+    }
+    
     const componentId = component.getId();
     const styles = component.getStyle();
 
     // CSS se genera automáticamente por GrapesJS
   });
 
-  // Evento cuando se añade una regla CSS
-  // Log deshabilitado para reducir ruido en consola
-  // editor.on('style:custom', function(props) {
-  //   console.log('📝 REGLA CSS AÑADIDA:', props);
-  // });
-
-  // Listener para detectar cambios en el StyleManager
-  // Log deshabilitado para reducir ruido en consola
-  // editor.on('style:target', function(target) {
-  //   console.log('🎯 TARGET DE ESTILOS CAMBIADO:', {
-  //     target: target,
-  //     selector: target?.getSelectors?.().map(s => s.get('name'))
-  //   });
-  // });
-
-  // Listener para cambios en las propiedades del StyleManager
   try {
     const sectors = editor.StyleManager.getSectors();
     sectors.each(sector => {
@@ -4152,19 +4549,8 @@ function initializeEditor() {
               label: s.get('label')
             }));
 
-            // Log deshabilitado para reducir ruido en consola
-            // console.log('💅 PROPIEDAD DE ESTILO MODIFICADA:', {
-            //   propiedad: propertyName,
-            //   valorNuevo: propertyValue,
-            //   componente: selected.get('type'),
-            //   componenteId: componentId,
-            //   cantidadSelectores: selectors?.length || 0,
-            //   selectoresDetallados: selectorDetails,
-            //   estilosActuales: selected.getStyle ? selected.getStyle() : {}
-            // });
 
-            // FORZAR APLICACIÓN DEL ESTILO DIRECTAMENTE AL CSS CON EL ID  
-            // Usar !important para sobrescribir estilos de Tailwind
+
             if (componentId && propertyName && propertyValue) {
               try {
                 // Obtener o crear la regla CSS para este ID
@@ -4254,24 +4640,9 @@ function initializeEditor() {
     console.warn('⚠️ No se pudieron configurar los listeners de propiedades:', error);
   }
 
-  // Cargar contenido existente si existe
-  const existingHtml = document.getElementById('page-html-content')?.value;
-  const existingCss = document.getElementById('page-css-content')?.value;
-
-  // Función para decodificar entidades HTML
-  function decodeHtml(html) {
-    const txt = document.createElement('textarea');
-    txt.innerHTML = html;
-    return txt.value;
-  }
-
-  if (existingHtml && existingCss) {
-    editor.setComponents(decodeHtml(existingHtml));
-    editor.setStyle(decodeHtml(existingCss));
-  } else if (existingHtml) {
-    editor.setComponents(decodeHtml(existingHtml));
-  }
-
+  // ✅ MOVIDO: La carga de contenido ahora ocurre dentro del evento 'load' del editor
+  // Ver la función loadExistingContent() que se llama dentro de editor.on('load')
+  
   // Sincronizar imágenes después de cargar el contenido
   if (typeof ImageSync !== 'undefined' && ImageSync.syncAfterLoad) {
     ImageSync.syncAfterLoad(editor);
@@ -4497,114 +4868,7 @@ function initializeEditor() {
     }, 150);
   });
 
-  // Listener para cuando se selecciona un componente - actualizar etiquetas
-  editor.on('component:selected', function (component) {
-    // ✅ Asegurar que los traits del componente de imagen se apliquen correctamente
-    if (component && component.get('type') === 'image') {
-      console.log('🖼️ Componente de imagen seleccionado, verificando traits...');
-
-      // Obtener los traits del componente registrado
-      const imageComponentType = editor.DomComponents.getType('image');
-      if (imageComponentType && imageComponentType.model && imageComponentType.model.defaults && imageComponentType.model.defaults.traits) {
-        const registeredTraits = imageComponentType.model.defaults.traits;
-
-        // Verificar si el componente tiene los traits correctos
-        const currentTraits = component.get('traits') || [];
-        const hasButtonTrait = currentTraits.some(t => {
-          const traitName = typeof t === 'object' && t.name ? t.name : (typeof t === 'string' ? t : null);
-          return traitName === 'select-image-gallery';
-        });
-
-        // Si no tiene el botón, forzar la actualización de los traits
-        if (!hasButtonTrait && registeredTraits.length > 0) {
-          console.log('⚠️ El componente de imagen no tiene el botón de galería, actualizando traits...');
-
-          // Establecer los traits desde el componente registrado
-          component.set('traits', registeredTraits, { silent: false });
-
-          // Forzar actualización del TraitManager
-          setTimeout(() => {
-            if (editor.TraitManager) {
-              if (typeof editor.TraitManager.setTarget === 'function') {
-                editor.TraitManager.setTarget(component);
-              }
-              editor.TraitManager.render();
-
-              // Verificar que se renderizó el botón
-              setTimeout(() => {
-                const buttonTrait = document.querySelector('.traits-container [data-trait-name="select-image-gallery"]');
-                if (buttonTrait) {
-                  console.log('✅ Botón de galería renderizado correctamente');
-                } else {
-                  console.warn('⚠️ El botón de galería no se renderizó, intentando método alternativo...');
-                  // Intentar renderizar nuevamente
-                  editor.TraitManager.render();
-                }
-              }, 100);
-            }
-          }, 150);
-        } else {
-          console.log('✅ El componente de imagen ya tiene los traits correctos');
-        }
-      }
-    }
-
-    // ✅ Asegurar que los traits del componente de contenedor se apliquen correctamente
-    if (component && component.get('type') === 'container') {
-      console.log('📦 Componente de contenedor seleccionado, verificando traits...');
-
-      // Obtener los traits del componente registrado
-      const containerComponentType = editor.DomComponents.getType('container');
-      if (containerComponentType && containerComponentType.model && containerComponentType.model.defaults && containerComponentType.model.defaults.traits) {
-        const registeredTraits = containerComponentType.model.defaults.traits;
-
-        // Verificar si el componente tiene los traits correctos
-        const currentTraits = component.get('traits') || [];
-        const hasLayoutModeTrait = currentTraits.some(t => {
-          const traitName = typeof t === 'object' && t.name ? t.name : (typeof t === 'string' ? t : null);
-          return traitName === 'container-layout-mode';
-        });
-
-        // Si no tiene el trait de modo de layout, forzar la actualización de los traits
-        if (!hasLayoutModeTrait && registeredTraits.length > 0) {
-          console.log('⚠️ El componente de contenedor no tiene todos los traits, actualizando...');
-
-          // Establecer los traits desde el componente registrado
-          component.set('traits', registeredTraits, { silent: false });
-
-          // Forzar actualización del TraitManager
-          setTimeout(() => {
-            if (editor.TraitManager) {
-              if (typeof editor.TraitManager.setTarget === 'function') {
-                editor.TraitManager.setTarget(component);
-              }
-              editor.TraitManager.render();
-
-              // Verificar que se renderizaron los traits
-              setTimeout(() => {
-                const traitsRendered = document.querySelectorAll('.traits-container .gjs-trt-trait').length;
-                if (traitsRendered >= 10) {
-                  console.log('✅ Traits del contenedor renderizados correctamente:', traitsRendered);
-                } else {
-                  console.warn('⚠️ No se renderizaron todos los traits, intentando método alternativo...');
-                  // Intentar renderizar nuevamente
-                  editor.TraitManager.render();
-                }
-              }, 100);
-            }
-          }, 150);
-        } else {
-          console.log('✅ El componente de contenedor ya tiene los traits correctos');
-        }
-      }
-    }
-
-    setTimeout(() => {
-      if (typeof window.updateTraitLabelsForDevice === 'function') {
-        window.updateTraitLabelsForDevice();
-      }
-    }, 200);
-  });
+  // ⚠️ ELIMINADO: Los listeners duplicados fueron consolidados en el handler anterior
 
   // Función para forzar actualización de managers
   window.updateManagers = function () {
@@ -4661,11 +4925,275 @@ function initializeEditor() {
     return modifiedCss;
   }
 
+  // ✅ Sincronizar direcciones responsive en contenedores antes de guardar
+  function applyContainerDirectionsBeforeSave(editor) {
+    try {
+      const wrapper = editor.DomComponents.getWrapper();
+      if (!wrapper) return;
+
+      const originalClasses = new Map();
+
+      const allComponents = wrapper.find('*');
+      const normalizeDir = (val) => (val || '').replace(/^md:/, '').replace(/^lg:/, '').replace(/^sm:/, '');
+      const isDirClass = (cls) => /^flex-(row|col)(-reverse)?$/.test(cls) ||
+                 /^md:flex-(row|col)(-reverse)?$/.test(cls) ||
+                 /^lg:flex-(row|col)(-reverse)?$/.test(cls);
+
+      allComponents.forEach(comp => {
+        if (!comp || typeof comp.get !== 'function' || comp.get('type') !== 'container') return;
+
+        const attrs = comp.getAttributes ? comp.getAttributes() : {};
+        const currentClass = (comp.view && comp.view.el && comp.view.el.className) ? comp.view.el.className : (attrs.class || '');
+
+        // Guardar clase original para restaurar después
+        originalClasses.set(comp, currentClass);
+        const classes = currentClass.split(/\s+/).filter(Boolean);
+        const baseClasses = classes.filter(c => !isDirClass(c));
+
+        const desktopDirRaw = normalizeDir(comp.get('container-direction'));
+        const tabletDirRaw = normalizeDir(comp.get('container-direction-tablet'));
+        const mobileDirRaw = normalizeDir(comp.get('container-direction-mobile'));
+
+        // ✅ Solo emitir clases cuando el usuario configuró explícitamente el valor
+        const finalClasses = new Set(baseClasses);
+        if (mobileDirRaw) finalClasses.add(mobileDirRaw);
+        if (tabletDirRaw) finalClasses.add(`md:${tabletDirRaw}`);
+        if (desktopDirRaw) finalClasses.add(`lg:${desktopDirRaw}`);
+
+        const newClass = Array.from(finalClasses).join(' ').replace(/\s+/g, ' ').trim();
+        
+        // ✅ NUEVO: Asegurar que se guarden en los atributos internos de GrapesJS
+        comp.addAttributes({ class: newClass });
+        
+        // ✅ NUEVO: Forzar actualización del elemento del DOM
+        if (comp.view && comp.view.el) {
+          comp.view.el.className = newClass;
+          // Hacer que GrapesJS lea las clases del DOM
+          comp.view.el.setAttribute('class', newClass);
+        }
+      });
+      
+      // Retornar función para restaurar clases originales
+      return () => {
+        originalClasses.forEach((cls, comp) => {
+          if (!comp) return;
+          comp.addAttributes({ class: cls });
+          if (comp.view && comp.view.el) {
+            comp.view.el.className = cls;
+            comp.view.el.setAttribute('class', cls);
+          }
+        });
+      };
+    } catch (e) {
+      console.warn('⚠️ [Save] Error sincronizando direcciones de contenedores:', e);
+    }
+  }
+
+  // ✅ NUEVO: Reconstruir clases de alineación en el HTML basándose en el modelo de GrapesJS
+  function addAlignmentClassesToHTML(html, editor) {
+    try {
+      const wrapper = editor.DomComponents.getWrapper();
+      if (!wrapper) return html;
+
+      const containers = wrapper.find('*').filter(c => c.get('type') === 'container');
+      let modifiedHTML = html;
+
+      containers.forEach((container) => {
+        const containerID = container.getId && container.getId() ? container.getId() : container.get('id');
+        if (!containerID) return;
+
+        // Obtener propiedades de alineación del modelo
+        const align = container.get('container-align');
+        const justify = container.get('container-justify');
+        
+        // También intentar leer del atributo class si existe
+        const currentClass = (container.view && container.view.el && container.view.el.className) || '';
+        const modelClass = container.getAttributes?.()?.class || '';
+        const fullClass = currentClass || modelClass;
+        
+        // Buscar clases de alineación en el HTML actual
+        const alignInHTML = fullClass.match(/items-(start|center|end|stretch|baseline)/)?.[0];
+        const justifyInHTML = fullClass.match(/justify-(start|center|end|between|around|evenly)/)?.[0];
+        
+        // Prioridad: usar lo del DOM si existe, sino del modelo
+        const alignClass = alignInHTML || align || '';
+        const justifyClass = justifyInHTML || justify || '';
+
+        // Buscar el div con este ID
+        const divRegex = new RegExp(`(<div[^>]*id="[^"]*${containerID}[^"]*"[^>]*class=")([^"]*)(")`, 'gi');
+        
+        if (alignClass || justifyClass) {
+          modifiedHTML = modifiedHTML.replace(divRegex, function(match, prefix, classes, suffix) {
+            let newClasses = classes.split(/\s+/).filter(Boolean);
+            
+            // Remover clases antiguas de alineación
+            newClasses = newClasses.filter(c => !/(items|justify)-(start|center|end|stretch|between|around|evenly)/.test(c));
+            
+            // Agregar nuevas (prioridad a lo que está en el DOM)
+            if (alignClass) newClasses.push(alignClass);
+            if (justifyClass) newClasses.push(justifyClass);
+            
+            console.log(`  [Container ${containerID}] Clases de alineación:`, { alignClass, justifyClass });
+            
+            return prefix + newClasses.join(' ') + suffix;
+          });
+        }
+      });
+
+      console.log('✅ [Save] Clases de alineación procesadas en HTML');
+      return modifiedHTML;
+    } catch (e) {
+      console.warn('⚠️ [Save] Error añadiendo clases de alineación:', e);
+      return html;
+    }
+  }
+
+  // ✅ NUEVO: Limpiar HTML de clases de desarrollo (gjs-*) y espacios malformados
+  function cleanHTMLBeforeSave(html) {
+    if (!html) return html;
+    
+    let cleaned = html;
+    
+    // Remover clases de desarrollo de GrapesJS
+    cleaned = cleaned.replace(/\s+gjs-\w+/g, '');
+    cleaned = cleaned.replace(/gjs-\w+\s+/g, '');
+    cleaned = cleaned.replace(/gjs-\w+/g, '');
+    
+    // Remover espacios extra en atributos de clase
+    cleaned = cleaned.replace(/class="\s+/g, 'class="');
+    cleaned = cleaned.replace(/\s+"/g, '"');
+    
+    // Limpiar clases vacías o solo espacios
+    cleaned = cleaned.replace(/class="\s*"/g, '');
+    
+    // Normalizar espacios múltiples en valores de clase
+    cleaned = cleaned.replace(/class="([^"]*)"/g, function(match, classes) {
+      const normalized = classes.split(/\s+/).filter(c => c).join(' ').trim();
+      return normalized ? 'class="' + normalized + '"' : '';
+    });
+    
+    console.log('🧹 [Save] HTML limpiado de clases de desarrollo');
+    return cleaned;
+  }
+
+  // ✅ NUEVO: Agregar !important a clases de alineación para que tengan prioridad
+  function addImportantToAlignmentClasses(css) {
+    if (!css) return css;
+    
+    let modified = css;
+    
+    // Agregar !important a propiedades de justify-content
+    modified = modified.replace(/\.justify-(start|center|end|between|around|evenly)\s*{([^}]*)justify-content:\s*([^;]+);/g, function(match, align, before, value) {
+      return `.justify-${align} {${before}justify-content: ${value} !important;`;
+    });
+    
+    // Agregar !important a propiedades de align-items
+    modified = modified.replace(/\.items-(start|center|end|stretch|baseline)\s*{([^}]*)align-items:\s*([^;]+);/g, function(match, align, before, value) {
+      return `.items-${align} {${before}align-items: ${value} !important;`;
+    });
+    
+    console.log('✅ [Save] !important agregado a clases de alineación');
+    return modified;
+  }
+
+  // ✅ Normalizar clases mal formadas antes de guardar
+  function normalizeResponsiveClassesBeforeSave(editor) {
+    const classFixMap = {
+      'p--10px-': 'p-[10px]',
+      'min-h--360px-': 'min-h-[360px]',
+      'min-h--200px-': 'min-h-[200px]',
+      'w--full-': 'w-full',
+      'h--auto-': 'h-auto',
+      'md-flex-row': 'md:flex-row',
+      'p--4-': 'p-4',
+      'py--16-': 'py-16'
+    };
+
+    const wrapper = editor.DomComponents.getWrapper();
+    if (!wrapper) return;
+
+    const allComponents = wrapper.find('*');
+    allComponents.forEach(comp => {
+      const attrs = comp.getAttributes ? comp.getAttributes() : {};
+      const currentClass = (comp.view && comp.view.el && comp.view.el.className) ? comp.view.el.className : (attrs.class || '');
+      if (!currentClass) return;
+
+      let newClass = String(currentClass);
+      Object.keys(classFixMap).forEach((wrongClass) => {
+        if (newClass.includes(wrongClass)) {
+          // ✅ CASO ESPECIAL: Si es padding corrupto (p--10px-), verificar si ya hay otro padding
+          if (wrongClass === 'p--10px-') {
+            // Verificar si ya hay otra clase de padding válida (p-0, p-2, p-4, etc.)
+            const hasPadding = newClass.match(/\bp-(\d+|\[[\d]+px\])\b/);
+            if (hasPadding) {
+              // Ya tiene padding válido, solo remover el corrupto
+              newClass = newClass.split(wrongClass).join('');
+              console.log('⚠️ [Save] Padding corrupto removido (ya existe padding válido):', hasPadding[0]);
+              return; // No reemplazar por p-[10px]
+            }
+          }
+          
+          // Reemplazo normal para clases corruptas
+          newClass = newClass.split(wrongClass).join(classFixMap[wrongClass]);
+        }
+      });
+
+      // Limpiar espacios múltiples
+      newClass = newClass.replace(/\s+/g, ' ').trim();
+
+      if (newClass !== currentClass) {
+        comp.addAttributes({ class: newClass });
+        if (comp.view && comp.view.el) {
+          comp.view.el.className = newClass;
+        }
+      }
+    });
+  }
+
+  // ✅ NUEVO: Sincronizar clases de alineación desde el DOM al modelo antes de exportar
+  function syncAlignmentClassesBeforeSave(editor) {
+    try {
+      const wrapper = editor.DomComponents.getWrapper();
+      if (!wrapper) return;
+
+      const allComponents = wrapper.find('*');
+      allComponents.forEach(comp => {
+        if (!comp || !comp.view || !comp.view.el) return;
+
+        // Leer clases actuales del elemento DOM
+        const domClasses = comp.view.el.className || '';
+        
+        // Si el elemento del DOM tiene clases que no están en el modelo, sincronizar
+        const attrs = comp.getAttributes ? comp.getAttributes() : {};
+        const modelClasses = attrs.class || '';
+        
+        if (domClasses !== modelClasses && domClasses) {
+          console.log('🔄 [Sync] Sincronizando clases del DOM al modelo:', {
+            elemento: comp.view.el.tagName,
+            antes: modelClasses,
+            ahora: domClasses
+          });
+          comp.addAttributes({ class: domClasses });
+        }
+      });
+    } catch (e) {
+      console.warn('⚠️ [Save] Error sincronizando clases de alineación:', e);
+    }
+  }
+
   // Configurar botón de guardar
-  document.getElementById('save-btn')?.addEventListener('click', function () {
+  const handleSaveClick = function () {
+    console.log('💾 [Save] Botón Guardar presionado');
     // Antes de obtener el HTML, asegurar que todos los componentes con estilos personalizados
     // tengan sus estilos aplicados como inline
-    const allComponents = editor.DomComponents.getWrapper().find('*');
+    const wrapperForSave = editor.DomComponents.getWrapper();
+    if (!wrapperForSave) {
+      console.error('❌ [Save] Wrapper no disponible, el editor aún no está listo');
+      alert('El editor aún se está cargando. Intenta guardar en unos segundos.');
+      return;
+    }
+
+    const allComponents = wrapperForSave.find('*');
 
     allComponents.forEach(comp => {
       const compId = comp.getId();
@@ -4731,319 +5259,384 @@ function initializeEditor() {
 
     // ✅ Esperar un momento para que ImageSync procese todos los cambios antes de obtener el HTML
     setTimeout(() => {
-      // ✅ CRÍTICO: Sincronizar imágenes de Image Box Advanced antes de guardar
-      const syncImageBoxAdvancedBeforeSave = () => {
-        const allComponents = editor.getComponents();
-        const findImageBoxAdvanced = (components) => {
-          if (components && typeof components.forEach === 'function') {
-            components.forEach((component) => {
-              if (component && component.get && component.get('type') === 'image-box-advanced') {
-                const imageUrl = component.get('image-url');
-                const defaultImageUrl = '/images/default-image.jpg';
-
-                // Forzar actualización del componente img interno
-                if (typeof component.updateImage === 'function') {
-                  component.updateImage();
-                }
-
-                // Asegurar que el componente img tenga el src correcto
-                const findImage = (comp) => {
-                  if (comp.get('tagName') === 'img') {
-                    return comp;
-                  }
-                  let found = null;
-                  comp.components().each(child => {
-                    if (!found) {
-                      found = findImage(child);
-                    }
-                  });
-                  return found;
-                };
-
-                const imgComponent = findImage(component);
-                if (imgComponent) {
-                  const finalSrc = (imageUrl && imageUrl !== defaultImageUrl) ? imageUrl : defaultImageUrl;
-
-                  // Actualizar atributos del modelo
-                  imgComponent.setAttributes({ src: finalSrc });
-
-                  // Actualizar modelo
-                  if (imgComponent.get('src') !== finalSrc) {
-                    imgComponent.set('src', finalSrc, { silent: true });
-                  }
-
-                  // Actualizar DOM
-                  if (imgComponent.view && imgComponent.view.el) {
-                    imgComponent.view.el.src = finalSrc;
-                    imgComponent.view.el.setAttribute('src', finalSrc);
-                  }
-
-                  // Actualizar también el DOM del contenedor
-                  if (component.view && component.view.el) {
-                    const img = component.view.el.querySelector('img');
-                    if (img) {
-                      img.src = finalSrc;
-                      img.setAttribute('src', finalSrc);
-                    }
-                  }
-                }
-              }
-
-              if (component && component.components) {
-                const childComponents = component.components();
-                if (childComponents) {
-                  findImageBoxAdvanced(childComponents);
-                }
-              }
-            });
-          }
-        };
-
-        findImageBoxAdvanced(allComponents);
+      const safeReplace = (oldEl, newEl) => {
+        if (oldEl && oldEl.parentNode) {
+          oldEl.parentNode.replaceChild(newEl, oldEl);
+        }
       };
 
-      // Sincronizar antes de obtener el HTML
-      syncImageBoxAdvancedBeforeSave();
+      try {
+        // ✅ CRÍTICO: Sincronizar imágenes de Image Box Advanced antes de guardar
+        const syncImageBoxAdvancedBeforeSave = () => {
+          const allComponents = editor.getComponents();
+          const findImageBoxAdvanced = (components) => {
+            if (components && typeof components.forEach === 'function') {
+              components.forEach((component) => {
+                if (component && component.get && component.get('type') === 'image-box-advanced') {
+                  const imageUrl = component.get('image-url');
+                  const defaultImageUrl = '/images/default-image.jpg';
 
-      // ✅ CRÍTICO: Sincronizar Background Image antes de guardar
-      const syncBackgroundImageBeforeSave = () => {
-        console.log('💾 [Save] syncBackgroundImageBeforeSave() llamado');
-        const allComponents = editor.getComponents();
-        const findBackgroundImage = (components) => {
-          if (components && typeof components.forEach === 'function') {
-            components.forEach((component) => {
-              if (component && component.get && component.get('type') === 'background-image') {
-                console.log('✅ [Save] Background Image encontrado, sincronizando...');
-                // Asegurar que los valores de los traits estén sincronizados con el DOM
-                if (component.view && component.view.el) {
-                  console.log('✅ [Save] view.el encontrado para Background Image');
-                  const titleEl = component.view.el.querySelector('h2');
-                  const textEl = component.view.el.querySelector('p');
-                  const buttonEl = component.view.el.querySelector('button, a');
-
-                  console.log('🔍 [Save] Elementos encontrados:', {
-                    titleEl: !!titleEl,
-                    textEl: !!textEl,
-                    buttonEl: !!buttonEl
-                  });
-
-                  // ✅ CRÍTICO: Primero obtener el valor del modelo (puede estar más actualizado que el DOM)
-                  const modelTitle = component.get('content-title');
-                  const modelText = component.get('content-text');
-                  const modelButtonText = component.get('button-text');
-                  const modelButtonLink = component.get('button-link');
-
-                  console.log('📊 [Save] Valores del modelo:', {
-                    title: modelTitle,
-                    text: modelText,
-                    buttonText: modelButtonText,
-                    buttonLink: modelButtonLink
-                  });
-
-                  // Sincronizar título - PRIORIDAD AL MODELO
-                  const titleText = modelTitle || (titleEl ? (titleEl.textContent || titleEl.innerText || '') : '');
-                  console.log('📝 [Save] Título final a usar:', titleText);
-                  if (titleText && titleText.trim()) {
-                    component.set('content-title', titleText.trim(), { silent: true });
-                    console.log('✅ [Save] Título sincronizado en modelo');
-                    // Asegurar que el componente h2 tenga el contenido correcto
-                    const findTitle = (comp) => {
-                      if (comp.get('tagName') === 'h2') return comp;
-                      let found = null;
-                      comp.components().each(child => {
-                        if (!found) found = findTitle(child);
-                      });
-                      return found;
-                    };
-                    const titleComponent = findTitle(component);
-                    if (titleComponent) {
-                      titleComponent.set('content', titleText.trim());
-                      console.log('✅ [Save] Componente h2 actualizado con:', titleText.trim());
-                      // Actualizar también el DOM directamente
-                      if (titleComponent.view && titleComponent.view.el) {
-                        titleComponent.view.el.textContent = titleText.trim();
-                      }
-                    }
-                    // Actualizar también el DOM del contenedor
-                    if (titleEl) {
-                      titleEl.textContent = titleText.trim();
-                    }
+                  // Forzar actualización del componente img interno
+                  if (typeof component.updateImage === 'function') {
+                    component.updateImage();
                   }
 
-                  // Sincronizar texto - PRIORIDAD AL MODELO
-                  const textContent = modelText || (textEl ? (textEl.textContent || textEl.innerText || '') : '');
-                  console.log('📝 [Save] Texto final a usar:', textContent);
-                  if (textContent && textContent.trim()) {
-                    component.set('content-text', textContent.trim(), { silent: true });
-                    console.log('✅ [Save] Texto sincronizado en modelo');
-                    const findText = (comp) => {
-                      if (comp.get('tagName') === 'p') return comp;
-                      let found = null;
-                      comp.components().each(child => {
-                        if (!found) found = findText(child);
-                      });
-                      return found;
-                    };
-                    const textComponent = findText(component);
-                    if (textComponent) {
-                      textComponent.set('content', textContent.trim());
-                      console.log('✅ [Save] Componente p actualizado con:', textContent.trim());
-                      // Actualizar también el DOM directamente
-                      if (textComponent.view && textComponent.view.el) {
-                        textComponent.view.el.textContent = textContent.trim();
-                      }
-                    } else {
-                      console.warn('⚠️ [Save] No se encontró componente p');
+                  // Asegurar que el componente img tenga el src correcto
+                  const findImage = (comp) => {
+                    if (comp.get('tagName') === 'img') {
+                      return comp;
                     }
+                    let found = null;
+                    comp.components().each(child => {
+                      if (!found) {
+                        found = findImage(child);
+                      }
+                    });
+                    return found;
+                  };
+
+                  const imgComponent = findImage(component);
+                  if (imgComponent) {
+                    const finalSrc = (imageUrl && imageUrl !== defaultImageUrl) ? imageUrl : defaultImageUrl;
+
+                    // Actualizar atributos del modelo
+                    imgComponent.setAttributes({ src: finalSrc });
+
+                    // Actualizar modelo
+                    if (imgComponent.get('src') !== finalSrc) {
+                      imgComponent.set('src', finalSrc, { silent: true });
+                    }
+
+                    // Actualizar DOM
+                    if (imgComponent.view && imgComponent.view.el) {
+                      imgComponent.view.el.src = finalSrc;
+                      imgComponent.view.el.setAttribute('src', finalSrc);
+                    }
+
                     // Actualizar también el DOM del contenedor
-                    if (textEl) {
-                      textEl.textContent = textContent.trim();
+                    if (component.view && component.view.el) {
+                      const img = component.view.el.querySelector('img');
+                      if (img) {
+                        img.src = finalSrc;
+                        img.setAttribute('src', finalSrc);
+                      }
                     }
                   }
+                }
 
-                  // Sincronizar botón - PRIORIDAD AL MODELO
-                  const buttonText = modelButtonText || (buttonEl ? (buttonEl.textContent || buttonEl.innerText || '') : '');
-                  const buttonLink = modelButtonLink || (buttonEl ? (buttonEl.getAttribute('href') || '#') : '#');
-                  console.log('📝 [Save] Botón texto final a usar:', buttonText);
-                  console.log('📝 [Save] Botón href final a usar:', buttonLink);
+                if (component && component.components) {
+                  const childComponents = component.components();
+                  if (childComponents) {
+                    findImageBoxAdvanced(childComponents);
+                  }
+                }
+              });
+            }
+          };
 
-                  if (buttonText && buttonText.trim()) {
-                    component.set('button-text', buttonText.trim(), { silent: true });
-                    component.set('button-link', buttonLink, { silent: true });
-                    console.log('✅ [Save] Botón sincronizado en modelo');
-                    const findButton = (comp) => {
-                      if (comp.get('tagName') === 'button' || comp.get('tagName') === 'a') return comp;
-                      let found = null;
-                      comp.components().each(child => {
-                        if (!found) found = findButton(child);
-                      });
-                      return found;
-                    };
-                    const buttonComponent = findButton(component);
-                    if (buttonComponent) {
-                      buttonComponent.set('content', buttonText.trim());
-                      console.log('✅ [Save] Componente button/a actualizado con:', buttonText.trim());
+          findImageBoxAdvanced(allComponents);
+        };
 
-                      // Manejar conversión entre button y a según el enlace
-                      if (buttonLink && buttonLink !== '#' && buttonLink.trim() !== '') {
-                        if (buttonComponent.get('tagName') === 'button') {
-                          buttonComponent.set('tagName', 'a');
-                          buttonComponent.setAttributes({
-                            ...buttonComponent.getAttributes(),
-                            href: buttonLink
-                          });
-                          console.log('✅ [Save] Botón convertido a enlace con href:', buttonLink);
-                        } else {
-                          buttonComponent.setAttributes({
-                            ...buttonComponent.getAttributes(),
-                            href: buttonLink
-                          });
-                          console.log('✅ [Save] Enlace actualizado con href:', buttonLink);
+        // Sincronizar antes de obtener el HTML
+        syncImageBoxAdvancedBeforeSave();
+
+        // ✅ CRÍTICO: Sincronizar Background Image antes de guardar
+        const syncBackgroundImageBeforeSave = () => {
+          console.log('💾 [Save] syncBackgroundImageBeforeSave() llamado');
+          const allComponents = editor.getComponents();
+          const findBackgroundImage = (components) => {
+            if (components && typeof components.forEach === 'function') {
+              components.forEach((component) => {
+                if (component && component.get && component.get('type') === 'background-image') {
+                  console.log('✅ [Save] Background Image encontrado, sincronizando...');
+                  // Asegurar que los valores de los traits estén sincronizados con el DOM
+                  if (component.view && component.view.el) {
+                    console.log('✅ [Save] view.el encontrado para Background Image');
+                    const titleEl = component.view.el.querySelector('h2');
+                    const textEl = component.view.el.querySelector('p');
+                    const buttonEl = component.view.el.querySelector('button, a');
+
+                    console.log('🔍 [Save] Elementos encontrados:', {
+                      titleEl: !!titleEl,
+                      textEl: !!textEl,
+                      buttonEl: !!buttonEl
+                    });
+
+                    // ✅ CRÍTICO: Primero obtener el valor del modelo (puede estar más actualizado que el DOM)
+                    const modelTitle = component.get('content-title');
+                    const modelText = component.get('content-text');
+                    const modelButtonText = component.get('button-text');
+                    const modelButtonLink = component.get('button-link');
+
+                    console.log('📊 [Save] Valores del modelo:', {
+                      title: modelTitle,
+                      text: modelText,
+                      buttonText: modelButtonText,
+                      buttonLink: modelButtonLink
+                    });
+
+                    // Sincronizar título - PRIORIDAD AL MODELO
+                    const titleText = modelTitle || (titleEl ? (titleEl.textContent || titleEl.innerText || '') : '');
+                    console.log('📝 [Save] Título final a usar:', titleText);
+                    if (titleText && titleText.trim()) {
+                      component.set('content-title', titleText.trim(), { silent: true });
+                      console.log('✅ [Save] Título sincronizado en modelo');
+                      // Asegurar que el componente h2 tenga el contenido correcto
+                      const findTitle = (comp) => {
+                        if (comp.get('tagName') === 'h2') return comp;
+                        let found = null;
+                        comp.components().each(child => {
+                          if (!found) found = findTitle(child);
+                        });
+                        return found;
+                      };
+                      const titleComponent = findTitle(component);
+                      if (titleComponent) {
+                        titleComponent.set('content', titleText.trim());
+                        console.log('✅ [Save] Componente h2 actualizado con:', titleText.trim());
+                        // Actualizar también el DOM directamente
+                        if (titleComponent.view && titleComponent.view.el) {
+                          titleComponent.view.el.textContent = titleText.trim();
+                        }
+                      }
+                      // Actualizar también el DOM del contenedor
+                      if (titleEl) {
+                        titleEl.textContent = titleText.trim();
+                      }
+                    }
+
+                    // Sincronizar texto - PRIORIDAD AL MODELO
+                    const textContent = modelText || (textEl ? (textEl.textContent || textEl.innerText || '') : '');
+                    console.log('📝 [Save] Texto final a usar:', textContent);
+                    if (textContent && textContent.trim()) {
+                      component.set('content-text', textContent.trim(), { silent: true });
+                      console.log('✅ [Save] Texto sincronizado en modelo');
+                      const findText = (comp) => {
+                        if (comp.get('tagName') === 'p') return comp;
+                        let found = null;
+                        comp.components().each(child => {
+                          if (!found) found = findText(child);
+                        });
+                        return found;
+                      };
+                      const textComponent = findText(component);
+                      if (textComponent) {
+                        textComponent.set('content', textContent.trim());
+                        console.log('✅ [Save] Componente p actualizado con:', textContent.trim());
+                        // Actualizar también el DOM directamente
+                        if (textComponent.view && textComponent.view.el) {
+                          textComponent.view.el.textContent = textContent.trim();
                         }
                       } else {
-                        if (buttonComponent.get('tagName') === 'a') {
-                          buttonComponent.set('tagName', 'button');
-                          const attrs = buttonComponent.getAttributes();
-                          delete attrs.href;
-                          buttonComponent.setAttributes(attrs);
-                          console.log('✅ [Save] Enlace convertido a botón');
+                        console.warn('⚠️ [Save] No se encontró componente p');
+                      }
+                      // Actualizar también el DOM del contenedor
+                      if (textEl) {
+                        textEl.textContent = textContent.trim();
+                      }
+                    }
+
+                    // Sincronizar botón - PRIORIDAD AL MODELO
+                    const buttonText = modelButtonText || (buttonEl ? (buttonEl.textContent || buttonEl.innerText || '') : '');
+                    const buttonLink = modelButtonLink || (buttonEl ? (buttonEl.getAttribute('href') || '#') : '#');
+                    console.log('📝 [Save] Botón texto final a usar:', buttonText);
+                    console.log('📝 [Save] Botón href final a usar:', buttonLink);
+
+                    if (buttonText && buttonText.trim()) {
+                      component.set('button-text', buttonText.trim(), { silent: true });
+                      component.set('button-link', buttonLink, { silent: true });
+                      console.log('✅ [Save] Botón sincronizado en modelo');
+                      const findButton = (comp) => {
+                        if (comp.get('tagName') === 'button' || comp.get('tagName') === 'a') return comp;
+                        let found = null;
+                        comp.components().each(child => {
+                          if (!found) found = findButton(child);
+                        });
+                        return found;
+                      };
+                      const buttonComponent = findButton(component);
+                      if (buttonComponent) {
+                        buttonComponent.set('content', buttonText.trim());
+                        console.log('✅ [Save] Componente button/a actualizado con:', buttonText.trim());
+
+                        // Manejar conversión entre button y a según el enlace
+                        if (buttonLink && buttonLink !== '#' && buttonLink.trim() !== '') {
+                          if (buttonComponent.get('tagName') === 'button') {
+                            buttonComponent.set('tagName', 'a');
+                            buttonComponent.setAttributes({
+                              ...buttonComponent.getAttributes(),
+                              href: buttonLink
+                            });
+                            console.log('✅ [Save] Botón convertido a enlace con href:', buttonLink);
+                          } else {
+                            buttonComponent.setAttributes({
+                              ...buttonComponent.getAttributes(),
+                              href: buttonLink
+                            });
+                            console.log('✅ [Save] Enlace actualizado con href:', buttonLink);
+                          }
+                        } else {
+                          if (buttonComponent.get('tagName') === 'a') {
+                            buttonComponent.set('tagName', 'button');
+                            const attrs = buttonComponent.getAttributes();
+                            delete attrs.href;
+                            buttonComponent.setAttributes(attrs);
+                            console.log('✅ [Save] Enlace convertido a botón');
+                          }
                         }
+
+                        // Actualizar también el DOM directamente
+                        if (buttonComponent.view && buttonComponent.view.el) {
+                          buttonComponent.view.el.textContent = buttonText.trim();
+                          if (buttonLink && buttonLink !== '#' && buttonLink.trim() !== '') {
+                            if (buttonComponent.view.el.tagName === 'BUTTON') {
+                              const newLink = document.createElement('a');
+                              newLink.href = buttonLink;
+                              newLink.className = buttonComponent.view.el.className;
+                              newLink.textContent = buttonText.trim();
+                              safeReplace(buttonComponent.view.el, newLink);
+                              buttonComponent.view.el = newLink;
+                            } else {
+                              buttonComponent.view.el.setAttribute('href', buttonLink);
+                            }
+                          } else {
+                            if (buttonComponent.view.el.tagName === 'A') {
+                              const newButton = document.createElement('button');
+                              newButton.className = buttonComponent.view.el.className;
+                              newButton.textContent = buttonText.trim();
+                              safeReplace(buttonComponent.view.el, newButton);
+                              buttonComponent.view.el = newButton;
+                            }
+                          }
+                        }
+                      } else {
+                        console.warn('⚠️ [Save] No se encontró componente button/a');
                       }
 
-                      // Actualizar también el DOM directamente
-                      if (buttonComponent.view && buttonComponent.view.el) {
-                        buttonComponent.view.el.textContent = buttonText.trim();
+                      // Actualizar también el DOM del contenedor
+                      if (buttonEl) {
+                        buttonEl.textContent = buttonText.trim();
                         if (buttonLink && buttonLink !== '#' && buttonLink.trim() !== '') {
-                          if (buttonComponent.view.el.tagName === 'BUTTON') {
+                          if (buttonEl.tagName === 'BUTTON') {
                             const newLink = document.createElement('a');
                             newLink.href = buttonLink;
-                            newLink.className = buttonComponent.view.el.className;
+                            newLink.className = buttonEl.className;
                             newLink.textContent = buttonText.trim();
-                            buttonComponent.view.el.parentNode.replaceChild(newLink, buttonComponent.view.el);
-                            buttonComponent.view.el = newLink;
+                            safeReplace(buttonEl, newLink);
                           } else {
-                            buttonComponent.view.el.setAttribute('href', buttonLink);
+                            buttonEl.setAttribute('href', buttonLink);
                           }
                         } else {
-                          if (buttonComponent.view.el.tagName === 'A') {
+                          if (buttonEl.tagName === 'A') {
                             const newButton = document.createElement('button');
-                            newButton.className = buttonComponent.view.el.className;
+                            newButton.className = buttonEl.className;
                             newButton.textContent = buttonText.trim();
-                            buttonComponent.view.el.parentNode.replaceChild(newButton, buttonComponent.view.el);
-                            buttonComponent.view.el = newButton;
+                            safeReplace(buttonEl, newButton);
                           }
                         }
                       }
-                    } else {
-                      console.warn('⚠️ [Save] No se encontró componente button/a');
                     }
 
-                    // Actualizar también el DOM del contenedor
-                    if (buttonEl) {
-                      buttonEl.textContent = buttonText.trim();
-                      if (buttonLink && buttonLink !== '#' && buttonLink.trim() !== '') {
-                        if (buttonEl.tagName === 'BUTTON') {
-                          const newLink = document.createElement('a');
-                          newLink.href = buttonLink;
-                          newLink.className = buttonEl.className;
-                          newLink.textContent = buttonText.trim();
-                          buttonEl.parentNode.replaceChild(newLink, buttonEl);
-                        } else {
-                          buttonEl.setAttribute('href', buttonLink);
-                        }
-                      } else {
-                        if (buttonEl.tagName === 'A') {
-                          const newButton = document.createElement('button');
-                          newButton.className = buttonEl.className;
-                          newButton.textContent = buttonText.trim();
-                          buttonEl.parentNode.replaceChild(newButton, buttonEl);
-                        }
-                      }
-                    }
+                    // Verificar valores finales antes de guardar
+                    console.log('📊 [Save] Valores finales en modelo antes de guardar:', {
+                      'content-title': component.get('content-title'),
+                      'content-text': component.get('content-text'),
+                      'button-text': component.get('button-text'),
+                      'button-link': component.get('button-link')
+                    });
+                  } else {
+                    console.warn('⚠️ [Save] view.el no disponible para Background Image');
                   }
-
-                  // Verificar valores finales antes de guardar
-                  console.log('📊 [Save] Valores finales en modelo antes de guardar:', {
-                    'content-title': component.get('content-title'),
-                    'content-text': component.get('content-text'),
-                    'button-text': component.get('button-text'),
-                    'button-link': component.get('button-link')
-                  });
-                } else {
-                  console.warn('⚠️ [Save] view.el no disponible para Background Image');
                 }
-              }
 
-              if (component && component.components) {
-                const childComponents = component.components();
-                if (childComponents) {
-                  findBackgroundImage(childComponents);
+                if (component && component.components) {
+                  const childComponents = component.components();
+                  if (childComponents) {
+                    findBackgroundImage(childComponents);
+                  }
                 }
-              }
-            });
-          }
+              });
+            }
+          };
+          findBackgroundImage(allComponents);
         };
-        findBackgroundImage(allComponents);
-      };
 
-      syncBackgroundImageBeforeSave();
+        syncBackgroundImageBeforeSave();
 
-      const htmlContent = editor.getHtml();
+        // ✅ Normalizar clases mal formadas antes de generar HTML
+        normalizeResponsiveClassesBeforeSave(editor);
+
+        // ✅ NUEVO: Sincronizar clases de alineación desde el DOM al modelo
+        syncAlignmentClassesBeforeSave(editor);
+      } catch (syncError) {
+        console.warn('⚠️ [Save] Error durante sincronización previa al guardado:', syncError);
+      }
+
+      // ✅ Sincronizar direcciones responsive de contenedores antes de generar HTML
+      const restoreContainerClasses = applyContainerDirectionsBeforeSave(editor);
+
+      // ✅ CRÍTICO: Forzar estilos inline de fondo ANTES de exportar HTML
+      // Esto asegura que los colores y imágenes de fondo se guarden en el HTML
+      const inlineResult = forceBackgroundStylesToInline(editor);
+      const overlayCSS = inlineResult?.overlayCSS || '';
+
+      console.log('📋 [Save] Estado de componentes antes de exportar HTML:');
+      const wrapper = editor.DomComponents.getWrapper();
+      if (wrapper) {
+        const containers = wrapper.find('*').filter(c => c.get('type') === 'container');
+        containers.forEach((c, idx) => {
+          console.log(`  Container ${idx}:`, {
+            className: c.view?.el?.className || 'NO EL',
+            modelClass: c.getAttributes?.()?.class || 'NO ATTR',
+            'container-align': c.get('container-align'),
+            'container-justify': c.get('container-justify')
+          });
+        });
+      }
+
+      let htmlContent = editor.getHtml();
+      
+      // ✅ NUEVO: Limpiar HTML de clases de desarrollo (gjs-*) y espacios malformados
+      htmlContent = cleanHTMLBeforeSave(htmlContent);
+      
+      // ✅ NUEVO: Reconstruir clases de alineación desde el modelo
+      htmlContent = addAlignmentClassesToHTML(htmlContent, editor);
+      
       let cssContent = editor.getCss();
+      
+      // ✅ Agregar CSS de overlays al CSS de la página
+      if (overlayCSS) {
+        cssContent += '\n\n/* ===== OVERLAY BACKGROUNDS ===== */\n' + overlayCSS;
+        console.log('✅ [Save] CSS de overlays agregado:', overlayCSS.length, 'caracteres');
+      }
+      
+      // ✅ NUEVO: Agregar !important a clases de alineación
+      cssContent = addImportantToAlignmentClasses(cssContent);
+
+      // Restaurar clases originales en el canvas (evita cambios visibles al guardar)
+      if (typeof restoreContainerClasses === 'function') {
+        restoreContainerClasses();
+      }
 
       // Agregar !important a los estilos de IDs personalizados
       cssContent = addImportantToCustomIds(cssContent);
 
+      // Obtener title y slug del DOM
+      const pageTitle = document.getElementById('page-title')?.value || '';
+      const pageSlug = document.getElementById('page-slug')?.value || '';
+
       const requestData = {
+        title: pageTitle,
+        slug: pageSlug,
         html_content: htmlContent,
         css_content: cssContent,
-        enable_store: document.getElementById('enable-store')?.checked || false
+        enable_store: document.getElementById('enable-store')?.checked || false,
+        grapesjs_data: JSON.stringify(editor.getProjectData())
       };
 
-      // Agregar grapesjs_data si es un componente
-      if (window.editableType === 'component') {
-        requestData.grapesjs_data = JSON.stringify(editor.getProjectData());
-      }
+      console.log('💾 [Save] URL:', window.saveUrl);
+      console.log('💾 [Save] Método: POST');
+      console.log('💾 [Save] Datos:', requestData);
 
       fetch(window.saveUrl, {
         method: 'POST',
@@ -5053,13 +5646,41 @@ function initializeEditor() {
         },
         body: JSON.stringify(requestData)
       })
-        .then(response => response.json())
+        .then(response => {
+          console.log('✅ [Save] Response status:', response.status);
+          
+          if (!response.ok) {
+            console.error('❌ [Save] HTTP Error:', response.status, response.statusText);
+            throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+          }
+          
+          return response.text().then(text => {
+            try {
+              return JSON.parse(text);
+            } catch (e) {
+              console.error('❌ [Save] JSON Parse Error:', e);
+              console.error('❌ [Save] Response Text:', text.substring(0, 500));
+              throw new Error('Invalid JSON response: ' + text.substring(0, 200));
+            }
+          });
+        })
         .then(data => {
           if (data.success) {
             // Marcar como guardado - actualizar estado global de cambios sin guardar
             if (typeof window.markAsSaved === 'function') {
               window.markAsSaved();
             }
+            
+            // ✅ CRÍTICO: Restaurar altura de componentes background-image después de guardar
+            editor.DomComponents.getWrapper().find('[data-gjs-type="background-image"]').forEach(bgComp => {
+              const savedHeight = bgComp.getAttributes()['data-height'] || bgComp.get('height') || '384';
+              if (bgComp.view && bgComp.view.el) {
+                const heightPx = `${savedHeight}px`;
+                bgComp.view.el.style.height = heightPx;
+                bgComp.set('height', savedHeight, { silent: true });
+                console.log('🔄 [Save Success] Altura restaurada:', heightPx);
+              }
+            });
 
             // Mostrar mensaje de éxito
             const btn = document.getElementById('save-btn');
@@ -5078,10 +5699,35 @@ function initializeEditor() {
           }
         })
         .catch(error => {
-          console.error('Error:', error);
-          alert('Error al guardar la página');
+          console.error('❌ [Save] Error al guardar:', error);
+          console.error('❌ [Save] Error message:', error.message);
+          console.error('❌ [Save] Error stack:', error.stack);
+          alert('Error al guardar la página: ' + error.message);
         });
     }, 150);
+  };
+
+  const bindSaveButton = () => {
+    const btn = document.getElementById('save-btn');
+    if (btn && !btn.__saveBound) {
+      btn.__saveBound = true;
+      btn.addEventListener('click', handleSaveClick);
+      console.log('✅ [Save] Handler de Guardar enlazado al botón');
+    }
+  };
+
+  // Intentar bind inmediato y también cuando el DOM esté listo
+  bindSaveButton();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindSaveButton);
+  }
+
+  // Listener delegado por si el botón se re-renderiza
+  document.addEventListener('click', (e) => {
+    const target = e.target && e.target.closest ? e.target.closest('#save-btn') : null;
+    if (target) {
+      handleSaveClick();
+    }
   });
 
   return editor;
@@ -5090,7 +5736,9 @@ function initializeEditor() {
 // Exportar funciones para uso global
 // Funciones globales para editar y eliminar imágenes del carrusel
 // ✅ Funciones editImage y deleteImage movidas a módulo: editor-modules/carousel-utils.js
+  )}
 
 window.initializeEditor = initializeEditor;
 window.showProductsPlaceholder = showProductsPlaceholder;
 window.initializeManagers = initializeManagers;
+

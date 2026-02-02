@@ -269,7 +269,7 @@
       'data-gjs-type': 'image-box-advanced',
       'data-gjs-name': 'Caja de Imagen Avanzada',
       'data-gjs-editable': 'false',
-      class: 'image-box group relative overflow-hidden rounded-lg shadow-lg cursor-pointer mb-8'
+      class: 'image-box group relative w-full overflow-hidden rounded-lg shadow-lg cursor-pointer'
     },
     components: [
       {

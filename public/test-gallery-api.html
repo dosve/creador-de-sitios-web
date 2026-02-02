@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Galería de Imágenes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .success {
+            color: green;
+            background-color: #f0f8f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            color: red;
+            background-color: #f8f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test de API - Galería de Imágenes</h1>
+    
+    <div class="test-section">
+        <h2>1. Test de Conectividad</h2>
+        <button onclick="testAPI()">Probar Conexión API</button>
+        <div id="api-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Información de GrapesJS</h2>
+        <button onclick="testGrapesJS()">Verificar GrapesJS</button>
+        <div id="grapesjs-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Información de AssetManager</h2>
+        <button onclick="testAssetManager()">Verificar AssetManager</button>
+        <div id="assetmanager-result"></div>
+    </div>
+
+    <script>
+        function testAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>Probando...</p>';
+
+            fetch('/creator/media/api/list')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('API Response:', data);
+                    if (data.success) {
+                        const fileCount = data.files ? data.files.length : 0;
+                        resultDiv.innerHTML = `
+                            <div class="success">
+                                <strong>✓ API Funcionando</strong>
+                                <p>Imágenes encontradas: ${fileCount}</p>
+                                <pre>${JSON.stringify(data, null, 2)}</pre>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="error">
+                                <strong>✗ API Error</strong>
+                                <p>${data.error || 'Error desconocido'}</p>
+                                <pre>${JSON.stringify(data, null, 2)}</pre>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>✗ Error de Conexión</strong>
+                            <p>${error.message}</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function testGrapesJS() {
+            const resultDiv = document.getElementById('grapesjs-result');
+            
+            if (typeof window.editor !== 'undefined' && window.editor) {
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <strong>✓ GrapesJS Cargado</strong>
+                        <p>Editor disponible en window.editor</p>
+                        <pre>
+- Editor: ${window.editor.constructor.name}
+- DOM Components: ${!!window.editor.DomComponents}
+- Asset Manager: ${!!window.editor.AssetManager}
+- Modal: ${!!window.editor.Modal}
+- Trait Manager: ${!!window.editor.TraitManager}
+                        </pre>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>✗ GrapesJS No Disponible</strong>
+                        <p>El editor no está disponible en esta página de prueba.</p>
+                        <p>Nota: Accede al editor desde la página de diseño de páginas.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testAssetManager() {
+            const resultDiv = document.getElementById('assetmanager-result');
+            
+            if (typeof window.editor !== 'undefined' && window.editor && window.editor.AssetManager) {
+                const am = window.editor.AssetManager;
+                const assets = am.getAll();
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <strong>✓ AssetManager Disponible</strong>
+                        <p>Assets actuales: ${assets.length}</p>
+                        <pre>
+- getAll(): ${typeof am.getAll()}
+- add(): ${typeof am.add}
+- open(): ${typeof am.open}
+- on(): ${typeof am.on}
+- off(): ${typeof am.off}
+                        </pre>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>✗ AssetManager No Disponible</strong>
+                        <p>Accede a esta prueba desde el editor de páginas.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Test automático al cargar
+        window.addEventListener('load', function() {
+            console.log('Página de test lista. Presiona los botones para verificar.');
+        });
+    </script>
+</body>
+</html>
