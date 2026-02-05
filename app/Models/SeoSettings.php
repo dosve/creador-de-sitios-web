@@ -31,6 +31,13 @@ class SeoSettings extends Model
         'robots_follow',
         'canonical_url',
         'structured_data',
+        'google_site_verification',
+        'microsoft_site_verification',
+        'default_og_image',
+        'sitemap_url',
+        'allow_google_index',
+        'allow_bing_index',
+        'mobile_friendly',
     ];
 
     protected function casts(): array
@@ -38,6 +45,8 @@ class SeoSettings extends Model
         return [
             'robots_index' => 'boolean',
             'robots_follow' => 'boolean',
+            'allow_google_index' => 'boolean',
+            'allow_bing_index' => 'boolean',
             'structured_data' => 'array',
         ];
     }

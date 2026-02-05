@@ -154,6 +154,43 @@ class PageController extends BaseController
     }
 
     /**
+     * Planificar página con IA: devuelve secciones sugeridas y prompt refinado
+     * basado en el catálogo de componentes/widgets del sistema.
+     */
+    public function planWithAI(Request $request)
+    {
+        $websiteId = session('selected_website_id') ?? $request->input('website');
+        $website = Website::find($websiteId);
+        if (!$website) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No hay sitio web seleccionado. Selecciona un sitio primero.',
+            ], 403);
+        }
+        $this->authorize('update', $website);
+
+        $request->validate([
+            'prompt' => 'required|string|min:10|max:10000',
+        ]);
+
+        $openAIService = app(OpenAIService::class);
+        $plan = $openAIService->planPageStructure($request->prompt);
+
+        if (!$plan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo generar el plan. Verifica que la API key de OpenAI esté configurada.',
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'containers' => $plan['containers'],
+            'refined_prompt' => $plan['refined_prompt'],
+        ]);
+    }
+
+    /**
      * Generar página con IA
      */
     public function generateWithAI(Request $request)
@@ -305,21 +342,36 @@ class PageController extends BaseController
             'prompt' => 'required|string|min:10|max:10000',
             'current_content' => 'nullable|string',
             'page_id' => 'nullable|integer|exists:pages,id',
+            'scope' => 'nullable|string|in:full_page,single_container,html_code',
+            'html_content' => 'nullable|string|max:50000',
+            'css_content' => 'nullable|string|max:50000',
+            'js_content' => 'nullable|string|max:50000',
         ]);
 
         try {
-            // Obtener el contenido actual de la página si se proporciona page_id
-            $currentContent = $request->input('current_content');
-            if (!$currentContent && $request->input('page_id')) {
-                $page = Page::find($request->input('page_id'));
-                if ($page && $page->website_id === $website->id) {
-                    $currentContent = $page->html_content;
+            $scope = $request->input('scope', 'full_page');
+
+            // scope html_code: contenido actual del bloque Código HTML (HTML, CSS, JS)
+            if ($scope === 'html_code') {
+                $currentContent = json_encode([
+                    'html' => $request->input('html_content', ''),
+                    'css' => $request->input('css_content', ''),
+                    'js' => $request->input('js_content', ''),
+                ]);
+            } else {
+                // Obtener el contenido actual de la página si se proporciona page_id
+                $currentContent = $request->input('current_content');
+                if (!$currentContent && $request->input('page_id')) {
+                    $page = Page::find($request->input('page_id'));
+                    if ($page && $page->website_id === $website->id) {
+                        $currentContent = $page->html_content;
+                    }
                 }
             }
 
-            // Obtener información de la plantilla
+            // Obtener información de la plantilla (no usada en html_code)
             $templateInfo = [];
-            if ($website->template_id) {
+            if ($website->template_id && $scope !== 'html_code') {
                 $templateService = app(TemplateService::class);
                 $template = $templateService->find($website->template_id);
                 if ($template) {
@@ -331,15 +383,24 @@ class PageController extends BaseController
                 }
             }
 
-            // Generar contenido con OpenAI (incluyendo contenido actual si existe)
             $openAIService = app(OpenAIService::class);
-            $generatedContent = $openAIService->generatePageContent($request->prompt, $templateInfo, $currentContent);
+            $generatedContent = $openAIService->generatePageContent($request->prompt, $templateInfo, $currentContent, $scope);
 
             if (!$generatedContent) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Error al generar el contenido. Por favor, verifica que la API key de OpenAI esté configurada.'
                 ], 500);
+            }
+
+            if ($scope === 'html_code') {
+                return response()->json([
+                    'success' => true,
+                    'html_content' => $this->sanitizeHtmlContent($generatedContent['html_content'] ?? ''),
+                    'css_content' => $this->sanitizeCssContent($generatedContent['css_content'] ?? ''),
+                    'js_content' => $generatedContent['js_content'] ?? '',
+                    'message' => 'Código generado exitosamente'
+                ]);
             }
 
             return response()->json([
@@ -406,6 +467,7 @@ class PageController extends BaseController
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:pages,slug,' . $page->id . ',id,website_id,' . $website->id,
             'html_content' => 'sometimes|nullable|string',
+            'grapesjs_data' => 'sometimes|nullable|string',
             'is_published' => 'boolean',
             'is_home' => 'boolean',
         ]);
@@ -419,13 +481,35 @@ class PageController extends BaseController
             ? ($request->input('html_content') ?? '')
             : ($page->html_content ?? '');
 
-        $page->update([
+        // Procesar grapesjs_data si viene en la solicitud
+        $blocksData = null;
+        if ($request->has('grapesjs_data')) {
+            $grapesData = $request->input('grapesjs_data');
+            if ($grapesData) {
+                // Si es un string JSON, decodificarlo
+                if (is_string($grapesData)) {
+                    $blocksData = json_decode($grapesData, true);
+                } else {
+                    $blocksData = $grapesData;
+                }
+            }
+        }
+
+        $updateData = [
             'title' => $request->title,
             'slug' => $request->slug,
             'html_content' => $htmlContent,
+            'css_content' => $request->input('css_content', ''),
             'is_published' => $request->boolean('is_published', false),
             'is_home' => $request->boolean('is_home', false),
-        ]);
+        ];
+
+        // Agregar blocks si viene en la solicitud
+        if ($blocksData !== null) {
+            $updateData['blocks'] = $blocksData;
+        }
+
+        $page->update($updateData);
 
         // Si es una petición AJAX/JSON, devolver respuesta JSON
         if ($request->expectsJson() || $request->isJson()) {
@@ -688,9 +772,20 @@ class PageController extends BaseController
      */
     public function editor(Page $page)
     {
+        $website = Website::find(session('selected_website_id'));
+        
+        if (!$website) {
+            return redirect()->route('creator.select-website');
+        }
+        
         $this->authorize('update', $page);
         
-        return view('creator.pages.editor', compact('page', 'website'));
+        // Pasar información necesaria para el editor
+        $editable = $page;
+        $editableType = 'page'; // Indicar que es una página, no un componente
+        $saveRoute = route('creator.pages.save', $page);
+        
+        return view('creator.pages.editor', compact('editable', 'editableType', 'saveRoute', 'website', 'page'));
     }
     
     /**
@@ -996,4 +1091,116 @@ class PageController extends BaseController
         $type = $block['type'] ?? 'unknown';
         return "<!-- Bloque {$type} -->";
     }
+
+    /**
+     * ✅ Sanitizar HTML: Remover etiquetas globales (html, body, head, DOCTYPE)
+     */
+    private function sanitizeHtmlContent(string $html): string
+    {
+        if (empty($html)) {
+            return '';
+        }
+
+        // Remover DOCTYPE
+        $html = preg_replace('/<!DOCTYPE[^>]*>/i', '', $html);
+
+        // Remover etiquetas <html>
+        $html = preg_replace('/<html[^>]*>/i', '', $html);
+        $html = preg_replace('/<\/html>/i', '', $html);
+
+        // Remover etiquetas <head> completas con todo su contenido
+        $html = preg_replace('/<head[^>]*>[\s\S]*?<\/head>/i', '', $html);
+
+        // Remover etiquetas <body> pero mantener su contenido
+        $html = preg_replace('/<body[^>]*>/i', '', $html);
+        $html = preg_replace('/<\/body>/i', '', $html);
+
+        // Trimear espacios en blanco excesivos
+        $html = trim($html);
+
+        return $html;
+    }
+
+    /**
+     * ✅ Sanitizar CSS: Remover etiquetas <style> pero mantener el contenido CSS
+     * También normaliza bordes dashed
+     */
+    private function sanitizeCssContent(string $css): string
+    {
+        if (empty($css)) {
+            return '';
+        }
+
+        // Si el CSS viene envuelto en etiquetas <style>, extraer el contenido
+        if (preg_match('/<style[^>]*>([\s\S]*?)<\/style>/i', $css, $matches)) {
+            $css = $matches[1];
+        }
+
+        // Remover todas las reglas que contengan "border-style: dashed" o "border: ...dashed..."
+        $css = preg_replace('/\s*border(?:-style)?:\s*[^;]*dashed[^;]*;/i', '', $css);
+        
+        // Remover todas las reglas que contengan solo "border:" sin especificación clara
+        // pero mantener bordes sólidos legítimos
+        $lines = explode(';', $css);
+        $cleanedLines = [];
+        
+        foreach ($lines as $line) {
+            // Si contiene 'border' pero NO tiene 'solid' o un número específico, y contiene 'dashed', descartarlo
+            if (stripos($line, 'border') !== false && stripos($line, 'dashed') !== false) {
+                continue;
+            }
+            $cleanedLines[] = $line;
+        }
+        
+        $css = implode(';', $cleanedLines);
+
+        // Trimear espacios en blanco
+        $css = trim($css);
+
+        return $css;
+    }
+
+    /**
+     * Guardar contenido de la página desde el editor
+     */
+    public function saveContent(\Illuminate\Http\Request $request, Page $page)
+    {
+        try {
+            // Obtener el website desde la sesión
+            $website = Website::find(session('selected_website_id'));
+
+            if (!$website) {
+                return response()->json(['success' => false, 'message' => 'No hay sitio web seleccionado'], 400);
+            }
+
+            // Verificar que la página pertenece al sitio web seleccionado
+            if ($page->website_id !== $website->id) {
+                return response()->json(['success' => false, 'message' => 'Esta página no pertenece al sitio web seleccionado'], 403);
+            }
+
+            $this->authorize('update', $website);
+            $this->authorize('update', $page);
+
+            $request->validate([
+                'html_content' => 'required|string',
+                'css_content' => 'nullable|string',
+                'grapesjs_data' => 'nullable|json',
+                'enable_store' => 'nullable|boolean',
+            ]);
+
+            $page->update([
+                'html_content' => $request->html_content,
+                'css_content' => $request->css_content,
+                'grapesjs_data' => $request->grapesjs_data,
+                'enable_store' => $request->boolean('enable_store', false),
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Contenido guardado exitosamente']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['success' => false, 'message' => 'Error de validación: ' . implode(', ', array_flatten($e->errors()))], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al guardar: ' . $e->getMessage()], 500);
+        }
+    }
 }
+

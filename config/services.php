@@ -39,7 +39,7 @@ return [
         'base_url' => env('AUTH_EME10_BASE_URL', 'https://auth.eme10.com/api'),
         'app_name' => env('AUTH_EME10_APP_NAME', 'Creador de Sitios Web'),
         'client_id' => env('AUTH_EME10_CLIENT_ID', '1'),
-        'redirect_uri' => env('AUTH_EME10_REDIRECT_URI', env('APP_URL') . '/auth/oauth/callback'),
+        'redirect_uri' => env('AUTH_EME10_REDIRECT_URI', env('APP_URL') . '/oauth/eme10/callback'),
     ],
 
     'admin_negocios' => [

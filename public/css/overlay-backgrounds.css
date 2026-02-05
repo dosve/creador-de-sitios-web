@@ -1,0 +1,27 @@
+/* ✅ ESTILOS GLOBALES PARA OVERLAYS DE FONDOS CON COLOR */
+/* Estos estilos aplican cuando hay imagen + color de fondo con transparencia */
+
+/* Contenedores con overlay de color */
+[data-bg-overlay]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Asegurar que el contenido está encima del overlay */
+[data-bg-overlay] > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Asegurar que el contenedor es relativo */
+[data-bg-overlay] {
+  position: relative;
+}
+
+/* NOTA: Los valores específicos de rgba se generan dinámicamente en data-overlay-css */

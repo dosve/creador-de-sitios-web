@@ -15,6 +15,9 @@
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $website->is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
                     {{ $website->is_published ? 'Publicado' : 'Borrador' }}
                 </span>
+                <a href="{{ route('creator.websites.duplicate', $website) }}" class="px-4 py-2 text-sm text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">
+                    Duplicar
+                </a>
                 <a href="{{ route('creator.config.general') }}" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700">
                     Editar
                 </a>

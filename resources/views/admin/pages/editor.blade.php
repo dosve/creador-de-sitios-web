@@ -21,6 +21,15 @@
         </div>
         
         <div class="flex items-center space-x-3">
+            <!-- Botón Toggle Panel -->
+            <button id="toggle-editor-panel" 
+                    class="flex items-center px-4 py-2 space-x-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                </svg>
+                <span id="toggle-text">Ocultar Panel</span>
+            </button>
+            
             <!-- Botón de Guardar -->
             <button id="save-page" 
                     class="flex items-center px-4 py-2 space-x-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">
@@ -43,7 +52,7 @@
     </div>
 
     <!-- Editor GrapesJS -->
-    <div class="flex-1" style="height: calc(100vh - 80px);">
+    <div id="editor-panel" class="flex-1" style="height: calc(100vh - 80px);">
         <div id="gjs" style="height: 100%;"></div>
     </div>
 </div>
@@ -51,9 +60,31 @@
 <!-- Scripts -->
 <script src="https://unpkg.com/grapesjs@0.21.7/dist/grapes.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/grapesjs@0.21.7/dist/css/grapes.min.css">
+<!-- Scripts para normalizar clases responsive y diagnosticar problemas -->
+<script src="{{ asset('js/fix-responsive-classes.js') }}"></script>
+<script src="{{ asset('js/debug-responsive.js') }}"></script>
+<script src="{{ asset('js/investigate-responsive.js') }}"></script>
+<script src="{{ asset('js/responsive-dashboard.js') }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Toggle panel edición
+    const toggleBtn = document.getElementById('toggle-editor-panel');
+    const toggleText = document.getElementById('toggle-text');
+    const editorPanel = document.getElementById('editor-panel');
+    let panelVisible = true;
+    
+    toggleBtn.addEventListener('click', function() {
+        panelVisible = !panelVisible;
+        if(panelVisible) {
+            editorPanel.classList.remove('hidden');
+            toggleText.textContent = 'Ocultar Panel';
+        } else {
+            editorPanel.classList.add('hidden');
+            toggleText.textContent = 'Mostrar Panel';
+        }
+    });
+    
     // Configuración simplificada de GrapesJS
     const editor = grapesjs.init({
         container: '#gjs',
@@ -232,6 +263,10 @@ document.addEventListener('DOMContentLoaded', function() {
 <style>
 .gjs-pn-panel {
     position: relative;
+}
+
+.hidden {
+    display: none !important;
 }
 
 .panel__top {

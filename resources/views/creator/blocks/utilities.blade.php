@@ -41,7 +41,7 @@
     removable: true,  // ✅ PERMITIDO: Se puede eliminar
     selectable: true, // ✅ PERMITIDO: Se puede seleccionar
     attributes: {
-      class: 'custom-html-block p-4 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg',
+      class: 'custom-html-block p-4 bg-gray-50 rounded-lg',
       'data-gjs-type': 'html-code',
       'data-gjs-name': 'Código HTML',
       'data-gjs-editable': 'false'
@@ -248,6 +248,92 @@
       'data-gjs-editable': 'false'
     }
     // Los traits están definidos en el componente quote.js
+  },
+
+  // ✅ NUEVO: Bloque de Imagen + Código HTML (dos columnas)
+  'imagen-codigo': {
+    content: {
+      tagName: 'div',
+      name: 'Imagen + Código HTML',
+      type: 'container',
+      droppable: true,
+      removable: true,
+      selectable: true,
+      attributes: {
+        class: 'container-flex gap-6 p-6 bg-white rounded-lg shadow-sm',
+        'data-gjs-type': 'container',
+        'data-gjs-name': 'Imagen + Código HTML'
+      },
+      components: [
+        // ✅ Columna 1: Imagen
+        {
+          tagName: 'div',
+          name: 'Sección Imagen',
+          droppable: true,
+          removable: true,
+          selectable: true,
+          attributes: {
+            class: 'w-full md:w-1/2 flex items-center justify-center bg-gray-100 rounded-lg min-h-400px',
+            'data-gjs-name': 'Sección Imagen'
+          },
+          components: [
+            {
+              type: 'image',
+              src: 'https://via.placeholder.com/400x400?text=Imagen',
+              attributes: {
+                alt: 'Imagen de ejemplo',
+                class: 'w-full h-auto rounded-lg'
+              }
+            }
+          ]
+        },
+        // ✅ Columna 2: Código HTML
+        {
+          tagName: 'div',
+          name: 'Sección Código HTML',
+          droppable: true,
+          removable: true,
+          selectable: true,
+          attributes: {
+            class: 'w-full md:w-1/2 flex flex-col justify-center',
+            'data-gjs-name': 'Sección Código HTML'
+          },
+          components: [
+            {
+              type: 'html-code',
+              tagName: 'div',
+              name: 'Código HTML',
+              editable: false,
+              droppable: false,
+              removable: true,
+              selectable: true,
+              attributes: {
+                class: 'custom-html-block p-4 bg-gray-50 rounded-lg',
+                'data-gjs-type': 'html-code',
+                'data-gjs-name': 'Código HTML',
+                'data-gjs-editable': 'false'
+              },
+              components: [
+                {
+                  tagName: 'div',
+                  selectable: false,
+                  editable: false,
+                  removable: false,
+                  droppable: false,
+                  attributes: {
+                    class: 'flex items-center justify-center text-gray-500',
+                    'data-gjs-editable': 'false',
+                    'data-gjs-selectable': 'false',
+                    'contenteditable': 'false'
+                  },
+                  text: 'Haz clic en Propiedades para agregar código HTML/CSS/JavaScript'
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   }
 }
 

@@ -61,6 +61,8 @@ Route::get('/planes', function () {
 // Rutas de autenticación OAuth2 (Recomendado)
 Route::get('/auth/oauth/redirect', [App\Http\Controllers\Auth\OAuthController::class, 'redirect'])->name('oauth.redirect');
 Route::get('/auth/oauth/callback', [App\Http\Controllers\Auth\OAuthController::class, 'callback'])->name('oauth.callback');
+// Callback con la URL que usa Auth EME10 (AUTH_EME10_REDIRECT_URI=/oauth/eme10/callback)
+Route::get('/oauth/eme10/callback', [App\Http\Controllers\Auth\OAuthController::class, 'callback'])->name('oauth.eme10.callback');
 Route::post('/auth/oauth/handle-token', [App\Http\Controllers\Auth\OAuthController::class, 'handleToken'])->name('oauth.handle-token');
 
 // Rutas de autenticación tradicional (Legacy - para usuarios antiguos)
@@ -232,6 +234,8 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
             $pages = $website->pages()->orderBy('sort_order')->get();
             return view('creator.websites.show', compact('website', 'pages'));
         })->name('websites.show');
+        Route::get('websites/{website}/duplicate', [WebsiteController::class, 'showDuplicate'])->name('websites.duplicate');
+        Route::post('websites/{website}/duplicate', [WebsiteController::class, 'duplicate'])->name('websites.duplicate.store');
         Route::delete('websites/{website}', [WebsiteController::class, 'destroy'])->name('websites.destroy');
 
         // Configuración general del sitio (dentro de config)
@@ -250,14 +254,15 @@ Route::middleware(['auth', 'role:creator'])->prefix('creator')->name('creator.')
         Route::get('pages', [App\Http\Controllers\Creator\PageController::class, 'index'])->name('pages.index');
         Route::get('pages/create', [App\Http\Controllers\Creator\PageController::class, 'create'])->name('pages.create');
         Route::post('pages', [App\Http\Controllers\Creator\PageController::class, 'store'])->name('pages.store');
+        Route::post('pages/plan-with-ai', [App\Http\Controllers\Creator\PageController::class, 'planWithAI'])->name('pages.plan-with-ai');
         Route::post('pages/generate-ai', [App\Http\Controllers\Creator\PageController::class, 'generateWithAI'])->name('pages.generate-ai');
         Route::post('pages/generate-ai-content', [App\Http\Controllers\Creator\PageController::class, 'generateAIContent'])->name('pages.generate-ai-content');
         Route::get('pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'show'])->name('pages.show');
         Route::get('pages/{page}/edit', [App\Http\Controllers\Creator\PageController::class, 'edit'])->name('pages.edit');
         Route::put('pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'update'])->name('pages.update');
         Route::delete('pages/{page}', [App\Http\Controllers\Creator\PageController::class, 'destroy'])->name('pages.destroy');
-        Route::get('pages/{page}/editor', [PageController::class, 'editor'])->name('pages.editor');
-        Route::post('pages/{page}/save', [PageController::class, 'saveContent'])->name('pages.save');
+        Route::get('pages/{page}/editor', [App\Http\Controllers\Creator\PageController::class, 'editor'])->name('pages.editor');
+        Route::post('pages/{page}/save', [App\Http\Controllers\Creator\PageController::class, 'saveContent'])->name('pages.save');
         Route::post('pages/{page}/set-home', [App\Http\Controllers\Creator\PageController::class, 'setHome'])->name('pages.set-home');
 
         // Importación de páginas prediseñadas
@@ -580,4 +585,4 @@ Route::get('/{website:slug}/{pageSlug}', [WebsiteController::class, 'showWebsite
 // Ruta del sitio web principal (homepage) - 1 segmento: /sitio
 Route::get('/{slug}', [WebsiteController::class, 'showPageOrWebsite'])
     ->name('website.show')
-    ->where('slug', '^(?!creator|admin|login|register|logout|bienvenida|api|storage|css|js|fonts|images|blog|template|academia-online).*');
+    ->where('slug', '^(?!creator|admin|login|register|logout|bienvenida|api|storage|css|js|fonts|images|blog|template|academia-online|websites).*');

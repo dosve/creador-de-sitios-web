@@ -328,7 +328,7 @@ a:hover {
 .border { border: 1px solid #e5e7eb; }
 .border-b { border-bottom: 1px solid #e5e7eb; }
 .border-gray-200 { border-color: #e5e7eb; }
-.rounded-lg { border-radius: 0.5rem; }
+.rounded-lg { /* border-radius: 0.5rem; */ }
 
 /* Sombras */
 .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }

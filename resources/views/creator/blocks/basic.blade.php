@@ -15,7 +15,7 @@
     removable: true,  // ✅ PERMITIDO: Se puede eliminar
     selectable: true,   // ✅ PERMITIDO: Se puede seleccionar
     attributes: { 
-      class: 'container-flex flex flex-col md:flex-row gap-4 p-6 min-h-[200px] rounded-lg',
+      class: 'container-flex flex flex-col md:flex-row gap-4 p-[10px] w-full rounded-lg',
       'data-gjs-name': 'Contenedor',
       'data-gjs-editable': 'false'  // ✅ Protección adicional
     },
@@ -26,7 +26,7 @@
         name: 'Placeholder',
         content: '↓ Arrastra elementos aquí ↓',
         attributes: { 
-          class: 'text-gray-400 text-sm pointer-events-none text-center w-full',
+          class: 'text-gray-400 text-sm pointer-events-none text-center w-full py-8',
           'data-gjs-type': 'text',
           'data-gjs-editable': 'false',
           'data-gjs-name': 'Placeholder'

@@ -38,6 +38,7 @@ class SeoController extends Controller
             'og_title' => 'nullable|string|max:60',
             'og_description' => 'nullable|string|max:160',
             'og_image' => 'nullable|url',
+            'default_og_image' => 'nullable|url',
             'twitter_card' => 'required|in:summary,summary_large_image,app,player',
             'twitter_site' => 'nullable|string|max:50',
             'twitter_creator' => 'nullable|string|max:50',
@@ -49,6 +50,12 @@ class SeoController extends Controller
             'robots_index' => 'boolean',
             'robots_follow' => 'boolean',
             'canonical_url' => 'nullable|url',
+            'sitemap_url' => 'nullable|url',
+            'allow_google_index' => 'boolean',
+            'allow_bing_index' => 'boolean',
+            'mobile_friendly' => 'in:not-set,mobile,desktop,auto',
+            'google_site_verification' => 'nullable|string|max:1000',
+            'microsoft_site_verification' => 'nullable|string|max:1000',
         ]);
 
         $seoSettings = $website->seoSettings()->updateOrCreate(
@@ -60,6 +67,7 @@ class SeoController extends Controller
                 'og_title',
                 'og_description',
                 'og_image',
+                'default_og_image',
                 'twitter_card',
                 'twitter_site',
                 'twitter_creator',
@@ -71,6 +79,12 @@ class SeoController extends Controller
                 'robots_index',
                 'robots_follow',
                 'canonical_url',
+                'sitemap_url',
+                'allow_google_index',
+                'allow_bing_index',
+                'mobile_friendly',
+                'google_site_verification',
+                'microsoft_site_verification',
             ])
         );
 

@@ -39,6 +39,11 @@
 <!-- Scripts -->
 <script src="https://unpkg.com/grapesjs@0.21.7/dist/grapes.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/grapesjs@0.21.7/dist/css/grapes.min.css">
+<!-- Scripts para normalizar clases responsive y diagnosticar problemas -->
+<script src="{{ asset('js/fix-responsive-classes.js') }}"></script>
+<script src="{{ asset('js/debug-responsive.js') }}"></script>
+<script src="{{ asset('js/investigate-responsive.js') }}"></script>
+<script src="{{ asset('js/responsive-dashboard.js') }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
