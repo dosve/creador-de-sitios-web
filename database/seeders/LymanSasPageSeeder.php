@@ -250,7 +250,7 @@ class LymanSasPageSeeder extends Seeder
         </p>
         <a href="/lyman-sas/nosotros" class="button-component inline-block px-6 py-3 text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 font-semibold transition-colors w-fit">Conocer Más</a>
     </div>
-    <div class="container-flex flex flex-col gap-0 w-full">
+    <div class="container-flex container-image-wrapper flex flex-col gap-0 w-full">
         <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop" alt="Oficina LYMAN" class="image-component w-full h-[400px] object-cover rounded-2xl shadow-lg">
     </div>
 </div>
@@ -644,6 +644,13 @@ body {
 /* Asegurar que todos los containers ocupen el ancho completo cuando corresponda */
 .container-flex {
     width: 100%;
+}
+
+/* Contenedor de imagen: width 100% y flex-direction column (no sobrescribir en editor) */
+.container-image-wrapper {
+    width: 100% !important;
+    flex-direction: column !important;
+    display: flex !important;
 }
 
 /* Mejorar transiciones */

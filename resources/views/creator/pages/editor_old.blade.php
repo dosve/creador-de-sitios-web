@@ -1136,11 +1136,6 @@
   @if($editable->css_content)
   <input type="hidden" id="page-css-content" value="{{ htmlspecialchars($editable->css_content, ENT_QUOTES) }}">
   @endif
-  @if(!empty($editable->grapesjs_data))
-  <script>
-    window.__pageGrapesjsData = @json($editable -> grapesjs_data);
-  </script>
-  @endif
 
   <script>
     // Suprimir advertencias de source maps

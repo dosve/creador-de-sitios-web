@@ -1,15 +1,15 @@
 // Módulo del Componente Container
 // Contenedor flexible estilo Elementor con sistema de layout
 
-(function () {
+(function() {
   'use strict';
-
+  
   function registerContainerComponent(editor) {
     if (!editor || !editor.DomComponents) {
       console.warn('⚠️ Editor no disponible para registrar componente Container');
       return;
     }
-
+    
     editor.DomComponents.addType('container', {
       isComponent: (el) => {
         if (el.classList && el.classList.contains('container-flex')) {
@@ -197,12 +197,12 @@
           if (!this.get('container-layout-mode')) {
             this.set('container-layout-mode', 'flex', { silent: true });
           }
-
+          
           const syncInitialValues = () => {
             if (this.view && this.view.el) {
               const el = this.view.el;
               const classList = (el.className || '').split(' ').filter(c => c.trim());
-
+              
               if (!classList.includes('container-flex')) {
                 el.classList.add('container-flex');
               }
@@ -218,15 +218,15 @@
                 // Si no tiene valor, establecer el por defecto
                 this.set('container-layout-mode', 'flex', { silent: false });
               }
-
+              
               if (!isGrid && !isFlex) {
                 el.classList.add('flex');
               }
-
+              
               // Detectar dirección - buscar tanto clases directas como responsive
               const directionMatch = classList.find(c => c.match(/^flex-(row|col)(-reverse)?$/));
               const mdDirectionMatch = classList.find(c => c.match(/^md:flex-(row|col)(-reverse)?$/));
-
+              
               // flex-col + md:flex-row: móvil columna, desktop fila. Guardar desktop como dirección
               // para que updateDirection reconstruya flex-col + md:flex-row y no se descuadre al cargar.
               if (directionMatch && mdDirectionMatch) {
@@ -240,7 +240,7 @@
               } else if (directionMatch) {
                 // Si hay una clase directa (sin breakpoint), establecerla como dirección desktop
                 this.set('container-direction', directionMatch, { silent: true });
-
+                
                 // Si la clase directa es flex-row, convertir INMEDIATAMENTE a mobile-first
                 if (directionMatch === 'flex-row' || directionMatch === 'flex-row-reverse') {
                   // Remover flex-row del elemento directamente
@@ -256,7 +256,7 @@
                   }
                   // Actualizar atributos
                   this.setAttributes({ class: el.className });
-
+                  
                   // También forzar actualización de dirección después de sincronizar
                   setTimeout(() => {
                     this.updateDirection();
@@ -266,7 +266,7 @@
                 // Si solo hay clase responsive, extraer la dirección base
                 const baseDirection = mdDirectionMatch.replace('md:', '');
                 this.set('container-direction', baseDirection, { silent: true });
-
+                
                 // Si es md:flex-row, asegurar que haya flex-col en móvil
                 if (mdDirectionMatch.startsWith('md:flex-row')) {
                   if (!el.classList.contains('flex-col') && !el.classList.contains('flex-col-reverse')) {
@@ -284,44 +284,44 @@
                   }
                 }
               }
-
+              
               const wrapMatch = classList.find(c => c.match(/^flex-(wrap|nowrap)(-reverse)?$/));
               if (wrapMatch) {
                 this.set('container-wrap', wrapMatch, { silent: true });
               }
-
+              
               const justifyMatch = classList.find(c => c.match(/^justify-(start|center|end|between|around|evenly)$/));
               if (justifyMatch) {
                 this.set('container-justify', justifyMatch, { silent: true });
               }
-
+              
               const alignMatch = classList.find(c => c.match(/^items-(start|center|end|stretch|baseline)$/));
               if (alignMatch) {
                 this.set('container-align', alignMatch, { silent: true });
               }
-
+              
               const gapMatch = classList.find(c => c.match(/^gap-[0-9]+$/));
               if (gapMatch) {
                 this.set('container-gap', gapMatch, { silent: true });
               }
-
+              
               const widthMatch = classList.find(c => c.match(/^(w-(full|auto)|container|max-w-(7xl|6xl|4xl|2xl|xl))$/));
               if (widthMatch) {
                 this.set('container-width', widthMatch, { silent: true });
               }
-
+              
               const paddingMatch = classList.find(c => c.match(/^p-[0-9]+$/));
               if (paddingMatch) {
                 this.set('container-padding', paddingMatch, { silent: true });
               }
-
+              
               const marginMatch = classList.find(c => c.match(/^(mx-auto|m-[0-9]+)$/));
               if (marginMatch) {
                 this.set('container-margin', marginMatch, { silent: true });
               }
             }
           };
-
+          
           setTimeout(() => {
             syncInitialValues();
             // Aplicar dirección con comportamiento mobile-first después de sincronizar
@@ -373,14 +373,14 @@
               }
             }, 50);
           });
-
+          
           // Listener para cambios en layout mode - debe ejecutarse inmediatamente
           this.on('change:container-layout-mode', () => {
             setTimeout(() => {
               this.updateLayoutMode();
             }, 50);
           });
-
+          
           // Listener para mantener los estilos de grid después de que GrapesJS los procese
           this.on('change:style', () => {
             if (this.get('container-layout-mode') === 'grid-equal') {
@@ -392,7 +392,7 @@
                 setTimeout(() => {
                   const currentCols = window.getComputedStyle(el).gridTemplateColumns;
                   if (!currentCols.includes('repeat') && !currentCols.includes('fr')) {
-
+                    
                     // Re-aplicar usando CSS rule
                     if (window.editor && window.editor.Css) {
                       const componentId = this.getId();
@@ -409,7 +409,7 @@
                         cssRule.setStyle(currentStyles);
                       }
                     }
-
+                    
                     // También usar addStyle si está disponible
                     if (typeof this.addStyle === 'function') {
                       this.addStyle({
@@ -419,7 +419,7 @@
                         'grid-auto-flow': 'row'
                       });
                     }
-
+                    
                     el.style.setProperty('display', 'grid', 'important');
                     el.style.setProperty('grid-template-columns', gridCols, 'important');
                     el.style.setProperty('grid-auto-rows', 'auto', 'important');
@@ -429,7 +429,7 @@
               }
             }
           });
-
+          
           this.on('change:container-direction', () => {
             this.updateDirection();
             // Actualizar hijos cuando cambie la dirección
@@ -475,7 +475,7 @@
               this.updateLayoutMode();
             }, 50);
           });
-
+          
           // Escuchar cambios en los hijos para actualizar grid si es necesario
           this.on('component:add', () => {
             setTimeout(() => {
@@ -487,7 +487,7 @@
               }, 100);
             }, 200);
           });
-
+          
           this.on('component:remove', () => {
             setTimeout(() => {
               // Actualizar layout para aplicar clases responsive a los hijos restantes
@@ -498,14 +498,14 @@
               }, 100);
             }, 200);
           });
-
+          
           // Escuchar cuando los hijos se monten para aplicar clases responsive
           this.on('component:mount', () => {
             setTimeout(() => {
               this.updateChildrenResponsive();
             }, 300);
           });
-
+          
           // Listener para cambios de dispositivo - actualizar dirección cuando cambie el modo
           if (window.editor) {
             window.editor.on('change:device', () => {
@@ -518,7 +518,7 @@
                 }
               }, 100);
             });
-
+            
             window.editor.on('component:update', (component) => {
               if (component === this && this.get('container-layout-mode') === 'grid-equal') {
                 setTimeout(() => {
@@ -543,7 +543,7 @@
                           cssRule.setStyle(currentStyles);
                         }
                       }
-
+                      
                       // También usar addStyle si está disponible
                       if (typeof this.addStyle === 'function') {
                         this.addStyle({
@@ -562,17 +562,17 @@
         },
         updateLayoutMode() {
           const layoutMode = this.get('container-layout-mode') || 'flex';
-
+          
           if (!this.view || !this.view.el) {
             console.warn('⚠️ No hay vista o elemento disponible');
             return;
           }
-
+          
           const el = this.view.el;
           const currentAttrs = this.getAttributes();
           let currentClass = currentAttrs.class || el.className || '';
           const classList = currentClass.split(' ').filter(c => c.trim());
-
+          
           // Remover TODAS las clases de grid y flex existentes de forma segura
           // Incluyendo todas las variantes de Tailwind (grid-cols-1, grid-cols-2, md:grid-cols-*, etc.)
           const filteredClasses = classList.filter(cls => {
@@ -580,25 +580,25 @@
           });
           classList.length = 0;
           classList.push(...filteredClasses);
-
+          
           if (layoutMode === 'grid-equal') {
             // Modo Grid: columnas equitativas
             classList.push('grid');
-
+            
             // Remover todas las clases de flex-direction ya que grid no las usa
             for (let i = classList.length - 1; i >= 0; i--) {
               if (classList[i].match(/^flex-(row|col)(-reverse)?$/)) {
                 classList.splice(i, 1);
               }
             }
-
+            
             // Función para aplicar grid
             const applyGrid = () => {
               // Obtener hijos usando el modelo de GrapesJS para contar correctamente
               const components = this.components();
               const childCount = components.length;
               const responsiveMode = this.get('container-children-responsive') || 'auto';
-
+              
               if (childCount > 0) {
                 // Si el modo responsive está activado, usar clases de Tailwind
                 if (responsiveMode === 'full-width' || responsiveMode === 'equal-responsive') {
@@ -610,7 +610,7 @@
                     }
                   });
                   gridColsToRemove.forEach(cls => el.classList.remove(cls));
-
+                  
                   // Aplicar clases responsive de grid según número de hijos
                   if (childCount === 2) {
                     classList.push('grid-cols-1', 'md:grid-cols-2');
@@ -621,19 +621,19 @@
                   } else if (childCount > 4) {
                     classList.push('grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3', 'xl:grid-cols-4');
                   }
-
+                  
                   // No usar grid-template-columns inline si usamos clases de Tailwind
                   // Solo aplicar gap
                   const gap = this.get('container-gap') || 'gap-4';
                   if (!classList.some(c => c.startsWith('gap-'))) {
                     classList.push(gap);
                   }
-
+                  
                   // Aplicar clases responsive a los hijos
                   components.forEach((component, index) => {
                     const childEl = component.view ? component.view.el : null;
                     if (!childEl) return;
-
+                    
                     // Remover clases de width anteriores
                     if (childEl.classList) {
                       const classesToRemove = [
@@ -645,7 +645,7 @@
                       ];
                       classesToRemove.forEach(cls => childEl.classList.remove(cls));
                     }
-
+                    
                     // Limpiar estilos inline de width
                     childEl.style.removeProperty('width');
                     childEl.style.removeProperty('max-width');
@@ -655,25 +655,25 @@
                     childEl.style.removeProperty('flex-shrink');
                     childEl.style.removeProperty('flex-basis');
                     childEl.style.removeProperty('display');
-
+                    
                     childEl.style.setProperty('box-sizing', 'border-box', 'important');
                     childEl.setAttribute('data-grid-item', 'true');
                   });
-
+                  
                   // Aplicar clases actualizadas
                   const newClass = classList.filter(c => c).join(' ').replace(/\s+/g, ' ').trim();
                   el.className = newClass;
                   this.setAttributes({ class: newClass });
-
+                  
                   // Limpiar estilos inline de grid ya que usamos clases de Tailwind
                   el.style.removeProperty('display');
                   el.style.removeProperty('grid-template-columns');
                   el.style.removeProperty('grid-auto-rows');
                   el.style.removeProperty('grid-auto-flow');
-
+                  
                   return; // Salir temprano si usamos clases de Tailwind
                 }
-
+                
                 // Modo automático: usar grid-template-columns inline (comportamiento original)
                 // CRÍTICO: Remover TODAS las clases de grid-cols-* de Tailwind que puedan interferir
                 const classesToRemove = [];
@@ -686,22 +686,22 @@
                 if (classesToRemove.length > 0) {
                   console.log(`🗑️ Clases removidas: ${classesToRemove.join(', ')}`);
                 }
-
+                
                 // Guardar la configuración del grid en el modelo para persistencia
                 const gridColsValue = `repeat(${childCount}, 1fr)`;
                 this.set('grid-columns-count', childCount, { silent: true });
                 this.set('grid-template-cols', gridColsValue, { silent: true });
-
+                
                 // CRÍTICO: Guardar estilos usando el sistema de CSS de GrapesJS para persistencia
                 if (window.editor && window.editor.Css) {
                   let componentId = this.getId();
-
+                  
                   // Si no tiene ID, crear uno
                   if (!componentId || componentId.startsWith('i')) {
                     componentId = `container-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
                     this.addAttributes({ id: componentId });
                   }
-
+                  
                   if (componentId) {
                     let cssRule = window.editor.Css.getRule(`#${componentId}`);
                     if (!cssRule) {
@@ -715,7 +715,7 @@
                     cssRule.setStyle(currentStyles);
                   }
                 }
-
+                
                 // También usar addStyle si está disponible
                 if (typeof this.addStyle === 'function') {
                   this.addStyle({
@@ -725,27 +725,27 @@
                     'grid-auto-flow': 'row'
                   });
                 }
-
+                
                 // Aplicar como inline para que se vea inmediatamente
                 el.style.setProperty('display', 'grid', 'important');
                 el.style.setProperty('grid-template-columns', gridColsValue, 'important');
                 el.style.setProperty('grid-auto-rows', 'auto', 'important');
                 el.style.setProperty('grid-auto-flow', 'row', 'important');
-
+                
                 // Asegurar que gap esté configurado
                 const gap = this.get('container-gap') || 'gap-4';
                 if (!classList.some(c => c.startsWith('gap-'))) {
                   classList.push(gap);
                 }
-
+                
                 // Aplicar estilos a los hijos (modo automático - grid se encarga del layout)
                 components.forEach((component, index) => {
                   const childEl = component.view ? component.view.el : null;
                   if (!childEl) return;
-
+                  
                   // Remover clases de flex y width de los hijos
                   if (childEl.classList) {
-                    const classesToRemove = ['flex-1', 'flex-grow', 'flex-shrink', 'flex-basis-auto',
+                    const classesToRemove = ['flex-1', 'flex-grow', 'flex-shrink', 'flex-basis-auto', 
                       'w-full', 'w-auto', 'w-1/2', 'w-1/3', 'w-1/4', 'w-2/3', 'w-3/4',
                       'md:w-full', 'md:w-1/2', 'md:w-1/3', 'md:w-1/4', 'md:w-2/3', 'md:w-3/4',
                       'lg:w-full', 'lg:w-1/2', 'lg:w-1/3', 'lg:w-1/4', 'lg:w-2/3', 'lg:w-3/4',
@@ -753,7 +753,7 @@
                       'sm:w-full', 'sm:w-1/2', 'sm:w-1/3', 'sm:w-1/4', 'sm:w-2/3', 'sm:w-3/4'];
                     classesToRemove.forEach(cls => childEl.classList.remove(cls));
                   }
-
+                  
                   // Limpiar estilos inline relacionados con width, flex y display
                   childEl.style.setProperty('width', 'auto', 'important');
                   childEl.style.setProperty('max-width', 'none', 'important');
@@ -762,13 +762,13 @@
                   childEl.style.setProperty('flex-grow', '0', 'important');
                   childEl.style.setProperty('flex-shrink', '0', 'important');
                   childEl.style.setProperty('flex-basis', 'auto', 'important');
-
+                  
                   // Asegurar que no tenga display block
                   const computedDisplay = window.getComputedStyle(childEl).display;
                   if (computedDisplay === 'block') {
                     childEl.style.setProperty('display', 'inline-block', 'important');
                   }
-
+                  
                   childEl.style.setProperty('box-sizing', 'border-box', 'important');
                   childEl.style.setProperty('overflow', 'visible', 'important');
                   childEl.setAttribute('data-grid-item', 'true');
@@ -780,25 +780,25 @@
                 el.style.setProperty('grid-auto-rows', 'auto', 'important');
                 el.style.setProperty('grid-auto-flow', 'row', 'important');
               }
-
+              
               // Aplicar clases actualizadas
               const newClass = classList.filter(c => c).join(' ').replace(/\s+/g, ' ').trim();
               el.className = newClass;
               this.setAttributes({ class: newClass });
-
+              
               // Forzar recálculo del layout
               void el.offsetHeight; // Trigger reflow
-
+              
               // Verificar después del reflow
               setTimeout(() => {
                 const computedDisplay = window.getComputedStyle(el).display;
                 const computedGridCols = window.getComputedStyle(el).gridTemplateColumns;
-
+                
                 // Verificar si el grid se aplicó correctamente
                 if (computedDisplay !== 'grid') {
                   el.style.setProperty('display', 'grid', 'important');
                 }
-
+                
                 // Si el grid-template-columns no tiene el formato correcto, forzarlo
                 if (!computedGridCols.includes('repeat') && !computedGridCols.includes('fr')) {
                   const childCount = this.components().length;
@@ -806,16 +806,16 @@
                 }
               }, 100);
             };
-
+            
             // Aplicar grid inmediatamente y también después de un pequeño delay para asegurar
             applyGrid();
             setTimeout(applyGrid, 100);
             setTimeout(applyGrid, 300);
-
+            
           } else {
             // Modo Flex: contenedores flexibles
             classList.push('flex');
-
+            
             // Limpiar estilos de grid del modelo
             if (window.editor && window.editor.Css) {
               const componentId = this.getId();
@@ -831,7 +831,7 @@
                 }
               }
             }
-
+            
             // Limpiar usando setStyle si está disponible
             if (typeof this.setStyle === 'function') {
               const currentStyles = this.getStyle() || {};
@@ -841,35 +841,35 @@
               delete currentStyles['grid-auto-flow'];
               this.setStyle(currentStyles);
             }
-
+            
             this.set('grid-columns-count', null, { silent: true });
             this.set('grid-template-cols', null, { silent: true });
-
+            
             // Remover estilos inline de grid
             el.style.removeProperty('grid-template-columns');
             el.style.removeProperty('grid-auto-rows');
             el.style.removeProperty('grid-auto-flow');
             el.style.removeProperty('display');
-
+            
             // Aplicar estilos responsive a los hijos (estilo Elementor)
             const components = this.components();
             const responsiveMode = this.get('container-children-responsive') || 'auto';
             const childCount = components.length;
             const directionMobile = this.get('container-direction-mobile') || '';
             const direction = this.get('container-direction') || 'flex-col'; // Por defecto: columna
-
+            
             // Detectar si el contenedor está en columna
             const isColumnOnDesktop = direction === 'flex-col' || direction === 'flex-col-reverse';
             // En móvil, por defecto siempre se apilan verticalmente (flex-col) a menos que se especifique otra dirección
-            const isColumnOnMobile = directionMobile === 'flex-col' ||
-              directionMobile === 'flex-col-reverse' ||
-              (directionMobile === ''); // Por defecto, móvil usa flex-col
+            const isColumnOnMobile = directionMobile === 'flex-col' || 
+                                    directionMobile === 'flex-col-reverse' ||
+                                    (directionMobile === ''); // Por defecto, móvil usa flex-col
             const isRowOnDesktop = direction === 'flex-row' || direction === 'flex-row-reverse';
-
+            
             components.forEach((component, index) => {
               const childEl = component.view ? component.view.el : null;
               if (!childEl || !childEl.classList) return;
-
+              
               // Remover clases responsive anteriores
               const classesToRemove = [
                 'flex-1', 'flex-grow', 'flex-shrink', 'flex-basis-auto',
@@ -881,11 +881,11 @@
                 'md:flex-1', 'lg:flex-1', 'xl:flex-1'
               ];
               classesToRemove.forEach(cls => childEl.classList.remove(cls));
-
+              
               // SIEMPRE aplicar w-full en móvil (por defecto responsive)
               // Tailwind es mobile-first, así que w-full se aplica desde móvil
               childEl.classList.add('w-full');
-
+              
               // Aplicar clases responsive según el modo (estilo Elementor)
               if (responsiveMode === 'full-width') {
                 // En desktop: si está en fila, usar flex-1; si está en columna, mantener w-full
@@ -916,18 +916,18 @@
                 }
                 // Si está en columna, ya tiene w-full aplicado
               }
-
+              
               // Remover estilos inline de width
               childEl.style.removeProperty('width');
               childEl.style.removeProperty('max-width');
               childEl.style.removeProperty('min-width');
               childEl.removeAttribute('data-grid-item');
             });
-
+            
             const newClass = classList.filter(c => c).join(' ').replace(/\s+/g, ' ').trim();
             el.className = newClass;
             this.setAttributes({ class: newClass });
-
+            
             // Forzar actualización de hijos responsive después de actualizar el layout
             setTimeout(() => {
               this.updateChildrenResponsive();
@@ -945,30 +945,30 @@
               if (!currentClass.includes('flex')) {
                 currentClass = (currentClass + ' flex').trim();
               }
-
+              
               // Remover todas las clases de dirección (incluyendo responsive)
               // Primero convertir a array, filtrar, y luego volver a string para evitar espacios dobles
               const classArray = currentClass.split(/\s+/).filter(c => {
-                return c.trim() &&
-                  !c.match(/^flex-(row|col)(-reverse)?$/) &&
-                  !c.match(/^md:flex-(row|col)(-reverse)?$/) &&
-                  !c.match(/^lg:flex-(row|col)(-reverse)?$/) &&
-                  !c.match(/^xl:flex-(row|col)(-reverse)?$/) &&
-                  !c.match(/^sm:flex-(row|col)(-reverse)?$/);
+                return c.trim() && 
+                       !c.match(/^flex-(row|col)(-reverse)?$/) &&
+                       !c.match(/^md:flex-(row|col)(-reverse)?$/) &&
+                       !c.match(/^lg:flex-(row|col)(-reverse)?$/) &&
+                       !c.match(/^xl:flex-(row|col)(-reverse)?$/) &&
+                       !c.match(/^sm:flex-(row|col)(-reverse)?$/);
               });
               currentClass = classArray.join(' ').trim();
-
+              
               // Obtener direcciones por dispositivo
               const direction = this.get('container-direction') || 'flex-col'; // Por defecto: columna
               const directionTablet = this.get('container-direction-tablet') || '';
               const directionMobile = this.get('container-direction-mobile') || '';
-
+              
               // Aplicar lógica responsive estilo Elementor con enfoque mobile-first
               // Por defecto, en móvil los hijos se apilan verticalmente (flex-col)
               if (directionMobile) {
                 // Mobile-first: aplicar dirección mobile como base
                 currentClass = (currentClass + ' ' + directionMobile).trim();
-
+                
                 // Si tablet tiene dirección, aplicarla
                 if (directionTablet) {
                   currentClass = (currentClass + ' ' + directionTablet).trim();
@@ -982,7 +982,7 @@
                 // Por defecto, móvil SIEMPRE usa flex-col (apilado vertical - uno encima del otro)
                 // IMPORTANTE: flex-col se aplica directamente sin breakpoint para que funcione en móvil
                 currentClass = (currentClass + ' flex-col').trim();
-
+                
                 // Si tablet tiene dirección, aplicarla
                 if (directionTablet) {
                   currentClass = (currentClass + ' ' + directionTablet).trim();
@@ -998,37 +998,37 @@
                   }
                 }
               }
-
+              
               // Limpiar espacios múltiples y clases vacías
               const finalClassArray = currentClass.split(/\s+/).filter(c => c.trim() && c !== 'md:' && c !== 'lg:' && c !== 'xl:' && c !== 'sm:');
-
+              
               // IMPORTANTE: Asegurar que flex-col esté ANTES de cualquier md:flex-row
               // Reordenar clases para que flex-col esté primero
               const flexColIndex = finalClassArray.findIndex(c => c === 'flex-col' || c === 'flex-col-reverse');
               const mdFlexRowIndex = finalClassArray.findIndex(c => c.startsWith('md:flex-row'));
-
+              
               if (flexColIndex !== -1 && mdFlexRowIndex !== -1 && flexColIndex > mdFlexRowIndex) {
                 // Mover flex-col antes de md:flex-row
                 const flexCol = finalClassArray[flexColIndex];
                 finalClassArray.splice(flexColIndex, 1);
                 finalClassArray.splice(mdFlexRowIndex, 0, flexCol);
               }
-
+              
               currentClass = finalClassArray.join(' ').trim();
-
+              
               // Remover estilos inline de flex-direction que puedan interferir
               el.style.removeProperty('flex-direction');
-
+              
               // Forzar aplicación de clases directamente en el elemento
               el.className = currentClass;
               this.setAttributes({ class: currentClass });
-
+              
               // Asegurar que flex-col esté aplicado (forzar si es necesario)
               if (!directionMobile) {
                 // Si no hay dirección móvil específica, forzar flex-col
                 // Remover cualquier flex-row directo primero
                 el.classList.remove('flex-row', 'flex-row-reverse');
-
+                
                 // Asegurar que flex-col esté presente directamente (sin breakpoint)
                 // Y que esté ANTES de cualquier md:flex-row
                 if (!el.classList.contains('flex-col') && !el.classList.contains('flex-col-reverse')) {
@@ -1047,11 +1047,11 @@
                   const classList = Array.from(el.classList);
                   const flexCol = classList.find(c => c === 'flex-col' || c === 'flex-col-reverse');
                   const mdFlexRow = classList.find(c => c.startsWith('md:flex-row'));
-
+                  
                   if (flexCol && mdFlexRow) {
                     const flexColIndex = classList.indexOf(flexCol);
                     const mdFlexRowIndex = classList.indexOf(mdFlexRow);
-
+                    
                     if (flexColIndex > mdFlexRowIndex) {
                       classList.splice(flexColIndex, 1);
                       classList.splice(mdFlexRowIndex, 0, flexCol);
@@ -1061,7 +1061,7 @@
                   }
                 }
               }
-
+              
               // Limpiar cualquier clase mal formada que pueda haber quedado
               const cleanClasses = Array.from(el.classList).filter(c => c && c.trim() && c !== 'md:' && c !== 'lg:' && c !== 'xl:' && c !== 'sm:');
               el.className = cleanClasses.join(' ');
@@ -1120,19 +1120,19 @@
         updateGap() {
           const gap = this.get('container-gap') || 'gap-4';
           const layoutMode = this.get('container-layout-mode') || 'flex';
-
+          
           if (this.view && this.view.el) {
             const el = this.view.el;
             const currentAttrs = this.getAttributes();
             let currentClass = currentAttrs.class || el.className || '';
-
+            
             // Remover gap anterior
             currentClass = currentClass.replace(/gap-[0-9]+/g, '').trim();
-
+            
             // Agregar nuevo gap
             currentClass = (currentClass + ' ' + gap).trim();
             currentClass = currentClass.replace(/\s+/g, ' ');
-
+            
             el.className = currentClass;
             this.setAttributes({ class: currentClass });
           }
@@ -1193,27 +1193,27 @@
           // Función auxiliar para actualizar clases responsive de los hijos
           const layoutMode = this.get('container-layout-mode') || 'flex';
           if (layoutMode !== 'flex') return; // Solo para modo flex
-
+          
           if (!this.view || !this.view.el) return;
-
+          
           const components = this.components();
           const responsiveMode = this.get('container-children-responsive') || 'auto';
           const childCount = components.length;
           const directionMobile = this.get('container-direction-mobile') || '';
           const direction = this.get('container-direction') || 'flex-col'; // Por defecto: columna
-
+          
           // Detectar si el contenedor está en columna
           const isColumnOnDesktop = direction === 'flex-col' || direction === 'flex-col-reverse';
           // En móvil, por defecto siempre se apilan verticalmente (flex-col) a menos que se especifique otra dirección
-          const isColumnOnMobile = directionMobile === 'flex-col' ||
-            directionMobile === 'flex-col-reverse' ||
-            (directionMobile === ''); // Por defecto, móvil usa flex-col
+          const isColumnOnMobile = directionMobile === 'flex-col' || 
+                                  directionMobile === 'flex-col-reverse' ||
+                                  (directionMobile === ''); // Por defecto, móvil usa flex-col
           const isRowOnDesktop = direction === 'flex-row' || direction === 'flex-row-reverse';
-
+          
           components.forEach((component, index) => {
             const childEl = component.view ? component.view.el : null;
             if (!childEl || !childEl.classList) return;
-
+            
             // Remover clases responsive anteriores
             const classesToRemove = [
               'flex-1', 'flex-grow', 'flex-shrink', 'flex-basis-auto',
@@ -1225,11 +1225,11 @@
               'md:flex-1', 'lg:flex-1', 'xl:flex-1'
             ];
             classesToRemove.forEach(cls => childEl.classList.remove(cls));
-
+            
             // SIEMPRE aplicar w-full en móvil (por defecto responsive)
             // Tailwind es mobile-first, así que w-full se aplica desde móvil
             childEl.classList.add('w-full');
-
+            
             // Aplicar clases responsive según el modo (estilo Elementor)
             if (responsiveMode === 'full-width') {
               // En desktop: si está en fila, usar flex-1; si está en columna, mantener w-full
@@ -1260,7 +1260,7 @@
               }
               // Si está en columna, ya tiene w-full aplicado
             }
-
+            
             // Remover estilos inline de width para que las clases de Tailwind funcionen
             childEl.style.removeProperty('width');
             childEl.style.removeProperty('max-width');
@@ -1269,9 +1269,9 @@
         }
       }
     });
-
+    
   }
-
+  
   if (typeof window !== 'undefined' && window.editor) {
     registerContainerComponent(window.editor);
   } else {
@@ -1281,12 +1281,12 @@
         clearInterval(checkEditor);
       }
     }, 100);
-
+    
     setTimeout(() => {
       clearInterval(checkEditor);
     }, 10000);
   }
-
+  
   if (typeof window !== 'undefined') {
     window.registerContainerComponent = registerContainerComponent;
   }

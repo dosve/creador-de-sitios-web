@@ -59,19 +59,7 @@ const editorConfig = (typeof EditorConfig !== 'undefined' && EditorConfig.getCon
         {
           name: 'Dimension',
           open: false,
-          buildProps: [
-            {
-              extend: 'width',
-              units: ['%', 'px', 'em', 'rem'],
-              fromStyle: function (style) {
-                const v = (style.width || '').toString().trim();
-                const m = v.match(/^(\d+(?:\.\d+)?)\s*(%|px|em|rem)?$/);
-                if (!m) return {};
-                return { value: parseFloat(m[1]), unit: m[2] || 'px' };
-              }
-            },
-            'height', 'max-width', 'min-width', 'max-height', 'min-height', 'margin', 'padding'
-          ]
+          buildProps: ['width', 'height', 'max-width', 'min-width', 'max-height', 'min-height', 'margin', 'padding']
         },
         {
           name: 'Typography',
@@ -957,7 +945,7 @@ function initializeEditor() {
       const label = block.querySelector('.gjs-block-label');
       const hasVisibleContent = label && label.textContent.trim().length > 0;
       const hasIcon = block.querySelector('svg, img, .gjs-block-svg');
-
+      
       if (!hasVisibleContent && !hasIcon) {
         block.style.display = 'none';
       }
@@ -4266,77 +4254,22 @@ function initializeEditor() {
     console.warn('⚠️ No se pudieron configurar los listeners de propiedades:', error);
   }
 
-  // Cargar contenido existente: priorizar grapesjs_data (proyecto completo + estilos), si no HTML+CSS
+  // Cargar contenido existente si existe
   const existingHtml = document.getElementById('page-html-content')?.value;
   const existingCss = document.getElementById('page-css-content')?.value;
 
+  // Función para decodificar entidades HTML
   function decodeHtml(html) {
     const txt = document.createElement('textarea');
     txt.innerHTML = html;
     return txt.value;
   }
 
-  let loadedFromProject = false;
-  if (typeof window.__pageGrapesjsData !== 'undefined' && window.__pageGrapesjsData && typeof window.__pageGrapesjsData === 'object') {
-    try {
-      editor.loadProjectData(window.__pageGrapesjsData);
-      loadedFromProject = true;
-    } catch (e) {
-      console.warn('Error al cargar grapesjs_data, se usa HTML+CSS:', e);
-    }
-  }
-
-  if (!loadedFromProject) {
-    if (existingHtml && existingCss) {
-      editor.setComponents(decodeHtml(existingHtml));
-      editor.setStyle(decodeHtml(existingCss));
-    } else if (existingHtml) {
-      editor.setComponents(decodeHtml(existingHtml));
-    }
-  }
-
-  function syncTailwindToStyleManager(ed) {
-    const gapMap = { 'gap-0': '0', 'gap-1': '0.25rem', 'gap-2': '0.5rem', 'gap-3': '0.75rem', 'gap-4': '1rem', 'gap-5': '1.25rem', 'gap-6': '1.5rem', 'gap-8': '2rem', 'gap-10': '2.5rem', 'gap-12': '3rem' };
-    const justifyMap = { 'justify-start': 'flex-start', 'justify-center': 'center', 'justify-end': 'flex-end', 'justify-between': 'space-between', 'justify-around': 'space-around', 'justify-evenly': 'space-evenly' };
-    const alignMap = { 'items-start': 'flex-start', 'items-center': 'center', 'items-end': 'flex-end', 'items-stretch': 'stretch', 'items-baseline': 'baseline' };
-    const hasResponsiveDirection = (cl) => /^(md|lg|xl|sm):flex-(row|col)/.test(cl);
-    function walk(cs) {
-      if (!cs || typeof cs.forEach !== 'function') return;
-      cs.forEach((comp) => {
-        if (!comp || typeof comp.get !== 'function') return;
-        const attrs = comp.get('attributes') || {};
-        const cls = (attrs.class || '').trim();
-        if (!cls) return;
-        const classes = cls.split(/\s+/);
-        const responsiveDir = classes.some(hasResponsiveDirection);
-        const styles = {};
-        if (classes.includes('flex')) styles.display = 'flex';
-        if (!responsiveDir) {
-          if (classes.includes('flex-row-reverse')) styles.flexDirection = 'row-reverse';
-          else if (classes.includes('flex-row')) styles.flexDirection = 'row';
-          else if (classes.includes('flex-col-reverse')) styles.flexDirection = 'column-reverse';
-          else if (classes.includes('flex-col')) styles.flexDirection = 'column';
-          if (classes.includes('flex-wrap')) styles.flexWrap = 'wrap';
-          else if (classes.includes('flex-nowrap')) styles.flexWrap = 'nowrap';
-        }
-        if (classes.includes('w-full')) styles.width = '100%';
-        for (const c of classes) {
-          if (gapMap[c] !== undefined) { styles.gap = gapMap[c]; break; }
-        }
-        for (const c of classes) {
-          if (justifyMap[c] !== undefined) { styles.justifyContent = justifyMap[c]; break; }
-        }
-        for (const c of classes) {
-          if (alignMap[c] !== undefined) { styles.alignItems = alignMap[c]; break; }
-        }
-        if (Object.keys(styles).length && typeof comp.addStyle === 'function') {
-          comp.addStyle(styles);
-        }
-        if (comp.components) walk(comp.components());
-      });
-    }
-    const wrapper = ed.DomComponents.getWrapper();
-    if (wrapper && wrapper.components) walk(wrapper.components());
+  if (existingHtml && existingCss) {
+    editor.setComponents(decodeHtml(existingHtml));
+    editor.setStyle(decodeHtml(existingCss));
+  } else if (existingHtml) {
+    editor.setComponents(decodeHtml(existingHtml));
   }
 
   // Sincronizar imágenes después de cargar el contenido
@@ -4425,9 +4358,6 @@ function initializeEditor() {
     };
 
     syncBackgroundImageAfterInit();
-    if (!loadedFromProject && typeof syncTailwindToStyleManager === 'function') {
-      syncTailwindToStyleManager(editor);
-    }
   }, 1000);
 
   // Función para asignar nombres descriptivos a componentes existentes
@@ -5072,30 +5002,13 @@ function initializeEditor() {
                     }
                   }
 
-                  // Verificar valores finales antes de guardar (contenido + estilos)
-                  const compStyle = typeof component.getStyle === 'function' ? component.getStyle() : {};
-                  const modelStyle = component.get && component.get('style');
-                  let ruleStyle = null;
-                  try {
-                    const cc = editor.Css || editor.CssComposer;
-                    const id = typeof component.getId === 'function' ? component.getId() : (component.get('attributes') || {}).id;
-                    const rule = cc && id && typeof cc.getIdRule === 'function' ? cc.getIdRule(id) : null;
-                    if (rule) {
-                      ruleStyle = typeof rule.getStyle === 'function' ? rule.getStyle() : (rule.get && rule.get('style'));
-                    }
-                  } catch (e) {
-                    console.warn('[Save] No se pudo obtener CssRule:', e);
-                  }
+                  // Verificar valores finales antes de guardar
                   console.log('📊 [Save] Valores finales en modelo antes de guardar:', {
                     'content-title': component.get('content-title'),
                     'content-text': component.get('content-text'),
                     'button-text': component.get('button-text'),
-                    'button-link': component.get('button-link'),
-                    'style (getStyle)': compStyle,
-                    'style (model)': modelStyle,
-                    'style (CssRule #id)': ruleStyle
+                    'button-link': component.get('button-link')
                   });
-                  console.log('📌 [Save] Los estilos del panel Estilo (width, flex…) están en la CssRule. Si solo ves background-image, esos son inline/model; Dimension/Flexbox van en la regla.');
                 } else {
                   console.warn('⚠️ [Save] view.el no disponible para Background Image');
                 }
@@ -5115,20 +5028,6 @@ function initializeEditor() {
 
       syncBackgroundImageBeforeSave();
 
-      const sel = editor.getSelected && editor.getSelected();
-      const selComp = sel != null ? (Array.isArray(sel) ? sel[0] : sel) : null;
-      if (selComp && selComp.get) {
-        const c = selComp;
-        const cId = typeof c.getId === 'function' ? c.getId() : (c.get('attributes') || {}).id;
-        let selRuleStyle = null;
-        try {
-          const cc = editor.Css || editor.CssComposer;
-          const r = cc && cId && cc.getIdRule ? cc.getIdRule(cId) : null;
-          if (r) selRuleStyle = typeof r.getStyle === 'function' ? r.getStyle() : (r.get && r.get('style'));
-        } catch (_) { }
-        console.log('📌 [Save] Componente seleccionado al guardar:', c.get('type'), 'id=', cId, 'model style=', c.get('style'), 'CssRule style=', selRuleStyle);
-      }
-
       const htmlContent = editor.getHtml();
       let cssContent = editor.getCss();
 
@@ -5141,39 +5040,9 @@ function initializeEditor() {
         enable_store: document.getElementById('enable-store')?.checked || false
       };
 
-      // Siempre enviar grapesjs_data (páginas y componentes) para persistir proyecto y estilos
-      requestData.grapesjs_data = JSON.stringify(editor.getProjectData());
-
-      // Log de depuración: qué se envía al guardar
-      try {
-        const pd = JSON.parse(requestData.grapesjs_data);
-        const components = pd.components || [];
-        const styles = pd.styles || [];
-        console.log('[Guardar] URL:', window.saveUrl);
-        console.log('[Guardar] html_content length:', requestData.html_content?.length);
-        console.log('[Guardar] css_content length:', requestData.css_content?.length);
-        console.log('[Guardar] grapesjs_data length:', requestData.grapesjs_data?.length);
-        console.log('[Guardar] grapesjs_data: components=', components.length, 'styles=', styles.length, '← LOS ESTILOS VAN AQUÍ');
-        if (styles.length) {
-          const sample = styles.slice(0, 2).map(s => (s && (s.selectors || s.style)) ? { selectors: s.selectors, style: s.style } : s);
-          console.log('[Guardar] Muestra de estilos en grapesjs_data:', sample);
-        }
-        // Estilos por componente (incl. width) para revisar % vs px
-        const walk = (arr, depth = 0) => {
-          (arr || []).forEach((c) => {
-            const st = c.style || c.styles;
-            if (st && (typeof st === 'object' || typeof st === 'string')) {
-              const s = typeof st === 'string' ? st : JSON.stringify(st);
-              if (/width|flex-direction/i.test(s)) {
-                console.log('[Guardar] estilo con width/flex:', s.substring(0, 200), depth);
-              }
-            }
-            if (c.components && depth < 3) walk(c.components, depth + 1);
-          });
-        };
-        walk(components);
-      } catch (e) {
-        console.warn('[Guardar] log falló:', e);
+      // Agregar grapesjs_data si es un componente
+      if (window.editableType === 'component') {
+        requestData.grapesjs_data = JSON.stringify(editor.getProjectData());
       }
 
       fetch(window.saveUrl, {
