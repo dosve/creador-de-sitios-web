@@ -20,6 +20,11 @@ class LoginController extends Controller
 
     public function showLoginForm()
     {
+        // Si tiene la cookie del servidor auth, intentar login automático
+        if (isset($_COOKIE['auth-eme10-session'])) {
+            return redirect()->route('oauth.redirect');
+        }
+
         return view('auth.login');
     }
 

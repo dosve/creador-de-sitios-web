@@ -138,12 +138,12 @@
           });
           
           // Sincronizar también cuando el componente se selecciona (para actualizar el formulario)
-          // ✅ La actualización manual de inputs se maneja en editor-config.js para evitar duplicación
+          // ✅ La actualización manual de inputs se maneja en editor-core.js y módulos migrados para evitar duplicación
           this.on('component:selected', () => {
             console.log('🎯 [Code] Componente seleccionado, sincronizando contenido desde DOM...');
             
             // Sincronizar desde DOM inmediatamente (sin setTimeout) para que el modelo tenga los valores antes del render
-            // El editor-config.js se encargará de re-renderizar el TraitManager y actualizar los inputs
+            // El editor-core.js y módulos migrados se encargan de re-renderizar el TraitManager y actualizar los inputs
             if (this.syncContentFromDOM && typeof this.syncContentFromDOM === 'function') {
               this.syncContentFromDOM();
             }

@@ -1199,7 +1199,7 @@
   <script src="{{ asset('js/editor-modules/components/column.js') }}"></script>
   <script src="{{ asset('js/editor-modules/carousel-utils.js') }}"></script>
 
-  <script src="{{ asset('js/editor-config.js') }}"></script>
+  <script src="{{ asset('js/editor-core.js') }}"></script>
   <script>
     // Configurar variables globales para el editor
     window.saveUrl = '{{ $saveRoute }}';

@@ -102,7 +102,13 @@ class WebsiteController extends Controller
         }
 
         // 5. Si el usuario NO está logueado, redirigir a la página de bienvenida
-        \Log::info("Usuario no logueado - redirigiendo a welcome");
+        \Log::info("Usuario no logueado - comprobando cookie de auto-login");
+        
+        // Si tiene la cookie del servidor auth y es el host del creador, intentar login automático
+        if ($isCreatorHost && isset($_COOKIE['auth-eme10-session'])) {
+            return redirect()->route('oauth.redirect');
+        }
+
         return redirect()->route('welcome');
     }
 
