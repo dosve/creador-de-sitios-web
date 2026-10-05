@@ -28,6 +28,9 @@
                             <p class="text-xs text-gray-500">Panel Creador</p>
                         </div>
                     </div>
+                    {{-- Menú de apps del ecosistema EME10: el compartido de auth (auth-eme10/public/js/apps-eme10.js) --}}
+                    <script src="https://auth.eme10.com/js/apps-eme10.js" defer></script>
+                    <eme10-apps class="ml-auto"></eme10-apps>
                     <!-- Desktop toggle button -->
                     <button type="button" id="desktop-sidebar-toggle" class="hidden p-1 text-gray-400 rounded-md md:block hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
